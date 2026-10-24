@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_corrected_note_checked_pending_lesson_review",
+  "stage": "web_corrected_note_checked_lesson_accepted_not_frozen",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -137,6 +137,32 @@
       "corrected_note_still_awaiting_review": true,
       "lessons_not_applied_to_this_research": true,
       "development_publication_blocked": true
+    },
+    "lesson_acceptance_verification": {
+      "exact_reviewed_proposal_identity": true,
+      "immutable_proposal_unchanged": true,
+      "proposal_hash_valid": true,
+      "accepted_decision_present_at_initial_inspection": true,
+      "decision_hash_valid": true,
+      "decision_binds_exact_proposal_and_actor": true,
+      "recorded_review_reason_meets_validation": true,
+      "genuine_edit_origin_unchanged": true,
+      "original_source_and_case_preserved": true,
+      "approved_scope_unchanged": true,
+      "source_wording_guidance_retained": true,
+      "economic_and_partial_evidence_limits_retained": true,
+      "accepted_once_without_pending_versions": true,
+      "superseded_parent_unchanged": true,
+      "no_new_proposals_or_playbooks": true,
+      "bank_revision_accounts_for_one_decision": true,
+      "no_revocation_recorded": true,
+      "all_research_runs_unchanged": true,
+      "corrected_note_and_fresh_checks_unchanged": true,
+      "approved_library_unchanged": true,
+      "analyst_memory_and_policy_unchanged": true,
+      "budget_and_model_accounting_unchanged": true,
+      "lesson_not_applied_to_existing_research": true,
+      "development_note_not_published": true
     }
   },
   "outcome": {
@@ -145,7 +171,7 @@
     "research_completed": true,
     "eligible_lesson_origins_observed": 1,
     "lesson_proposals_created": 2,
-    "human_lesson_decisions_recorded": 0,
+    "human_lesson_decisions_recorded": 1,
     "development_notes_published": 0,
     "attempt_count": 2,
     "completed_model_responses": 7,
@@ -161,8 +187,10 @@
     "user_authorized_correction_applied_in_web": true,
     "operator_applied_user_selected_correction": true,
     "independent_human_quality_label": false,
-    "pending_lesson_proposals": 1,
-    "superseded_lesson_proposals": 1
+    "pending_lesson_proposals": 0,
+    "superseded_lesson_proposals": 1,
+    "accepted_lesson_proposals": 1,
+    "rejected_lesson_proposals": 0
   },
   "attempts": [
     {
@@ -293,8 +321,6 @@
     "reflection_method": "code_owned_category_reflection_with_operator_revision",
     "initial_action": "verify_current_facts",
     "initial_status": "superseded",
-    "pending_action": "cite_exact_evidence",
-    "pending_proposal_hash": "731b89e5a7a57a9c996734fe069e55ccdac39d507f6775e3b98d9b561986c1b3",
     "scope": {
       "tickers": [
         "AAPL"
@@ -311,12 +337,19 @@
       ]
     },
     "immutable_proposal_versions": 2,
-    "pending_versions": 1,
+    "pending_versions": 0,
     "superseded_versions": 1,
-    "human_decisions": 0,
+    "human_decisions": 1,
     "frozen_playbooks": 0,
     "new_model_calls": 0,
     "automatic_acceptance": false,
-    "independent_improvement_demonstrated": false
+    "independent_improvement_demonstrated": false,
+    "reviewed_action": "cite_exact_evidence",
+    "reviewed_proposal_hash": "731b89e5a7a57a9c996734fe069e55ccdac39d507f6775e3b98d9b561986c1b3",
+    "reviewed_status": "accepted",
+    "decision_record_hash": "a99f5d4dd4a5483e5373005fd6b224d9633a9573409ac2c4ea305c41bd11f886",
+    "decision_already_present_at_initial_inspection": true,
+    "accepted_versions": 1,
+    "decision_submissions_during_verification": 0
   }
 }
