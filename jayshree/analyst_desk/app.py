@@ -413,7 +413,7 @@ with gr.Blocks(title="Analyst Desk") as demo:
         with gr.Row():
             search_query = gr.Textbox(label="Search query", scale=3)
             company_dd = gr.Dropdown(
-                ["All", "MSFT", "GOOGL"], value="All", label="Company", scale=1
+                ["All"] + [c.ticker for c in COMPANIES], value="All", label="Company", scale=1
             )
             year_dd = gr.Dropdown(
                 ["All", "2022", "2023", "2024"], value="All", label="Year", scale=1

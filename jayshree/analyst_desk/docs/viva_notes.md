@@ -74,6 +74,8 @@ EDGAR's `fy` field describes the *filing*, not the period, so it can point at th
 
 Restatements found: BAC FY2023 and FY2024, WFC FY2022.
 
+**The same rule applies across concept names.** Alphabet tagged its FY2024 revenue as `RevenueFromContractWithCustomer...` in the FY2024 10-K, but as `Revenues` only in a 2026 filing. We take the earliest-filed fact across all of a company's revenue concepts, so the citation still points at the FY2024 10-K. A test ([tests/test_data_integrity.py](../tests/test_data_integrity.py)) checks that all 90 fact_ids (45 company-years × revenue and income) cite that year's own 10-K, the same document the passages come from.
+
 **Alternative considered:** always use the latest (restated) values, so every year sits on one accounting basis. It was rejected as the default because citations must match the document we quote. Restated values are still shown, as warnings.
 
 **Likely question:** "Which is right, the original or the restated number?"

@@ -104,6 +104,9 @@ PRETAX_INCOME_CONCEPT = (
 )
 
 
+_parsed: dict[str, dict] = {}
+
+
 def _pad_cik(cik: str) -> str:
     """SEC API expects a 10-digit zero-padded CIK, e.g. '0000789019'."""
     return cik.lstrip("0").zfill(10)
@@ -119,8 +122,13 @@ def fetch_company_facts(cik: str) -> dict:
     padded = _pad_cik(cik)
     cache_file = CACHE_DIR / f"{padded}.json"
 
+    # Parsed files are also kept in memory: each is 3-9 MB and one note
+    # looks up several concepts per company-year
+    if str(cache_file) in _parsed:
+        return _parsed[str(cache_file)]
     if cache_file.exists():
-        return json.loads(cache_file.read_text(encoding="utf-8"))
+        _parsed[str(cache_file)] = json.loads(cache_file.read_text(encoding="utf-8"))
+        return _parsed[str(cache_file)]
 
     url = EDGAR_FACTS_URL.format(cik=padded)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
@@ -311,11 +319,15 @@ def get_financials(cik: str, fiscal_year: int) -> dict:
           "pretax_income":    { val, end, accn, filed, fact_id } | None,
         }
     """
-    revenue = None
-    for concept in REVENUE_CONCEPTS.get(cik, ["Revenues"]):
-        revenue = get_annual_fact(cik, concept, fiscal_year)
-        if revenue is not None:
-            break
+    # Companies switch revenue concepts over time (Alphabet tagged FY2024
+    # revenue as RevenueFromContract... in its FY2024 10-K, and as Revenues
+    # only in a later filing). Take the earliest-filed fact across concepts so
+    # the fact_id points at that year's own 10-K; list order breaks ties.
+    candidates = [
+        fact for concept in REVENUE_CONCEPTS.get(cik, ["Revenues"])
+        if (fact := get_annual_fact(cik, concept, fiscal_year)) is not None
+    ]
+    revenue = min(candidates, key=lambda f: f["filed"]) if candidates else None
 
     op_income = get_annual_fact(cik, OPERATING_INCOME_CONCEPT, fiscal_year)
     pretax_income = get_annual_fact(cik, PRETAX_INCOME_CONCEPT, fiscal_year)
