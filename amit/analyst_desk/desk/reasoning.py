@@ -8,6 +8,7 @@ model review and the human note gate remain necessary.
 from __future__ import annotations
 
 from collections import Counter
+from copy import deepcopy
 from hashlib import sha256
 import json
 import math
@@ -93,13 +94,18 @@ class QuoteWriterFinding(QuoteFinding):
     category: Literal["risk_observation", "comparability", "limitation"]
 
 
-class QuoteRiskRevision(QuoteFinding):
-    claim_id: str = Field(min_length=1, max_length=120)
+class QuoteRiskRevision(StrictOutput):
     text: str = Field(min_length=15, max_length=400, pattern=WRITER_TEXT_PATTERN)
+    before_quote_id: str = Field(min_length=1, max_length=120)
+    after_quote_id: str = Field(min_length=1, max_length=120)
+    confidence: Literal["low", "medium", "high"]
 
 
 class QuoteWriterOutput(StrictOutput):
-    risk_revisions: list[QuoteRiskRevision] = Field(max_length=4)
+    # The closed empty wire template is populated with code-owned claim keys
+    # and period-specific quote enums for each individual writer request.
+    risk_revisions: dict[str, QuoteRiskRevision] = Field(max_length=4,
+        json_schema_extra={"properties": {}, "required": [], "additionalProperties": False})
     claims: list[QuoteWriterFinding] = Field(min_length=1, max_length=3)
 
 
@@ -157,11 +163,13 @@ WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative prose
     "The code-owned table and source metadata carry exact fiscal periods and financial figures; do not repeat them in narrative.")
 
 RISK_REVISION_INSTRUCTIONS = ("The supplied risk_observations are provisional model interpretations, not endorsed findings. "
-    "Return exactly one risk_revisions entry for every supplied risk claim_id, preserving its identifier and selecting relevant quotation IDs from both of its compared periods. "
-    "If no provisional risk observations are supplied, return an empty risk_revisions array. "
+    "Return risk_revisions as an object with exactly the supplied risk claim_id keys. For each key, select its before_quote_id from the earlier issuer/year options and after_quote_id from the later issuer/year options required by the schema. "
+    "Revision values use before_quote_id and after_quote_id, not a quote_ids field; summary claims still use quote_ids. The revision options stay within that provisional claim's originally cited source records. "
+    "If no provisional risk observations are supplied, return an empty risk_revisions object. "
     "Refine each observation to what the selected quotations actually entail; preserve conditional language and narrow or remove unsupported certainty from the wording. "
-    "Selected windows cannot establish that entire risk sections, their scope or framing, the overall risk profile or the degree of exposure stayed consistent. "
-    "Do not repeat such broad consistency claims from provisional input. Describe the limited supported disclosure observation instead. "
+    "Describe only a shared disclosed exposure that the selected before and after quotations actually support. "
+    "Do not claim consistency or similarity of scope, framing, the overall risk profile, degree of exposure or overall wording from selected windows. "
+    "Do not repeat such broad generalizations from provisional input; preserve conditional language and describe the limited supported exposure instead. "
     "The same qualitative-only text rules apply to risk_revisions and summary claims. Code retains each risk claim's issuer, comparison periods and category; you cannot change them.")
 
 QUOTE_TERMS = frozenset("risk risks cybersecurity cyber security privacy artificial intelligence regulation competition climate demand supply operations disclosure uncertainty".split())
@@ -395,7 +403,7 @@ class Reasoner:
     def __init__(self, model_call):
         self.model_call = model_call
 
-    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_claim_ids=None):
+    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_quote_slots=None):
         if len(json.dumps(context, ensure_ascii=False).encode()) > self.MAX_CONTEXT_BYTES:
             raise ReasoningError("The bounded reasoning context is too large.")
         response_schema = schema.model_json_schema()
@@ -413,15 +421,18 @@ class Reasoner:
                     for value in node:
                         restrict_choices(value)
             restrict_choices(response_schema)
-        if risk_claim_ids is not None:
-            # Count and IDs are code-owned. Local validation below also checks
-            # exact-once membership because JSON Schema cannot require unique
-            # values of one field across distinct objects without complex rules.
-            revisions = response_schema["properties"]["risk_revisions"]
-            revisions["minItems"] = len(risk_claim_ids)
-            revisions["maxItems"] = len(risk_claim_ids)
-            if risk_claim_ids:
-                response_schema["$defs"]["QuoteRiskRevision"]["properties"]["claim_id"]["enum"] = list(risk_claim_ids)
+        if risk_quote_slots is not None:
+            properties = {}
+            revision_template = QuoteRiskRevision.model_json_schema()
+            for identifier, slots in risk_quote_slots.items():
+                revision = deepcopy(revision_template)
+                revision["properties"]["before_quote_id"]["enum"] = list(slots["before"])
+                revision["properties"]["after_quote_id"]["enum"] = list(slots["after"])
+                properties[identifier] = revision
+            response_schema["properties"]["risk_revisions"] = {
+                "type": "object", "properties": properties,
+                "required": list(properties), "additionalProperties": False,
+            }
         result = self.model_call(stage, system=COMMON_INSTRUCTIONS + instructions,
                                  context=context, schema=response_schema,
                                  max_output_tokens=max_output_tokens)
@@ -521,17 +532,32 @@ class Reasoner:
             raise ReasoningError("The bounded writer cannot revise more than the supported risk comparisons.")
         menu = quote_menu(known)
         risk_ids = [claim["claim_id"] for claim in risk_claims]
+        cited_source_ids = {claim["claim_id"]: {citation["source_id"] for citation in claim["citations"]}
+                            for claim in risk_claims}
+        risk_slots = {claim["claim_id"]: {
+            "before": [entry["quote_id"] for entry in menu if entry["ticker"] == claim["ticker"] and entry["year"] == claim["before_year"] and entry["source_id"] in cited_source_ids[claim["claim_id"]]],
+            "after": [entry["quote_id"] for entry in menu if entry["ticker"] == claim["ticker"] and entry["year"] == claim["after_year"] and entry["source_id"] in cited_source_ids[claim["claim_id"]]],
+        } for claim in risk_claims}
+        if any(not slots["before"] or not slots["after"] for slots in risk_slots.values()):
+            raise ReasoningError("A provisional risk comparison has no quotation option for a required issuer/year.")
         result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " " + RISK_REVISION_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and provisional risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
                             {"question": question, "plan": plan, "verified_metrics": metrics,
                              "risk_observations": risk_claims, "quote_menu": menu,
                              "evidence_scope": "Code-selected quote windows within selected source evidence; full filing coverage is not established."},
-                            QuoteWriterOutput, 3200, quote_ids=[entry["quote_id"] for entry in menu], risk_claim_ids=risk_ids)
-        actual_ids = [revision["claim_id"] for revision in result["risk_revisions"]]
-        if len(actual_ids) != len(risk_ids) or set(actual_ids) != set(risk_ids):
-            raise ReasoningError("The writer omitted, duplicated or invented a provisional risk claim revision.")
-        revision_by_id = {revision["claim_id"]: revision for revision in result["risk_revisions"]}
-        revised_risks = [{**original, **expand_quote_selection(revision_by_id[original["claim_id"]], menu)}
-                         for original in risk_claims]
+                            QuoteWriterOutput, 3200, quote_ids=[entry["quote_id"] for entry in menu], risk_quote_slots=risk_slots)
+        revision_by_id = result["risk_revisions"]
+        if set(revision_by_id) != set(risk_ids):
+            raise ReasoningError("The writer omitted or invented a provisional risk claim revision key.")
+        revised_risks = []
+        for original in risk_claims:
+            identifier = original["claim_id"]
+            revision = revision_by_id[identifier]
+            if (revision["before_quote_id"] not in risk_slots[identifier]["before"]
+                    or revision["after_quote_id"] not in risk_slots[identifier]["after"]):
+                raise ReasoningError("A writer revision selected a quotation outside its required issuer/year slot.")
+            selection = {"text": revision["text"], "confidence": revision["confidence"],
+                         "quote_ids": [revision["before_quote_id"], revision["after_quote_id"]]}
+            revised_risks.append({**original, **expand_quote_selection(selection, menu)})
         claims = [{"claim_id": f"writer-{index + 1}", **expand_quote_selection(claim, menu)} for index, claim in enumerate(result["claims"])]
         return {"claims": validate_claims(claims, known), "risk_claims": validate_claims(revised_risks, known), "evidence": known}
 

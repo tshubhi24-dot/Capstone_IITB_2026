@@ -1,0 +1,30 @@
+{
+  "checked_at_utc": "2026-10-24T10:09:44.013528+00:00",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "status": "writer_revision_blocked_wrong_comparison_period",
+  "approved_plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+  "human_plan_approval_preserved": true,
+  "model_calls_this_run": 8,
+  "tokens_this_run": 44953,
+  "cost_this_run_usd": "0.0217348",
+  "lifetime_reported_spend_usd": "0.0223796",
+  "held_usd": "0.1688064",
+  "remaining_total_usd": "0.8088140",
+  "writer_dates_and_schema_checks_passed": true,
+  "failed_risk_revision": "risk-MSFT-2024-2025-1",
+  "rejected_quote_periods": [
+    2023,
+    2024
+  ],
+  "required_quote_periods": [
+    2024,
+    2025
+  ],
+  "ai_critic_called": false,
+  "invalid_output_accepted": false,
+  "cached_output_inspected_without_retry": true,
+  "prior_notes_unchanged": true,
+  "note_approved": false,
+  "published": false,
+  "next": "Bind each revision to separate finite earlier/later quote slots; preserve all costs and continue only within original run limits."
+}

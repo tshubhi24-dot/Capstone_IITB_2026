@@ -317,7 +317,7 @@ def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
     def model(stage, **request):
         seen.append(request)
         menu = request["context"]["quote_menu"]
-        return {"risk_revisions": [], "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+        return {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": [menu[0]["quote_id"]]}]}
     result = Reasoner(model).write("Compare annual sources", {}, [], [], evidence)
     claim = result["claims"][0]
@@ -328,14 +328,14 @@ def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
     def duplicate_source(stage, **request):
         choices = [item["quote_id"] for item in request["context"]["quote_menu"] if item["source_id"] == "msft-before"]
         assert len(choices) == 2
-        return {"risk_revisions": [], "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+        return {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": choices}]}
     with pytest.raises(ReasoningError, match="Repeat citations"):
         Reasoner(duplicate_source).write("Compare annual sources", {}, [], [], evidence)
 
 
 def test_writer_unknown_quote_id_is_rejected_and_not_silently_replaced(evidence):
-    response = {"risk_revisions": [], "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+    response = {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": ["invented-quote"]}]}
     with pytest.raises(ReasoningError, match="unknown or repeated"):
         Reasoner(lambda *args, **kwargs: response).write("Compare annual sources", {}, [], [], evidence)
@@ -345,7 +345,7 @@ def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(ev
     captured = []
     def model(stage, **request):
         captured.append(request)
-        content = {"risk_revisions": [], "claims": [{"text": "Selected source excerpts provide limited disclosure context.",
+        content = {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.",
             "confidence": "low", "category": "limitation",
             "quote_ids": [request["context"]["quote_menu"][0]["quote_id"]]}]}
         validator = Draft202012Validator(request["schema"])
@@ -358,8 +358,8 @@ def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(ev
     writer_text = captured[0]["schema"]["$defs"]["QuoteWriterFinding"]["properties"]["text"]
     assert "pattern" in writer_text
     assert "pattern" not in QuoteRiskOutput.model_json_schema()["$defs"]["QuoteFinding"]["properties"]["text"]
-    assert captured[0]["schema"]["properties"]["risk_revisions"]["maxItems"] == 0
-    assert captured[0]["schema"]["properties"]["risk_revisions"]["minItems"] == 0
+    assert captured[0]["schema"]["properties"]["risk_revisions"] == {
+        "type": "object", "properties": {}, "required": [], "additionalProperties": False}
     assert "Calendar dates and fiscal-year numbers" in captured[0]["system"]
     assert "across the compared periods" in captured[0]["system"]
 
@@ -371,7 +371,7 @@ def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(ev
     "The issuer reiterated **operational exposure** in its disclosures.",
 ])
 def test_writer_rejects_dated_or_marked_up_output_without_rewriting_it(evidence, text):
-    content = {"risk_revisions": [], "claims": [{"text": text, "confidence": "low", "category": "limitation",
+    content = {"risk_revisions": {}, "claims": [{"text": text, "confidence": "low", "category": "limitation",
                            "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
     original = deepcopy(content)
     with pytest.raises(ReasoningError, match="Invalid structured model output for writer"):
@@ -384,7 +384,7 @@ def test_writer_rejects_dated_or_marked_up_output_without_rewriting_it(evidence,
     "The issuer incurred one billion dollars in operational losses.",
 ])
 def test_writer_schema_does_not_replace_full_local_quantity_validation(evidence, text):
-    content = {"risk_revisions": [], "claims": [{"text": text, "confidence": "low", "category": "limitation",
+    content = {"risk_revisions": {}, "claims": [{"text": text, "confidence": "low", "category": "limitation",
                            "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
     with pytest.raises(ReasoningError):
         Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
@@ -397,7 +397,7 @@ def test_qualitative_writer_claim_keeps_exact_provenance_through_critic(evidence
         if stage == "writer":
             selected = next(item for item in request["context"]["quote_menu"]
                             if item["source_id"] == "msft-before" and "may interrupt" in item["quote"])
-            return {"risk_revisions": [], "claims": [{"text": "Conditional risk language describes potential operational disruption.",
+            return {"risk_revisions": {}, "claims": [{"text": "Conditional risk language describes potential operational disruption.",
                 "confidence": "low", "category": "risk_observation", "quote_ids": [selected["quote_id"]]}]}
         assert stage == "critic"
         assert request["context"]["claims"][0]["citations"][0]["quote"] in evidence[0]["text"]
@@ -416,9 +416,9 @@ def revised_writer_response(request, provisional):
     menu = request["context"]["quote_menu"]
     choices = [next(item["quote_id"] for item in menu if item["source_id"] == identifier)
                for identifier in ("msft-before", "msft-after")]
-    return {"risk_revisions": [{"claim_id": provisional["claim_id"],
+    return {"risk_revisions": {provisional["claim_id"]: {
         "text": "Selected disclosures describe potential operational disruption from cyber threats.",
-        "quote_ids": choices, "confidence": "low"}],
+        "before_quote_id": choices[0], "after_quote_id": choices[1], "confidence": "low"}},
         "claims": [{"text": "Selected source excerpts provide limited disclosure context.",
                     "quote_ids": [choices[0]], "confidence": "low", "category": "limitation"}]}
 
@@ -434,11 +434,18 @@ def test_writer_refines_provisional_risk_in_new_output_and_preserves_code_owned_
         validator = Draft202012Validator(request["schema"])
         assert validator.is_valid(content)
         invented = deepcopy(content)
-        invented["risk_revisions"][0]["claim_id"] = "invented-risk-id"
+        invented["risk_revisions"]["invented-risk-id"] = invented["risk_revisions"].pop(original["claim_id"])
         assert not validator.is_valid(invented)
-        assert request["schema"]["properties"]["risk_revisions"]["minItems"] == 1
-        assert request["schema"]["properties"]["risk_revisions"]["maxItems"] == 1
-        assert request["schema"]["$defs"]["QuoteRiskRevision"]["properties"]["claim_id"]["enum"] == [original["claim_id"]]
+        revisions = request["schema"]["properties"]["risk_revisions"]
+        assert revisions["required"] == [original["claim_id"]] and revisions["additionalProperties"] is False
+        assert set(revisions["properties"]) == {original["claim_id"]}
+        scoped = revisions["properties"][original["claim_id"]]["properties"]
+        menu = request["context"]["quote_menu"]
+        assert scoped["before_quote_id"]["enum"] == [item["quote_id"] for item in menu if item["ticker"] == "MSFT" and item["year"] == 2023]
+        assert scoped["after_quote_id"]["enum"] == [item["quote_id"] for item in menu if item["ticker"] == "MSFT" and item["year"] == 2024]
+        wrong_slot = deepcopy(content)
+        wrong_slot["risk_revisions"][original["claim_id"]]["after_quote_id"] = content["risk_revisions"][original["claim_id"]]["before_quote_id"]
+        assert not validator.is_valid(wrong_slot)
         return content
     written = Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [original]}], evidence)
     revised = written["risk_claims"][0]
@@ -447,24 +454,28 @@ def test_writer_refines_provisional_risk_in_new_output_and_preserves_code_owned_
     assert all(revised[key] == original[key] for key in ("claim_id", "ticker", "before_year", "after_year", "category"))
     assert validate_claims(written["risk_claims"], evidence)
     assert "provisional model interpretations, not endorsed findings" in captured[0]["system"]
-    assert "scope or framing" in captured[0]["system"]
-    assert "pattern" in captured[0]["schema"]["$defs"]["QuoteRiskRevision"]["properties"]["text"]
+    assert "Do not claim consistency or similarity of scope, framing" in captured[0]["system"]
+    assert "pattern" in captured[0]["schema"]["properties"]["risk_revisions"]["properties"][original["claim_id"]]["properties"]["text"]
 
 
-@pytest.mark.parametrize("change", ["missing", "invented", "duplicate", "wrong-period", "scope-change", "date"])
+@pytest.mark.parametrize("change", ["missing", "invented", "extra", "wrong-period", "wrong-issuer", "swapped-periods", "scope-change", "date"])
 def test_writer_cannot_omit_expand_duplicate_or_reassign_provisional_risks(evidence, change):
     original = claim()
     def model(stage, **request):
         response = revised_writer_response(request, original)
-        revision = response["risk_revisions"][0]
+        revision = response["risk_revisions"][original["claim_id"]]
         if change == "missing":
-            response["risk_revisions"] = []
+            response["risk_revisions"] = {}
         elif change == "invented":
-            revision["claim_id"] = "invented-risk-id"
-        elif change == "duplicate":
-            response["risk_revisions"].append(deepcopy(revision))
+            response["risk_revisions"]["invented-risk-id"] = response["risk_revisions"].pop(original["claim_id"])
+        elif change == "extra":
+            response["risk_revisions"]["extra-risk-id"] = deepcopy(revision)
         elif change == "wrong-period":
-            revision["quote_ids"] = revision["quote_ids"][:1]
+            revision["after_quote_id"] = revision["before_quote_id"]
+        elif change == "wrong-issuer":
+            revision["before_quote_id"] = next(item["quote_id"] for item in request["context"]["quote_menu"] if item["ticker"] == "AAPL")
+        elif change == "swapped-periods":
+            revision["before_quote_id"], revision["after_quote_id"] = revision["after_quote_id"], revision["before_quote_id"]
         elif change == "scope-change":
             revision["ticker"] = "AAPL"
         else:
@@ -475,12 +486,52 @@ def test_writer_cannot_omit_expand_duplicate_or_reassign_provisional_risks(evide
 
 
 def test_writer_without_provisional_risks_cannot_introduce_a_risk_revision(evidence):
-    content = {"risk_revisions": [{"claim_id": "invented-risk-id", "text": "Selected disclosures describe potential operational disruption.",
-                "quote_ids": [quote_menu(evidence)[0]["quote_id"]], "confidence": "low"}],
+    content = {"risk_revisions": {"invented-risk-id": {"text": "Selected disclosures describe potential operational disruption.",
+                "before_quote_id": quote_menu(evidence)[0]["quote_id"], "after_quote_id": quote_menu(evidence)[0]["quote_id"], "confidence": "low"}},
                 "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
-    with pytest.raises(ReasoningError, match="omitted, duplicated or invented"):
+    with pytest.raises(ReasoningError, match="omitted or invented"):
         Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+
+
+def test_later_comparison_cannot_reuse_globally_valid_earlier_period_quotes(evidence):
+    sources = evidence + [{"id": "msft-later", "ticker": "MSFT", "year": 2025,
+                           "text": "Cybersecurity threats may interrupt operations and customer trust."}]
+    provisional = claim()
+    provisional.update(claim_id="risk-MSFT-2024-2025-1", before_year=2024, after_year=2025)
+    provisional["citations"] = [{"source_id": "msft-after", "quote": "Cybersecurity threats may disrupt operations"},
+                               {"source_id": "msft-later", "quote": "Cybersecurity threats may interrupt operations"}]
+    def model(stage, **request):
+        response = revised_writer_response(request, provisional)
+        # Both IDs exist in the overall menu but represent the wrong pair.
+        assert not Draft202012Validator(request["schema"]).is_valid(response)
+        return response
+    with pytest.raises(ReasoningError, match="required issuer/year slot"):
+        Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [provisional]}], sources)
+
+
+def test_revision_slots_exclude_financial_facts_and_uncited_same_year_passages(evidence):
+    sources = evidence + [
+        {"id": "uncited-msft", "ticker": "MSFT", "year": 2023,
+         "text": "An unrelated selected passage describes a different operational exposure."},
+        {"id": "annual-revenue", "ticker": "MSFT", "fiscal_year": 2023, "concept": "revenue",
+         "value": 200, "unit": "USD", "start": "2022-07-01", "end": "2023-06-30"},
+    ]
+    original = claim()
+    def model(stage, **request):
+        content = revised_writer_response(request, original)
+        scoped = request["schema"]["properties"]["risk_revisions"]["properties"][original["claim_id"]]["properties"]
+        menu = request["context"]["quote_menu"]
+        allowed = set(scoped["before_quote_id"]["enum"]) | set(scoped["after_quote_id"]["enum"])
+        excluded = [item["quote_id"] for item in menu if item["source_id"] in {"uncited-msft", "annual-revenue"}]
+        assert excluded and not allowed.intersection(excluded)
+        for identifier in excluded:
+            bad = deepcopy(content)
+            bad["risk_revisions"][original["claim_id"]]["before_quote_id"] = identifier
+            assert not Draft202012Validator(request["schema"]).is_valid(bad)
+        return content
+    revised = Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [original]}], sources)
+    assert {citation["source_id"] for citation in revised["risk_claims"][0]["citations"]} == {"msft-before", "msft-after"}
 
 
 def test_critic_keeps_full_cited_context_and_financial_facts_without_uncited_bulk(evidence):

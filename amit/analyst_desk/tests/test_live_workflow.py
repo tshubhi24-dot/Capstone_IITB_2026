@@ -34,10 +34,14 @@ class FakeModelClient:
                 "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low", "quote_ids": [quote_id(before), quote_id(after)]}]} for before, after in context["comparison_pairs"]]}
         elif stage == "writer":
             row = next(row for row in context["quote_menu"] if "item1A" in row["source_id"])
-            revisions = [{"claim_id": claim["claim_id"], "text": claim["text"], "confidence": claim["confidence"],
-                "quote_ids": [next(option["quote_id"] for option in context["quote_menu"]
-                                   if option["source_id"] == citation["source_id"] and option["quote"] == citation["quote"])
-                              for citation in claim["citations"]]} for claim in context["risk_observations"]]
+            revisions = {claim["claim_id"]: {"text": claim["text"], "confidence": claim["confidence"],
+                "before_quote_id": next(option["quote_id"] for option in context["quote_menu"]
+                                        if option["ticker"] == claim["ticker"] and option["year"] == claim["before_year"]
+                                        and option["source_id"] in {citation["source_id"] for citation in claim["citations"]}),
+                "after_quote_id": next(option["quote_id"] for option in context["quote_menu"]
+                                       if option["ticker"] == claim["ticker"] and option["year"] == claim["after_year"]
+                                       and option["source_id"] in {citation["source_id"] for citation in claim["citations"]})}
+                         for claim in context["risk_observations"]}
             content = {"risk_revisions": revisions, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low", "category": "limitation",
                 "quote_ids": [row["quote_id"]]}]}
         elif stage == "critic":
@@ -90,7 +94,7 @@ def test_writer_refines_provisional_risk_and_critic_checks_exact_revision(fixtur
             if request["role"] == "risk":
                 result["content"]["comparisons"][0]["findings"][0]["text"] = provisional
             if request["role"] == "writer":
-                for revision in result["content"]["risk_revisions"]:
+                for revision in result["content"]["risk_revisions"].values():
                     if revision["text"] == provisional:
                         revision["text"] = revised
             self.cache[request["call_id"]] = deepcopy(result)
