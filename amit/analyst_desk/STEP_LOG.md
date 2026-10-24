@@ -291,12 +291,16 @@ These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/
 
 ## Team onboarding — Reproduce the desk on another machine
 
-**What this update does:** makes the repository usable by a teammate starting with a fresh checkout. The README explains the branch/folder, Python/Docker installation, separately shared public source data, pinned model downloads, credential files, offline checks, optional live authorization, first research and safe restart/update steps.
+**What this update does:** makes the repository usable by a teammate starting with a fresh checkout. The README explains the branch/folder, Python/Docker installation, the public source seed included in Git, pinned model downloads, credential files, offline checks, optional live authorization, first research and safe restart/update steps. A separate source-data handoff is no longer needed.
 
 | Files | Purpose |
 |---|---|
 | [README.md](README.md), [repository entry point](../../README.md) | Detailed teammate setup and a direct entry link from GitHub. |
 | [data/README.md](data/README.md), [docs/HYBRID_RETRIEVAL.md](docs/HYBRID_RETRIEVAL.md) | Distinguish original source import from exact prepared-data handoff and use an explicit matching model cache. |
 | [docs/LIVE_AI_RUNBOOK.md](docs/LIVE_AI_RUNBOOK.md), [docs/TWO_COMPANY_JOURNEY.md](docs/TWO_COMPANY_JOURNEY.md) | Align live image/model setup and label historical two-company instructions. |
+| [data/seed/public-sec-fy2023-2025.zip](data/seed/public-sec-fy2023-2025.zip), [seed inventory](data/seed/manifest.json), [seed guide](data/seed/README.md) | Include the exact public normalized snapshot and source manifest in the branch, with checksums and source-update rules. |
+| [evidence/public_seed_verification.json](evidence/public_seed_verification.json) | Record isolated installation, corruption, preservation and public-only archive checks. |
 
-**Capstone connection:** L16 installation/reproducibility and L14 explicit spending/research review. The guide uses each teammate's own local credentials; public data is handed off separately. Commands are checked against the implementation and in isolated dummy-credential preparation. A complete clean-machine installation on another teammate's hardware remains a separate validation.
+**Observed result:** the included archive is about 1.4 MB and contains only the normalized public corpus and matching manifest: twelve companies, 36 company-years, 72 canonical facts and 4,073 passages. Eight isolated installation/privacy checks pass, including repeat installation, rejection of corruption and preservation of a different existing snapshot. All 41 checked local document links resolve. Existing running source bytes and modification time are unchanged; this setup change makes no model calls. Model weights remain a separate pinned public download.
+
+**Capstone connection:** L16 installation/reproducibility and L14 explicit spending/research review. The guide uses each teammate's own local credentials; public data is included in the branch. Commands are checked against the implementation, the seed installation and isolated dummy-credential preparation. A complete clean-machine Docker installation on another teammate's hardware remains a separate validation.

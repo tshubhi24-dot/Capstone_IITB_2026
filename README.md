@@ -6,12 +6,12 @@ That guide covers:
 
 - What to clone/pull and which folder to use.
 - Git, Python 3.12, Docker Desktop and the required Docker context.
-- The separate public SEC data package and pinned local model downloads.
+- The included public SEC source seed and pinned local model downloads.
 - Offline startup, the generated analyst token, health/tool checks and your first research note.
 - Your own OpenRouter key, its private file location, model selection and explicit spending authorization.
 - Memory, reviewed lessons, stopping/restarting, updates and troubleshooting.
 
-**A clone alone cannot run:** the public SEC source snapshot is shared separately; the guide explains how to obtain, verify and install it. Each teammate generates their own credentials. Keys, local research history, authorizations and runtime databases are not in Git.
+**The public SEC snapshot is included under `amit/analyst_desk/data/seed`.** Clone or download `Amit/analyst_desk`, follow the guide to verify and install that snapshot, download the pinned local retrieval models, then start Docker Compose. Each teammate generates their own credentials. Keys, local research history, authorizations and runtime databases are not in Git.
 
 Useful project references:
 

@@ -1,0 +1,30 @@
+{
+  "archive": "public-sec-fy2023-2025.zip",
+  "archive_bytes": 1414357,
+  "archive_sha256": "fc2873d69b9bddaa6f6fb528cdb06015f606daead787b4b9b5070a489c117a08",
+  "company_count": 12,
+  "company_year_count": 36,
+  "coverage_scope_id": "sec-twelve-company-fy2023-2025-v1",
+  "fact_count": 72,
+  "files": {
+    "corpus.json": {
+      "bytes": 6374613,
+      "sha256": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897"
+    },
+    "source_manifest.json": {
+      "bytes": 79424,
+      "sha256": "adda52435d11eeb8518afba4fb827f9e99a5db1749a42c47fbb5c0540db9bbca"
+    }
+  },
+  "independent_source_review": "pending",
+  "limitations": [
+    "Frozen normalized public SEC snapshot; not a fresh SEC download.",
+    "Original Item boundaries, complete table extraction and economic risk interpretation require independent review.",
+    "Original cached SEC response wrappers and model files are not included."
+  ],
+  "passage_count": 4073,
+  "schema_version": 1,
+  "section_count": 72,
+  "snapshot_sha256": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "source_kind": "sec_edgar"
+}

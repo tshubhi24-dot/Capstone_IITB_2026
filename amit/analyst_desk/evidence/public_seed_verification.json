@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "archive": "data/seed/public-sec-fy2023-2025.zip",
+  "archive_bytes": 1414357,
+  "archive_sha256": "fc2873d69b9bddaa6f6fb528cdb06015f606daead787b4b9b5070a489c117a08",
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "checks": {
+    "fresh_readme_install_preserves_exact_source_bytes": true,
+    "repeat_install_is_idempotent": true,
+    "installed_source_matches_declared_coverage": true,
+    "different_existing_snapshot_is_preserved": true,
+    "corrupt_archive_is_rejected": true,
+    "running_source_hash_and_mtime_unchanged": true,
+    "known_local_credentials_absent_from_decompressed_members": true,
+    "archive_contains_only_public_source_records_and_generic_metadata": true
+  },
+  "checks_passed": 8,
+  "checks_failed": 0,
+  "local_document_links_resolved": 41,
+  "scope": {
+    "companies": 12,
+    "company_years": 36,
+    "canonical_facts": 72,
+    "section_groups": 72,
+    "passages": 4073
+  },
+  "model_calls": 0,
+  "runtime_credentials_changed": false,
+  "running_services_changed": false,
+  "independent_source_review": "pending",
+  "clean_machine_docker_installation_verified": false
+}

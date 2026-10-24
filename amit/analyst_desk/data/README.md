@@ -11,6 +11,12 @@ The complete scope requires **36 company-years, 72 canonical financial facts and
 
 The current snapshot contains **72 financial inputs and 4,073 filing passages**. Its cached-source checks are recorded in [source_coverage_verification.json](../evidence/source_coverage_verification.json).
 
+## Included public source seed
+
+This branch includes the frozen normalized snapshot in [seed/public-sec-fy2023-2025.zip](seed/public-sec-fy2023-2025.zip). A teammate can clone or download `Amit/analyst_desk`, then follow [README section 4](../README.md#4-install-the-included-public-sec-snapshot) to verify and install it at `.runtime/journey/sources/corpus.json`. No separate source package or new SEC download is required for this build.
+
+The archive contains only `corpus.json` and an exact copy of [source_manifest.json](source_manifest.json). [seed/manifest.json](seed/manifest.json) records the archive and uncompressed file hashes; the [seed guide](seed/README.md) records scope and limitations. This committed normalized dataset is distinct from the original raw SEC response cache, which remains outside Git. Credentials, user preferences, lessons, research notes and runtime databases are not included.
+
 ## Retrieval artifacts for this snapshot
 
 [retrieval_config.json](retrieval_config.json) pins the public MiniLM embedding model, cross-encoder reranker, exact revisions and file checksums. It also fixes table handling, token-window policies, query decomposition and fusion limits. The [retrieval setup guide](../docs/HYBRID_RETRIEVAL.md) explains public model acquisition and offline preparation.
@@ -20,7 +26,7 @@ After importing the source snapshot and obtaining those public cached models, pr
 ```sh
 python ops/prepare_retrieval.py \
   --corpus .runtime/journey/sources/corpus.json \
-  --model-cache "$HOME/.cache/huggingface/hub" \
+  --model-cache .runtime/model-cache \
   --output .runtime/journey/retrieval
 ```
 
@@ -36,7 +42,7 @@ The [final runtime check](../evidence/retrieval_deployment_runtime.json) passed 
 
 ## Prepare the source snapshot
 
-For a teammate reproducing the current build, use the [public source handoff](../README.md#4-obtain-the-public-sec-data-package): copy the byte-identical prepared snapshot only after checking its tracked manifest hash. The importer below is for an **original consolidated input corpus**, not an already-normalized installed snapshot. It does not download SEC data.
+For a teammate reproducing the current build, install the [included public seed](../README.md#4-install-the-included-public-sec-snapshot). The importer below is for a deliberate source update from an **original consolidated input corpus**, not the already-normalized seed or installed snapshot. It does not download SEC data. Re-importing the seed changes origin metadata and breaks its current fingerprint.
 
 Supply a public SEC corpus with `metadata`, `companies`, `facts` and `passages`:
 
@@ -62,7 +68,7 @@ The snapshot is installed at `.runtime/journey/sources/corpus.json`; the shareab
 
 The importer rejects missing or duplicate financial cells, incompatible annual periods, nonfinite values, wrong company/sector identities, synthetic datasets and URLs that disagree with the issuer CIK or accession. Every company/year must have both cached section groups. All data is validated and staged before replacement; installation failure restores the prior snapshot.
 
-The manifest records scope/source hashes, canonical fact identities and section chunk counts. Raw filings, source-cache bodies and runtime databases remain outside Git. Automated structural checks do not establish correct original Item boundaries, complete table extraction or the economic interpretation of risks; those need source/domain review. A fresh clone needs a supplied source cache before Docker startup.
+The manifest records scope/source hashes, canonical fact identities and section chunk counts. Raw filings, original source-cache bodies and runtime databases remain outside Git; the normalized public seed is included. Automated structural checks do not establish correct original Item boundaries, complete table extraction or the economic interpretation of risks; those need source/domain review. A fresh clone installs the seed before Docker startup, then obtains the pinned public retrieval models.
 
 SEC provides submissions and XBRL JSON through its [official data APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces). Source collection should follow the [SEC access guidance](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data) and reuse cached responses.
 
