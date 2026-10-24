@@ -1,0 +1,17 @@
+.runtime/
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.log
+data/cache/
+data/raw/
+.DS_Store
