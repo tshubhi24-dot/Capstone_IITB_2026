@@ -1,10 +1,10 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T09:22:44.300618+00:00",
+  "updated_at": "2026-10-24T09:29:22.077825+00:00",
   "base_url": "http://127.0.0.1:18080",
-  "run_id": "67904e6d14b34fc5a8397fa344bf897b",
-  "status": "awaiting_plan",
-  "stage": "awaiting_plan",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "status": "error",
+  "stage": "error",
   "configuration": {
     "data_source": "sec_edgar",
     "transport": "http",
@@ -31,7 +31,7 @@
   },
   "pending_review": {
     "kind": "plan",
-    "payload_hash": "ea2c1d8415394925b573bb6744ec2259d51ff51661c6b706d22e79f7d63b3a25",
+    "payload_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
     "plan": {
       "tickers": [
         "MSFT",
@@ -43,17 +43,17 @@
         2025
       ],
       "outline": [
-        "Extract operating margin for Microsoft (MSFT) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
-        "Extract operating margin for Apple (AAPL) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
-        "Identify and compare disclosed risk factors affecting operating margins in each company's fiscal 2023-2025 filings",
-        "Note fiscal calendar differences (MSFT: July-June; AAPL: October-September) and partial-year data limitations",
-        "State uncertainty in forward-looking 2025 data and comparability constraints"
+        "Compare MSFT and AAPL operating margins for FY2023–FY2025 using reported annual revenue and operating income facts",
+        "Identify fiscal-calendar differences (MSFT: Jun-year end; AAPL: Sep-year end) and their impact on comparability",
+        "Summarize source-backed risk factor changes from 10-K Item 1A for each issuer/year",
+        "Note partial evidence limits: risk sections unverified, original boundaries unknown"
       ],
       "caveats": [
-        "Fiscal years for MSFT and AAPL do not align (MSFT ends June 30; AAPL ends last Saturday of September)",
-        "2025 data may be partial or estimated; rely only on filed 10-K/10-Q disclosures",
-        "Operating margin definitions may vary (e.g., inclusion/exclusion of certain costs); verify calculation basis in filings",
-        "Risk factor disclosures are qualitative; changes may not directly correlate with margin movements",
+        "Reported annual financial inputs are available in the cached source for every requested issuer and fiscal year. Use their actual annual periods; do not estimate partial years or substitute quarterly filings. Risk excerpts remain partial and original section boundaries are unverified.",
+        "Fiscal periods differ: MSFT FY ends Jun 30; AAPL FY ends Sep 27–30",
+        "Risk factor evidence is partial; original section boundaries unverified",
+        "Operating margin derived from vetted SEC facts only; no estimates or forecasts",
+        "Comparability limited by differing fiscal calendars and potential accounting policy differences",
         "Model-assisted reasoning needs human source review.",
         "Fiscal calendars differ; selected excerpts do not establish complete original filing coverage."
       ]
@@ -69,13 +69,21 @@
     "semantic_review": null
   },
   "usage": {
-    "tokens": 528,
-    "tool_calls": 0,
-    "model_calls": 1,
-    "cost_usd": 0.0006448
+    "tokens": 6892,
+    "tool_calls": 13,
+    "model_calls": 4,
+    "cost_usd": 0.0040784
   },
   "note_id": null,
-  "decision_requests": [],
+  "decision_requests": [
+    {
+      "time": "2026-10-24T09:29:12.828761+00:00",
+      "kind": "plan",
+      "action": "approve",
+      "payload_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true
+    }
+  ],
   "limitations": [
     "This is an ordinary learning run, not a protected final benchmark.",
     "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
