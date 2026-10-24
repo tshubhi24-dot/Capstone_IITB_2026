@@ -181,7 +181,7 @@ def test_profile_switch_refuses_symlink_archive_without_changing_active_policy(p
     assert prep.load_config() == original["config"] and list(outside.iterdir()) == []
 
 
-@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1", "live-step10-google-critic-v1"])
+@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1", "live-step10-google-critic-v1", "live-step16-fallbacks-v1"])
 def test_prepared_configuration_accepts_only_exact_reviewed_profile_prices(version):
     profile = model_profile(version)
     config = {**deepcopy(prep.DEFAULTS), "authorization_id": "b" * 32,
@@ -242,6 +242,43 @@ def test_large2407_preparation_refuses_context_above_reviewed_bounds(limits):
               "version": profile["version"], "models": profile["models"], **limits}
     with pytest.raises(ValueError, match="reviewed profile limit"):
         prep.validate_config(config)
+
+
+def test_fallback_switch_preserves_existing_authority_and_requires_new_exact_decision(private):
+    prepared = prep.prepare(private)
+    prep.authorize(prepared["proposal_hash"], "Synthetic original authorization")
+    previous = prep.load_config()
+    approval = prep.APPROVAL_FILE.read_bytes()
+    key = prep.KEY_FILE.read_bytes()
+    ledger = prep.PRIVATE / "ledger-sentinel"
+    ledger.write_bytes(b"existing charges and uncertain reservations")
+    with pytest.raises(ValueError, match="stale"):
+        prep.switch_profile("fallbacks", "0" * 64)
+    assert prep.load_config() == previous
+
+    result = prep.switch_profile("fallbacks", prepared["proposal_hash"])
+    current = prep.load_config()
+    profile = model_profile("live-step16-fallbacks-v1")
+    assert current["models"] == profile["models"]
+    assert current["models"]["producer"]["id"] == "openai/gpt-4.1-mini"
+    assert current["models"]["critic"]["id"] == "google/gemini-2.5-flash"
+    assert current["authorization_id"] != previous["authorization_id"]
+    assert not current["enabled"] and not prep.APPROVAL_FILE.exists()
+    for name in ("cap_usd", "per_run_usd", "max_calls_per_run", "max_tokens_per_run", "max_output_tokens"):
+        assert current[name] == previous[name]
+    for name in ("prompt_token_ceiling", "max_message_bytes"):
+        assert current[name] <= previous[name]
+    assert prep.KEY_FILE.read_bytes() == key
+    assert ledger.read_bytes() == b"existing charges and uncertain reservations"
+    assert result["ledger_changed"] is False and result["paid_calls_performed"] == 0
+    archive = next((prep.PRIVATE / "policy_history").iterdir())
+    assert json.loads((archive / "model_config.json").read_text()) == previous
+    assert (archive / "authorization.json").read_bytes() == approval
+    with pytest.raises(ValueError, match="stale"):
+        prep.authorize(prepared["proposal_hash"], "An old decision cannot activate fallbacks")
+    assert not prep.load_config()["enabled"]
+    prep.authorize(result["proposal_hash"], "Synthetic exact fallback authorization")
+    assert prep.load_config()["enabled"]
 
 
 def test_live_bootstrap_upgrades_stably_without_giving_model_token_to_tools(tmp_path, capsys):

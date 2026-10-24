@@ -18,7 +18,7 @@ import time
 import httpx
 from jsonschema import Draft202012Validator
 
-from desk.model_profiles import MODEL_PROFILES, model_profile
+from desk.model_profiles import MODEL_PROFILES, model_profile, model_route
 
 PROVIDER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GATEWAY_URL = "http://model-gateway:8020"
@@ -27,7 +27,7 @@ MODEL_RATES = {policy["id"]: (Decimal(policy["prompt_usd_per_token"]), Decimal(p
                for profile in MODEL_PROFILES.values() for policy in profile["models"].values()}
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
 OUTPUT_AUDIT_STAGES = frozenset({"passed", "finish_reason", "content_shape", "json_parse", "schema_validation",
-                                "credential_echo", "returned_model", "token_ceiling"})
+                                "credential_echo", "returned_model", "token_ceiling", "price_ceiling"})
 OUTPUT_FINISH_REASONS = frozenset({"stop", "length", "tool_calls", "content_filter", "error"})
 OUTPUT_SCHEMA_KEYWORDS = frozenset({"type", "required", "additionalProperties", "properties", "items", "prefixItems", "$ref",
                                     "minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum", "enum", "const",
@@ -324,7 +324,7 @@ class BudgetLedger:
     def totals(rows):
         charge = sum((decimal(row["charged_usd"]) for row in rows if row["charged_usd"] is not None), Decimal(0))
         held = sum((decimal(row["reserved_usd"]) for row in rows if row["charged_usd"] is None), Decimal(0))
-        tokens = sum(json.loads(row["usage"])["total_tokens"] if row["usage"] else row["reserved_tokens"] for row in rows)
+        tokens = sum(json.loads(row["usage"])["total_tokens"] if row["usage"] and row["status"] != "uncertain" else row["reserved_tokens"] for row in rows)
         return charge, held, tokens
 
     @staticmethod
@@ -459,9 +459,17 @@ class BudgetLedger:
                        (call_id, config["authorization_id"], run_id, request_hash, "reserved", str(usd), tokens, time.time()))
         return None
 
-    def uncertain(self, call_id, code):
+    def uncertain(self, call_id, code, *, usage=None, output_audit=None, block=False):
         with self.connection() as db:
-            db.execute("UPDATE model_calls SET status='uncertain',error_code=? WHERE call_id=? AND status='reserved'", (safe_error_code(code), call_id))
+            changed = db.execute("UPDATE model_calls SET status='uncertain',error_code=?,usage=COALESCE(?,usage) WHERE call_id=? AND status='reserved'",
+                                 (safe_error_code(code), json.dumps(usage) if usage is not None else None, call_id)).rowcount
+            if changed and output_audit is not None:
+                db.execute("INSERT INTO model_output_audit VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                           (call_id, output_audit["generation_id"], output_audit["finish_reason"], output_audit["content_type"],
+                            output_audit["content_bytes"], output_audit["content_sha256"], output_audit["validation_stage"],
+                            json.dumps(output_audit["schema_path"]), output_audit["schema_keyword"], None, time.time()))
+            if changed and block:
+                db.execute("UPDATE authorization SET blocked=1 WHERE id=(SELECT authorization_id FROM model_calls WHERE call_id=?)", (call_id,))
 
     def settle(self, call_id, usage, result, error_code=None, *, output_audit=None):
         with self.connection() as db:
@@ -564,6 +572,8 @@ class ReasoningGateway:
         result["model_profile"] = self.profile["version"]
         result["provider"] = self.profile["provider"]
         result["providers"] = self.profile.get("providers", {role: self.profile["provider"] for role in ("producer", "critic")})
+        if "routes" in self.profile:
+            result["model_routes"] = {role: model_route(self.profile["version"], role) for role in ("producer", "critic")}
         result["policy_hash"] = self.ledger.policy_hash
         for key in ("prompt_token_ceiling", "max_message_bytes", "max_output_tokens", "max_calls_per_run", "max_tokens_per_run"):
             result[key] = self.config[key]
@@ -599,8 +609,14 @@ class ReasoningGateway:
             validator = Draft202012Validator(response_schema)
         except Exception as exc:
             raise ProviderError("invalid_request", "A valid local JSON response schema is required.") from exc
-        policy = config["models"]["critic" if role == "critic" else "producer"]
-        estimate = decimal(policy["prompt_usd_per_token"]) * config["prompt_token_ceiling"] + decimal(policy["completion_usd_per_token"]) * max_output_tokens
+        model_role = "critic" if role == "critic" else "producer"
+        policy = config["models"][model_role]
+        route = model_route(self.profile["version"], model_role)
+        bounded_routing = "routes" in self.profile
+        # Legacy configurations may use a lower approved price. A fallback
+        # profile reserves the maximum reviewed rate across its entire route.
+        price = route if bounded_routing else policy
+        estimate = decimal(price["prompt_usd_per_token"]) * config["prompt_token_ceiling"] + decimal(price["completion_usd_per_token"]) * max_output_tokens
         request = {"run_id": run_id, "call_id": call_id, "role": role, **bounded, "max_output_tokens": max_output_tokens,
                    "model": policy["id"], "config_version": config["version"]}
         request_hash = hashlib.sha256(encoded(request)).hexdigest()
@@ -609,11 +625,17 @@ class ReasoningGateway:
             return {**cached, "cached": True}
         payload = {"model": policy["id"], "messages": messages, "max_tokens": max_output_tokens, "temperature": 0,
                    "response_format": {"type": "json_schema", "json_schema": {"name": "analyst_response", "strict": True, "schema": response_schema}},
-                   "provider": {"only": [self.profile.get("providers", {}).get("critic" if role == "critic" else "producer", self.profile["provider"])], "allow_fallbacks": False, "require_parameters": True, "data_collection": "deny",
-                                "max_price": {"prompt": float(decimal(policy["prompt_usd_per_token"]) * 1000000), "completion": float(decimal(policy["completion_usd_per_token"]) * 1000000)}}}
+                   "provider": {"only": route["providers"], "allow_fallbacks": route["allow_fallbacks"], "require_parameters": True, "data_collection": "deny",
+                                "max_price": {"prompt": float(decimal(price["prompt_usd_per_token"]) * 1000000), "completion": float(decimal(price["completion_usd_per_token"]) * 1000000)}}}
+        if route["allow_fallbacks"]:
+            # OpenRouter tries this fixed list inside one HTTP request. The
+            # application never loops, switches keys or retries a paid call.
+            payload.pop("model")
+            payload["models"] = route["models"]
         if role == "critic" and "critic_reasoning" in self.profile:
             payload["reasoning"] = self.profile["critic_reasoning"]
         network_error = None
+        uncertain_usage, uncertain_audit, block_accounting = None, None, False
         try:
             with httpx.Client(transport=self.transport, timeout=120, trust_env=False, follow_redirects=False) as client:
                 with client.stream("POST", PROVIDER_URL, headers={"Authorization": "Bearer " + self.api_key}, json=payload) as response:
@@ -657,9 +679,26 @@ class ReasoningGateway:
             usage = {"model_calls": 1, **{key: raw_usage[key] for key in ("prompt_tokens", "completion_tokens", "total_tokens")},
                      "cost_usd": str(cost), "model": policy["id"], "requested_model": policy["id"],
                      "returned_model": safe_model, "call_id": call_id}
+            if bounded_routing:
+                uncertain_usage = usage
+                stage = None
+                token_breach = (raw_usage["prompt_tokens"] > config["prompt_token_ceiling"]
+                                or raw_usage["completion_tokens"] > max_output_tokens)
+                price_breach = cost > (decimal(price["prompt_usd_per_token"]) * raw_usage["prompt_tokens"]
+                                       + decimal(price["completion_usd_per_token"]) * raw_usage["completion_tokens"])
+                block_accounting = token_breach or price_breach
+                if not isinstance(returned_model, str) or returned_model not in route["models"]:
+                    stage = "returned_model"
+                elif token_breach:
+                    stage = "token_ceiling"
+                elif price_breach:
+                    stage = "price_ceiling"
+                if stage:
+                    uncertain_audit = {**private_output_audit(data, self.api_key), "validation_stage": stage, "candidate": None}
+                    raise ProviderError("provider_response_invalid", "The returned route or accounting did not match its reviewed bounds.")
         except Exception as exc:
             network_error = diagnostic_code(exc)
-            self.ledger.uncertain(call_id, network_error)
+            self.ledger.uncertain(call_id, network_error, usage=uncertain_usage, output_audit=uncertain_audit, block=block_accounting)
         # Raise outside the exception handler: a transport/JSON exception can
         # retain private headers or response text in its context or cause.
         if network_error is not None:
@@ -668,8 +707,8 @@ class ReasoningGateway:
         audit = private_output_audit(data, self.api_key)
         validation_stage = "returned_model"
         try:
-            if returned_model != policy["id"]:
-                raise ValueError("The returned model is not the exact approved model")
+            if returned_model not in route["models"]:
+                raise ValueError("The returned model is not an exact approved role model")
             validation_stage = "token_ceiling"
             if raw_usage["prompt_tokens"] > config["prompt_token_ceiling"]:
                 raise ValueError("The provider prompt exceeded its token ceiling")
