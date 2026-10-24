@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile": "live-step16-fallbacks-v1",
-  "stage": "implementation_tested_activation_pending",
+  "stage": "active_profile_verified_before_live_plan",
   "routes": {
     "producer": {
       "models": [
@@ -58,8 +58,42 @@
     "original_total_and_per_run_caps_preserved": true
   },
   "limitations": [
-    "Mocked success does not establish live provider access or availability.",
-    "The replacement configuration is prepared inactive; runtime activation and a live research response remain separate checks.",
+    "Activation proves the configured routes and preserved controls, not live provider availability.",
+    "Primary/backup success is covered by simulated provider tests; a completed live response is a separate check.",
     "Earlier stopped research and its uncertain reservation are retained; fallback does not resume it."
-  ]
+  ],
+  "activation_checks": {
+    "runs_preserved": true,
+    "notes_preserved": true,
+    "preferences_preserved": true,
+    "note_policy_preserved": true,
+    "lessons_preserved": true,
+    "budget_cap_usd_preserved": true,
+    "budget_per_run_usd_preserved": true,
+    "budget_reported_spend_usd_preserved": true,
+    "budget_held_usd_preserved": true,
+    "budget_committed_usd_preserved": true,
+    "budget_authorization_committed_usd_preserved": true,
+    "budget_remaining_authorization_usd_preserved": true,
+    "budget_model_calls_preserved": true,
+    "budget_tokens_preserved": true,
+    "budget_uncertain_calls_preserved": true,
+    "new_profile_enabled": true,
+    "fixed_routes_match": true,
+    "app_routes_match_gateway": true,
+    "live_available": true,
+    "source_preserved": true,
+    "retrieval_ready": true,
+    "no_active_operation": true,
+    "exact_authorized_config": true,
+    "original_calls_and_tokens_caps": true,
+    "original_dollar_caps": true
+  },
+  "activation_outcome": {
+    "active": true,
+    "app_gateway_and_ingress_reloaded": true,
+    "earlier_research_and_memory_preserved": true,
+    "all_prior_budget_totals_preserved": true,
+    "new_model_calls_during_activation": 0
+  }
 }
