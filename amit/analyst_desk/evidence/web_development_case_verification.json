@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_form_prepared",
+  "stage": "web_plan_review_and_connection_failure_observed",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -25,15 +25,61 @@
       "private_memory_disabled": true,
       "frozen_playbook_disabled": true,
       "development_publication_block_visible": true
+    },
+    "web_plan_and_preservation": {
+      "registered_admissions_valid": true,
+      "both_requests_match_public_case": true,
+      "plan_hashes_match_payloads": true,
+      "memory_and_lessons_off": true,
+      "no_planted_errors_or_injection": true,
+      "one_plan_still_unapproved": true,
+      "one_genuine_web_plan_approval_observed": true,
+      "one_stopped_upstream_connect_failure": true,
+      "no_critic_or_edit_origin": true,
+      "failed_run_not_published": true,
+      "old_runs_preserved": true,
+      "approved_library_unchanged": true,
+      "analyst_preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "lesson_bank_unchanged": true,
+      "original_spending_caps_preserved": true
     }
   },
   "outcome": {
-    "research_run_created": false,
-    "human_plan_decision_observed": false,
+    "research_run_created": true,
+    "human_plan_decision_observed": true,
     "research_completed": false,
     "eligible_lesson_origins_observed": 0,
     "lesson_proposals_created": 0,
     "human_lesson_decisions_recorded": 0,
-    "development_notes_published": 0
-  }
+    "development_notes_published": 0,
+    "attempt_count": 2,
+    "completed_model_responses": 2,
+    "recorded_model_call_attempts": 3,
+    "operational_failures": 1
+  },
+  "attempts": [
+    {
+      "status": "error",
+      "plan_payload_hash": "c89b2f1a6a0f1bd698e004dd94fa8172331555cb003e2e7abbd0da97abe8e1bc",
+      "admission_hash": "3c2854374a06516bc69f3e232546cce7feb85594fe3149e13f73c41e3fef7771",
+      "human_plan_approval_observed": true,
+      "recorded_model_call_attempts": 2,
+      "completed_model_responses": 1,
+      "failure_code": "provider_connect_error",
+      "eligible_lesson_origins": 0,
+      "publication": false
+    },
+    {
+      "status": "awaiting_plan",
+      "plan_payload_hash": "8751de581ddd49ba62c2908618089da351011349a01c617154ad619c169adc85",
+      "admission_hash": "3c2854374a06516bc69f3e232546cce7feb85594fe3149e13f73c41e3fef7771",
+      "human_plan_approval_observed": false,
+      "recorded_model_call_attempts": 1,
+      "completed_model_responses": 1,
+      "failure_code": null,
+      "eligible_lesson_origins": 0,
+      "publication": false
+    }
+  ]
 }

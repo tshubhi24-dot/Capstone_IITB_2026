@@ -21,6 +21,14 @@ Use **KDEV018**, the next registered risk-comparison case after KDEV017: Apple, 
 
 The interface intentionally blocks development publication; its production approval button is not a way to acknowledge a clean rehearsal. A clean development note may remain at the review pause without being falsely rejected or published.
 
+## Observed web rehearsal
+
+The first KDEV018 planner was started through **Create a plan** and paused for exact-plan review. A further web attempt received exact-plan approval, then stopped during the researcher call with `provider_connect_error`. That code identifies a gateway-to-provider connection failure; it does not establish its DNS, TCP or TLS cause, nor is it a critic rejection.
+
+Sixteen admission, version and preservation checks pass. The two attempts have two completed planner responses and one failed call with retained reservation. Neither has produced a draft, critic rejection, analyst edit, lesson proposal or publication. All earlier runs, the approved library, preferences and lesson bank are preserved. The earlier awaiting plan still needs its own exact approval; approval of the failed attempt does not transfer to it.
+
+Web inspection also exposed a polling race: an older in-flight refresh can replace the selected run, and a previous run's error can remain visible after switching. This display issue needs correction before continuing the analyst walkthrough. Preserve both attempts and their accounting rather than deleting the failure or automatically retrying it.
+
 ## What the brief requires
 
 Printed p.15 starts the Analyst Desk walkthrough with a request in the research UI and an editable plan. Printed p.16 requires exact-note approval before publication and a demo of linked financial facts, critic correction/security and memory. The common deployment requirements on p.3 include FastAPI streaming, Docker Compose and monitoring.
