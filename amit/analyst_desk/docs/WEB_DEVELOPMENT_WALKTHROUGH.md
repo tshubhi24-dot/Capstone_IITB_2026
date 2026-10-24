@@ -85,6 +85,14 @@ The human approved the new exact plan in the web app. The researcher then retrie
 
 The observed result establishes scoped guidance delivery to a completed live planner. It does not prove semantic adherence, completion of the remaining workflow or independent improvement on held-out questions. The [playbook-use receipt](../evidence/frozen_playbook_use_verification.json) records the request-level checks and retained failure; earlier freeze readiness and originating-case results remain distinct historical checkpoints.
 
+## Verify the new primary route before continuing Apple research
+
+After the bounded fallback profile is activated, a fresh KDEV018 plan is created in the web app with the same registered Apple fiscal 2024–2025 question, private memory off and the frozen playbook explicitly selected. GPT-4.1 Mini completes the planner request directly: **one call, 938 reported tokens and US$0.0006152**. This verifies live primary access; Mistral is available as a configured backup but is not used in this call.
+
+All **25 activation checks**, **20 live-plan preservation checks** and **21 completed-planner guidance checks** pass. Earlier research, the accepted frozen lesson, approved library, memory and all prior uncertain holds remain intact. Actual fixed guidance delivery is verified through the completed request identity; semantic adherence and independent improvement are not established.
+
+Before execution, an operator narrows the outline from extracting all risk disclosures to comparing available quoted excerpts. The edit retains the exact question, company/years, source and model usage, adds no paid call, and pauses for review of the new exact plan. The plan must be approved in the web app before research proceeds. This checkpoint produces no draft, critic verdict, lesson proposal or publication. The [fallback verification receipt](../evidence/model_fallback_verification.json) records this new attempt separately from the earlier stopped-run receipt.
+
 ## Files and responsibilities
 
 | Files | Purpose |

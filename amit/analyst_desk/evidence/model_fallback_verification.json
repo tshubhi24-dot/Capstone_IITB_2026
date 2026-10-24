@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile": "live-step16-fallbacks-v1",
-  "stage": "active_profile_verified_before_live_plan",
+  "stage": "live_primary_planner_verified_research_plan_review_pending",
   "routes": {
     "producer": {
       "models": [
@@ -58,8 +58,9 @@
     "original_total_and_per_run_caps_preserved": true
   },
   "limitations": [
-    "Activation proves the configured routes and preserved controls, not live provider availability.",
-    "Primary/backup success is covered by simulated provider tests; a completed live response is a separate check.",
+    "A completed live primary response verifies GPT-4.1 Mini access for this request; live backup failover is not exercised.",
+    "Fixed guidance delivery is verified by persisted request identity, not semantic adherence or independently measured quality.",
+    "The revised excerpt-bounded plan awaits its separate exact-version review; risk, writer and critic have not run.",
     "Earlier stopped research and its uncertain reservation are retained; fallback does not resume it."
   ],
   "activation_checks": {
@@ -95,5 +96,77 @@
     "earlier_research_and_memory_preserved": true,
     "all_prior_budget_totals_preserved": true,
     "new_model_calls_during_activation": 0
+  },
+  "live_plan_checks": {
+    "one_new_registered_run": true,
+    "earlier_run_summaries_preserved": true,
+    "new_plan_awaits_exact_review": true,
+    "one_completed_primary_response": true,
+    "one_new_gateway_call": true,
+    "reported_spend_matches_planner": true,
+    "observed_tokens_match_planner": true,
+    "old_failed_holds_retained": true,
+    "no_tool_or_further_stage": true,
+    "no_plan_approval_yet": true,
+    "one_scope_wording_edit": true,
+    "edit_retains_question_company_years_and_source": true,
+    "edit_retains_model_usage": true,
+    "memory_off_and_frozen_lesson_selected": true,
+    "caps_and_configuration_preserved": true,
+    "source_and_retrieval_preserved": true,
+    "notes_preserved": true,
+    "preferences_preserved": true,
+    "note_policy_preserved": true,
+    "lessons_preserved": true
+  },
+  "completed_planner_guidance_checks": {
+    "registered_development_case": true,
+    "exact_case_scope": true,
+    "live_planner_request": true,
+    "ordinary_analyst_memory_disabled": true,
+    "explicit_frozen_playbook_selected": true,
+    "plan_binds_exact_lesson_snapshot": true,
+    "playbook_exists_in_pre_action_inspection": true,
+    "frozen_playbook_hash_valid": true,
+    "playbook_precedes_new_research": true,
+    "snapshot_binds_preexisting_frozen_version": true,
+    "expected_scoped_accepted_version_selected": true,
+    "fixed_planner_guidance_present": true,
+    "critic_guidance_excluded_by_code": true,
+    "pure_planner_capture_only": true,
+    "context_contains_only_public_question_scope_and_source_metadata": true,
+    "one_code_owned_advisory_block": true,
+    "advisory_block_shape_matches_current_code": true,
+    "request_hash_recipe_matches_current_code": true,
+    "hinted_request_matches_persisted_planner_result": true,
+    "hinted_request_matches_recorded_planner_response": true,
+    "removing_guidance_changes_recorded_request_identity": true
+  },
+  "live_plan_outcome": {
+    "case_id": "KDEV018",
+    "scope": {
+      "tickers": [
+        "AAPL"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    },
+    "requested_model": "openai/gpt-4.1-mini",
+    "returned_model": "openai/gpt-4.1-mini",
+    "completed_model_calls": 1,
+    "reported_tokens": 938,
+    "reported_cost_usd": "0.0006152",
+    "live_backup_used": false,
+    "frozen_playbook_guidance_delivery_verified": true,
+    "private_memory_enabled": false,
+    "scope_wording_edited_before_approval": true,
+    "additional_model_calls_for_edit_or_verification": 0,
+    "plan_hash": "55109d5152f55f36092910d7092cdf90b120720442ec5f216890240c6b79341f",
+    "plan_approved_at_checkpoint": false,
+    "research_completed": false,
+    "new_lesson_proposals": 0,
+    "note_publications": 0
   }
 }
