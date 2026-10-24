@@ -1,0 +1,315 @@
+{
+  "authenticated_tool_calls": 132,
+  "cells": [
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "29.82",
+      "period_end": "2023-09-30",
+      "period_start": "2022-09-25",
+      "ticker": "AAPL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "31.51",
+      "period_end": "2024-09-28",
+      "period_start": "2023-10-01",
+      "ticker": "AAPL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "31.97",
+      "period_end": "2025-09-27",
+      "period_start": "2024-09-29",
+      "ticker": "AAPL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "23.49",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "ABBV",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "16.22",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "ABBV",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "24.65",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "ABBV",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "16.15",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "ABT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "16.27",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "ABT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "18.17",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "ABT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "34.26",
+      "period_end": "2023-12-01",
+      "period_start": "2022-12-03",
+      "ticker": "ADBE",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "31.35",
+      "period_end": "2024-11-29",
+      "period_start": "2023-12-02",
+      "ticker": "ADBE",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "36.63",
+      "period_end": "2025-11-28",
+      "period_start": "2024-11-30",
+      "ticker": "ADBE",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "28.01",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "AMGN",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "21.71",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "AMGN",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "24.71",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "AMGN",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "3.29",
+      "period_end": "2023-01-31",
+      "period_start": "2022-02-01",
+      "ticker": "CRM",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "14.38",
+      "period_end": "2024-01-31",
+      "period_start": "2023-02-01",
+      "ticker": "CRM",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "19.01",
+      "period_end": "2025-01-31",
+      "period_start": "2024-02-01",
+      "ticker": "CRM",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "28.05",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "GILD",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "5.78",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "GILD",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "34.04",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "GILD",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "27.42",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "GOOGL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "32.11",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "GOOGL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "32.03",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "GOOGL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "41.77",
+      "period_end": "2023-06-30",
+      "period_start": "2022-07-01",
+      "ticker": "MSFT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "44.64",
+      "period_end": "2024-06-30",
+      "period_start": "2023-07-01",
+      "ticker": "MSFT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "45.62",
+      "period_end": "2025-06-30",
+      "period_start": "2024-07-01",
+      "ticker": "MSFT",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "26.21",
+      "period_end": "2023-05-31",
+      "period_start": "2022-06-01",
+      "ticker": "ORCL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "28.99",
+      "period_end": "2024-05-31",
+      "period_start": "2023-06-01",
+      "ticker": "ORCL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "30.80",
+      "period_end": "2025-05-31",
+      "period_start": "2024-06-01",
+      "ticker": "ORCL",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "16.00",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "TMO",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "17.11",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "TMO",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "17.38",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "TMO",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2023,
+      "margin_pct": "8.71",
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "ticker": "UNH",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2024,
+      "margin_pct": "8.07",
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "ticker": "UNH",
+      "verified": true
+    },
+    {
+      "fiscal_year": 2025,
+      "margin_pct": "4.24",
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "ticker": "UNH",
+      "verified": true
+    }
+  ],
+  "company_count": 12,
+  "company_year_count": 36,
+  "human_decisions_submitted": 0,
+  "limitations": [
+    "Operational coverage check, not an independent research benchmark.",
+    "Source identity and arithmetic checks do not establish original Item boundaries or economic risk interpretation."
+  ],
+  "model_calls": 0,
+  "notes_published": 0,
+  "research_runs_created": 0,
+  "search_scopes_checked": 12,
+  "section_chunks_checked": 4073,
+  "section_groups_checked": 72,
+  "sector_counts": {
+    "Healthcare": 6,
+    "Technology": 6
+  },
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "status": "passed",
+  "verification_kind": "operator_deployed_catalogue_tools",
+  "verified_calculation_rows": 36,
+  "verified_financial_values": 108
+}

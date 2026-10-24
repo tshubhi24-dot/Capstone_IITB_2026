@@ -5,6 +5,7 @@
 !desk/**
 !ops/
 !ops/bootstrap.py
+!ops/verify_catalogue_tools.py
 !web/
 !web/**
 **/__pycache__

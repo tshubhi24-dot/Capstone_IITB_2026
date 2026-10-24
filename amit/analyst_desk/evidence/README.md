@@ -16,3 +16,11 @@ The live increment has separate records: [implementation tests](live_implementat
 The completed live journey is recorded in [live_two_company_journey.json](live_two_company_journey.json), [live_critic_review.json](live_critic_review.json) and [live_publication_verification.json](live_publication_verification.json). Seven narrative claims passed model review, 18/18 financial values passed code checks, and the separately approved exact note was saved. Library and spending records survived restart. These results are a learning pilot rather than an independent benchmark.
 
 These checks do not establish semantic risk interpretation, original Item-boundary validation, full capstone targets, an independent held-out score, active attack containment or an exercised alert. See the [runbook and limitations](../docs/TWO_COMPANY_JOURNEY.md).
+
+## Twelve-company coverage expansion
+
+- [source_coverage_verification.json](source_coverage_verification.json): 72 exact cached XBRL memberships, 36 annual filing identities and 61 response-body hashes for twelve companies across two sectors.
+- [catalogue_tools_verification.json](catalogue_tools_verification.json): actual authenticated search, section retrieval and isolated calculations across the complete deployed catalogue.
+- [coverage_expansion_runtime.json](coverage_expansion_runtime.json): loaded scope/fingerprint, preserved notes and unchanged spending records; no new model calls or approvals.
+
+These are source and operational checks. They do not replace independent task evaluation, original-section validation or human risk labels.

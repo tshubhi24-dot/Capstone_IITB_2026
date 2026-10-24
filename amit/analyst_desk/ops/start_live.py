@@ -109,6 +109,10 @@ def start_stack(command, env, token):
             # Private settings are loaded at startup and atomically replaced on
             # approval. Recreate just this service to remount the reviewed file.
             options.append("--force-recreate")
+        if service == "ingress":
+            # Refresh Nginx's startup-resolved upstream addresses after the
+            # rebuilt app and dashboard are running.
+            options.append("--force-recreate")
         base.capture(command + options + [service], env, token, timeout=150)
     running = set(base.capture(command + ["ps", "--status", "running", "--services"], env, token).splitlines())
     if not set(LIVE_ORDER).issubset(running):

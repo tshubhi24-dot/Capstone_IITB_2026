@@ -24,7 +24,7 @@ The **primary user** requests research, edits the plan, inspects evidence, and a
 | Limits | State missing evidence explicitly; invent no figures or material risk changes. No buy/sell recommendations, promised returns, trading, price forecasts, portfolio allocation or real-time news analysis. |
 | Delivery | Local interface and research portal packaged with Docker Compose and persistent volumes. New-company imports are outside the frozen baseline; cloud hosting is outside initial scope. |
 
-The working company selection comes from prior cached SEC source preparation. Its raw corpus and ingestion manifest are not included here. The new data import must verify coverage and record provenance again; no missing financial figure may be estimated to make a company eligible.
+The twelve-company cached SEC snapshot is imported with a complete 36-company-year inventory. Automated checks match all 72 financial inputs to cached XBRL records and all 36 annual filing identities to cached submissions. See the [source inventory](../data/source_manifest.json) and [verification receipt](../evidence/source_coverage_verification.json). Raw cache bodies remain local. Original Item boundaries, table extraction and financial comparability still require independent domain review.
 
 ## Human control and memory
 

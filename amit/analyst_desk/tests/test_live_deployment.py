@@ -335,11 +335,40 @@ def test_live_start_is_serial_waits_for_initializer_and_reloads_gateway(monkeypa
     starts = [command for command, timeout in calls if "up" in command]
     assert [command[-1] for command in starts] == ["init-secrets", *live.LIVE_ORDER]
     assert all("--no-deps" in command and "--no-build" in command for command in starts)
-    assert sum("--force-recreate" in command for command in starts) == 1
-    assert "--force-recreate" in next(command for command in starts if command[-1] == "model-gateway")
+    assert [command[-1] for command in starts if "--force-recreate" in command] == ["model-gateway", "ingress"]
     assert live.LIVE_ORDER.index("model-gateway") < live.LIVE_ORDER.index("app")
+    assert live.LIVE_ORDER.index("app") < live.LIVE_ORDER.index("ingress")
+    assert live.LIVE_ORDER.index("grafana") < live.LIVE_ORDER.index("ingress")
     assert next(i for i, (command, _) in enumerate(calls) if "wait" in command) < next(i for i, (command, _) in enumerate(calls) if command[-1] == "pandas-worker")
     assert ready == [True]
+
+
+def test_live_rebuild_refreshes_existing_ingress_before_readiness(monkeypatch):
+    addresses = {"app": "previous-app-address", "ingress_upstream": "previous-app-address"}
+    ingress_starts = []
+
+    def capture(command, env, token, timeout=30):
+        if command[-4:] == ["ps", "--all", "--quiet", "init-secrets"]:
+            return "b" * 64
+        if "inspect" in command:
+            return "exited 0"
+        if command[-4:] == ["ps", "--status", "running", "--services"]:
+            return "\n".join(live.LIVE_ORDER)
+        if "up" in command and command[-1] == "app":
+            addresses["app"] = "rebuilt-app-address"
+        if "up" in command and command[-1] == "ingress":
+            ingress_starts.append(command)
+            if "--force-recreate" in command:
+                addresses["ingress_upstream"] = addresses["app"]
+        return ""
+
+    def ready():
+        assert addresses["ingress_upstream"] == addresses["app"] == "rebuilt-app-address"
+
+    monkeypatch.setattr(base, "capture", capture)
+    monkeypatch.setattr(base, "local_readiness", ready)
+    live.start_stack(["docker", "compose"], {}, "fictional-local-token")
+    assert len(ingress_starts) == 1
 
 
 def test_failed_initializer_stops_before_gateway_and_other_services(monkeypatch):

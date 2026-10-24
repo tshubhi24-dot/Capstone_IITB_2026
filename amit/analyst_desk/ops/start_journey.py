@@ -112,7 +112,12 @@ def start_stack(command, env, token):
         raise RuntimeError("Private credential initialization did not complete successfully.")
     for service in START_ORDER:
         print(f"Starting {service}.", flush=True)
-        capture(command + ["up", "--no-deps", "--no-build", "--detach", "--wait", "--wait-timeout", "120", service], env, token, timeout=150)
+        options = ["up", "--no-deps", "--no-build", "--detach", "--wait", "--wait-timeout", "120"]
+        if service == "ingress":
+            # Nginx resolves upstream addresses at startup. Refresh it after
+            # rebuilt services have started so it does not retain an old IP.
+            options.append("--force-recreate")
+        capture(command + options + [service], env, token, timeout=150)
     running = set(capture(command + ["ps", "--status", "running", "--services"], env, token).splitlines())
     if not set(START_ORDER).issubset(running):
         raise RuntimeError("One or more journey services stopped during startup.")

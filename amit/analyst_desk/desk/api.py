@@ -230,7 +230,8 @@ def decision(run_id: str, value: Decision, background: BackgroundTasks):
             if value.kind == "plan":
                 if set(value.edits) - {"tickers", "years", "outline"}:
                     raise ReviewError("Unsupported plan edit fields.")
-                validate_scope({**(current.get("pending") or {}).get("payload", {}), **value.edits}, app.state.source)
+                validate_scope({**(current.get("pending") or {}).get("payload", {}), **value.edits,
+                                "mode": current["request"].get("mode", "offline")}, app.state.source)
             elif set(value.edits) != {"body"} or not isinstance(value.edits["body"], str) or len(value.edits["body"]) > 100000:
                 raise ReviewError("A note edit needs only a body string within the size limit.")
         except (ReviewError, TypeError) as exc:

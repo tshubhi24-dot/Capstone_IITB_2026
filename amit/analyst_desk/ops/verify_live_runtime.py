@@ -17,7 +17,7 @@ sys.path.insert(0, str(ROOT))
 from ops import prepare_live
 from ops import start_journey as base
 from ops import start_live as live
-from ops.verify_runtime import analyst_token, PROMETHEUS_CHECK
+from ops.verify_runtime import analyst_token, PROMETHEUS_CHECK, prepared_source_scope, matches_prepared_source
 from desk.model_profiles import model_profile
 
 BASE_URL = "http://127.0.0.1:18080"
@@ -128,13 +128,13 @@ def main():
         status, value = request_json("/api/config", state["token"])
         if status != 200 or not isinstance(value, dict):
             raise ValueError("Configuration unavailable")
-        expected_years = {"MSFT": [2023, 2024, 2025], "AAPL": [2023, 2024, 2025]}
+        source_matches = matches_prepared_source(value, prepared_source_scope())
         expected_models = (value.get("models") == state["models"]
                            and value.get("model_profile") == state["model_profile"]
                            and value.get("model_provider") == state["provider"])
-        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and expected_models and value.get("company_years") == expected_years and value.get("semantic_retrieval") is False
+        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and expected_models and source_matches and value.get("semantic_retrieval") is False
         state["config"] = value
-        record("live_api_source_and_model_configuration", good, expected_model_ids=expected_models, expected_source_scope=value.get("company_years") == expected_years, learned_retrieval_claimed=value.get("semantic_retrieval") is True)
+        record("live_api_source_and_model_configuration", good, expected_model_ids=expected_models, expected_source_scope=source_matches, learned_retrieval_claimed=value.get("semantic_retrieval") is True)
 
     def budget():
         status, value = request_json("/api/budget", state["token"])

@@ -54,3 +54,15 @@ python ops/verify_source_coverage.py \
 ```
 
 This read-only check matches every financial input to its original cached XBRL concept, amount, currency, period, accession, form and filing date. It verifies annual filing identities through recent or issuer-declared historical submissions and hashes all 61 required response bodies. It makes no network or model requests. Passage checks establish source identity; they do not independently reconstruct the original HTML sections or validate economic risk interpretations.
+
+## Verify the deployed tools
+
+After starting the live Compose stack, run the operator check inside its app container:
+
+```sh
+docker --context desktop-linux compose --project-name analyst-desk-journey \
+  --env-file .runtime/journey/credentials.env -f compose.yaml -f compose.live.yaml \
+  exec -T app python ops/verify_catalogue_tools.py
+```
+
+It checks all twelve search scopes, 36 isolated margin calculations and 72 cached section groups against the loaded snapshot. It creates no research run or note and makes no model requests. In the research UI, choose companies and fiscal years explicitly. The catalogue contains twelve companies; individual requests remain bounded to four, or two for live three-year risk comparisons. A source change requires a new plan before approval; earlier saved notes remain available.

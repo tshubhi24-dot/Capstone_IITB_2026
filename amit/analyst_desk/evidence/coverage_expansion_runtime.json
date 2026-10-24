@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "verification_kind": "twelve_company_catalogue_upgrade",
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "company_count": 12,
+  "sector_counts": {
+    "Technology": 6,
+    "Healthcare": 6
+  },
+  "fiscal_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "company_year_count": 36,
+  "financial_inputs": 72,
+  "passage_count": 4073,
+  "source_memberships_checked": 72,
+  "cached_responses_checked": 61,
+  "deployed_calculation_rows": 36,
+  "deployed_verified_values": 108,
+  "deployed_authenticated_tool_calls": 132,
+  "runtime_checks_passed": 19,
+  "local_tests_passed": 613,
+  "existing_note_count": 3,
+  "exact_existing_notes_preserved": true,
+  "existing_research_runs_unchanged": true,
+  "original_financial_inputs_unchanged": true,
+  "original_passage_text_and_sources_unchanged": true,
+  "budget_unchanged": true,
+  "new_model_calls": 0,
+  "new_research_runs": 0,
+  "human_decisions_submitted": 0,
+  "notes_published": 0,
+  "request_limits": {
+    "max_companies": 4,
+    "max_fiscal_years": 3,
+    "max_live_risk_comparisons": 4
+  },
+  "limitations": [
+    "BM25 retrieval remains active; hybrid search and reranking are later work.",
+    "Original Item boundaries, table extraction and financial comparability require independent domain review.",
+    "Operational coverage verification is not an independent research benchmark."
+  ]
+}

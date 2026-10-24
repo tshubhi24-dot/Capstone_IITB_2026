@@ -106,6 +106,9 @@ def test_serial_start_waits_for_initializer_and_starts_one_service_per_call(monk
     launch.start_stack(["docker", "compose"], {}, "private-test-token")
     starts = [(command, timeout) for command, timeout in calls if "up" in command]
     assert [command[-1] for command, _ in starts] == ["init-secrets", *launch.START_ORDER]
+    assert [command[-1] for command, _ in starts if "--force-recreate" in command] == ["ingress"]
+    assert launch.START_ORDER.index("app") < launch.START_ORDER.index("ingress")
+    assert launch.START_ORDER.index("grafana") < launch.START_ORDER.index("ingress")
     for command, timeout in starts:
         assert "--no-deps" in command and "--no-build" in command
         assert timeout in {120, 150}
@@ -115,6 +118,34 @@ def test_serial_start_waits_for_initializer_and_starts_one_service_per_call(monk
     assert wait_at < worker_at
     assert calls[0][0][-2:] == ["build", "app"] and calls[0][1] == 900
     assert ready == [True]
+
+
+def test_rebuilt_app_refreshes_existing_ingress_before_readiness(monkeypatch):
+    addresses = {"app": "previous-app-address", "ingress_upstream": "previous-app-address"}
+    ingress_starts = []
+
+    def capture(command, env, token, timeout=30):
+        if command[-4:] == ["ps", "--all", "--quiet", "init-secrets"]:
+            return "a" * 64
+        if "inspect" in command:
+            return "exited 0"
+        if command[-4:] == ["ps", "--status", "running", "--services"]:
+            return "\n".join(launch.START_ORDER)
+        if "up" in command and command[-1] == "app":
+            addresses["app"] = "rebuilt-app-address"
+        if "up" in command and command[-1] == "ingress":
+            ingress_starts.append(command)
+            if "--force-recreate" in command:
+                addresses["ingress_upstream"] = addresses["app"]
+        return ""
+
+    def ready():
+        assert addresses["ingress_upstream"] == addresses["app"] == "rebuilt-app-address"
+
+    monkeypatch.setattr(launch, "capture", capture)
+    monkeypatch.setattr(launch, "local_readiness", ready)
+    launch.start_stack(["docker", "compose"], {}, "fictional-local-token")
+    assert len(ingress_starts) == 1
 
 
 def test_serial_start_stops_before_other_services_if_initializer_fails(monkeypatch):

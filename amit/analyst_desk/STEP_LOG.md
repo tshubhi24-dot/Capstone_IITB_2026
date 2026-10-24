@@ -2,7 +2,7 @@
 
 This is the implementation sequence we followed to build Analyst Desk. It explains what each step adds, where to find it, and how it supports the capstone. These are **our build steps**, not the brief's numbered request walkthrough.
 
-**Current result:** a Docker Compose application completes Microsoft/Apple research for FY2023–2025: plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
+**Current result:** a Docker Compose application covers twelve companies in two sectors. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
 
 **Reading the brief references:** general requirements are on pages 2–6. The Analyst Desk section is printed pages **15–16**, which are **PDF pages 7–8** in the supplied extract. The final-review questions are printed p.17 (PDF page 9). References below use the printed page numbers.
 
@@ -160,6 +160,11 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [data/source_manifest.json](data/source_manifest.json), [data/sec_cache_manifest.json](data/sec_cache_manifest.json) | Installed financial/section inventory and pinned original SEC response identities. |
 | [ops/verify_source_coverage.py](ops/verify_source_coverage.py), [tests/test_source_provenance.py](tests/test_source_provenance.py) | Match normalized data to original cached XBRL/submissions and detect changed or missing source bodies. |
 | [evidence/source_coverage_verification.json](evidence/source_coverage_verification.json) | Observed coverage and cached-source verification results. |
+| [web/index.html](web/index.html), [web/app.js](web/app.js), [desk/api.py](desk/api.py), [desk/workflow.py](desk/workflow.py) | Select covered companies/years, enforce request limits and reject stale source approvals. |
+| [ops/verify_runtime.py](ops/verify_runtime.py), [ops/verify_live_runtime.py](ops/verify_live_runtime.py), [ops/verify_catalogue_tools.py](ops/verify_catalogue_tools.py) | Verify loaded scope, deployed source identity and all financial/section tool paths. |
+| [ops/start_journey.py](ops/start_journey.py), [ops/start_live.py](ops/start_live.py), [Dockerfile](Dockerfile), [.dockerignore](.dockerignore) | Reload source readers and refresh ingress after rebuilding the app; include only the required operator check. |
+| [tests/test_coverage_scope.py](tests/test_coverage_scope.py), [tests/test_coverage_runtime.py](tests/test_coverage_runtime.py), [tests/test_deployment.py](tests/test_deployment.py), [tests/test_live_deployment.py](tests/test_live_deployment.py) | Selection, stale-source, capacity and deployment regressions. |
+| [evidence/catalogue_tools_verification.json](evidence/catalogue_tools_verification.json), [evidence/coverage_expansion_runtime.json](evidence/coverage_expansion_runtime.json) | Actual deployed tool checks and preserved library/budget verification. |
 
 **Capstone connection:** p.16, Retrieval requires 10–15 companies in two sectors over three years; Tools and Signature A require cached original facts with source IDs and comparable periods. This increment expands coverage; hybrid retrieval, reranking and full Item/table validation remain later work.
 
@@ -167,10 +172,13 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 |---|---|
 | 11a — Declare and validate scope | Importer supports the twelve-company target and explicit subsets. Fifty-two importer/data tests pass; real-cache validation confirms the target matrix. Installing and deploying the expanded snapshot follows. |
 | 11b — Load and verify SEC coverage | Installed 36 company-years, 72 financial facts, 4,073 passages and 72 section groups. All 72 numeric memberships and 36 annual filing identities match 61 cached SEC responses, including one historical submissions index. No network/model calls were needed. |
+| 11c — Expose and verify the deployed catalogue | The UI selects from twelve companies, grouped by sector. Requests retain a four-company ceiling; live three-year risk comparisons allow two companies. Source changes invalidate old approvals. Deployment refreshes ingress without clearing notes or budgets. |
+
+**Verified expansion result:** all 36 deployed margin rows (108 displayed financial values), 72 section groups and twelve search scopes passed. The full suite passed 613 tests and all nineteen runtime checks passed. The three existing notes and spending records remained unchanged; this expansion made zero model calls.
 
 ## What the team builds next
 
-1. **Retrieval and memory:** expand from two companies to twelve across two sectors; validate Item/table ingestion; add vectors, RRF, reranking and retrieval labels. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
+1. **Retrieval and memory:** validate original Item/table ingestion across the expanded twelve-company catalogue; add vectors, RRF, reranking and retrieval labels. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
 2. **Agents, learning and robustness:** complete specialist ReAct/replanning evidence, reviewed development lessons, relevant lesson retrieval, active-operation recovery, threat model and independently authored attacks.
 3. **Independent evaluation:** protected cases, human risk labels, calibrated outcome judge, fair baselines and repeated E1–E4 comparisons.
 4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.

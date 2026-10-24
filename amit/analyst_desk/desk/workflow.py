@@ -473,6 +473,15 @@ class Engine:
             run = self.store.get_run(run_id)
             if run["status"] in {"published", "rejected", "error"}:
                 return self.view(run_id)
+            queued_decision = decision or run.get("queued_decision") or {}
+            if (run.get("source_fingerprint") not in (None, self.source.fingerprint)
+                    and queued_decision.get("action") != "reject"):
+                run.update(status="error", stage="error", failure_kind="source_changed",
+                           error="ReviewError: The source snapshot changed. Create a new research plan; this checkpoint was preserved without further calls.")
+                run.pop("queued_decision", None)
+                run.pop("queued_continuation", None)
+                self.store.save_run(run)
+                return self.view(run_id)
             continuation = run.get("queued_continuation")
             if continuation:
                 try:
@@ -491,7 +500,8 @@ class Engine:
                     self.store.save_run(run)
                     return self.view(run_id)
             run["status"], run["stage"] = "running", "working"
-            run.update(mode=run["request"].get("mode", "offline"), data_source="sec_edgar", transport="http", source_fingerprint=self.source.fingerprint)
+            run.update(mode=run["request"].get("mode", "offline"), data_source="sec_edgar", transport="http",
+                       source_fingerprint=run.get("source_fingerprint") or self.source.fingerprint)
             self.store.save_run(run)
             config = {"configurable": {"thread_id": run_id}, "recursion_limit": 40}
             try:
@@ -922,6 +932,8 @@ class Engine:
             pending = run.get("pending", {})
             if run["status"] != "awaiting_" + decision["kind"] or pending.get("payload_hash") != decision["payload_hash"] or pending.get("kind") != decision["kind"]:
                 raise ReviewError("Stale review or another decision is already running.")
+            if decision["action"] != "reject" and run.get("source_fingerprint") not in (None, self.source.fingerprint):
+                raise ReviewError("The source snapshot changed. Create a new research plan before approving or editing.")
             if decision["action"] == "approve" and decision["kind"] == "note" and not run.get("critic", {}).get("passed"):
                 raise ReviewError("Unresolved checks prevent publication.")
             run.update(status="running", stage="resuming", queued_decision=decision)
@@ -949,6 +961,7 @@ class Engine:
 
     def _plan(self, state):
         request = state["request"]
+        validate_scope(request, self.source)
         if self.is_live(state):
             coverage = self._annual_source_coverage(request["tickers"], request["years"])
             plan = self.reasoner(state, "plan").plan(request["question"], request["tickers"], request["years"], source_coverage=coverage)
@@ -975,7 +988,7 @@ class Engine:
             if set(edits) - {"tickers", "years", "outline"}:
                 raise ReviewError("Unsupported plan edit fields.")
             updated = {**plan, **edits}
-            validate_scope(updated, self.source)
+            validate_scope({**updated, "mode": "live" if self.is_live(state) else "offline"}, self.source)
             if self.is_live(state):
                 updated["source_coverage"] = self._annual_source_coverage(updated["tickers"], updated["years"])
             self.event(state["run_id"], "human", "plan_edit", "Plan edited; review the new version before continuing.")
@@ -1148,5 +1161,7 @@ def validate_scope(value, source):
         raise ReviewError("Choose up to four covered companies.")
     if not isinstance(years, list) or not 1 <= len(years) <= 3 or not all(isinstance(year, int) and not isinstance(year, bool) for year in years) or years != sorted(set(years)) or any(not set(years) <= set(source.years(ticker)) for ticker in tickers):
         raise ReviewError("Choose up to three available fiscal years in ascending order.")
+    if value.get("mode") == "live" and len(tickers) * max(0, len(years) - 1) > 4:
+        raise ReviewError("Live research supports at most four company/year risk comparisons. Choose fewer companies or fiscal years.")
     if "outline" in value and (not isinstance(value["outline"], list) or not value["outline"] or not all(isinstance(item, str) and item.strip() for item in value["outline"])):
         raise ReviewError("The plan needs a nonempty research outline.")

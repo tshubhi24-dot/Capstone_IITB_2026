@@ -8,6 +8,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY desk ./desk
 COPY ops/bootstrap.py ./ops/bootstrap.py
+COPY ops/verify_catalogue_tools.py ./ops/verify_catalogue_tools.py
 COPY web ./web
 USER 10001:10001
 ENTRYPOINT ["python", "ops/bootstrap.py", "exec"]

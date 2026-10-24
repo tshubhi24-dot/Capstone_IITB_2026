@@ -3,10 +3,44 @@ const $ = id => document.getElementById(id);
 const state = {run:null,reviewKey:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
+function sourceCatalogue(config){
+ const companies=config?.companies,coverage=config?.company_years;
+ if(!Array.isArray(companies)||!companies.length||!coverage||typeof coverage!=='object')throw new Error('The source catalogue is unavailable.');
+ const seen=new Set();
+ return companies.map(company=>{
+  const ticker=company?.ticker,years=coverage[ticker];
+  if(typeof ticker!=='string'||seen.has(ticker)||typeof company.sector!=='string'||!company.sector.trim()||!Array.isArray(years)||!years.length||years.some(year=>!Number.isInteger(year))||years.join(',')!==[...new Set(years)].sort((a,b)=>a-b).join(','))throw new Error('The source catalogue contains invalid or missing company coverage.');
+  seen.add(ticker);return {...company,years:[...years]};
+ });
+}
+function researchScope(config,tickers,years,mode){
+ const catalogue=sourceCatalogue(config),known=new Map(catalogue.map(company=>[company.ticker,company]));
+ if(!Array.isArray(tickers)||!tickers.length||tickers.length>4||new Set(tickers).size!==tickers.length||tickers.some(ticker=>!known.has(ticker)))throw new Error('Choose between one and four covered companies.');
+ if(!Array.isArray(years)||!years.length||years.length>3||years.some(year=>!Number.isInteger(year))||years.join(',')!==[...new Set(years)].sort((a,b)=>a-b).join(',')||tickers.some(ticker=>years.some(year=>!known.get(ticker).years.includes(year))))throw new Error('Choose up to three fiscal years covered by every selected company.');
+ if(mode==='live'&&tickers.length*(years.length-1)>4)throw new Error('Live AI supports up to four adjacent-year risk comparisons. Choose fewer companies or fiscal years; your selection has been kept.');
+ return {tickers:[...tickers],years:[...years]};
+}
+function selectedValues(id){return Array.from($(id).selectedOptions,option=>option.value);}
+function updateScope(){
+ try{const scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),$('mode').value);$('request-scope').textContent=`Selected: ${scope.tickers.join(' / ')} · fiscal ${scope.years.join(', ')}`;$('start').disabled=!state.connected;}
+ catch(error){$('request-scope').textContent=error.message;$('start').disabled=true;}
+}
+function renderScopeOptions(config){
+ const catalogue=sourceCatalogue(config),sectors=[...new Set(catalogue.map(company=>company.sector))].sort();
+ $('companies').replaceChildren();
+ sectors.forEach(sector=>{const group=element('optgroup');group.label=sector;
+  catalogue.filter(company=>company.sector===sector).forEach(company=>{const option=element('option',`${company.ticker} · ${company.company||company.name||company.ticker}`);option.value=company.ticker;option.selected=['MSFT','AAPL'].includes(company.ticker);group.append(option);});$('companies').append(group);
+ });
+ const years=[...new Set(catalogue.flatMap(company=>company.years))].sort((a,b)=>a-b);$('years').replaceChildren();
+ years.forEach(year=>{const option=element('option',year);option.value=String(year);option.selected=true;$('years').append(option);});
+ $('companies').disabled=false;$('years').disabled=false;
+ $('catalogue-summary').textContent=`${catalogue.length} covered companies · ${sectors.join(' / ')} · actual SEC filings · fiscal ${years.join(', ')}`;
+}
 function modeDescription(){
  const live=$('mode').value==='live',budget=state.config?.live_budget;
  $('mode-notice').textContent=live?'Live AI pilot: models plan, select queries and draft cited interpretations. A separate model reviews support; its judgment is not ground truth. Figures stay code-checked and publication needs your approval.':'Offline workflow: no model calls or model charges. Code checks figures; risk interpretation needs your review.';
  $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · up to 12 model calls and 250,000 tokens per request. ${state.config.models.producer} produces; ${state.config.models.critic} reviews.`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
+ if(state.connected)updateScope();
 }
 async function api(path,options={}){
  const headers={'Content-Type':'application/json','X-Analyst-Token':sessionStorage.getItem('analyst-token')||''};
@@ -17,7 +51,7 @@ async function connect(){
  try{sessionStorage.setItem('analyst-token',$('token').value.trim());const config=await api('/api/config');
   if(config.data_source!=='sec_edgar')throw new Error('This desk requires the actual SEC source snapshot.');
   state.config=config;const live=$('mode').querySelector('option[value="live"]');live.disabled=!config.live_enabled;$('mode').value=config.live_enabled?'live':'offline';modeDescription();
-  state.connected=true;$('connection').textContent=`Connected · real SEC snapshot · HTTP MCP · live AI ${config.live_enabled?'available':'disabled'}`;$('start').disabled=false;
+  renderScopeOptions(config);state.connected=true;updateScope();$('connection').textContent=`Connected · real SEC snapshot · HTTP MCP · live AI ${config.live_enabled?'available':'disabled'}`;
   await loadRuns();await loadNotes();const requested=new URLSearchParams(location.search).get('run');if(requested)await selectRun(requested);
  }catch(error){state.connected=false;$('start').disabled=true;$('connection').textContent='Not connected';message(error.message);}
 }
@@ -74,8 +108,13 @@ async function decide(action){
 async function showEvidence(id){try{$('evidence').textContent=JSON.stringify(await api(`/api/evidence/${encodeURIComponent(id)}`),null,2);$('evidence-panel').hidden=false;$('evidence-panel').scrollIntoView({behavior:'smooth'});}catch(error){message(error.message);}}
 async function loadNotes(){const notes=await api('/api/notes');$('notes').replaceChildren();if(!notes.length)$('notes').append(element('p','No approved notes yet.'));
  notes.forEach(note=>{const detail=element('details');detail.append(element('summary',note.title||note.id),element('p',`${note.model_mode==='live'?'Live AI':'Offline'} · approved version: ${note.payload_hash||note.digest||''}`),element('pre',note.body||JSON.stringify(note)));$('notes').append(detail);});}
+function initialize(){
 $('connect').onclick=connect;$('runs').onchange=()=>{if($('runs').value)selectRun($('runs').value);};
 $('mode').onchange=modeDescription;
-$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const mode=$('mode').value;const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,tickers:['MSFT','AAPL'],years:[2023,2024,2025],strategy:'multi',mode,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,learning_split:'production'})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{$('start').disabled=!state.connected;}};
+$('companies').onchange=updateScope;$('years').onchange=updateScope;
+$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const mode=$('mode').value,scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,learning_split:'production'})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{updateScope();}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
+}
+if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope};
+if(typeof document!=='undefined')initialize();

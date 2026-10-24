@@ -1,5 +1,6 @@
 """Record read-only readiness checks for this journey, without advancing a run."""
 import json
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 import re
@@ -19,6 +20,57 @@ d=json.load(urllib.request.urlopen("http://prometheus:9090/api/v1/targets",timeo
 t=[t for t in d.get("data",{}).get("activeTargets",[]) if t.get("labels",{}).get("job")=="analyst-desk" and t.get("labels",{}).get("instance")=="app:8000"]
 print(json.dumps({"api_ok":d.get("status")=="success","matching_targets":len(t),"up":len(t)==1 and t[0].get("health")=="up","no_scrape_error":len(t)==1 and not t[0].get("lastError")}))
 '''
+
+
+def prepared_source_scope(manifest_path=None, corpus_path=None):
+    """Use the prepared public source identity instead of a fixed issuer list."""
+    manifest = json.loads(Path(manifest_path or ROOT / "data/source_manifest.json").read_bytes())
+    tickers, years = manifest.get("tickers"), manifest.get("years")
+    fingerprint = manifest.get("snapshot_sha256")
+    if (manifest.get("source_kind") != "sec_edgar"
+            or not isinstance(tickers, list) or not 1 <= len(tickers) <= 12
+            or not all(isinstance(ticker, str) and re.fullmatch(r"[A-Z][A-Z0-9.-]{0,9}", ticker) for ticker in tickers)
+            or len(set(tickers)) != len(tickers)
+            or not isinstance(years, list) or not 1 <= len(years) <= 3
+            or not all(type(year) is int and 1900 <= year <= 2100 for year in years)
+            or years != sorted(set(years))
+            or not isinstance(fingerprint, str) or not re.fullmatch(r"[a-f0-9]{64}", fingerprint)):
+        raise ValueError("The public source manifest has an invalid scope or identity.")
+    facts = manifest.get("fact_inventory")
+    expected = {(ticker, year, concept) for ticker in tickers for year in years
+                for concept in ("revenue", "operating_income")}
+    if not isinstance(facts, list) or manifest.get("fact_count") != len(expected) or len(facts) != len(expected):
+        raise ValueError("The public source manifest has incomplete annual fact coverage.")
+    actual, sectors = set(), {}
+    for fact in facts:
+        if not isinstance(fact, dict):
+            raise ValueError("The public source fact inventory is invalid.")
+        identity = (fact.get("ticker"), fact.get("fiscal_year"), fact.get("concept"))
+        if identity not in expected or identity in actual or not isinstance(fact.get("sector"), str) or not fact["sector"].strip():
+            raise ValueError("The public source fact inventory has duplicate or missing coverage.")
+        actual.add(identity)
+        if fact["ticker"] in sectors and sectors[fact["ticker"]] != fact["sector"]:
+            raise ValueError("The public source sector metadata is inconsistent.")
+        sectors[fact["ticker"]] = fact["sector"]
+    raw = Path(corpus_path or ROOT / ".runtime/journey/sources/corpus.json").read_bytes()
+    if hashlib.sha256(raw).hexdigest() != fingerprint:
+        raise ValueError("The prepared source snapshot differs from its public manifest.")
+    return {"company_years": {ticker: years for ticker in tickers},
+            "source_fingerprint": fingerprint, "sectors": sectors}
+
+
+def matches_prepared_source(config, expected):
+    """Require exact scope, sectors and bytes, including no extra issuers."""
+    companies = config.get("companies")
+    if not isinstance(companies, list) or not all(isinstance(company, dict) for company in companies):
+        return False
+    tickers = [company.get("ticker") for company in companies]
+    if not all(isinstance(ticker, str) for ticker in tickers) or len(set(tickers)) != len(tickers):
+        return False
+    return (config.get("company_years") == expected["company_years"]
+            and config.get("source_fingerprint") == expected["source_fingerprint"]
+            and {company["ticker"]: company.get("sector") for company in companies} == expected["sectors"]
+            and config.get("years") == sorted({year for years in expected["company_years"].values() for year in years}))
 
 
 def analyst_token():
@@ -80,8 +132,8 @@ def main():
             raise ValueError("Credential unavailable")
         status, data = get_json("http://127.0.0.1:18080/api/config", token)
         data = data if isinstance(data, dict) else {}
-        years = {"MSFT": [2023, 2024, 2025], "AAPL": [2023, 2024, 2025]}
-        expected = data.get("mode") == "offline" and data.get("data_source") == "sec_edgar" and data.get("transport") == "http" and data.get("semantic_retrieval") is False and data.get("company_years") == years
+        source_scope = prepared_source_scope()
+        expected = data.get("mode") == "offline" and data.get("data_source") == "sec_edgar" and data.get("transport") == "http" and data.get("semantic_retrieval") is False and matches_prepared_source(data, source_scope)
         fingerprint = data.get("source_fingerprint", "")
         safe_fingerprint = fingerprint if isinstance(fingerprint, str) and re.fullmatch(r"[a-f0-9]{64}", fingerprint) else None
         record("authenticated_source_config", status == 200 and expected and bool(safe_fingerprint), http_status=status, expected_company_years=expected, source_sha256=safe_fingerprint)
