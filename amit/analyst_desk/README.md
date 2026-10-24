@@ -11,8 +11,10 @@ This folder contains the current capstone work prepared from the beginning. It d
 | 1 | [Problem, users, scope and proposed success criteria](docs/PROJECT_DEFINITION.md) | Prepared for team review. |
 | 2 | [Evaluation plan](docs/EVALUATION_PLAN.md) and [public development preparation](evaluation/kickoff/README.md) | Prepared; independent final cases and human labels remain pending. |
 | 3 | [Architecture v1](docs/ARCHITECTURE_V1.md), [drawings](docs/diagrams/README.md) and [memory policy](docs/MEMORY_POLICY.md) | Proposed design prepared for team review. |
-| 4 | One two-company Docker research journey | Under construction. |
+| 4 | [Fresh two-company Docker research journey](docs/TWO_COMPANY_JOURNEY.md) | Image built; 46 local checks pass. Docker service startup is being recovered after an engine connection error. Human reviews remain pending. |
 
 Each completed step has its own commit. Commit timestamps reflect when work was committed; they do not backdate human reviews or experiments. See [step history](STEP_LOG.md) and [contribution provenance](docs/CONTRIBUTIONS.md).
 
 The six students own problem framing, design, evaluation and interpretation. Proposed targets, AI-assisted preparation and actual measured results are labelled separately. Credentials, runtime databases, downloaded source caches and protected final evaluation assets must stay outside Git.
+
+The first journey uses actual cached SEC data for Microsoft and Apple, FY2023–2025, with deterministic calculations and BM25 retrieval. It makes zero model calls. Learned semantic retrieval, live agent reasoning and full capstone evaluation remain future work. See the [source preparation requirements](data/README.md) before starting a fresh clone.

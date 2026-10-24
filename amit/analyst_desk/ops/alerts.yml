@@ -1,0 +1,9 @@
+groups:
+  - name: analyst-desk
+    rules:
+      - alert: AnalystNumberVerificationLow
+        expr: analyst_verified_number_share < 0.98 and analyst_research_runs_total > 0
+        for: 1m
+        labels: {severity: warning}
+        annotations:
+          summary: Checked-number share is below 98 percent

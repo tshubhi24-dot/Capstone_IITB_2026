@@ -1,0 +1,13 @@
+{
+  "uid": "analyst-journey",
+  "title": "Analyst Desk — first two-company journey",
+  "schemaVersion": 41,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {"id": 1, "title": "Verified financial figures (%)", "type": "stat", "datasource": {"type": "prometheus", "uid": "analyst-prometheus"}, "gridPos": {"x": 0, "y": 0, "w": 8, "h": 6}, "targets": [{"expr": "100 * analyst_verified_number_share", "refId": "A"}]},
+    {"id": 2, "title": "Research runs created", "type": "stat", "datasource": {"type": "prometheus", "uid": "analyst-prometheus"}, "gridPos": {"x": 8, "y": 0, "w": 8, "h": 6}, "targets": [{"expr": "analyst_research_runs_total", "refId": "A"}]},
+    {"id": 3, "title": "Actual MCP calls", "type": "stat", "datasource": {"type": "prometheus", "uid": "analyst-prometheus"}, "gridPos": {"x": 16, "y": 0, "w": 8, "h": 6}, "targets": [{"expr": "sum(analyst_tool_calls_total)", "refId": "A"}]},
+    {"id": 4, "title": "Model calls — zero in this rehearsal", "type": "stat", "datasource": {"type": "prometheus", "uid": "analyst-prometheus"}, "gridPos": {"x": 0, "y": 6, "w": 8, "h": 6}, "targets": [{"expr": "analyst_model_calls_total", "refId": "A"}]}
+  ]
+}

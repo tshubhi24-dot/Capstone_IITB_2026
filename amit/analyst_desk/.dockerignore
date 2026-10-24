@@ -1,0 +1,13 @@
+*
+!requirements.txt
+!Dockerfile
+!desk/
+!desk/**
+!ops/
+!ops/bootstrap.py
+!web/
+!web/**
+**/__pycache__
+**/*.pyc
+**/.env*
+**/*secret*

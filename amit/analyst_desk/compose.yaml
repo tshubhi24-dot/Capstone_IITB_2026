@@ -1,0 +1,171 @@
+name: analyst-desk-journey
+
+x-image: &image
+  image: analyst-desk:amit-step4
+  pull_policy: build
+  build: {context: .}
+
+x-restricted: &restricted
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+  restart: unless-stopped
+
+x-service-environment: &service-environment
+  CORPUS_PATH: /sources/corpus.json
+  SCOPED_CONFIG: /run/credentials/config.json
+  RUNTIME_DIR: /runtime
+  ANALYST_MODE: offline
+  PAID_SPEND_LIMIT_USD: "0"
+
+services:
+  ingress:
+    image: nginxinc/nginx-unprivileged:1.28.0-alpine
+    <<: *restricted
+    entrypoint: [nginx]
+    command: [-g, "daemon off;"]
+    ports: ["127.0.0.1:18080:8000", "127.0.0.1:13080:3000"]
+    volumes: ["./ops/nginx.conf:/etc/nginx/conf.d/default.conf:ro"]
+    networks: [frontend, backend]
+    depends_on: [app, grafana]
+
+  init-secrets:
+    <<: [*image, *restricted]
+    restart: "no"
+    network_mode: none
+    entrypoint: [python, ops/bootstrap.py, init]
+    volumes:
+      - app-auth:/secrets/app
+      - filings-auth:/secrets/filings-kb
+      - edgar-auth:/secrets/edgar
+      - calculator-auth:/secrets/python-sandbox
+      - portal-auth:/secrets/research-portal
+      - metrics-auth:/secrets/metrics
+      - grafana-auth:/secrets/grafana
+      - chroma-data:/secrets/chroma
+      - calculation-queue:/secrets/queue
+
+  app:
+    <<: [*image, *restricted]
+    environment:
+      <<: *service-environment
+      ANALYST_API_TOKEN: ${ANALYST_API_TOKEN:?Run ops/start_journey.py --prepare}
+      MCP_FILINGS_KB_URL: http://filings-kb:8011/mcp
+      MCP_EDGAR_URL: http://edgar:8012/mcp
+      MCP_PYTHON_SANDBOX_URL: http://python-sandbox:8013/mcp
+      MCP_RESEARCH_PORTAL_URL: http://research-portal:8014/mcp
+      CHROMA_URL: http://chroma:8000
+    volumes: ["./.runtime/journey/sources:/sources:ro", "runtime:/runtime", "app-auth:/run/credentials:ro"]
+    networks: [backend]
+    depends_on:
+      init-secrets: {condition: service_completed_successfully}
+      filings-kb: {condition: service_started}
+      edgar: {condition: service_started}
+      python-sandbox: {condition: service_started}
+      research-portal: {condition: service_started}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  filings-kb:
+    <<: [*image, *restricted]
+    command: [python, -m, desk.tools, filings-kb, --port, "8011"]
+    environment: *service-environment
+    volumes: ["./.runtime/journey/sources:/sources:ro", "filings-auth:/run/credentials:ro"]
+    networks: [backend]
+    depends_on: {init-secrets: {condition: service_completed_successfully}}
+
+  edgar:
+    <<: [*image, *restricted]
+    command: [python, -m, desk.tools, edgar, --port, "8012"]
+    environment: *service-environment
+    volumes: ["./.runtime/journey/sources:/sources:ro", "edgar-auth:/run/credentials:ro"]
+    networks: [backend]
+    depends_on: {init-secrets: {condition: service_completed_successfully}}
+
+  python-sandbox:
+    <<: [*image, *restricted]
+    command: [python, -m, desk.tools, python-sandbox, --port, "8013"]
+    environment:
+      <<: *service-environment
+      CALCULATION_QUEUE: /queue
+    volumes: ["./.runtime/journey/sources:/sources:ro", "calculator-auth:/run/credentials:ro", "calculation-queue:/queue"]
+    networks: [backend]
+    depends_on:
+      init-secrets: {condition: service_completed_successfully}
+      pandas-worker: {condition: service_started}
+
+  research-portal:
+    <<: [*image, *restricted]
+    command: [python, -m, desk.tools, research-portal, --port, "8014"]
+    environment: *service-environment
+    volumes: ["runtime:/runtime", "portal-auth:/run/credentials:ro"]
+    networks: [backend]
+    depends_on: {init-secrets: {condition: service_completed_successfully}}
+
+  pandas-worker:
+    <<: [*image, *restricted]
+    command: [python, -m, desk.worker]
+    environment: {CALCULATION_QUEUE: /queue, OPENBLAS_NUM_THREADS: "1", OMP_NUM_THREADS: "1", MKL_NUM_THREADS: "1"}
+    network_mode: none
+    volumes: ["calculation-queue:/queue"]
+    pids_limit: 32
+    mem_limit: 256m
+    cpus: 0.5
+    depends_on: {init-secrets: {condition: service_completed_successfully}}
+
+  chroma:
+    image: chromadb/chroma:1.0.20
+    <<: *restricted
+    user: "10001:10001"
+    volumes: ["chroma-data:/data"]
+    networks: [backend]
+    depends_on: {init-secrets: {condition: service_completed_successfully}}
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    <<: *restricted
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus"]
+    volumes: ["./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro", "./ops/alerts.yml:/etc/prometheus/alerts.yml:ro", "prometheus-data:/prometheus", "metrics-auth:/run/metrics:ro"]
+    networks: [backend]
+    depends_on:
+      init-secrets: {condition: service_completed_successfully}
+      app: {condition: service_started}
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    <<: *restricted
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/credentials/admin_password
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    volumes: ["grafana-data:/var/lib/grafana", "grafana-auth:/run/credentials:ro", "./ops/grafana/provisioning:/etc/grafana/provisioning:ro", "./ops/grafana/dashboards:/var/lib/grafana/dashboards:ro"]
+    networks: [backend]
+    depends_on:
+      init-secrets: {condition: service_completed_successfully}
+      prometheus: {condition: service_started}
+
+networks:
+  frontend: {}
+  backend: {internal: true}
+
+volumes:
+  runtime:
+  app-auth:
+  filings-auth:
+  edgar-auth:
+  calculator-auth:
+  portal-auth:
+  metrics-auth:
+  grafana-auth:
+  chroma-data:
+  calculation-queue:
+  prometheus-data:
+  grafana-data:
