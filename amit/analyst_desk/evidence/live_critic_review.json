@@ -1,0 +1,60 @@
+{
+  "record_kind": "actual_live_critic_review_before_human_note_approval",
+  "checked_at_utc": "2026-10-24T11:50:12.520321+00:00",
+  "snapshot_stage": "awaiting_note",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "approved_plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+  "exact_pending_note_hash": "2a248617fe85e8c107a6a761baac475ef51debe9181a1676ee00a8c00f6273ac",
+  "body_sha256": "8c23f947656f49cba6694bd749384ab39e7cf30baa9dd42d6534145a147ef677",
+  "source_fingerprint": "54b046c0cd59a0d89bea1145cafca818aff23ea9495de0cee805441fd8f5bbcc",
+  "model": "google/gemini-2.5-flash",
+  "provider": "google-ai-studio",
+  "critic_call_usage": {
+    "call_id": "c794c2bb72028237088ddec45bdf33626bddc1820ee9e06fac0e2a57872d7679",
+    "prompt_tokens": 6988,
+    "completion_tokens": 442,
+    "total_tokens": 7430,
+    "cost_usd": "0.0032014",
+    "model": "google/gemini-2.5-flash",
+    "returned_model": "google/gemini-2.5-flash"
+  },
+  "verified_numbers": 18,
+  "total_numbers": 18,
+  "claim_count": 7,
+  "supported_claims": 7,
+  "critic_issues": [],
+  "critic_passed": true,
+  "semantic_review": "model_assisted_not_gold",
+  "writer_body_unchanged": true,
+  "model_calls_this_run": 14,
+  "known_provider_tokens_this_run": 75452,
+  "reported_run_spend_usd": "0.0365539",
+  "run_holds_usd": "0.1818400",
+  "old_notes_unchanged_at_review": true,
+  "old_note_count": 2,
+  "human_note_approval_required_at_review": true,
+  "published_at_this_snapshot": false,
+  "scope_limits": [
+    "Partial selected source evidence; original section boundaries unverified",
+    "Different issuer fiscal calendars",
+    "No independent benchmark or investment recommendation"
+  ],
+  "original_limits_preserved": {
+    "calls": 12,
+    "tokens": 250000,
+    "desk_usd": "1.00",
+    "run_usd": "0.50"
+  },
+  "human_authorized_exact_call_allowances": [
+    {
+      "call": 13,
+      "max_tokens": 300000,
+      "outcome": "billed_invalid_output"
+    },
+    {
+      "call": 14,
+      "max_tokens": 350000,
+      "outcome": "passed"
+    }
+  ]
+}
