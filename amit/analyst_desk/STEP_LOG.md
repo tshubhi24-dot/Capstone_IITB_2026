@@ -183,12 +183,15 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | Files | Purpose |
 |---|---|
 | [web/app.js](web/app.js), [tests/test_provider_error_ui.py](tests/test_provider_error_ui.py) | Explain provider HTTP 429 failures and stopped-run behavior without automatic paid retries or changing budget records. |
+| [evaluation/retrieval/README.md](evaluation/retrieval/README.md), [development_queries.jsonl](evaluation/retrieval/development_queries.jsonl) | Frozen development questions, partial relevance labels, source hashes and comparison rules. |
+| [ops/evaluate_retrieval.py](ops/evaluate_retrieval.py), [tests/test_retrieval_evaluation.py](tests/test_retrieval_evaluation.py) | Paired Recall@5/Hit@5 comparisons; retain errors and misses in the denominator. |
 
 **Capstone connection:** p.3, hybrid BM25/vector retrieval, RRF, reranker, query-side improvement and Recall@5 comparison; p.16, scoped company/year retrieval and preserved table evidence. Provider failure handling supports the observable failure requirement on p.6.
 
 | Increment | Result |
 |---|---|
 | 12a — Explain a rate-limited run | The interface explains HTTP 429, retains the diagnostic and reserved-budget display, and offers explicit next actions. Three browser-helper checks pass. |
+| 12b — Freeze the retrieval comparison | Thirty-six questions and 42 source-derived passage labels cover four development issuers, twelve company/year groups and both narrative/table evidence. Thirty-two harness checks pass. Labels were frozen before running retrieval; human review and protected evaluation remain pending. |
 
 ## What the team builds next
 
