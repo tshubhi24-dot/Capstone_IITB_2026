@@ -100,15 +100,28 @@ def capture_critic_request(run_id, draft, grant_id, config):
 def build_proposal(run, budget, config, grant_id):
     profile = model_profile(config)
     draft = deepcopy(run.get("draft"))
+    amendment = budget.get("model_calls") == 13
+    parent = (budget.get("parent_run_budget_grant") or budget.get("run_budget_grant") or {}) if amendment else {}
+    expected_tokens = 254246 if amendment else 246409
+    if amendment:
+        settled = next((item for item in budget.get("settled_calls", []) if item.get("call_id") == parent.get("call_id")), {})
+        if (parent.get("approved") is not True or parent.get("consumed") is not True
+                or parent.get("max_calls") != 13 or parent.get("max_tokens") != 300000
+                or parent.get("policy_hash") != policy_hash(config)
+                or parent.get("draft_hash") != canonical_hash(draft)
+                or parent.get("plan_hash") != canonical_hash(run.get("plan"))
+                or settled.get("status") != "invalid_output"):
+            raise ValueError("An amendment needs the consumed first grant and its known billed invalid output.")
+    expected_error = "ReviewError: model_output_invalid:" if amendment else "ReviewError: provider_http_429:"
     if (profile["version"] != PROFILE or not isinstance(draft, dict) or draft.get("semantic_verdict")
             or run.get("status") != "error" or run.get("request", {}).get("mode") != "live"
-            or not str(run.get("error", "")).startswith("ReviewError: provider_http_429:")
+            or not str(run.get("error", "")).startswith(expected_error)
             or run.get("request", {}).get("max_model_calls") != 12 or run.get("request", {}).get("max_tokens") != 250000
             or config["max_calls_per_run"] != 12 or config["max_tokens_per_run"] != 250000
             or config["prompt_token_ceiling"] != 49152 or config["max_output_tokens"] < 2000
             or budget.get("run_id") != run.get("id") or budget.get("policy_hash") != policy_hash(config)
             or budget.get("model_profile") != PROFILE or budget.get("providers") != profile["providers"]
-            or budget.get("model_calls") != 12 or budget.get("tokens") != 246409 or budget.get("uncertain_calls") != 3
+            or budget.get("model_calls") != (13 if amendment else 12) or budget.get("tokens") != expected_tokens or budget.get("uncertain_calls") != 3
             or budget.get("blocked") is not False or budget.get("original_max_calls_per_run") != 12
             or budget.get("original_max_tokens_per_run") != 250000
             or not re.fullmatch(r"[a-f0-9]{64}", budget.get("ledger_checkpoint_hash", ""))):
@@ -126,14 +139,16 @@ def build_proposal(run, budget, config, grant_id):
     proposal = {"grant_id": grant_id, "run_id": run["id"], "policy_hash": policy_hash(config),
                 "plan_hash": canonical_hash(run["plan"]), "draft_hash": canonical_hash(draft), "call_id": request["call_id"],
                 "request_hash": canonical_hash(request), "checkpoint_hash": budget["ledger_checkpoint_hash"],
-                "original_calls": 12, "original_tokens": 250000, "max_calls": 13, "max_tokens": 300000,
-                "checkpoint_calls": 12, "checkpoint_tokens": 246409, "checkpoint_uncertain": 3,
+                "original_calls": 12, "original_tokens": 250000, "max_calls": 14 if amendment else 13, "max_tokens": 350000 if amendment else 300000,
+                "checkpoint_calls": 13 if amendment else 12, "checkpoint_tokens": expected_tokens, "checkpoint_uncertain": 3,
                 "checkpoint_reported_spend_usd": budget["reported_spend_usd"], "checkpoint_held_usd": budget["held_usd"],
                 "cap_usd": budget["cap_usd"], "per_run_usd": budget["per_run_usd"], "model_profile": PROFILE,
                 "critic_model": profile["models"]["critic"]["id"], "role": "critic", "reserved_tokens": 51152,
                 "reservation_usd": str(reservation)}
+    if amendment:
+        proposal["parent_grant_id"] = parent["grant_id"]
     return {"proposal_hash": canonical_hash(proposal), "proposal": proposal, "request": request,
-            "paid_calls_performed": 0, "approved": False, "next_reserved_token_total": 297561}
+            "paid_calls_performed": 0, "approved": False, "next_reserved_token_total": expected_tokens + 51152}
 
 
 def private_proposal():
@@ -147,12 +162,30 @@ def prepare(run_id, *, client=None, budget_reader=None, grant_id=None):
     existing = private_proposal() if PROPOSAL_FILE.exists() else None
     if existing and existing["proposal"]["run_id"] != run_id:
         raise ValueError("The private proposal belongs to another run; preserve it before continuing.")
-    grant_id = grant_id or (existing["proposal"]["grant_id"] if existing else uuid.uuid4().hex)
-    if not re.fullmatch(r"[a-f0-9]{32}", grant_id):
-        raise ValueError("The extension grant identifier is invalid.")
     client = client or JourneyClient(token=read_token(DEFAULT_CREDENTIALS), mode="live", base_url=DEFAULT_BASE_URL)
     run = client.request("GET", "/api/runs/" + run_id)
-    result = build_proposal(run, (budget_reader or read_budget)(run_id), config, grant_id)
+    budget = (budget_reader or read_budget)(run_id)
+    parent = budget.get("parent_run_budget_grant") or budget.get("run_budget_grant") or {}
+    retiring = (existing and budget.get("model_calls") == 13 and parent.get("approved") is True
+                and parent.get("consumed") is True and parent.get("max_calls") == 13
+                and existing["proposal"]["grant_id"] == parent.get("grant_id"))
+    grant_id = grant_id or (existing["proposal"]["grant_id"] if existing and not retiring else uuid.uuid4().hex)
+    if not re.fullmatch(r"[a-f0-9]{32}", grant_id):
+        raise ValueError("The extension grant identifier is invalid.")
+    result = build_proposal(run, budget, config, grant_id)
+    if retiring:
+        history = prep.PRIVATE / "critic_extension_history"
+        if history.is_symlink() or history.exists() and not history.is_dir():
+            raise ValueError("The private grant archive must be a regular directory.")
+        history.mkdir(mode=0o700, exist_ok=True)
+        history.chmod(0o700)
+        prep.write_private(history / (parent["grant_id"] + "-proposal.json"), json.dumps(existing, indent=2) + "\n", 0o600)
+        if APPROVAL_FILE.is_symlink():
+            raise ValueError("The previous grant receipt must be a regular private file.")
+        if APPROVAL_FILE.is_file():
+            prep.write_private(history / (parent["grant_id"] + "-authorization.json"), APPROVAL_FILE.read_text(), 0o600)
+            APPROVAL_FILE.unlink()
+        existing = None
     if existing and existing != result:
         raise ValueError("The prepared extension is stale; its exact checkpoint or critic request changed.")
     prep.ensure_private_directory()

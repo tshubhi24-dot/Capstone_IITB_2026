@@ -26,6 +26,13 @@ ROLES = {"planner", "researcher", "risk", "writer", "critic"}
 MODEL_RATES = {policy["id"]: (Decimal(policy["prompt_usd_per_token"]), Decimal(policy["completion_usd_per_token"]))
                for profile in MODEL_PROFILES.values() for policy in profile["models"].values()}
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
+OUTPUT_AUDIT_STAGES = frozenset({"passed", "finish_reason", "content_shape", "json_parse", "schema_validation",
+                                "credential_echo", "returned_model", "token_ceiling"})
+OUTPUT_FINISH_REASONS = frozenset({"stop", "length", "tool_calls", "content_filter", "error"})
+OUTPUT_SCHEMA_KEYWORDS = frozenset({"type", "required", "additionalProperties", "properties", "items", "prefixItems", "$ref",
+                                    "minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum", "enum", "const",
+                                    "pattern", "anyOf", "oneOf", "allOf", "not", "format", "uniqueItems"})
+OUTPUT_QUARANTINE_BYTES = 2_000_000
 HTTP_DIAGNOSTIC_STATUSES = frozenset({301, 302, 303, 307, 308, 400, 401, 402, 403, 404, 408, 409, 413, 415, 422, 429, 500, 502, 503, 504})
 FORBIDDEN_BODY_LIMIT = 16 * 1024
 FORBIDDEN_HINT_TYPES = {
@@ -175,6 +182,42 @@ def decimal(value):
     return result
 
 
+def contains_provider_credential(value, api_key):
+    """Also recognize JSON Unicode escapes without persisting decoded secrets."""
+    if not isinstance(value, str) or not api_key:
+        return False
+    if api_key in value:
+        return True
+    escaped = "".join("(?:" + re.escape(character) + "|\\\\u" + format(ord(character), "04x") + ")" for character in api_key)
+    return re.search(escaped, value, flags=re.IGNORECASE) is not None
+
+
+def private_output_audit(data, api_key):
+    """Keep bounded text candidates inside the gateway ledger, never its API."""
+    choices = data.get("choices")
+    choice = choices[0] if isinstance(choices, list) and choices and isinstance(choices[0], dict) else {}
+    message = choice.get("message") if isinstance(choice.get("message"), dict) else {}
+    raw = message.get("content")
+    kind = "string" if isinstance(raw, str) else "null" if raw is None else "boolean" if type(raw) is bool else "object" if isinstance(raw, dict) else "array" if isinstance(raw, list) else "number"
+    try:
+        raw_bytes = raw.encode(errors="replace") if isinstance(raw, str) else encoded(raw)
+    except (UnicodeError, ValueError, TypeError, RecursionError):
+        # Diagnostics must never prevent accounting for a known paid response.
+        raw_bytes = b""
+    candidate = raw if (isinstance(raw, str) and len(raw_bytes) <= OUTPUT_QUARANTINE_BYTES
+                        and not any(0xD800 <= ord(character) <= 0xDFFF for character in raw)
+                        and not contains_provider_credential(raw, api_key)
+                        and not re.search(r"(?:sk-or-v1-[a-fA-F0-9]{32,}|sk-proj-[A-Za-z0-9_-]{24,}|AIza[A-Za-z0-9_-]{35})", raw)) else None
+    generation = data.get("id")
+    if (not isinstance(generation, str) or not re.fullmatch(r"gen-[0-9A-Za-z-]{1,124}", generation)
+            or contains_provider_credential(generation, api_key)):
+        generation = None
+    finish = choice.get("finish_reason")
+    return {"generation_id": generation, "finish_reason": finish if isinstance(finish, str) and finish in OUTPUT_FINISH_REASONS else "missing" if finish is None else "other",
+            "content_type": kind, "content_bytes": len(raw_bytes), "content_sha256": hashlib.sha256(raw_bytes).hexdigest(),
+            "validation_stage": "content_shape", "schema_path": [], "schema_keyword": None, "candidate": candidate}
+
+
 def validate_config(value):
     required = {"enabled", "authorization_id", "version", "cap_usd", "per_run_usd", "max_calls_per_run",
                 "max_tokens_per_run", "prompt_token_ceiling", "max_message_bytes", "max_output_tokens", "models"}
@@ -234,10 +277,17 @@ class BudgetLedger:
                     proposal_hash TEXT NOT NULL,proposal TEXT NOT NULL,approval_sha256 TEXT NOT NULL,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS grant_consumptions(grant_id TEXT PRIMARY KEY,call_id TEXT NOT NULL UNIQUE,
                     request_hash TEXT NOT NULL,created REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS run_budget_grant_amendments(grant_id TEXT PRIMARY KEY,run_id TEXT NOT NULL UNIQUE,
+                    proposal_hash TEXT NOT NULL,proposal TEXT NOT NULL,approval_sha256 TEXT NOT NULL,created REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS model_output_audit(call_id TEXT PRIMARY KEY,generation_id TEXT,finish_reason TEXT NOT NULL,
+                    content_type TEXT NOT NULL,content_bytes INTEGER NOT NULL,content_sha256 TEXT,validation_stage TEXT NOT NULL,
+                    schema_path TEXT NOT NULL,schema_keyword TEXT,candidate TEXT,created REAL NOT NULL);
                 CREATE TRIGGER IF NOT EXISTS grant_no_update BEFORE UPDATE ON run_budget_grants BEGIN SELECT RAISE(ABORT,'Run grants are append only'); END;
                 CREATE TRIGGER IF NOT EXISTS grant_no_delete BEFORE DELETE ON run_budget_grants BEGIN SELECT RAISE(ABORT,'Run grants are append only'); END;
                 CREATE TRIGGER IF NOT EXISTS consumption_no_update BEFORE UPDATE ON grant_consumptions BEGIN SELECT RAISE(ABORT,'Grant consumptions are append only'); END;
                 CREATE TRIGGER IF NOT EXISTS consumption_no_delete BEFORE DELETE ON grant_consumptions BEGIN SELECT RAISE(ABORT,'Grant consumptions are append only'); END;
+                CREATE TRIGGER IF NOT EXISTS amendment_no_update BEFORE UPDATE ON run_budget_grant_amendments BEGIN SELECT RAISE(ABORT,'Run amendments are append only'); END;
+                CREATE TRIGGER IF NOT EXISTS amendment_no_delete BEFORE DELETE ON run_budget_grant_amendments BEGIN SELECT RAISE(ABORT,'Run amendments are append only'); END;
             """)
             db.execute("BEGIN IMMEDIATE")
             previous = db.execute("SELECT policy_hash FROM authorization WHERE id=?", (config["authorization_id"],)).fetchone()
@@ -293,6 +343,9 @@ class BudgetLedger:
                   "original_calls", "original_tokens", "max_calls", "max_tokens", "checkpoint_calls", "checkpoint_tokens",
                   "checkpoint_uncertain", "checkpoint_reported_spend_usd", "checkpoint_held_usd", "cap_usd", "per_run_usd",
                   "model_profile", "critic_model", "role", "reserved_tokens", "reservation_usd"}
+        amendment = isinstance(proposal, dict) and "parent_grant_id" in proposal
+        if amendment:
+            fields.add("parent_grant_id")
         if (not isinstance(proposal, dict) or set(proposal) != fields
                 or expected_hash != hashlib.sha256(encoded(proposal)).hexdigest()
                 or not isinstance(human_confirmation, str) or not human_confirmation.strip()):
@@ -302,8 +355,11 @@ class BudgetLedger:
                 or not isinstance(proposal["grant_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", proposal["grant_id"])
                 or not isinstance(proposal["run_id"], str) or not IDENTIFIER.fullmatch(proposal["run_id"])):
             raise ProviderError("invalid_configuration", "The run grant identifiers are invalid.")
-        exact = {"original_calls": 12, "original_tokens": 250000, "max_calls": 13, "max_tokens": 300000,
-                 "checkpoint_calls": 12, "checkpoint_tokens": 246409, "checkpoint_uncertain": 3, "reserved_tokens": 51152}
+        if amendment and (not isinstance(proposal["parent_grant_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", proposal["parent_grant_id"])
+                          or proposal["grant_id"] == proposal["parent_grant_id"]):
+            raise ProviderError("invalid_configuration", "The parent grant identifier is invalid.")
+        exact = {"original_calls": 12, "original_tokens": 250000, "max_calls": 14 if amendment else 13, "max_tokens": 350000 if amendment else 300000,
+                 "checkpoint_calls": 13 if amendment else 12, "checkpoint_tokens": 254246 if amendment else 246409, "checkpoint_uncertain": 3, "reserved_tokens": 51152}
         if any(type(proposal[key]) is not int or proposal[key] != value for key, value in exact.items()):
             raise ProviderError("invalid_configuration", "Only the reviewed one-call critic extension is supported.")
         profile = model_profile(self.config)
@@ -321,11 +377,22 @@ class BudgetLedger:
             raise ProviderError("invalid_configuration", "The grant differs from the reviewed critic policy or dollar limits.")
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
-            previous = db.execute("SELECT * FROM run_budget_grants WHERE run_id=? OR grant_id=?", (proposal["run_id"], proposal["grant_id"])).fetchone()
+            table = "run_budget_grant_amendments" if amendment else "run_budget_grants"
+            previous = db.execute(f"SELECT * FROM {table} WHERE run_id=? OR grant_id=?", (proposal["run_id"], proposal["grant_id"])).fetchone()
             if previous:
                 if previous["proposal_hash"] == expected_hash and json.loads(previous["proposal"]) == proposal:
                     return {"approved": True, "changed": False, "grant_id": proposal["grant_id"], "proposal_hash": expected_hash}
                 raise ProviderError("authorization_changed", "This run already has its one immutable extension grant.")
+            if amendment:
+                parent_row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=? AND grant_id=?", (proposal["run_id"], proposal["parent_grant_id"])).fetchone()
+                parent = json.loads(parent_row["proposal"]) if parent_row else {}
+                prior_call = db.execute("SELECT * FROM model_calls WHERE call_id=?", (parent.get("call_id", ""),)).fetchone()
+                if (not parent_row or not db.execute("SELECT EXISTS(SELECT 1 FROM grant_consumptions WHERE grant_id=?)", (proposal["parent_grant_id"],)).fetchone()[0]
+                        or any(parent.get(key) != proposal[key] for key in ("run_id", "policy_hash", "plan_hash", "draft_hash"))
+                        or not prior_call or prior_call["status"] != "invalid_output" or prior_call["usage"] is None
+                        or parent.get("max_calls") != 13 or parent.get("max_tokens") != 300000
+                        or proposal["call_id"] == parent.get("call_id")):
+                    raise ProviderError("authorization_changed", "The amendment requires the exact consumed parent and its billed invalid output.")
             rows = db.execute("SELECT * FROM model_calls WHERE run_id=?", (proposal["run_id"],)).fetchall()
             limits = db.execute("SELECT * FROM run_limits WHERE run_id=?", (proposal["run_id"],)).fetchone()
             all_rows = db.execute("SELECT * FROM model_calls").fetchall()
@@ -338,7 +405,7 @@ class BudgetLedger:
                     or charge + held + estimate > decimal(proposal["cap_usd"])
                     or run_charge + run_held + estimate > decimal(proposal["per_run_usd"])):
                 raise ProviderError("authorization_changed", "The reviewed run checkpoint, holds or dollar allowance changed.")
-            db.execute("INSERT INTO run_budget_grants VALUES(?,?,?,?,?,?)", (proposal["grant_id"], proposal["run_id"], expected_hash,
+            db.execute(f"INSERT INTO {table} VALUES(?,?,?,?,?,?)", (proposal["grant_id"], proposal["run_id"], expected_hash,
                        encoded(proposal).decode(), hashlib.sha256(human_confirmation.strip().encode()).hexdigest(), time.time()))
         return {"approved": True, "changed": True, "grant_id": proposal["grant_id"], "proposal_hash": expected_hash}
 
@@ -376,7 +443,9 @@ class BudgetLedger:
             if charge + held + usd > min(self.desk_cap, decimal(config["cap_usd"])) or run_charge + run_held + usd > run_cap:
                 raise ProviderError("budget_exhausted", "The remaining authorized model budget cannot cover this call.")
             if len(run_rows) >= call_cap or run_tokens + tokens > token_cap:
-                row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone()
+                row = db.execute("SELECT * FROM run_budget_grant_amendments WHERE run_id=?", (run_id,)).fetchone()
+                if row is None:
+                    row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone()
                 grant = json.loads(row["proposal"]) if row else None
                 if (not grant or role != "critic" or grant["policy_hash"] != self.policy_hash or grant["call_id"] != call_id
                         or grant["request_hash"] != request_hash or tokens != grant["reserved_tokens"]
@@ -394,7 +463,7 @@ class BudgetLedger:
         with self.connection() as db:
             db.execute("UPDATE model_calls SET status='uncertain',error_code=? WHERE call_id=? AND status='reserved'", (safe_error_code(code), call_id))
 
-    def settle(self, call_id, usage, result, error_code=None):
+    def settle(self, call_id, usage, result, error_code=None, *, output_audit=None):
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT * FROM model_calls WHERE call_id=?", (call_id,)).fetchone()
@@ -405,10 +474,32 @@ class BudgetLedger:
             db.execute("UPDATE model_calls SET status=?,charged_usd=?,usage=?,result=?,error_code=? WHERE call_id=?",
                        (state, str(usage["cost_usd"]), json.dumps(usage), json.dumps(result) if result else None,
                         "accounting_anomaly" if anomaly else error_code, call_id))
+            if output_audit is not None:
+                db.execute("INSERT INTO model_output_audit VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                           (call_id, output_audit["generation_id"], output_audit["finish_reason"], output_audit["content_type"],
+                            output_audit["content_bytes"], output_audit["content_sha256"], output_audit["validation_stage"],
+                            json.dumps(output_audit["schema_path"]), output_audit["schema_keyword"], output_audit["candidate"], time.time()))
             if anomaly:
                 db.execute("UPDATE authorization SET blocked=1 WHERE id=?", (row["authorization_id"],))
         if anomaly:
             raise ProviderError("accounting_anomaly", "Provider usage exceeded its reservation; further model spending is blocked.")
+
+    def export_quarantine(self, call_id):
+        """Operator-only private export of a failed, already-accounted candidate.
+
+        This has no HTTP route and does not validate, approve, cache as success,
+        reopen a call, release a hold or request any provider work.
+        """
+        if not isinstance(call_id, str) or not IDENTIFIER.fullmatch(call_id):
+            raise ProviderError("invalid_request", "A valid private quarantine call identifier is required.")
+        with self.connection() as db:
+            row = db.execute("SELECT audit.* FROM model_output_audit audit JOIN model_calls calls USING(call_id) WHERE call_id=? AND calls.status='invalid_output'",
+                             (call_id,)).fetchone()
+        if row is None or row["candidate"] is None:
+            raise ProviderError("invalid_request", "No credential-free failed candidate is available in private quarantine.")
+        value = dict(row)
+        value["schema_path"] = json.loads(value["schema_path"])
+        return value
 
     def summary(self, run_id=None):
         with self.connection() as db:
@@ -418,21 +509,45 @@ class BudgetLedger:
             grant_row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone() if run_id is not None else None
             grant = {**json.loads(grant_row["proposal"]), "approved": True,
                      "consumed": bool(db.execute("SELECT EXISTS(SELECT 1 FROM grant_consumptions WHERE grant_id=?)", (grant_row["grant_id"],)).fetchone()[0])} if grant_row else None
+            parent_grant = None
+            amendment_row = db.execute("SELECT * FROM run_budget_grant_amendments WHERE run_id=?", (run_id,)).fetchone() if run_id is not None else None
+            if amendment_row:
+                parent_grant = grant
+                grant = {**json.loads(amendment_row["proposal"]), "approved": True,
+                         "consumed": bool(db.execute("SELECT EXISTS(SELECT 1 FROM grant_consumptions WHERE grant_id=?)", (amendment_row["grant_id"],)).fetchone()[0])}
         selected = [row for row in rows if row["run_id"] == run_id] if run_id is not None else rows
         charge, held, tokens = self.totals(selected)
         global_charge, global_held, _ = self.totals(rows)
         effective_cap = min(self.desk_cap, decimal(self.config["cap_usd"]))
         run_cap = min(decimal(run_limit["cap_usd"]), decimal(self.config["per_run_usd"])) if run_limit else decimal(self.config["per_run_usd"])
+        settled_calls = []
+        observed_tokens = 0
+        for row in selected:
+            if row["usage"] is None:
+                continue
+            usage = json.loads(row["usage"])
+            observed_tokens += usage["total_tokens"]
+            safe_usage = {key: usage[key] for key in ("model_calls", "prompt_tokens", "completion_tokens", "total_tokens")
+                          if key in usage and type(usage[key]) is int and usage[key] >= 0}
+            if "cost_usd" in usage:
+                safe_usage["cost_usd"] = str(decimal(usage["cost_usd"]))
+            for key in ("model", "requested_model", "returned_model"):
+                if isinstance(usage.get(key), str) and usage[key] in {*MODEL_RATES, "unapproved"}:
+                    safe_usage[key] = usage[key]
+            safe_usage["call_id"] = row["call_id"]
+            if row["status"] in {"succeeded", "invalid_output", "accounting_anomaly"}:
+                settled_calls.append({"call_id": row["call_id"], "status": row["status"], "usage": safe_usage})
         return {"enabled": self.config["enabled"], "authorization_id": self.config["authorization_id"], "config_version": self.config["version"],
                 "cap_usd": str(effective_cap), "desk_cap_usd": str(self.desk_cap), "per_run_usd": str(run_cap), "ledger_scope": "desk_lifetime",
                 "reported_spend_usd": str(charge), "held_usd": str(held), "committed_usd": str(charge + held),
                 "authorization_committed_usd": str(global_charge + global_held),
                 "remaining_authorization_usd": str(max(Decimal(0), effective_cap - global_charge - global_held)),
                 "model_calls": len(selected), "tokens": tokens, "uncertain_calls": sum(row["status"] == "uncertain" for row in selected),
+                "observed_tokens": observed_tokens, "settled_calls": settled_calls,
                 "blocked": blocked, "run_id": run_id, "ledger_checkpoint_hash": self.checkpoint_hash(selected),
                 "original_max_calls_per_run": run_limit["max_calls"] if run_limit else self.config["max_calls_per_run"],
                 "original_max_tokens_per_run": run_limit["max_tokens"] if run_limit else self.config["max_tokens_per_run"],
-                "run_budget_grant": grant}
+                "run_budget_grant": grant, "parent_run_budget_grant": parent_grant}
 
 
 class ReasoningGateway:
@@ -550,26 +665,56 @@ class ReasoningGateway:
         if network_error is not None:
             raise ProviderError(network_error, "The provider outcome or charge is uncertain; its full reservation is retained and no automatic retry is allowed.")
         result, output_error = None, None
+        audit = private_output_audit(data, self.api_key)
+        validation_stage = "returned_model"
         try:
             if returned_model != policy["id"]:
                 raise ValueError("The returned model is not the exact approved model")
+            validation_stage = "token_ceiling"
             if raw_usage["prompt_tokens"] > config["prompt_token_ceiling"]:
                 raise ValueError("The provider prompt exceeded its token ceiling")
             if raw_usage["completion_tokens"] > max_output_tokens:
                 raise ValueError("The provider completion exceeded its token ceiling")
+            validation_stage = "content_shape"
+            if not isinstance(data.get("choices"), list) or not data["choices"] or not isinstance(data["choices"][0], dict):
+                raise ValueError("Missing structured completion choice")
             choice = data["choices"][0]
+            validation_stage = "finish_reason"
             if choice.get("finish_reason") != "stop":
                 raise ValueError("Incomplete model output")
-            content = json.loads(choice["message"]["content"])
+            validation_stage = "content_shape"
+            message = choice.get("message")
+            if not isinstance(message, dict) or not isinstance(message.get("content"), str):
+                raise ValueError("Expected a text completion")
+            validation_stage = "credential_echo"
+            if contains_provider_credential(message["content"], self.api_key):
+                raise ValueError("A provider credential cannot enter a model result")
+            validation_stage = "json_parse"
+            content = json.loads(message["content"])
+            validation_stage = "credential_echo"
             if self.api_key.encode() in encoded(content):
                 raise ValueError("A provider credential cannot enter a model result")
-            validator.validate(content)
+            validation_stage = "schema_validation"
+            schema_error = next(validator.iter_errors(content), None)
+            if schema_error is not None:
+                audit["schema_keyword"] = schema_error.validator if schema_error.validator in OUTPUT_SCHEMA_KEYWORDS else None
+                audit["schema_path"] = [item if isinstance(item, int) and 0 <= item <= 1000000 else item if isinstance(item, str)
+                                        and re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$-]{0,63}", item)
+                                        and not contains_provider_credential(item, self.api_key) else "field"
+                                        for item in list(schema_error.absolute_schema_path)[:16]]
+                raise ValueError("The structured completion failed its schema")
+            validation_stage = "content_shape"
             if not isinstance(content, dict):
                 raise ValueError("Expected object output")
             result = {"content": content, "usage": usage, "config_version": config["version"], "cached": False}
+            audit["validation_stage"] = "passed"
+            audit["candidate"] = None
         except Exception:
             output_error = "model_output_invalid"
-        self.ledger.settle(call_id, usage, result, output_error)
+            audit["validation_stage"] = validation_stage if validation_stage in OUTPUT_AUDIT_STAGES else "content_shape"
+            if validation_stage == "credential_echo":
+                audit["candidate"] = None
+        self.ledger.settle(call_id, usage, result, output_error, output_audit=audit)
         if output_error:
             raise ProviderError(output_error, "The model response failed its schema or completion checks; no automatic paid retry was made.")
         return result

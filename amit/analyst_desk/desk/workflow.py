@@ -82,6 +82,76 @@ def critic_extension_request(draft, run_id, grant_id, budget):
     raise ReviewError("The exact frozen critic request could not be reconstructed.")
 
 
+
+def reconcile_settled_model_call(usage, accounting, *, run_id, call_id, role):
+    """Record one authoritative billed failure without releasing other holds.
+
+    This can also reconcile an already stopped call using a fresh read-only
+    gateway budget; it never sends, retries or accepts model content.
+    """
+    try:
+        if (not isinstance(accounting, dict) or accounting.get("run_id") != run_id
+                or not isinstance(accounting.get("config_version"), str)
+                or not 1 <= len(accounting["config_version"]) <= 200
+                or not isinstance(accounting.get("settled_calls"), list)):
+            return False
+        matches = [item for item in accounting["settled_calls"]
+                   if isinstance(item, dict) and item.get("call_id") == call_id]
+        if len(matches) != 1:
+            return False
+        settled = matches[0]
+        observed = settled.get("usage")
+        if (set(settled) != {"call_id", "status", "usage"} or settled["status"] not in {"invalid_output", "succeeded"}
+                or not isinstance(observed, dict) or observed.get("call_id") != call_id
+                or type(observed.get("model_calls")) is not int or observed["model_calls"] != 1):
+            return False
+        for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+            if type(observed.get(key)) is not int or observed[key] < 0:
+                return False
+        if observed["total_tokens"] <= 0 or observed["total_tokens"] != observed["prompt_tokens"] + observed["completion_tokens"]:
+            return False
+        cost = Decimal(str(observed["cost_usd"]))
+        amounts = [Decimal(str(accounting[key])) for key in ("reported_spend_usd", "held_usd", "committed_usd")]
+        if (not cost.is_finite() or cost < 0 or not all(value.is_finite() and value >= 0 for value in amounts)
+                or amounts[2] != amounts[0] + amounts[1]):
+            return False
+        calls = deepcopy(usage.get("calls", []))
+        if not isinstance(calls, list) or len({item["call_id"] for item in calls}) != len(calls):
+            return False
+        recorded = [item for item in calls if item["call_id"] == call_id]
+        entry = {key: observed[key] for key in ("call_id", "model_calls", "prompt_tokens", "completion_tokens", "total_tokens", "cost_usd")}
+        from .provider import MODEL_RATES
+        for key in ("model", "requested_model", "returned_model"):
+            if observed.get(key) in MODEL_RATES:
+                entry[key] = observed[key]
+        entry.update(stage=role, config_version=accounting["config_version"], accepted_output=settled["status"] == "succeeded")
+        if recorded:
+            if any(recorded[0].get(key) != entry[key] for key in ("call_id", "prompt_tokens", "completion_tokens", "total_tokens", "cost_usd")):
+                return False
+        else:
+            if call_id not in (usage.get("model_reservations") or {}):
+                return False
+            calls.append(entry)
+        reservations = dict(usage.get("model_reservations") or {})
+        reservations.pop(call_id, None)
+        total_tokens = sum(item["total_tokens"] for item in calls)
+        total_cost = sum((Decimal(str(item["cost_usd"])) for item in calls), Decimal(0))
+        if (any(type(item.get("total_tokens")) is not int or item["total_tokens"] <= 0 for item in calls)
+                or not total_cost.is_finite() or total_cost < 0 or total_cost != amounts[0]
+                or type(accounting.get("observed_tokens")) is not int or accounting["observed_tokens"] != total_tokens
+                or type(accounting.get("model_calls")) is not int or accounting["model_calls"] != len(calls) + len(reservations)
+                or type(accounting.get("uncertain_calls")) is not int or accounting["uncertain_calls"] != len(reservations)
+                or type(accounting.get("tokens")) is not int or accounting["tokens"] < total_tokens
+                or reservations and (amounts[1] <= 0 or accounting["tokens"] <= total_tokens)):
+            return False
+    except (KeyError, ValueError, TypeError, ArithmeticError):
+        return False
+    usage.update(calls=calls, model_reservations=reservations, tokens=total_tokens,
+                 model_calls=accounting["model_calls"], cost_usd=float(amounts[0]), held_usd=float(amounts[1]),
+                 committed_usd=float(amounts[2]), accounting_status="provider_reported_with_holds", gateway_budget=deepcopy(accounting))
+    return True
+
+
 def live_body(draft):
     from .reasoning import render_claims
     claims = {claim["claim_id"]: claim for claim in draft["narrative_claims"]}
@@ -297,11 +367,28 @@ class Engine:
                     run = self.store.get_run(state["run_id"])
                     usage = run["usage"]
                     if accounting is not None:
+                        try:
+                            amounts = [Decimal(str(accounting[key])) for key in ("reported_spend_usd", "held_usd", "committed_usd")]
+                            if (type(accounting["model_calls"]) is not int or accounting["model_calls"] < 0
+                                    or not all(value.is_finite() and value >= 0 for value in amounts)
+                                    or amounts[2] != amounts[0] + amounts[1]):
+                                accounting = None
+                        except (KeyError, ValueError, TypeError, ArithmeticError):
+                            accounting = None
+                    if accounting is not None:
+                        reconciled = reconcile_settled_model_call(usage, accounting, run_id=state["run_id"], call_id=identifier, role=role)
+                        if ("settled_calls" in accounting and not reconciled
+                                and (accounting.get("uncertain_calls") != len(usage.get("model_reservations", {}))
+                                     or usage.get("model_reservations") and Decimal(str(accounting["held_usd"])) <= 0)):
+                            accounting = None
+                    if accounting is not None:
                         usage.update(model_calls=accounting["model_calls"], cost_usd=float(accounting["reported_spend_usd"]),
                             held_usd=float(accounting["held_usd"]), committed_usd=float(accounting["committed_usd"]),
                             accounting_status="provider_reported_with_holds", gateway_budget=accounting)
                     else:
-                        usage.update(cost_usd=None, held_usd=None, committed_usd=None, accounting_status="unknown_after_failure")
+                        # Unknown accounting cannot erase a previously known
+                        # held allowance or release any local reservation.
+                        usage.update(cost_usd=None, committed_usd=None, accounting_status="unknown_after_failure")
                     self.store.save_run(run)
                 from .provider import ProviderError, safe_error_code
                 code = safe_error_code(exc.code) if isinstance(exc, ProviderError) else "gateway_request_failed"
@@ -674,8 +761,24 @@ class Engine:
             raise ReviewError("The approved critic extension metadata is unavailable.") from None
         queued = run.get("queued_continuation") or {}
         extension = run.get("approved_critic_extension")
-        if extension and not (allow_queued and queued.get("critic_extension") == grant_id
-                              and extension.get("grant_id") == grant_id):
+        amendment = grant.get("parent_grant_id") is not None
+        parent = budget.get("parent_run_budget_grant") or {}
+        if amendment:
+            history = run.get("critic_extension_history", [])
+            prior = history[0] if history else extension
+            queued_amendment = (allow_queued and queued.get("critic_extension") == grant_id
+                                and (extension or {}).get("grant_id") == grant_id)
+            if (not isinstance(prior, dict) or prior.get("max_calls") != 13
+                    or prior.get("grant_id") != grant.get("parent_grant_id")
+                    or parent.get("grant_id") != prior.get("grant_id")
+                    or parent.get("approved") is not True or parent.get("consumed") is not True
+                    or {key: value for key, value in prior.items() if key not in {"authorization_id", "config_version"}}
+                       != {key: value for key, value in parent.items() if key != "consumed"}
+                    or len(history) > 1 or history and not queued_amendment
+                    or extension and extension.get("max_calls") == 14 and not queued_amendment):
+                raise ReviewError("The amendment requires its unchanged consumed first grant and can be requested only once.")
+        elif extension and not (allow_queued and queued.get("critic_extension") == grant_id
+                                and extension.get("grant_id") == grant_id):
             raise ReviewError("The one approved critic extension has already been requested.")
         draft = snapshot.values.get("draft")
         reservations = run.get("usage", {}).get("model_reservations") or {}
@@ -687,12 +790,13 @@ class Engine:
         failed_ids = {item.get("details", {}).get("call_id") for item in events
                       if item["agent"] == "critic" and item["stage"] == "model_error"
                       and item.get("details", {}).get("error_code") == "provider_http_429"}
+        expected_error = "model_output_invalid" if amendment else "provider_http_429"
         if (not isinstance(grant_id, str) or not re.fullmatch(r"[a-f0-9]{32}", grant_id)
-                or not str(run.get("error", "")).startswith("ReviewError: provider_http_429:")
+                or not str(run.get("error", "")).startswith("ReviewError: " + expected_error + ":")
                 or set(snapshot.next) != {"critic"} or not errors
-                or any(not re.match(r"^ReviewError\(['\"]provider_http_429:", str(error)) for error in errors)
+                or any(not re.match(r"^ReviewError\(['\"]" + expected_error + ":", str(error)) for error in errors)
                 or last.get("agent") != "critic" or last.get("stage") != "model_error"
-                or last.get("details", {}).get("error_code") != "provider_http_429"
+                or last.get("details", {}).get("error_code") != expected_error
                 or len(reservations) != 3 or set(reservations) != failed_ids
                 or any(type(value) is not int or value <= 0 for value in reservations.values())
                 or set(reservations) & {item.get("call_id") for item in run["usage"].get("calls", [])}
@@ -700,6 +804,10 @@ class Engine:
                 or not set(replacement.get("failed_call_ids", [])) < set(reservations)
                 or len(replacement.get("failed_call_ids", [])) != 2
                 or last.get("details", {}).get("call_id") in replacement.get("failed_call_ids", [])
+                or amendment and (last.get("details", {}).get("call_id") != parent.get("call_id")
+                    or parent.get("call_id") in reservations
+                    or not any(item.get("call_id") == parent.get("call_id") and item.get("accepted_output") is False
+                               for item in run["usage"].get("calls", [])))
                 or not isinstance(draft, dict) or transient.get("draft_hash") != canonical_hash(draft)
                 or replacement.get("draft_hash") != canonical_hash(draft)
                 or snapshot.values.get("human_edited") or (run.get("pending") or {}).get("kind") == "note"
@@ -710,8 +818,9 @@ class Engine:
         if (budget.get("model_profile") != profile["version"] or budget.get("models") != models
                 or budget.get("provider") != profile["provider"] or budget.get("providers") != profile["providers"]
                 or (previous.get("models") or {}).get("producer") != models["producer"]
-                or (previous.get("models") or {}).get("critic") != "mistralai/mistral-large-2407"
-                or budget.get("authorization_id") == previous.get("authorization_id")
+                or (previous.get("models") or {}).get("critic") != (models["critic"] if amendment else "mistralai/mistral-large-2407")
+                or (budget.get("authorization_id") != previous.get("authorization_id") if amendment
+                    else budget.get("authorization_id") == previous.get("authorization_id"))
                 or budget.get("run_id") != run["id"] or budget.get("enabled") is not True or budget.get("blocked") is not False
                 or grant.get("approved") is not True or grant.get("consumed") is not False
                 or grant.get("grant_id") != grant_id or grant.get("run_id") != run["id"]
@@ -724,8 +833,8 @@ class Engine:
                 or not isinstance(grant.get("checkpoint_hash"), str) or not re.fullmatch(r"[a-f0-9]{64}", grant["checkpoint_hash"])):
             raise ReviewError("A fresh separately approved grant for this exact Google critic policy and checkpoint is required.")
         try:
-            exact = {"original_calls": 12, "original_tokens": 250000, "max_calls": 13, "max_tokens": 300000,
-                     "checkpoint_calls": 12, "checkpoint_tokens": 246409, "checkpoint_uncertain": 3, "reserved_tokens": 51152}
+            exact = {"original_calls": 12, "original_tokens": 250000, "max_calls": 14 if amendment else 13, "max_tokens": 350000 if amendment else 300000,
+                     "checkpoint_calls": 13 if amendment else 12, "checkpoint_tokens": 254246 if amendment else 246409, "checkpoint_uncertain": 3, "reserved_tokens": 51152}
             if any(type(grant[key]) is not int or grant[key] != value for key, value in exact.items()):
                 raise ValueError
             if (run["request"].get("max_model_calls") != 12 or run["request"].get("max_tokens") != 250000
@@ -733,7 +842,7 @@ class Engine:
                     or budget["max_calls_per_run"] != 12 or budget["max_tokens_per_run"] != 250000
                     or budget["prompt_token_ceiling"] != 49152 or budget["max_message_bytes"] != 45056
                     or type(budget["max_output_tokens"]) is not int or not 2000 <= budget["max_output_tokens"] <= 4096
-                    or budget["model_calls"] != 12 or budget["tokens"] != 246409 or budget["uncertain_calls"] != 3
+                    or budget["model_calls"] != exact["checkpoint_calls"] or budget["tokens"] != exact["checkpoint_tokens"] or budget["uncertain_calls"] != 3
                     or budget["model_calls"] != len(run["usage"].get("calls", [])) + len(reservations)
                     or budget["model_calls"] != previous["model_calls"] or budget["tokens"] != previous["tokens"]
                     or budget["tokens"] + grant["reserved_tokens"] > grant["max_tokens"]):
@@ -766,7 +875,7 @@ class Engine:
         proof = {key: deepcopy(value) for key, value in grant.items() if key != "consumed"}
         proof["authorization_id"] = budget["authorization_id"]
         proof["config_version"] = budget["config_version"]
-        if extension and extension != proof:
+        if extension and (not amendment or extension.get("grant_id") == grant_id) and extension != proof:
             raise ReviewError("The approved critic extension or frozen request changed.")
         return proof
 
@@ -793,6 +902,9 @@ class Engine:
                 run["queued_continuation"].update(replace_critic_policy=replace_critic_policy, draft_hash=replacement["draft_hash"])
             if critic_extension is not None:
                 extension = self._critic_extension_proof(run, snapshot, self.store.events(run_id), critic_extension)
+                prior = run.get("approved_critic_extension")
+                if prior and prior.get("grant_id") != extension["grant_id"]:
+                    run.setdefault("critic_extension_history", []).append(deepcopy(prior))
                 run["approved_critic_extension"] = extension
                 run["draft"] = deepcopy(snapshot.values["draft"])
                 run["queued_continuation"].update(critic_extension=critic_extension, draft_hash=extension["draft_hash"])

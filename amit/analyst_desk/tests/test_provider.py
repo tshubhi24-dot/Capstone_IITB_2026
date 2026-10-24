@@ -17,6 +17,55 @@ TOKEN = "invented-private-gateway-token-" * 3
 SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}}, "required": ["answer"], "additionalProperties": False}
 
 
+@pytest.mark.parametrize("case,stage", [("json", "json_parse"), ("schema", "schema_validation"),
+                                       ("finish", "finish_reason"), ("nested_surrogate", "content_shape")])
+def test_invalid_paid_output_retains_private_audit_and_authoritative_usage(tmp_path, config, case, stage):
+    body = response()
+    body["id"] = "gen-synthetic-audit"
+    if case == "json":
+        body["choices"][0]["message"]["content"] = "{not valid JSON"
+    elif case == "schema":
+        body["choices"][0]["message"]["content"] = '{"unexpected":"Synthetic invalid schema"}'
+    elif case == "finish":
+        body["choices"][0]["finish_reason"] = "length"
+    else:
+        body["choices"][0]["message"]["content"] = {"nested": "\ud800"}
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(200, content=json.dumps(body, ensure_ascii=True).encode()))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "model_output_invalid" and len(calls) == 1
+    budget = engine.budget("run-one")
+    assert budget["reported_spend_usd"] == "0.0001" and budget["held_usd"] == "0"
+    assert budget["observed_tokens"] == 15 and budget["settled_calls"][0]["status"] == "invalid_output"
+    assert "candidate" not in json.dumps(budget) and "gen-synthetic-audit" not in json.dumps(budget)
+    with engine.ledger.connection() as db:
+        audit = dict(db.execute("SELECT * FROM model_output_audit").fetchone())
+        row = db.execute("SELECT status,result FROM model_calls").fetchone()
+    assert audit["validation_stage"] == stage and audit["generation_id"] == "gen-synthetic-audit"
+    assert tuple(row) == ("invalid_output", None)
+    if case != "nested_surrogate":
+        assert engine.ledger.export_quarantine(arguments()["call_id"])["candidate"] == body["choices"][0]["message"]["content"]
+    with pytest.raises(ProviderError) as repeated:
+        engine.complete(**arguments())
+    assert repeated.value.code == "call_not_retriable" and len(calls) == 1
+
+
+@pytest.mark.parametrize("escaped", [False, True])
+def test_private_quarantine_never_stores_provider_credentials(tmp_path, config, escaped):
+    raw = KEY if not escaped else "".join("\\u" + format(ord(char), "04x") for char in KEY)
+    body = response()
+    body["choices"][0]["message"]["content"] = '{"answer":"' + raw + '"}'
+    engine, _ = gateway(tmp_path, config, lambda _: httpx.Response(200, json=body))
+    with pytest.raises(ProviderError):
+        engine.complete(**arguments())
+    with engine.ledger.connection() as db:
+        audit = dict(db.execute("SELECT * FROM model_output_audit").fetchone())
+    assert audit["validation_stage"] == "credential_echo" and audit["candidate"] is None
+    assert KEY not in json.dumps(audit)
+    with pytest.raises(ProviderError):
+        engine.ledger.export_quarantine(arguments()["call_id"])
+
+
 @pytest.fixture
 def config():
     return {"enabled": True, "authorization_id": "test-authorization", "version": "test-v1", "cap_usd": "1.00", "per_run_usd": ".50",

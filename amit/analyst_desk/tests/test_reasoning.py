@@ -587,3 +587,26 @@ def test_temporal_pair_idiom_requires_scoped_distinct_cited_periods(evidence):
 def test_temporal_idiom_cannot_exempt_financial_quantities_or_durations(text):
     with pytest.raises(ReasoningError, match="quantity"):
         validate_prose(text, comparison_periods=(2023, 2024))
+
+
+def test_critic_prompt_requests_brief_reasons_and_exact_json_without_relaxing_schema(evidence):
+    captured = []
+    def model(stage, **request):
+        assert stage == "critic"
+        captured.append(request)
+        return {"issues": [], "verdicts": [{"claim_id": claim()["claim_id"], "supported": True,
+                                               "reason": "Selected disclosures support the conditional claim."}]}
+    verdict = Reasoner(model).critique(draft([claim()]), evidence)
+    instructions = captured[0]["system"]
+    assert "single brief sentence of 8 to 200 characters" in instructions
+    assert "provided claim_id, copying that ID unchanged" in instructions
+    assert "only a JSON object with verdicts and issues, without code fences or extra fields" in instructions
+    assert "each verdict contains only claim_id, supported and reason" in instructions
+    assert "fallible model judgment, not ground truth" in instructions
+    schema = captured[0]["schema"]
+    assert schema == CriticOutput.model_json_schema()
+    reason = schema["$defs"]["Verdict"]["properties"]["reason"]
+    assert reason["minLength"] == 8 and reason["maxLength"] == 400
+    assert schema["additionalProperties"] is False
+    assert schema["$defs"]["Verdict"]["additionalProperties"] is False
+    assert verdict["passed"] is True

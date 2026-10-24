@@ -790,3 +790,190 @@ def test_exact_critic_extension_rechecked_and_never_repeated(fixture, change):
     with pytest.raises(ReviewError):
         engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
     assert store.notes() == []
+
+
+def billed_invalid_critic_extension(engine, store):
+    """Fictional settled invalid output at call13, retaining three older holds."""
+    plan, stopped, client = approved_extension_failure(engine, store)
+    stored = store.get_run(stopped["id"])
+    extra = 60185 - stored["usage"]["tokens"]
+    first = stored["usage"]["calls"][0]
+    first["prompt_tokens"] += extra
+    first["total_tokens"] += extra
+    client.cache[first["call_id"]]["usage"]["prompt_tokens"] += extra
+    client.cache[first["call_id"]]["usage"]["total_tokens"] += extra
+    stored["usage"]["tokens"] = 60185
+    store.save_run(stored)
+    original_budget = client.budget
+    invalid = None
+    parent = None
+    held = original_budget(stopped["id"])["held_usd"]
+    def complete(**request):
+        nonlocal invalid, parent
+        if client.grant["max_calls"] == 13:
+            assert request["call_id"] == client.grant["call_id"]
+            client.calls.append(deepcopy(request))
+            client.grant["consumed"] = True
+            parent = deepcopy(client.grant)
+            invalid = {"call_id": request["call_id"], "status": "invalid_output", "usage": {
+                "call_id": request["call_id"], "model_calls": 1, "prompt_tokens": 6934, "completion_tokens": 903,
+                "total_tokens": 7837, "cost_usd": "0.0043377", "model": "google/gemini-2.5-flash"}}
+            raise ProviderError("model_output_invalid", "Test-only billed invalid schema output.")
+        client.grant["consumed"] = True
+        return FakeModelClient.complete(client, **request)
+    def budget(run_id):
+        value = original_budget(run_id)
+        if invalid is not None:
+            observed = sum(item["usage"]["total_tokens"] for item in client.cache.values()) + 7837
+            cost = sum((Decimal(item["usage"]["cost_usd"]) for item in client.cache.values()), Decimal(".0043377"))
+            value.update(tokens=254246 + max(0, len(client.cache) - 9) * 20,
+                model_calls=len(client.calls), uncertain_calls=3, observed_tokens=observed,
+                reported_spend_usd=str(cost), held_usd=held, committed_usd=str(cost + Decimal(held)),
+                remaining_authorization_usd=str(Decimal(1) - cost - Decimal(held)),
+                settled_calls=[{"call_id": item["usage"]["call_id"], "status": "succeeded", "usage": deepcopy(item["usage"])} for item in client.cache.values()] + [deepcopy(invalid)])
+            if client.grant.get("parent_grant_id"):
+                value["parent_run_budget_grant"] = deepcopy(parent)
+                value["ledger_checkpoint_hash"] = "e" * 64
+        return value
+    client.complete, client.budget = complete, budget
+    engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    failed = engine.execute(stopped["id"])
+    return plan, failed, client
+
+
+def test_billed_invalid_critic_records_observed_usage_and_releases_only_its_settled_reservation(fixture):
+    engine, store, _, _, _, _ = fixture
+    _, failed, client = billed_invalid_critic_extension(engine, store)
+    assert failed["status"] == "error" and "model_output_invalid" in failed["error"]
+    assert failed["usage"]["tokens"] == 68022 and failed["usage"]["model_calls"] == 13
+    assert len(failed["usage"]["calls"]) == 10 and len(failed["usage"]["model_reservations"]) == 3
+    assert client.grant["call_id"] not in failed["usage"]["model_reservations"]
+    recorded = failed["usage"]["calls"][-1]
+    assert recorded["call_id"] == client.grant["call_id"] and recorded["accepted_output"] is False
+    assert recorded["total_tokens"] == 7837 and recorded["cost_usd"] == "0.0043377"
+    assert failed["usage"]["cost_usd"] == .0133377 and failed["usage"]["held_usd"] > 0
+    assert failed["usage"]["gateway_budget"]["tokens"] - failed["usage"]["tokens"] == 186224
+    assert client.grant["consumed"] is True and store.notes() == []
+
+
+@pytest.mark.parametrize("change", ["call_id", "status", "negative", "nan", "inconsistent", "observed", "uncertain", "count", "held", "duplicate", "config"])
+def test_malformed_settled_accounting_never_releases_current_or_older_reservations(fixture, change):
+    from desk.workflow import reconcile_settled_model_call
+    engine, store, _, _, _, _ = fixture
+    _, failed, client = billed_invalid_critic_extension(engine, store)
+    usage = deepcopy(failed["usage"])
+    last = usage["calls"].pop()
+    usage["tokens"] -= last["total_tokens"]
+    usage["model_reservations"][last["call_id"]] = 29447
+    budget = client.budget(failed["id"])
+    item = budget["settled_calls"][-1]
+    if change == "call_id": item["usage"]["call_id"] = "other"
+    elif change == "status": item["status"] = "uncertain"
+    elif change == "negative": item["usage"]["completion_tokens"] = -1
+    elif change == "nan": item["usage"]["cost_usd"] = "NaN"
+    elif change == "inconsistent": item["usage"]["total_tokens"] += 1
+    elif change == "observed": budget["observed_tokens"] += 1
+    elif change == "uncertain": budget["uncertain_calls"] = 0
+    elif change == "count": budget["model_calls"] = 12
+    elif change == "held": budget["held_usd"] = "0"
+    elif change == "duplicate": budget["settled_calls"].append(deepcopy(item))
+    elif change == "config": budget.pop("config_version")
+    before = deepcopy(usage)
+    assert not reconcile_settled_model_call(usage, budget, run_id=failed["id"], call_id=last["call_id"], role="critic")
+    assert usage == before
+
+
+def approved_critic_amendment(engine, store):
+    from desk.workflow import critic_extension_request
+    plan, failed, client = billed_invalid_critic_extension(engine, store)
+    parent = deepcopy(client.grant)
+    budget = client.budget(failed["id"])
+    grant_id = "d" * 32
+    request = critic_extension_request(failed["draft"], failed["id"], grant_id, budget)
+    client.grant = {**parent, "grant_id": grant_id, "parent_grant_id": parent["grant_id"], "consumed": False,
+        "call_id": request["call_id"], "request_hash": canonical_hash(request), "checkpoint_hash": "e" * 64,
+        "max_calls": 14, "max_tokens": 350000, "checkpoint_calls": 13, "checkpoint_tokens": 254246,
+        "checkpoint_reported_spend_usd": budget["reported_spend_usd"], "checkpoint_held_usd": budget["held_usd"]}
+    return plan, failed, client
+
+
+def test_second_human_approved_critic_amendment_retains_first_grant_and_every_old_hold(fixture):
+    engine, store, source, _, _, _ = fixture
+    plan, failed, client = approved_critic_amendment(engine, store)
+    first = deepcopy(failed["approved_critic_extension"])
+    view = engine.view(failed["id"])
+    assert view["continuation"]["grant_id"] == client.grant["grant_id"]
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    claimed = store.get_run(failed["id"])
+    assert claimed["critic_extension_history"] == [first]
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    note = engine.execute(failed["id"])
+    assert note["status"] == "awaiting_note", note.get("error")
+    assert note["usage"]["model_calls"] == 14 and note["usage"]["tokens"] == 68042
+    assert note["usage"]["model_reservations"] == failed["usage"]["model_reservations"]
+    assert note["request"] == failed["request"] and note["request"]["max_model_calls"] == 12
+    assert note["critic_extension_history"] == [first] and note["approved_critic_extension"]["max_calls"] == 14
+    assert note["usage"]["calls"][-2]["accepted_output"] is False
+    assert note["usage"]["calls"][-1]["call_id"] != first["call_id"]
+    assert verify_draft(note["draft"], source)["passed"] and store.notes() == []
+
+
+@pytest.mark.parametrize("change", ["parent", "parent_consumed", "parent_draft", "fifteenth", "tokens", "stale", "unknown_output", "403", "same_id"])
+def test_critic_amendment_rejects_wrong_parent_stale_or_unbounded_retry(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    plan, failed, client = approved_critic_amendment(engine, store)
+    if change == "parent": client.grant["parent_grant_id"] = "e" * 32
+    elif change == "parent_consumed":
+        original = client.budget
+        def budget(run_id):
+            value = original(run_id)
+            value["parent_run_budget_grant"]["consumed"] = False
+            return value
+        client.budget = budget
+    elif change == "parent_draft":
+        stored = store.get_run(failed["id"])
+        stored["approved_critic_extension"]["draft_hash"] = "f" * 64
+        store.save_run(stored)
+    elif change == "fifteenth": client.grant["max_calls"] = 15
+    elif change == "tokens": client.grant["max_tokens"] = 400000
+    elif change == "stale": client.grant["checkpoint_hash"] = "f" * 64
+    elif change in {"unknown_output", "403"}:
+        stored = store.get_run(failed["id"])
+        if change == "unknown_output": stored["usage"]["calls"][-1].pop("accepted_output")
+        else: stored["error"] = "ReviewError: provider_http_403: refused"
+        store.save_run(stored)
+    else: client.grant["call_id"] = failed["approved_critic_extension"]["call_id"]
+    before = deepcopy(store.get_run(failed["id"]))
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    assert store.get_run(failed["id"]) == before and len(client.calls) == 13
+
+
+def test_settled_invalid_accounting_reconciliation_is_read_only_and_idempotent(fixture):
+    from desk.workflow import reconcile_settled_model_call
+    engine, store, _, _, _, _ = fixture
+    _, failed, client = billed_invalid_critic_extension(engine, store)
+    usage = deepcopy(failed["usage"])
+    before_calls = len(client.calls)
+    assert reconcile_settled_model_call(usage, client.budget(failed["id"]),
+        run_id=failed["id"], call_id=client.grant["call_id"], role="critic")
+    assert usage["calls"] == failed["usage"]["calls"] and usage["tokens"] == 68022
+    assert len(client.calls) == before_calls and len(usage["model_reservations"]) == 3
+
+
+def test_amendment_cannot_resume_after_failed_final_call(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed, client = approved_critic_amendment(engine, store)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    def final_failure(**request):
+        client.calls.append(deepcopy(request))
+        client.grant["consumed"] = True
+        raise ProviderError("model_output_invalid", "Test-only terminal final invalid output.")
+    client.complete = final_failure
+    stopped = engine.execute(failed["id"])
+    assert stopped["status"] == "error" and len(client.calls) == 14
+    assert len(stopped["critic_extension_history"]) == 1
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    assert len(client.calls) == 14 and store.notes() == []

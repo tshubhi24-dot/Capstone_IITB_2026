@@ -245,3 +245,79 @@ def test_host_preparation_and_authorization_are_separate_exact_hash_operations(c
     assert "Synthetic explicit" not in json.dumps(result)
     assert "Synthetic explicit" in extension.APPROVAL_FILE.read_text()
     assert context["gateway"].budget("same-run")["model_calls"] == 12
+
+
+def stopped_after_invalid_thirteenth(context):
+    register(context)
+    reserve(context)
+    usage = {"call_id": context["proposal"]["call_id"], "prompt_tokens": 6934,
+             "completion_tokens": 903, "total_tokens": 7837, "cost_usd": "0.0043377",
+             "model": "google/gemini-2.5-flash", "model_calls": 1}
+    context["gateway"].ledger.settle(context["proposal"]["call_id"], usage, None, "model_output_invalid")
+    run = deepcopy(context["run"])
+    run["error"] = "ReviewError: model_output_invalid: Synthetic rejected formatting"
+    return run
+
+
+def test_amendment_is_exactly_one_more_critic_after_known_invalid_output(context):
+    run = stopped_after_invalid_thirteenth(context)
+    budget = context["gateway"].budget("same-run")
+    package = extension.build_proposal(run, budget, context["config"], "e" * 32)
+    grant = package["proposal"]
+    assert grant["parent_grant_id"] == context["proposal"]["grant_id"]
+    assert (grant["max_calls"], grant["max_tokens"], package["next_reserved_token_total"]) == (14, 350000, 305398)
+    assert grant["call_id"] != context["proposal"]["call_id"]
+    assert grant["request_hash"] == canonical_hash(package["request"])
+    amended = {**context, **package}
+    register(amended)
+    reserve(amended)
+    after = context["gateway"].budget("same-run")
+    assert after["model_calls"] == 14 and after["tokens"] == 305398 and after["uncertain_calls"] == 3
+    assert after["parent_run_budget_grant"]["grant_id"] == context["proposal"]["grant_id"]
+    assert after["parent_run_budget_grant"]["consumed"] and after["run_budget_grant"]["consumed"]
+    assert after["original_max_calls_per_run"] == 12 and after["original_max_tokens_per_run"] == 250000
+    with pytest.raises(ProviderError):
+        reserve(amended, call_id="fifteenth", request_hash="other", tokens=1, usd=Decimal(".000001"))
+
+
+@pytest.mark.parametrize("change", ["parent", "settlement", "draft", "error", "tokens"])
+def test_amendment_preparation_rejects_a_changed_parent_or_checkpoint(context, change):
+    run = stopped_after_invalid_thirteenth(context)
+    budget = context["gateway"].budget("same-run")
+    if change == "parent":
+        budget["run_budget_grant"]["consumed"] = False
+    elif change == "settlement":
+        budget["settled_calls"] = []
+    elif change == "draft":
+        run["draft"]["body"] += " Changed."
+    elif change == "error":
+        run["error"] = "ReviewError: provider_http_403: Synthetic refusal"
+    else:
+        budget["tokens"] += 1
+    with pytest.raises(ValueError):
+        extension.build_proposal(run, budget, context["config"], "e" * 32)
+
+
+def test_host_amendment_archives_consumed_parent_and_is_idempotent(context, tmp_path, monkeypatch):
+    private = tmp_path / "private"
+    private.mkdir(mode=0o700)
+    monkeypatch.setattr(prep, "PRIVATE", private)
+    monkeypatch.setattr(extension, "PROPOSAL_FILE", private / "proposal.json")
+    monkeypatch.setattr(extension, "APPROVAL_FILE", private / "approval.json")
+    monkeypatch.setattr(prep, "load_config", lambda: deepcopy(context["config"]))
+    prep.write_private(extension.PROPOSAL_FILE, json.dumps({key: context[key] for key in
+                       ("proposal_hash", "proposal", "request", "paid_calls_performed", "approved", "next_reserved_token_total")}), 0o600)
+    prep.write_private(extension.APPROVAL_FILE, "Synthetic parent approval", 0o600)
+    run = stopped_after_invalid_thirteenth(context)
+    class Client:
+        def request(self, method, path):
+            assert method == "GET"
+            return deepcopy(run)
+    reader = lambda _: context["gateway"].budget("same-run")
+    first = extension.prepare("same-run", client=Client(), budget_reader=reader, grant_id="e" * 32)
+    assert first["proposal"]["parent_grant_id"] == context["proposal"]["grant_id"]
+    assert not extension.APPROVAL_FILE.exists()
+    history = private / "critic_extension_history"
+    assert len(list(history.iterdir())) == 2
+    assert all(path.stat().st_mode & 0o777 == 0o600 for path in history.iterdir())
+    assert extension.prepare("same-run", client=Client(), budget_reader=reader) == first
