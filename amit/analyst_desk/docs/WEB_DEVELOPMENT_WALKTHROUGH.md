@@ -73,7 +73,17 @@ Initial inspection of the next checkpoint found **one frozen playbook containing
 
 This checkpoint establishes a valid frozen playbook, not model use. No fresh plan, model call, lesson reuse or development publication has occurred, and no independent improvement is claimed. The [frozen-playbook receipt](../evidence/frozen_playbook_use_verification.json) records these checks separately from the historical originating-case receipt.
 
-For the next demonstration, explicitly select the frozen playbook and enable **Use a frozen reviewed playbook**, then choose a new **KDEV018 · AAPL · 2024, 2025** public development run with private memory off. The request must retain the exact registered question and current source. Creating its plan can use the original authorized model budget; execution still requires review of that new exact plan. To demonstrate actual use, verify a nonempty relevant lesson reference in the reviewed context and that the fixed hint reached a completed producer request. Repeating the originating development case is a scoped use demonstration, not held-out improvement evidence.
+To demonstrate reuse, explicitly select the frozen playbook and enable **Use a frozen reviewed playbook**, then choose a new **KDEV018 · AAPL · 2024, 2025** public development run with private memory off. The request must retain the exact registered question and current source. Creating its plan can use the original authorized model budget; execution still requires review of that new exact plan. To demonstrate actual use, verify a nonempty relevant lesson reference in the reviewed context and that the fixed hint reached a completed producer request. Repeating the originating development case is a scoped use demonstration, not held-out improvement evidence.
+
+## Verify actual planner use and retain the stopped research
+
+A new KDEV018 run was created through the web app with the exact Apple fiscal 2024–2025 request, private memory off and the frozen playbook explicitly selected. The live planner completed. A local capture-only reconstruction passed **21 checks without a provider call**: the validated context selects the accepted lesson, its fixed hint appears in the planner system message, and the reconstructed request identity matches the completed planner response and event. Removing the guidance changes that identity. This verifies actual planner guidance use, beyond an enabled setting.
+
+The human approved the new exact plan in the web app. The researcher then retrieved canonical facts, but its query-selection model request stopped at an **upstream HTTP 429**. The new run is in error with **two recorded model attempts, one completed planner response and the failed request's reservation retained**. No automatic retry, offline substitution or model-configuration change occurred. A further **25 read-only runtime checks pass**, preserving earlier runs, lessons, library, memory and original spending controls while verifying the exact approval, two attempts and retained failed reservation.
+
+**The research journey is incomplete.** This run produced no risk analysis, writer draft or critic result, and it created no new lesson proposal or publication. Guidance use in the later producing stages and exclusion from an actual new critic request have not been verified in this run. The original learning case and its accepted frozen lesson remain preserved. A provider rate limit is an operational failure, not a critic rejection or new research lesson.
+
+The observed result establishes scoped guidance delivery to a completed live planner. It does not prove semantic adherence, completion of the remaining workflow or independent improvement on held-out questions. The [playbook-use receipt](../evidence/frozen_playbook_use_verification.json) records the request-level checks and retained failure; earlier freeze readiness and originating-case results remain distinct historical checkpoints.
 
 ## Files and responsibilities
 
@@ -85,7 +95,7 @@ For the next demonstration, explicitly select the frozen playbook and enable **U
 | [desk/workflow.py](../desk/workflow.py), [web/app.js](../web/app.js) | Save only an exact-version claim edit, retain code-owned note content, persist its origin and request fresh criticism before further review. |
 | [desk/reflection.py](../desk/reflection.py), [desk/lessons.py](../desk/lessons.py), [web/lessons.js](../web/lessons.js) | Create an edit-derived proposal, preserve immutable supersession and recorded exact-version decisions, and keep acceptance, freezing and reuse separate. |
 | [web case receipt](../evidence/web_development_case_verification.json) | Record observed completion, cached replay, retained failures, preservation checks and the pending human-review boundary. |
-| [frozen-playbook receipt](../evidence/frozen_playbook_use_verification.json) | Verify the existing immutable playbook and accepted membership before any new research; keep readiness distinct from actual prompt use and independent improvement. |
+| [frozen-playbook receipt](../evidence/frozen_playbook_use_verification.json) | Separate frozen readiness, request-bound proof of actual planner guidance, the retained upstream failure and the limits of improvement evidence. |
 
 ## What the brief requires
 
