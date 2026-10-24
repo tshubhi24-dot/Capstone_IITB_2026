@@ -101,6 +101,10 @@ disclosed. Do not make such claims. Original filing Item boundaries have not bee
 independently verified. Do not assert complete filing coverage.
 """
 
+ANNUAL_SCOPE_NOTICE = ("Reported annual financial inputs are available in the cached source for every requested issuer and fiscal year. "
+                       "Use their actual annual periods; do not estimate partial years or substitute quarterly filings. "
+                       "Risk excerpts remain partial and original section boundaries are unverified.")
+
 QUANTITY_WORDS = re.compile(
     r"\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
     r"thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|"
@@ -260,14 +264,32 @@ class Reasoner:
         except (ValidationError, TypeError) as exc:
             raise ReasoningError(f"Invalid structured model output for {stage}.") from exc
 
-    def plan(self, question, tickers, years):
-        result = self._call("planner", "Create a short research outline for the supplied exact issuer/year scope. Do not add tools, companies, years or actions. Identify source, fiscal-calendar and partial-evidence limitations.",
-                            {"question": question, "tickers": tickers, "years": years}, PlanOutput, 1200)
+    def plan(self, question, tickers, years, *, source_coverage=None):
+        instructions = "Create a short research outline for the supplied exact issuer/year scope. Do not add tools, companies, years or actions. Identify source, fiscal-calendar and partial-evidence limitations."
+        context = {"question": question, "tickers": tickers, "years": years}
+        if source_coverage is not None:
+            required = {(ticker, year) for ticker in tickers for year in years}
+            rows = source_coverage.get("annual_periods", [])
+            if (source_coverage.get("annual_financial_inputs_complete") is not True
+                    or len(rows) != len(required)
+                    or {(row.get("ticker"), row.get("fiscal_year")) for row in rows} != required):
+                raise ReasoningError("Annual source coverage must match the exact requested scope.")
+            context["source_coverage"] = source_coverage
+            instructions += (" The code-owned source_coverage metadata describes vetted, already-reported annual revenue and operating-income facts for every requested issuer/year, including the actual fiscal periods and canonical fact IDs. "
+                             "Use these records rather than assumptions from your training cutoff or current-date guesses. "
+                             "Every listed fiscal period is an available reported annual observation, not a future, estimated, partial-year or unavailable financial result. "
+                             "Do not introduce 10-Q, quarterly reports, year-to-date figures, annualization or financial forecasts. "
+                             "Different fiscal calendars still need comparison caveats. Complete annual financial inputs do not establish complete risk disclosures: selected risk evidence is partial and original section boundaries remain unverified.")
+        result = self._call("planner", instructions, context, PlanOutput, 1200)
         if any(not item.strip() or len(item) > 500 for key in ("outline", "caveats") for item in result[key]):
             raise ReasoningError("The model plan has an empty or unbounded item.")
-        return {"tickers": list(tickers), "years": list(years), **result,
-                "caveats": result["caveats"] + ["Model-assisted reasoning needs human source review.",
+        plan = {"tickers": list(tickers), "years": list(years), **result,
+                "caveats": ([ANNUAL_SCOPE_NOTICE] if source_coverage is not None else []) + result["caveats"] + [
+                    "Model-assisted reasoning needs human source review.",
                     "Fiscal calendars differ; selected excerpts do not establish complete original filing coverage."]}
+        if source_coverage is not None:
+            plan["source_coverage"] = source_coverage
+        return plan
 
     def research_query(self, question, ticker, years):
         return self._call("researcher", "Choose a concise lexical search query and focus for this issuer's SEC annual facts and risk disclosures. The code fixes issuer and year scope; return no tool calls or instructions.",

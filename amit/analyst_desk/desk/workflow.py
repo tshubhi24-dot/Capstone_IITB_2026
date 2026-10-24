@@ -353,10 +353,31 @@ class Engine:
             run.update(status="running", stage="resuming", queued_decision=decision)
             self.store.save_run(run)
 
+    def _annual_source_coverage(self, tickers, years):
+        """Describe code-vetted annual inputs without claiming full risk coverage."""
+        periods = []
+        for ticker in tickers:
+            facts = self.source.facts(ticker, years)
+            for year in years:
+                pair = {}
+                for concept in ("revenue", "operating_income"):
+                    matches = [fact for fact in facts if fact["fiscal_year"] == year and fact["concept"] == concept]
+                    if len(matches) != 1:
+                        raise ReviewError("Planning requires one canonical annual input for each concept, issuer and fiscal year.")
+                    pair[concept] = matches[0]
+                revenue, income = self.source.canonical_pair(pair["revenue"]["id"], pair["operating_income"]["id"])
+                periods.append({"ticker": ticker, "fiscal_year": year,
+                    "period_start": revenue["start"], "period_end": revenue["end"],
+                    "revenue_fact_id": revenue["id"], "operating_income_fact_id": income["id"]})
+        return {"source_fingerprint": self.source.fingerprint, "financial_scope": "reported_annual",
+                "annual_financial_inputs_complete": True, "annual_periods": periods,
+                "risk_original_sections_complete": False}
+
     def _plan(self, state):
         request = state["request"]
         if self.is_live(state):
-            plan = self.reasoner(state, "plan").plan(request["question"], request["tickers"], request["years"])
+            coverage = self._annual_source_coverage(request["tickers"], request["years"])
+            plan = self.reasoner(state, "plan").plan(request["question"], request["tickers"], request["years"], source_coverage=coverage)
             plan["mode"] = "live"
             self.event(state["run_id"], "planner", "plan", "AI research plan prepared; waiting for the analyst.")
             return {"plan": plan}
@@ -381,6 +402,8 @@ class Engine:
                 raise ReviewError("Unsupported plan edit fields.")
             updated = {**plan, **edits}
             validate_scope(updated, self.source)
+            if self.is_live(state):
+                updated["source_coverage"] = self._annual_source_coverage(updated["tickers"], updated["years"])
             self.event(state["run_id"], "human", "plan_edit", "Plan edited; review the new version before continuing.")
             return {"plan": updated, "plan_action": "edit"}
         self.event(state["run_id"], "human", "plan_approved", "The analyst approved this exact plan.")

@@ -4,7 +4,7 @@ from hashlib import sha256
 
 import pytest
 
-from desk.reasoning import (CriticOutput, PlanOutput, QueryOutput, Reasoner,
+from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PlanOutput, QueryOutput, Reasoner,
                             ReasoningError, RiskOutput, WriterOutput,
                             normalize_evidence, render_claims, validate_claims,
                             validate_prose)
@@ -150,6 +150,44 @@ def test_model_cannot_expand_plan_scope_or_add_publication_actions():
                 "caveats": ["Selected evidence is incomplete"], "tickers": ["OTHER"], "publish": True}
     with pytest.raises(ReasoningError, match="Invalid structured"):
         Reasoner(lambda *args, **kwargs: response).plan("Compare the approved issuers", ["MSFT"], [2023])
+
+
+def test_planner_receives_reported_annual_periods_and_mandatory_scope_notice():
+    coverage = {"annual_financial_inputs_complete": True, "risk_original_sections_complete": False,
+                "annual_periods": [{"ticker": "MSFT", "fiscal_year": 2025,
+                    "period_start": "2024-07-01", "period_end": "2025-06-30",
+                    "revenue_fact_id": "annual-revenue", "operating_income_fact_id": "annual-income"}]}
+    seen = []
+    def model(stage, **request):
+        seen.append(request)
+        return {"outline": ["Inspect reported annual inputs", "Compare checked margins and disclosures"],
+                "caveats": ["Issuer fiscal calendars differ."]}
+    plan = Reasoner(model).plan("Compare annual results", ["MSFT"], [2025], source_coverage=coverage)
+    assert seen[0]["context"]["source_coverage"] == coverage
+    assert "not a future, estimated, partial-year or unavailable financial result" in seen[0]["system"]
+    assert "Do not introduce 10-Q" in seen[0]["system"]
+    assert plan["source_coverage"] == coverage and plan["caveats"][0] == ANNUAL_SCOPE_NOTICE
+    assert "Risk excerpts remain partial" in plan["caveats"][0]
+
+
+def test_incomplete_or_mismatched_planning_coverage_fails_before_model_call():
+    calls = []
+    reasoner = Reasoner(lambda *args, **kwargs: calls.append(True))
+    for coverage in ({"annual_financial_inputs_complete": False, "annual_periods": []},
+                     {"annual_financial_inputs_complete": True,
+                      "annual_periods": [{"ticker": "MSFT", "fiscal_year": 2024}]}):
+        with pytest.raises(ReasoningError, match="exact requested scope"):
+            reasoner.plan("Compare annual results", ["MSFT"], [2025], source_coverage=coverage)
+    assert calls == []
+
+
+def test_model_cannot_replace_code_owned_source_coverage():
+    coverage = {"annual_financial_inputs_complete": True,
+                "annual_periods": [{"ticker": "MSFT", "fiscal_year": 2025}]}
+    response = {"outline": ["Inspect annual inputs", "Check source periods"], "caveats": ["A source caveat."],
+                "source_coverage": {"annual_financial_inputs_complete": False}}
+    with pytest.raises(ReasoningError, match="Invalid structured"):
+        Reasoner(lambda *args, **kwargs: response).plan("Compare annual results", ["MSFT"], [2025], source_coverage=coverage)
 
 
 def test_risk_selection_is_bounded_and_cannot_claim_full_coverage():

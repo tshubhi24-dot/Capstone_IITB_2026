@@ -74,6 +74,45 @@ def test_live_graph_uses_seven_structured_model_calls_and_separate_human_gates(f
     assert published["usage"]["tool_calls"] == 18
 
 
+def test_live_planner_uses_vetted_annual_coverage_for_every_requested_period(fixture):
+    engine, store, source, tool_calls, _, _ = fixture
+    engine.model_client = FakeModelClient()
+    plan = begin_live(engine, store)
+    assert plan["status"] == "awaiting_plan" and tool_calls == []
+    context = json.loads(engine.model_client.calls[0]["messages"][-1]["content"])
+    coverage = context["source_coverage"]
+    assert coverage == plan["plan"]["source_coverage"]
+    assert coverage["annual_financial_inputs_complete"] is True
+    assert coverage["risk_original_sections_complete"] is False
+    assert coverage["source_fingerprint"] == source.fingerprint
+    assert {(row["ticker"], row["fiscal_year"]) for row in coverage["annual_periods"]} == {
+        (ticker, year) for ticker in ("MSFT", "AAPL") for year in (2023, 2024, 2025)}
+    for row in coverage["annual_periods"]:
+        revenue, income = source.canonical_pair(row["revenue_fact_id"], row["operating_income_fact_id"])
+        assert row["period_start"] == revenue["start"] and row["period_end"] == income["end"]
+
+
+def test_live_planning_missing_annual_pair_stops_before_any_model_call(fixture):
+    engine, store, source, tool_calls, _, _ = fixture
+    engine.model_client = FakeModelClient()
+    del source._facts["test:MSFT:2025:operating_income"]
+    run = begin_live(engine, store)
+    assert run["status"] == "error" and engine.model_client.calls == [] and tool_calls == []
+    assert store.notes() == []
+
+
+def test_live_scope_edit_refreshes_annual_coverage_without_another_model_call(fixture):
+    engine, store, _, tool_calls, _, _ = fixture
+    engine.model_client = FakeModelClient()
+    original = begin_live(engine, store)
+    edited = decide(engine, original, "edit", {"years": [2024, 2025]})
+    assert edited["status"] == "awaiting_plan", edited.get("error")
+    assert {(row["ticker"], row["fiscal_year"]) for row in edited["plan"]["source_coverage"]["annual_periods"]} == {
+        (ticker, year) for ticker in ("MSFT", "AAPL") for year in (2024, 2025)}
+    assert len(engine.model_client.calls) == 1 and tool_calls == []
+    assert edited["pending"]["payload_hash"] != original["pending"]["payload_hash"]
+
+
 def test_live_note_edit_invalidates_previous_verdict_and_gets_exact_body_review(fixture):
     engine, store, _, _, _, _ = fixture
     engine.model_client = FakeModelClient()
