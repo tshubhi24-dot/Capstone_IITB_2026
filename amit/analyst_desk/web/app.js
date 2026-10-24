@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {run:null,selectedRunId:null,selectionVersion:0,refreshVersion:0,loading:false,deciding:false,creating:false,runMessage:false,reviewKey:null,timer:null,connected:false,config:null};
+const state = {run:null,selectedRunId:null,selectionVersion:0,refreshVersion:0,renderedVersion:null,renderedSnapshot:null,loading:false,deciding:false,creating:false,runMessage:false,reviewKey:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
 function runErrorMessage(error){
@@ -60,9 +60,10 @@ async function connect(){
   await window.AnalystMemory.load(config);await window.AnalystLessons.load();await loadRuns();await loadNotes();const requested=new URLSearchParams(location.search).get('run');if(requested)await selectRun(requested);
  }catch(error){state.connected=false;$('start').disabled=true;$('connection').textContent='Not connected';message(error.message);}
 }
+function runLabel(run){return `${run.request?.tickers?.join(' / ')||run.id} · ${run.mode||run.request?.mode||'offline'} · ${run.status} · ${run.id.slice(0,8)}`;}
 async function loadRuns(){
  const runs=await api('/api/runs');$('runs').replaceChildren(element('option','Select a saved run'));$('runs').firstChild.value='';
- runs.forEach(run=>{const option=element('option',`${run.request?.tickers?.join(' / ')||run.id} · ${run.mode||run.request?.mode||'offline'} · ${run.status} · ${run.id.slice(0,8)}`);option.value=run.id;$('runs').append(option);});
+ runs.forEach(run=>{const option=element('option',runLabel(state.run?.id===run.id?state.run:run));option.value=run.id;$('runs').append(option);});
  if(state.selectedRunId)$('runs').value=state.selectedRunId;
 }
 function selectedRun(id,version){return state.selectedRunId===id&&state.selectionVersion===version;}
@@ -93,6 +94,13 @@ async function refresh(id,version=state.selectionVersion){
  }catch(error){if(selectedRun(id,version)&&request===state.refreshVersion){message(error.message);state.runMessage=true;}}
 }
 function render(run){
+ const snapshot=JSON.stringify(run),option=Array.from($('runs').options).find(option=>option.value===run.id);
+ if(option)option.textContent=runLabel(run);
+ state.run=run;
+ if(state.renderedVersion===state.selectionVersion&&state.renderedSnapshot===snapshot){
+  if(!run.error&&state.runMessage){message('');state.runMessage=false;}
+  reviewControls();return;
+ }
  window.AnalystMemory.renderRun(run);
  window.AnalystLessons.renderRun(run);
  state.run=run;const live=(run.mode||run.request?.mode||'offline')==='live';$('current').hidden=false;$('status').textContent=`${live?'Live AI':'Offline'} · ${run.status.replaceAll('_',' ')} · run ${run.id}`;
@@ -122,6 +130,7 @@ function render(run){
  const claims=run.draft?.narrative_claims||[];$('reasoning-panel').hidden=!claims.length;$('claims').replaceChildren();
  claims.forEach(claim=>{const detail=element('details');detail.append(element('summary',claim.text),element('p',`Model confidence: ${claim.confidence}. This label is not a correctness score.`));
   claim.citations.forEach(citation=>{detail.append(element('blockquote',citation.quote));const button=element('button',citation.source_id);button.className='secondary';button.onclick=()=>showEvidence(citation.source_id);detail.append(button);});$('claims').append(detail);});
+ state.renderedVersion=state.selectionVersion;state.renderedSnapshot=snapshot;
 }
 async function decide(action){
  const run=state.run,pending=run?.pending,version=state.selectionVersion;if(state.loading||state.deciding||run?.id!==state.selectedRunId||!pending||!run.status.startsWith('awaiting_'))return;

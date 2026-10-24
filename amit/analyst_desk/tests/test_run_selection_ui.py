@@ -27,6 +27,12 @@ function setup(){
  return {desk:sandbox.desk,get,calls,timers,rendered,pending};
 }
 async function tick(){await new Promise(resolve=>setImmediate(resolve));}
+function noteRun(h,id='note-run',hash='note-one'){
+ const run=h.pending(id,hash,'awaiting_note');run.pending={kind:'note',payload_hash:hash,payload:{body:'Exact reviewed note '+hash}};
+ run.critic={passed:true,verified_numbers:6,total_numbers:6};
+ run.draft={metrics:[{ticker:'MSFT',year:2025,period_start:'2024-07-01',period_end:'2025-06-30',revenue:100,operating_income:10,margin_pct:10,fact_ids:[]}],narrative_claims:[{text:'Fictional test claim',confidence:'test-only',citations:[{quote:'Fictional public evidence',source_id:'test-source'}]}]};
+ run.risks=[{ticker:'MSFT',before_year:2024,after_year:2025,text_changed:true,interpretation:'Fictional test interpretation',source_ids:[]}];return run;
+}
 """
 
 
@@ -220,4 +226,46 @@ assert.equal(h.get('resume-research').disabled,true);
 await h.desk.resumeResearch();assert.equal(h.calls.length,3);
 const fresh=h.desk.selectRun('stopped-run');h.calls[3].resolve({...h.pending('stopped-run'),status:'running',pending:null});await fresh;
 assert.equal(h.get('continuation').hidden,true);assert.equal(h.desk.state.loading,false);
+""")
+
+
+def test_identical_note_polls_preserve_expanded_evidence_dom_and_unsaved_editor():
+    browser_check(r"""
+const h=setup(),run=noteRun(h),selected=h.desk.selectRun(run.id);h.calls[0].resolve(run);await selected;
+const claim=h.get('claims').firstChild,risk=h.get('risks').firstChild,row=h.get('rows').firstChild;
+claim.open=true;risk.open=true;h.get('editor').value='Unsaved note wording';
+h.desk.state.deciding=true;
+const poll=h.desk.refresh(run.id);h.calls[1].resolve(JSON.parse(JSON.stringify(run)));await poll;
+assert.equal(h.get('claims').firstChild,claim);assert.equal(h.get('risks').firstChild,risk);assert.equal(h.get('rows').firstChild,row);
+assert.equal(claim.open,true);assert.equal(risk.open,true);assert.equal(h.get('editor').value,'Unsaved note wording');
+assert.equal(h.get('approve').disabled,true);assert.equal(h.rendered.length,2);
+h.desk.state.deciding=false;
+const next=h.desk.refresh(run.id);h.calls[2].resolve(JSON.parse(JSON.stringify(run)));await next;
+assert.equal(h.get('approve').disabled,false);assert.equal(h.get('claims').firstChild,claim);assert.equal(h.timers.size,1);
+""")
+
+
+def test_new_note_hash_and_explicit_selection_rebuild_evidence_but_same_version_keeps_edits():
+    browser_check(r"""
+const h=setup(),first=noteRun(h),selected=h.desk.selectRun(first.id);h.calls[0].resolve(first);await selected;
+const oldClaim=h.get('claims').firstChild;oldClaim.open=true;
+const changed=noteRun(h,first.id,'note-two');changed.draft.narrative_claims[0].citations[0].quote='Changed fictional public evidence';
+const poll=h.desk.refresh(first.id);h.calls[1].resolve(changed);await poll;
+assert.notEqual(h.get('claims').firstChild,oldClaim);assert.match(h.get('fingerprint').textContent,/note-two/);
+assert.equal(h.get('editor').value,'Exact reviewed note note-two');
+const changedClaim=h.get('claims').firstChild;h.get('editor').value='Unsaved current-version edit';
+const again=h.desk.selectRun(first.id);h.calls[2].resolve(JSON.parse(JSON.stringify(changed)));await again;
+assert.notEqual(h.get('claims').firstChild,changedClaim);assert.equal(h.get('review').hidden,false);
+assert.equal(h.get('editor').value,'Unsaved current-version edit');assert.equal(h.rendered.length,6);
+""")
+
+
+def test_current_run_refresh_updates_saved_option_label_without_changing_other_runs():
+    browser_check(r"""
+const h=setup(),run=noteRun(h),current={value:run.id,textContent:'MSFT · live · error · note-run'},other={value:'other-run',textContent:'Other saved run'};
+h.get('runs').options=[current,other];
+const selected=h.desk.selectRun(run.id);h.calls[0].resolve(run);await selected;
+assert.match(current.textContent,/awaiting_note/);assert.doesNotMatch(current.textContent,/error/);assert.equal(other.textContent,'Other saved run');
+const poll=h.desk.refresh(run.id);h.calls[1].resolve({...run,status:'running',pending:null});await poll;
+assert.match(current.textContent,/running/);assert.equal(h.get('runs').value,run.id);assert.equal(other.textContent,'Other saved run');
 """)

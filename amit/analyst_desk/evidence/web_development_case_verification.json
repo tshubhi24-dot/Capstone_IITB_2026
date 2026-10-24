@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "validator_fix_verified_ready_for_deployment",
+  "stage": "web_research_complete_awaiting_analyst_note_review",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -43,21 +43,59 @@
       "note_policy_unchanged": true,
       "lesson_bank_unchanged": true,
       "original_spending_caps_preserved": true
+    },
+    "completed_web_research": {
+      "registered_development_admission_valid": true,
+      "original_exact_plan_approval_valid": true,
+      "exact_original_request_unchanged": true,
+      "source_unchanged": true,
+      "exact_note_hash_valid": true,
+      "two_canonical_financial_rows_verify": true,
+      "six_displayed_values_verify": true,
+      "eight_quotes_are_exact_source_text": true,
+      "every_claim_cites_apple_both_years": true,
+      "critic_pass_and_body_binding_valid": true,
+      "four_model_supported_claims": true,
+      "fallible_model_review_label_preserved": true,
+      "one_web_continuation_requested": true,
+      "prior_paid_usage_rows_unchanged": true,
+      "single_writer_usage_row_preserved": true,
+      "actual_cached_writer_replay_recorded": true,
+      "only_new_response_is_critic": true,
+      "only_one_new_global_model_call": true,
+      "global_reported_cost_change_is_only_critic": true,
+      "failed_connection_attempt_unchanged": true,
+      "earlier_runs_unchanged": true,
+      "approved_library_unchanged": true,
+      "analyst_preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "lesson_bank_unchanged": true,
+      "original_spending_caps_preserved": true,
+      "development_publication_blocked": true,
+      "private_memory_and_lessons_off": true,
+      "no_critic_rejection_or_analyst_edit": true,
+      "partial_evidence_limits_visible": true
     }
   },
   "outcome": {
     "research_run_created": true,
     "human_plan_decision_observed": true,
-    "research_completed": false,
+    "research_completed": true,
     "eligible_lesson_origins_observed": 0,
     "lesson_proposals_created": 0,
     "human_lesson_decisions_recorded": 0,
     "development_notes_published": 0,
     "attempt_count": 2,
-    "completed_model_responses": 5,
-    "recorded_model_call_attempts": 6,
+    "completed_model_responses": 6,
+    "recorded_model_call_attempts": 7,
     "operational_failures": 1,
-    "content_validation_failures": 1
+    "content_validation_failures": 1,
+    "verified_financial_values": 6,
+    "displayed_financial_values": 6,
+    "model_supported_claims": 4,
+    "model_reviewed_claims": 4,
+    "human_note_review_recorded": false,
+    "independent_quality_improvement_demonstrated": false
   },
   "attempts": [
     {
@@ -72,15 +110,16 @@
       "publication": false
     },
     {
-      "status": "error",
+      "status": "awaiting_note",
       "plan_payload_hash": "8751de581ddd49ba62c2908618089da351011349a01c617154ad619c169adc85",
       "admission_hash": "3c2854374a06516bc69f3e232546cce7feb85594fe3149e13f73c41e3fef7771",
       "human_plan_approval_observed": true,
-      "recorded_model_call_attempts": 4,
-      "completed_model_responses": 4,
-      "failure_code": "narrative_quantity_guard",
+      "recorded_model_call_attempts": 5,
+      "completed_model_responses": 5,
+      "failure_code": null,
       "eligible_lesson_origins": 0,
-      "publication": false
+      "publication": false,
+      "prior_content_validation_failure_preserved": true
     }
   ],
   "ui_fix": {
@@ -116,7 +155,7 @@
   },
   "web_resume_control": {
     "implementation_ready": true,
-    "deployed": false,
+    "deployed": true,
     "ui_cases_passed": 19,
     "targeted_tests_passed": 144,
     "only_existing_content_validation_continuation_exposed": true,
@@ -133,8 +172,41 @@
     "financial_quantities_and_durations_still_rejected": true,
     "prompts_schemas_and_request_ids_unchanged": true,
     "cached_writer_replay_fixture_passed": true,
-    "actual_cached_replay_verified": false,
-    "deployed": false,
+    "actual_cached_replay_verified": true,
+    "deployed": true,
     "real_model_calls_in_tests": 0
+  },
+  "note_payload_hash": "10a99935496089e46362080bcd52fa94f54464f0647642a0f612282f0bd79184",
+  "resume_deployment_preservation": {
+    "runs_unchanged": true,
+    "notes_unchanged": true,
+    "preferences_unchanged": true,
+    "note_policy_unchanged": true,
+    "lessons_unchanged": true,
+    "budget_unchanged": true
+  },
+  "review_display_fix": {
+    "targeted_tests_passed": 52,
+    "ui_cases_passed": 22,
+    "new_synthetic_display_cases": 3,
+    "deployed": true,
+    "runtime_preservation_checks": {
+      "runs_unchanged": true,
+      "notes_unchanged": true,
+      "preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "lessons_unchanged": true,
+      "budget_unchanged": true
+    },
+    "model_calls": 0,
+    "human_decisions": 0,
+    "browser_checks": {
+      "current_status_in_saved_selector": true,
+      "exact_note_version_unchanged": true,
+      "unsaved_review_text_preserved": true,
+      "expanded_citations_survive_background_polling": true,
+      "development_publication_disabled": true,
+      "eligible_reflection_origins_empty": true
+    }
   }
 }
