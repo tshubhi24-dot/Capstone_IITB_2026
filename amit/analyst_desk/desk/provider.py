@@ -27,6 +27,22 @@ MODEL_RATES = {
 }
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
 HTTP_DIAGNOSTIC_STATUSES = frozenset({301, 302, 303, 307, 308, 400, 401, 402, 403, 404, 408, 409, 413, 415, 422, 429, 500, 502, 503, 504})
+FORBIDDEN_BODY_LIMIT = 16 * 1024
+FORBIDDEN_HINT_TYPES = {
+    "privacy_policy_violation": "provider_http_403_privacy_policy_hint",
+    "data_policy_violation": "provider_http_403_privacy_policy_hint",
+    "unsupported_country": "provider_http_403_region_hint",
+    "unsupported_region": "provider_http_403_region_hint",
+    "unsupported_country_region_territory": "provider_http_403_region_hint",
+    "region_restricted": "provider_http_403_region_hint",
+    "account_disabled": "provider_http_403_account_access_hint",
+    "account_suspended": "provider_http_403_account_access_hint",
+    "model_access_denied": "provider_http_403_model_access_hint",
+    "model_not_allowed": "provider_http_403_model_access_hint",
+    "moderation": "provider_http_403_content_policy_hint",
+    "content_policy_violation": "provider_http_403_content_policy_hint",
+    "content_filter": "provider_http_403_content_policy_hint",
+}
 SAFE_ERROR_CODES = frozenset({
     "invalid_configuration", "authorization_changed", "call_id_conflict", "call_not_retriable", "accounting_blocked",
     "budget_exhausted", "run_limit_exhausted", "call_state_conflict", "accounting_anomaly", "live_not_authorized",
@@ -38,7 +54,7 @@ SAFE_ERROR_CODES = frozenset({
     "provider_response_too_large", "provider_response_json_invalid", "provider_response_shape_invalid", "provider_error_envelope",
     "provider_usage_missing", "provider_usage_invalid", "provider_usage_tokens_missing", "provider_usage_tokens_invalid",
     "provider_usage_inconsistent", "provider_usage_cost_missing", "provider_usage_cost_invalid",
-}) | frozenset(f"provider_http_{status}" for status in HTTP_DIAGNOSTIC_STATUSES)
+}) | frozenset(f"provider_http_{status}" for status in HTTP_DIAGNOSTIC_STATUSES) | frozenset(FORBIDDEN_HINT_TYPES.values())
 
 
 def safe_error_code(value):
@@ -56,6 +72,73 @@ def http_error_code(status):
     if 500 <= status < 600:
         return "provider_http_5xx"
     return "provider_http_unexpected_status"
+
+
+def forbidden_error_hints(error):
+    """Inspect only an error's immediate fixed type/code/message fields."""
+    hints = set()
+    for field in ("type", "code"):
+        value = error.get(field)
+        if isinstance(value, str) and value.casefold() in FORBIDDEN_HINT_TYPES:
+            hints.add(FORBIDDEN_HINT_TYPES[value.casefold()])
+    message = error.get("message")
+    if not isinstance(message, str):
+        return hints
+    text = message.casefold()
+    if any(term in text for term in ("privacy settings", "data policy", "data collection")) and any(term in text for term in ("block", "prevent", "not allow", "restricted", "forbidden", "denied")):
+        hints.add("provider_http_403_privacy_policy_hint")
+    if any(term in text for term in ("country", "region", "location")) and any(term in text for term in ("unsupported", "not supported", "not available", "unavailable", "restricted", "blocked", "not permitted")):
+        hints.add("provider_http_403_region_hint")
+    if any(term in text for term in ("account", "organization")) and any(term in text for term in ("disabled", "suspended", "banned", "deactivated", "restricted")):
+        hints.add("provider_http_403_account_access_hint")
+    if any(term in text for term in ("content policy", "moderation", "safety policy")) and any(term in text for term in ("violation", "violates", "blocked", "forbidden", "rejected", "disallowed", "flagged")):
+        hints.add("provider_http_403_content_policy_hint")
+    if any(term in text for term in ("model", "endpoint")) and any(term in text for term in ("not authorized", "not authorised", "not allowed", "not permitted", "access denied", "permission denied", "access is denied")):
+        hints.add("provider_http_403_model_access_hint")
+    return hints
+
+
+def forbidden_response_hint(response):
+    """Inspect a small 403 error in memory; retain only a provider-reported hint.
+
+    Unknown, incomplete, HTML, ambiguous, or unreadable bodies stay generic.
+    Hitting the limit is conservatively treated as truncation, even if a body
+    happens to end at exactly that boundary. One metadata.raw JSON wrapper may
+    be inspected; nested metadata/raw wrappers are never traversed. No body,
+    message, raw field or header escapes.
+    """
+    fallback = "provider_http_403"
+    try:
+        body = bytearray()
+        for chunk in response.iter_bytes(chunk_size=4096):
+            if len(body) + len(chunk) >= FORBIDDEN_BODY_LIMIT:
+                return fallback
+            body.extend(chunk)
+        data = json.loads(body)
+        error = data.get("error") if isinstance(data, dict) else None
+        if not isinstance(error, dict):
+            return fallback
+        hints = forbidden_error_hints(error)
+        metadata = error.get("metadata")
+        if isinstance(metadata, dict):
+            hints.update(forbidden_error_hints({"type": metadata.get("error_type"), "code": metadata.get("provider_code")}))
+        if isinstance(metadata, dict) and "raw" in metadata:
+            try:
+                raw = metadata["raw"]
+                if isinstance(raw, str):
+                    if len(raw.encode()) >= FORBIDDEN_BODY_LIMIT:
+                        return fallback
+                    raw = json.loads(raw)
+                elif not isinstance(raw, dict) or len(encoded(raw)) >= FORBIDDEN_BODY_LIMIT:
+                    raw = None
+                nested = raw.get("error", raw) if isinstance(raw, dict) else None
+            except Exception:
+                nested = None
+            if isinstance(nested, dict):
+                hints.update(forbidden_error_hints(nested))
+        return hints.pop() if len(hints) == 1 else fallback
+    except Exception:
+        return fallback
 
 
 def diagnostic_code(error):
@@ -283,7 +366,8 @@ class ReasoningGateway:
             with httpx.Client(transport=self.transport, timeout=120, trust_env=False, follow_redirects=False) as client:
                 with client.stream("POST", PROVIDER_URL, headers={"Authorization": "Bearer " + self.api_key}, json=payload) as response:
                     if response.status_code != 200:
-                        raise ProviderError(http_error_code(response.status_code), "The model provider refused the request; it will not be retried automatically.")
+                        code = forbidden_response_hint(response) if response.status_code == 403 else http_error_code(response.status_code)
+                        raise ProviderError(code, "The model provider refused the request; it will not be retried automatically.")
                     chunks, size = [], 0
                     for chunk in response.iter_bytes():
                         size += len(chunk)

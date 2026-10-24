@@ -1,0 +1,52 @@
+{
+  "record_kind": "provider_access_probe_result",
+  "recorded_at_utc": "2026-10-24T08:42:59.966130+00:00",
+  "new_run_id": "85610a1da9094a208354fa3d7c3f5e34",
+  "status": "provider_access_refused",
+  "failure_code": "provider_http_403",
+  "no_generation_diagnostics": {
+    "unauthenticated_empty_request_http": 401,
+    "authenticated_empty_request_http": 400,
+    "model_selected": false,
+    "generation_possible": false,
+    "model_catalogue_http": 200,
+    "producer_model_listed": true,
+    "critic_model_listed": true
+  },
+  "budget": {
+    "enabled": true,
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0",
+    "held_usd": "0.1125376",
+    "committed_usd": "0.1125376",
+    "remaining_authorization_usd": "0.8874624",
+    "model_calls": 4,
+    "tokens": 266944,
+    "uncertain_calls": 4,
+    "blocked": false
+  },
+  "existing_notes_available": 2,
+  "new_completion_attempts": 1,
+  "plan_produced": false,
+  "live_plan_approved": false,
+  "live_note_published": false,
+  "receipt": "live_attempts/85610a1da9094a208354fa3d7c3f5e34.json",
+  "limitations": [
+    "A valid key and a model catalogue entry do not establish permission or availability for this generation request.",
+    "The precise provider restriction behind HTTP 403 remains unresolved.",
+    "No further completion was made after the access refusal.",
+    "Zero local reported spend does not establish zero actual charges. All uncertain reservations remain held.",
+    "No raw provider responses or credential values are included."
+  ],
+  "implementation_validation": {
+    "local_tests_passed": 229,
+    "elapsed_seconds": 8.58,
+    "provider_test_transport": "fictional responses only",
+    "raw_provider_error_storage": "not retained; only fixed allowlisted diagnostic hints"
+  },
+  "policy_unchanged": true,
+  "proposal_hash": "eed8a14ef850032984ce4ea14d49c164d7c5926c8ede046e1fdf5a2c484ad3e0",
+  "ledger_and_library_preserved": true,
+  "completion_requested_during_validation": false
+}

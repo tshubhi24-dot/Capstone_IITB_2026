@@ -1,0 +1,62 @@
+{
+  "record_kind": "manual_two_company_learning_journey",
+  "updated_at": "2026-10-24T08:37:40.268828+00:00",
+  "base_url": "http://127.0.0.1:18080",
+  "run_id": "85610a1da9094a208354fa3d7c3f5e34",
+  "status": "error",
+  "stage": "error",
+  "configuration": {
+    "data_source": "sec_edgar",
+    "transport": "http",
+    "semantic_retrieval": false,
+    "mode": "live",
+    "model_config_version": "live-step6-openrouter-v1"
+  },
+  "request": {
+    "tickers": [
+      "MSFT",
+      "AAPL"
+    ],
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "strategy": "multi",
+    "mode": "live",
+    "max_tokens": 250000,
+    "max_model_calls": 12,
+    "max_tool_calls": 60,
+    "learning_split": "production"
+  },
+  "pending_review": {
+    "kind": null,
+    "payload_hash": null,
+    "plan": null,
+    "note_title": null
+  },
+  "expected_human_action": null,
+  "verification": {
+    "passed": null,
+    "verified_share": null,
+    "verified_numbers": null,
+    "total_numbers": null,
+    "semantic_review": null
+  },
+  "usage": {
+    "tokens": 0,
+    "tool_calls": 0,
+    "model_calls": 1,
+    "cost_usd": 0.0,
+    "held_usd": 0.0281344,
+    "committed_usd": 0.0281344,
+    "accounting_status": "provider_reported_with_holds"
+  },
+  "note_id": null,
+  "decision_requests": [],
+  "limitations": [
+    "This is an ordinary learning run, not a protected final benchmark.",
+    "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
+    "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."
+  ]
+}

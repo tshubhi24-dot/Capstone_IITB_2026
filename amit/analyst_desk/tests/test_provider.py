@@ -10,7 +10,7 @@ import httpx
 import pytest
 
 from desk.model_gateway import build_app
-from desk.provider import BudgetLedger, GATEWAY_URL, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway, SAFE_ERROR_CODES, safe_error_code
+from desk.provider import BudgetLedger, FORBIDDEN_BODY_LIMIT, GATEWAY_URL, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway, SAFE_ERROR_CODES, safe_error_code
 
 KEY = "invented-provider-credential-" * 3
 TOKEN = "invented-private-gateway-token-" * 3
@@ -341,3 +341,124 @@ def test_unrecognized_error_codes_never_cross_gateway_client_boundary(code):
     with pytest.raises(ProviderError) as error:
         ModelGatewayClient(TOKEN, transport=transport).complete(**arguments())
     assert error.value.code == "gateway_request_failed" and KEY not in str(error.value)
+
+
+@pytest.mark.parametrize("message,error_type,expected", [
+    ("Your privacy settings prevent access.", None, "provider_http_403_privacy_policy_hint"),
+    ("This model is not available in your country.", None, "provider_http_403_region_hint"),
+    ("Your account is suspended.", None, "provider_http_403_account_access_hint"),
+    ("This model is not authorized for this key.", None, "provider_http_403_model_access_hint"),
+    ("The request was flagged by moderation.", None, "provider_http_403_content_policy_hint"),
+    ("Forbidden.", "unsupported_region", "provider_http_403_region_hint"),
+    ("Forbidden.", "DATA_POLICY_VIOLATION", "provider_http_403_privacy_policy_hint"),
+    ("Forbidden.", "invented-private-response-value", "provider_http_403"),
+    ("The region field was supplied.", None, "provider_http_403"),
+    ("Your account is suspended and your country is blocked.", None, "provider_http_403"),
+    ("Forbidden. Contact support.", None, "provider_http_403"),
+])
+def test_forbidden_hints_are_fixed_provider_reported_categories_without_key_echo(tmp_path, config, message, error_type, expected):
+    body = {"error": {"message": message + " " + KEY, "type": error_type, "metadata": {"raw": KEY}}}
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, headers={"X-Private": KEY}, json=body))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and expected in SAFE_ERROR_CODES
+    assert KEY not in str(error.value) and error.value.__context__ is None and error.value.__cause__ is None
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT error_code,status,result,charged_usd FROM model_calls").fetchone()
+    assert tuple(row) == (expected, "uncertain", None, None)
+    assert KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    assert Decimal(engine.budget()["held_usd"]) > 0
+    with pytest.raises(ProviderError) as again:
+        engine.complete(**arguments())
+    assert again.value.code == "call_not_retriable" and len(calls) == 1
+
+
+@pytest.mark.parametrize("body", [
+    KEY.encode(), b"{invalid-json", b"<html>Forbidden</html>", b"\xff\xfe", b"[]", b'{"error":"unreadable"}',
+    json.dumps({"error": {"message": "Your privacy settings prevent access.", "padding": "x" * FORBIDDEN_BODY_LIMIT}}).encode(),
+])
+def test_unreadable_and_oversized_forbidden_bodies_stay_generic(tmp_path, config, body):
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, content=body))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "provider_http_403" and KEY not in str(error.value)
+    assert error.value.__context__ is None and error.value.__cause__ is None
+    assert engine.budget()["uncertain_calls"] == 1 and Decimal(engine.budget()["held_usd"]) > 0 and len(calls) == 1
+
+
+def test_forbidden_body_read_failure_keeps_known_http_status_without_details(tmp_path, config):
+    class BrokenBody(httpx.SyncByteStream):
+        def __iter__(self):
+            yield b'{"error":{"message":"Your privacy settings prevent access.'
+            raise httpx.ReadError(KEY)
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, stream=BrokenBody()))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "provider_http_403" and KEY not in str(error.value)
+    assert error.value.__cause__ is None and error.value.__context__ is None
+    with engine.ledger.connection() as db:
+        assert db.execute("SELECT error_code FROM model_calls").fetchone()[0] == "provider_http_403"
+    assert len(calls) == 1 and Decimal(engine.budget()["held_usd"]) > 0
+
+
+def test_forbidden_hint_read_is_bounded_to_the_decoded_limit(tmp_path, config):
+    reads = []
+    class LargeBody(httpx.SyncByteStream):
+        def __iter__(self):
+            for _ in range(100):
+                chunk = b"x" * 4096
+                reads.append(len(chunk))
+                yield chunk
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, stream=LargeBody()))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "provider_http_403"
+    assert sum(reads) == FORBIDDEN_BODY_LIMIT and len(reads) == 4
+    assert len(calls) == 1 and Decimal(engine.budget()["held_usd"]) > 0
+
+
+@pytest.mark.parametrize("outer_type,raw,expected", [
+    (None, json.dumps({"error": {"code": "unsupported_country_region_territory", "message": "Country, region, or territory not supported. " + KEY}}), "provider_http_403_region_hint"),
+    (None, {"error": {"code": "unsupported_country_region_territory", "message": KEY}}, "provider_http_403_region_hint"),
+    (None, {"code": "unsupported_region", "message": KEY}, "provider_http_403_region_hint"),
+    (None, KEY, "provider_http_403"),
+    (None, {"error": {"code": KEY, "message": "Forbidden. " + KEY}}, "provider_http_403"),
+    ("data_policy_violation", {"error": {"code": "unsupported_country_region_territory", "message": KEY}}, "provider_http_403"),
+    ("unsupported_region", json.dumps({"error": {"code": "account_disabled", "message": KEY}}), "provider_http_403"),
+    (None, json.dumps(json.dumps({"error": {"code": "unsupported_country_region_territory"}})), "provider_http_403"),
+    (None, {"error": {"metadata": {"raw": json.dumps({"error": {"code": "unsupported_country_region_territory"}})}}}, "provider_http_403"),
+    (None, {"error": {"type": "unsupported_country_region_territory", "message": "Your account is disabled. " + KEY}}, "provider_http_403"),
+    (None, [KEY], "provider_http_403"),
+    (None, {"error": KEY}, "provider_http_403"),
+])
+def test_single_level_nested_provider_error_hints_are_bounded_safe_and_unambiguous(tmp_path, config, outer_type, raw, expected):
+    body = {"error": {"message": "Provider returned error. " + KEY, "type": outer_type, "metadata": {"raw": raw}}}
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, json=body))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and expected in SAFE_ERROR_CODES and KEY not in str(error.value)
+    assert error.value.__context__ is None and error.value.__cause__ is None
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT error_code,status,result,charged_usd FROM model_calls").fetchone()
+    assert tuple(row) == (expected, "uncertain", None, None)
+    assert KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    assert Decimal(engine.budget()["held_usd"]) > 0 and len(calls) == 1
+    with pytest.raises(ProviderError) as repeated:
+        engine.complete(**arguments())
+    assert repeated.value.code == "call_not_retriable" and len(calls) == 1
+
+
+@pytest.mark.parametrize("metadata,expected", [
+    ({"provider_code": "unsupported_country_region_territory"}, "provider_http_403_region_hint"),
+    ({"error_type": "content_policy_violation"}, "provider_http_403_content_policy_hint"),
+    ({"provider_code": KEY, "error_type": KEY}, "provider_http_403"),
+    ({"provider_code": "model_not_allowed", "raw": {"error": {"code": "unsupported_region"}}}, "provider_http_403"),
+])
+def test_router_metadata_codes_are_allowlisted_and_do_not_override_conflicting_hints(tmp_path, config, metadata, expected):
+    body = {"error": {"message": "Provider returned error.", "metadata": metadata}}
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(403, json=body))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and len(calls) == 1
+    assert KEY not in str(error.value) and KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    assert Decimal(engine.budget()["held_usd"]) > 0

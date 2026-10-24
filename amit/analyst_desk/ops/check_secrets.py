@@ -1,7 +1,9 @@
 """Check staged Git content for known private credentials without printing them."""
 import argparse
+import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 
@@ -20,6 +22,30 @@ def read_env_key(path):
     if len(values) != 1 or not re.fullmatch(r"[A-Za-z0-9_-]{24,}", values[0]):
         raise ValueError("A valid private provider credential is required.")
     return values[0]
+
+
+def retired_provider_keys(root):
+    """Read archived known keys privately; never follow archive symlinks."""
+    directory = root / ".runtime/live/retired"
+    if directory.is_symlink():
+        raise ValueError("The retired credential directory must not be a symlink.")
+    if not directory.exists():
+        return []
+    if not directory.is_dir():
+        raise ValueError("The retired credential archive is invalid.")
+    values = []
+    for path in sorted(directory.glob("*.key")):
+        if path.is_symlink() or not path.is_file():
+            continue
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        with os.fdopen(descriptor, "r") as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                continue
+            value = stream.read(4097).strip()
+        if len(value) > 4096 or not re.fullmatch(r"[A-Za-z0-9_-]{24,}", value):
+            raise ValueError("A retired credential could not be checked safely.")
+        values.append(value)
+    return values
 
 
 def staged_matches(repo, credentials):
@@ -61,9 +87,11 @@ def main():
         else:
             raise ValueError("Prepare the private key or supply its local env file for the credential check.")
         credentials = [provider.encode()]
+        credentials.extend(value.encode() for value in retired_provider_keys(ROOT))
         analyst = ROOT / ".runtime/journey/credentials.env"
         if analyst.is_file():
             credentials += [line.split("=", 1)[1].strip().encode() for line in analyst.read_text().splitlines() if line.startswith("ANALYST_API_TOKEN=")]
+        credentials = list(dict.fromkeys(credentials))
         names = staged_matches(ROOT, credentials)
         if names:
             print("STOP: a known private credential appears in staged files. Commit blocked.", file=sys.stderr)
@@ -71,7 +99,7 @@ def main():
         if args.history and history_contains(ROOT, credentials):
             print("STOP: a known private credential appears in reachable Git history. Push blocked.", file=sys.stderr)
             return 1
-        print("Known provider and analyst credentials are absent from staged content" + (" and reachable Git history." if args.history else "."))
+        print("Known current/retired provider and analyst credentials are absent from staged content" + (" and reachable Git history." if args.history else "."))
         return 0
     except Exception:
         print("Credential check could not finish safely; no secret content was printed.", file=sys.stderr)

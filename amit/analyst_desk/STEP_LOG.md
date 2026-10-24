@@ -75,3 +75,11 @@ Restarted only the idle application and model gateway. The complete safe ledger 
 One separately authorized planner retry, run `84a7d9a88ac046e39e3b61d7c7692803`, used the same US$1 policy and again returned `provider_http_403` before producing a plan. Models, endpoint, policy and earlier reservations were unchanged. No further completion occurred in this retry.
 
 The ledger now contains three uncertain attempts with US$0.0844032 held and US$0.9155968 remaining. Actual charges remain unconfirmed; zero reported spend is not proof of zero cost. Both existing private notes remain available. Nineteen read-only runtime checks passed and refreshed the current ledger evidence without requesting a completion. Preserved the full attempt and operator confirmation privately, and committed only sanitized technical receipts. Earlier restart proof remains labelled as a check after attempt two; this retry does not claim another restart test, successful live research or human plan/note approvals. The access restriction still needs diagnosis before the journey can continue.
+
+## Step 9d — Strengthen secret scanning and access diagnostics
+
+Strengthened the secret scanner to check all locally configured known provider credentials and the analyst credential. Six fictional-key tests prove staged/history detection and safe archive handling. Credential values and private credential inventories remain outside Git.
+
+Planner run `85610a1da9094a208354fa3d7c3f5e34` again returned generic HTTP 403 before producing a plan. The ledger then held US$0.1125376 for four uncertain calls. Diagnostic validation and catalogue checks did not establish generation permission or a diagnosed restriction.
+
+Added a bounded HTTP-403 diagnostic reader for fixed provider-reported hints. It can inspect immediate error fields, documented allowlisted metadata codes and one nested provider JSON wrapper in memory; conflicting or unknown hints remain generic. Raw responses, credential values and arbitrary upstream codes do not enter stored traces. All 229 local tests passed in 8.58 seconds with mocked provider responses where applicable. The provider route, privacy restrictions and reservation policy are unchanged. The access-failure receipt remains generic; no cause or successful live output is backfilled.
