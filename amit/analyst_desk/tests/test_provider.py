@@ -10,7 +10,7 @@ import httpx
 import pytest
 
 from desk.model_gateway import build_app
-from desk.provider import BudgetLedger, FORBIDDEN_BODY_LIMIT, GATEWAY_URL, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway, SAFE_ERROR_CODES, safe_error_code
+from desk.provider import BudgetLedger, FORBIDDEN_BODY_LIMIT, GATEWAY_URL, MODEL_PROFILES, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway, SAFE_ERROR_CODES, model_profile, safe_error_code
 
 KEY = "invented-provider-credential-" * 3
 TOKEN = "invented-private-gateway-token-" * 3
@@ -104,6 +104,152 @@ def test_parallel_reservations_cannot_overspend_shared_authorization(tmp_path, c
         results = list(pool.map(lambda pair: reserve(*pair), [(1, ledger_one), (2, ledger_two)]))
     assert sorted(results) == ["budget_exhausted", "reserved"]
     assert Decimal(ledger_one.summary()["committed_usd"]) == Decimal(".015")
+
+
+def test_reviewed_mistral_pair_has_fixed_private_route_and_price_ceilings(tmp_path, config):
+    profile = model_profile("live-step10-mistral-v1")
+    revised = {**config, "version": profile["version"], "models": profile["models"]}
+    engine, calls = gateway(tmp_path, revised)
+    engine.complete(**arguments())
+    engine.complete(**arguments(role="critic", call_id="critic-call"))
+    producer, critic = (json.loads(call.content) for call in calls)
+    assert producer["model"] == "mistralai/mistral-medium-3.1" and critic["model"] == "mistralai/mistral-large-2512"
+    assert producer["provider"] == {"only": ["mistral/zdr"], "allow_fallbacks": False, "require_parameters": True,
+                                   "data_collection": "deny", "max_price": {"prompt": .4, "completion": 2.0}}
+    assert critic["provider"] == {**producer["provider"], "max_price": {"prompt": .5, "completion": 1.5}}
+    summary = engine.budget()
+    assert summary["models"] == {role: policy["id"] for role, policy in profile["models"].items()}
+    assert summary["model_profile"] == profile["version"] and summary["provider"] == "mistral/zdr"
+    assert KEY not in json.dumps(summary)
+
+
+def test_model_profiles_return_independent_copies_and_preserve_legacy_versions(config):
+    profile = model_profile(config)
+    assert profile["version"] == "live-step6-openrouter-v1" and profile["provider"] == "openai"
+    profile["models"]["producer"]["id"] = "unapproved"
+    assert model_profile(config)["models"]["producer"]["id"] == "openai/gpt-4.1-mini"
+    assert set(MODEL_PROFILES) == {"live-step6-openrouter-v1", "live-step10-mistral-v1"}
+    with pytest.raises(ValueError):
+        model_profile("unapproved")
+
+
+@pytest.mark.parametrize("failure", ["mixed_pair", "unreviewed_model", "price_increase", "mismatched_version"])
+def test_unreviewed_model_pair_or_price_cannot_reach_provider(tmp_path, config, failure):
+    revised = deepcopy(config)
+    if failure == "mixed_pair":
+        revised["models"]["critic"] = model_profile("live-step10-mistral-v1")["models"]["critic"]
+    elif failure == "unreviewed_model":
+        revised["models"]["producer"]["id"] = "unreviewed/free-model"
+    elif failure == "price_increase":
+        revised["models"] = model_profile("live-step10-mistral-v1")["models"]
+        revised["models"]["producer"]["completion_usd_per_token"] = "0.0000021"
+    else:
+        revised["version"] = "live-step10-mistral-v1"
+    with pytest.raises(ProviderError) as error:
+        gateway(tmp_path, revised)
+    assert error.value.code == "invalid_configuration"
+
+
+def test_new_model_policy_retains_every_old_charge_and_uncertain_hold(tmp_path, config):
+    ledger = BudgetLedger(tmp_path / "shared.sqlite", config)
+    ledger.reserve("old-paid-run", "old-paid", "old-paid-hash", Decimal(".4"), 100)
+    ledger.settle("old-paid", {"cost_usd": ".2", "total_tokens": 30}, {"content": "test-only"})
+    ledger.reserve("old-uncertain-run", "old-uncertain", "old-uncertain-hash", Decimal(".45"), 100)
+    ledger.uncertain("old-uncertain", "provider_http_403")
+    profile = model_profile("live-step10-mistral-v1")
+    revised = {**config, "authorization_id": "replacement-policy", "version": profile["version"], "models": profile["models"]}
+    replacement = BudgetLedger(tmp_path / "shared.sqlite", revised)
+    summary = replacement.summary()
+    assert summary["reported_spend_usd"] == "0.2" and summary["held_usd"] == "0.45"
+    assert summary["committed_usd"] == "0.65" and summary["remaining_authorization_usd"] == "0.35"
+    assert summary["uncertain_calls"] == 1 and summary["model_calls"] == 2 and summary["ledger_scope"] == "desk_lifetime"
+    with pytest.raises(ProviderError) as error:
+        replacement.reserve("new-run", "over-budget", "new-hash", Decimal(".4"), 100)
+    assert error.value.code == "budget_exhausted"
+    replacement.reserve("new-run", "within-budget", "new-hash", Decimal(".3"), 100)
+    assert replacement.summary("new-run")["authorization_committed_usd"] == "0.95"
+    assert replacement.summary("old-uncertain-run")["held_usd"] == "0.45"
+    assert ledger.summary()["remaining_authorization_usd"] == "0.05"
+
+
+def test_fresh_authorization_cannot_raise_original_desk_ceiling(tmp_path, config):
+    ledger = BudgetLedger(tmp_path / "shared.sqlite", config)
+    with pytest.raises(ProviderError) as error:
+        BudgetLedger(tmp_path / "shared.sqlite", {**config, "authorization_id": "new-policy", "cap_usd": "2.00"})
+    assert error.value.code == "desk_budget_increase_forbidden"
+    assert ledger.summary()["desk_cap_usd"] == "1.00" and ledger.summary()["model_calls"] == 0
+
+
+def test_parallel_reservations_across_policies_cannot_reset_cumulative_cap(tmp_path, config):
+    original = {**config, "cap_usd": ".02", "per_run_usd": ".02"}
+    ledger_one = BudgetLedger(tmp_path / "shared.sqlite", original)
+    ledger_two = BudgetLedger(tmp_path / "shared.sqlite", {**original, "authorization_id": "new-policy", "version": "test-v2"})
+    barrier = threading.Barrier(2)
+    def reserve(pair):
+        index, ledger = pair
+        barrier.wait(timeout=3)
+        try:
+            ledger.reserve(f"run-{index}", f"call-{index}", f"hash-{index}", Decimal(".015"), 100)
+            return "reserved"
+        except ProviderError as error:
+            return error.code
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        outcomes = list(pool.map(reserve, [(1, ledger_one), (2, ledger_two)]))
+    assert sorted(outcomes) == ["budget_exhausted", "reserved"]
+    assert ledger_one.summary()["committed_usd"] == ledger_two.summary()["committed_usd"] == "0.015"
+
+
+@pytest.mark.parametrize("boundary", ["spend", "calls", "tokens"])
+def test_same_run_original_limits_survive_policy_change(tmp_path, config, boundary):
+    original = {**config, "per_run_usd": ".1", "max_calls_per_run": 1 if boundary == "calls" else 12,
+                "max_tokens_per_run": 100 if boundary == "tokens" else 150000}
+    ledger = BudgetLedger(tmp_path / "shared.sqlite", original)
+    ledger.reserve("same-run", "old-call", "old-hash", Decimal(".06"), 60)
+    revised = {**config, "authorization_id": "new-policy", "per_run_usd": ".8", "max_calls_per_run": 20, "max_tokens_per_run": 500000}
+    replacement = BudgetLedger(tmp_path / "shared.sqlite", revised)
+    with pytest.raises(ProviderError) as error:
+        replacement.reserve("same-run", "new-call", "new-hash", Decimal(".06") if boundary == "spend" else Decimal(".001"), 60)
+    assert error.value.code == ("budget_exhausted" if boundary == "spend" else "run_limit_exhausted")
+    assert replacement.summary("same-run")["per_run_usd"] == "0.1"
+    assert replacement.summary()["model_calls"] == 1
+
+
+def test_old_accounting_anomaly_blocks_new_policy_and_all_summaries(tmp_path, config):
+    ledger = BudgetLedger(tmp_path / "shared.sqlite", config)
+    ledger.reserve("old-run", "old-call", "old-hash", Decimal(".01"), 100)
+    with pytest.raises(ProviderError) as anomaly:
+        ledger.settle("old-call", {"cost_usd": ".02", "total_tokens": 20}, {"content": "test-only"})
+    assert anomaly.value.code == "accounting_anomaly"
+    revised = BudgetLedger(tmp_path / "shared.sqlite", {**config, "authorization_id": "new-policy"})
+    with pytest.raises(ProviderError) as blocked:
+        revised.reserve("new-run", "new-call", "new-hash", Decimal(".01"), 100)
+    assert blocked.value.code == "accounting_blocked" and revised.summary()["blocked"]
+    assert revised.summary()["reported_spend_usd"] == "0.02"
+
+
+def test_new_policy_cannot_return_old_policy_cached_result(tmp_path, config):
+    engine, _ = gateway(tmp_path, config)
+    engine.complete(**arguments())
+    revised, calls = gateway(tmp_path, {**config, "authorization_id": "new-policy"})
+    with pytest.raises(ProviderError) as error:
+        revised.complete(**arguments())
+    assert error.value.code == "call_id_conflict" and calls == [] and revised.budget()["model_calls"] == 1
+
+
+def test_legacy_ledger_requires_original_unchanged_policy_for_migration(tmp_path, config):
+    path = tmp_path / "legacy.sqlite"
+    original = BudgetLedger(path, config)
+    original.reserve("old-run", "old-call", "old-hash", Decimal(".1"), 100)
+    with original.connection() as db:
+        db.execute("DROP TABLE desk_budget")
+        db.execute("DROP TABLE run_limits")
+    with pytest.raises(ProviderError) as error:
+        BudgetLedger(path, {**config, "authorization_id": "new-policy", "cap_usd": "2.00"})
+    assert error.value.code == "authorization_changed"
+    migrated = BudgetLedger(path, config)
+    assert migrated.summary()["desk_cap_usd"] == "1.00" and migrated.summary()["held_usd"] == "0.1"
+    revised = BudgetLedger(path, {**config, "authorization_id": "new-policy"})
+    assert revised.summary()["model_calls"] == 1 and revised.summary("old-run")["per_run_usd"] == "0.50"
 
 
 @pytest.mark.parametrize("failure", ["timeout", "missing_usage", "missing_cost", "bad_token_total", "redirect", "http_error"])

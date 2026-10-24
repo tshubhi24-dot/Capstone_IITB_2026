@@ -18,13 +18,13 @@ import time
 import httpx
 from jsonschema import Draft202012Validator
 
+from desk.model_profiles import MODEL_PROFILES, model_profile
+
 PROVIDER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GATEWAY_URL = "http://model-gateway:8020"
 ROLES = {"planner", "researcher", "risk", "writer", "critic"}
-MODEL_RATES = {
-    "openai/gpt-4.1-mini": (Decimal("0.0000004"), Decimal("0.0000016")),
-    "openai/gpt-4.1": (Decimal("0.000002"), Decimal("0.000008")),
-}
+MODEL_RATES = {policy["id"]: (Decimal(policy["prompt_usd_per_token"]), Decimal(policy["completion_usd_per_token"]))
+               for profile in MODEL_PROFILES.values() for policy in profile["models"].values()}
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
 HTTP_DIAGNOSTIC_STATUSES = frozenset({301, 302, 303, 307, 308, 400, 401, 402, 403, 404, 408, 409, 413, 415, 422, 429, 500, 502, 503, 504})
 FORBIDDEN_BODY_LIMIT = 16 * 1024
@@ -46,7 +46,7 @@ FORBIDDEN_HINT_TYPES = {
 SAFE_ERROR_CODES = frozenset({
     "invalid_configuration", "authorization_changed", "call_id_conflict", "call_not_retriable", "accounting_blocked",
     "budget_exhausted", "run_limit_exhausted", "call_state_conflict", "accounting_anomaly", "live_not_authorized",
-    "provider_key_missing", "invalid_request", "provider_request_failed", "provider_response_invalid", "provider_usage_uncertain",
+    "provider_key_missing", "invalid_request", "desk_budget_increase_forbidden", "provider_request_failed", "provider_response_invalid", "provider_usage_uncertain",
     "model_output_invalid", "gateway_configuration_invalid", "gateway_request_failed", "gateway_unavailable", "unauthorized",
     "provider_http_3xx", "provider_http_4xx", "provider_http_5xx", "provider_http_unexpected_status",
     "provider_connect_timeout", "provider_read_timeout", "provider_write_timeout", "provider_pool_timeout",
@@ -197,7 +197,12 @@ def validate_config(value):
     models = value["models"]
     if not isinstance(models, dict) or set(models) != {"producer", "critic"}:
         raise ProviderError("invalid_configuration", "Both producing and critic model policies are required.")
-    for role, expected in (("producer", "openai/gpt-4.1-mini"), ("critic", "openai/gpt-4.1")):
+    try:
+        profile = model_profile(value)
+    except ValueError:
+        raise ProviderError("invalid_configuration", "Only a reviewed producing and critic model pair is allowed.") from None
+    for role in ("producer", "critic"):
+        expected = profile["models"][role]["id"]
         policy = models[role]
         if not isinstance(policy, dict) or set(policy) != {"id", "prompt_usd_per_token", "completion_usd_per_token"} or policy["id"] != expected:
             raise ProviderError("invalid_configuration", "Only the reviewed producing and critic model IDs are allowed.")
@@ -221,12 +226,28 @@ class BudgetLedger:
                 CREATE TABLE IF NOT EXISTS model_calls(call_id TEXT PRIMARY KEY,authorization_id TEXT NOT NULL,run_id TEXT NOT NULL,
                     request_hash TEXT NOT NULL,status TEXT NOT NULL,reserved_usd TEXT NOT NULL,reserved_tokens INTEGER NOT NULL,
                     charged_usd TEXT,usage TEXT,result TEXT,error_code TEXT,created REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS desk_budget(singleton INTEGER PRIMARY KEY CHECK(singleton=1),cap_usd TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS run_limits(run_id TEXT PRIMARY KEY,cap_usd TEXT NOT NULL,max_calls INTEGER NOT NULL,max_tokens INTEGER NOT NULL);
             """)
             db.execute("BEGIN IMMEDIATE")
             previous = db.execute("SELECT policy_hash FROM authorization WHERE id=?", (config["authorization_id"],)).fetchone()
             if previous and previous[0] != self.policy_hash:
                 raise ProviderError("authorization_changed", "An existing spending authorization cannot change its model, price or limits.")
+            # This dedicated ledger carries one original desk-wide ceiling.
+            # Migration seeds it from the unchanged, reviewed cumulative cap;
+            # a later model policy cannot create a fresh spending allowance.
+            existing_ceiling = db.execute("SELECT cap_usd FROM desk_budget WHERE singleton=1").fetchone()
+            if not existing_ceiling and not previous and db.execute("SELECT EXISTS(SELECT 1 FROM authorization)").fetchone()[0]:
+                raise ProviderError("authorization_changed", "The original authorization must initialize the cumulative desk ledger before a model policy change.")
+            db.execute("INSERT OR IGNORE INTO desk_budget VALUES(1,?)", (str(config["cap_usd"]),))
+            self.desk_cap = decimal(db.execute("SELECT cap_usd FROM desk_budget WHERE singleton=1").fetchone()[0])
+            if decimal(config["cap_usd"]) > self.desk_cap:
+                raise ProviderError("desk_budget_increase_forbidden", "A model policy cannot increase the original cumulative desk budget.")
             db.execute("INSERT OR IGNORE INTO authorization(id,policy_hash) VALUES(?,?)", (config["authorization_id"], self.policy_hash))
+            # Old rows did not store separate run-limit metadata. The reviewed
+            # limits are unchanged during this migration; retain every row.
+            db.execute("INSERT OR IGNORE INTO run_limits SELECT DISTINCT run_id,?,?,? FROM model_calls",
+                       (str(config["per_run_usd"]), config["max_calls_per_run"], config["max_tokens_per_run"]))
 
     @contextmanager
     def connection(self):
@@ -257,17 +278,24 @@ class BudgetLedger:
                 if previous["status"] == "succeeded":
                     return json.loads(previous["result"])
                 raise ProviderError("call_not_retriable", "This call is pending or failed; it cannot incur another automatic charge.")
-            authorization = db.execute("SELECT blocked FROM authorization WHERE id=?", (config["authorization_id"],)).fetchone()
-            if authorization[0]:
+            blocked = db.execute("SELECT EXISTS(SELECT 1 FROM authorization WHERE blocked<>0)").fetchone()[0]
+            if blocked:
                 raise ProviderError("accounting_blocked", "Model spending is blocked after an accounting anomaly.")
-            rows = db.execute("SELECT * FROM model_calls WHERE authorization_id=?", (config["authorization_id"],)).fetchall()
+            rows = db.execute("SELECT * FROM model_calls").fetchall()
             run_rows = [row for row in rows if row["run_id"] == run_id]
+            db.execute("INSERT OR IGNORE INTO run_limits VALUES(?,?,?,?)",
+                       (run_id, str(config["per_run_usd"]), config["max_calls_per_run"], config["max_tokens_per_run"]))
+            previous_limits = db.execute("SELECT * FROM run_limits WHERE run_id=?", (run_id,)).fetchone()
+            run_cap = min(decimal(previous_limits["cap_usd"]), decimal(config["per_run_usd"]))
+            call_cap = min(previous_limits["max_calls"], config["max_calls_per_run"])
+            token_cap = min(previous_limits["max_tokens"], config["max_tokens_per_run"])
             charge, held, _ = self.totals(rows)
             run_charge, run_held, run_tokens = self.totals(run_rows)
-            if charge + held + usd > decimal(config["cap_usd"]) or run_charge + run_held + usd > decimal(config["per_run_usd"]):
+            if charge + held + usd > min(self.desk_cap, decimal(config["cap_usd"])) or run_charge + run_held + usd > run_cap:
                 raise ProviderError("budget_exhausted", "The remaining authorized model budget cannot cover this call.")
-            if len(run_rows) >= config["max_calls_per_run"] or run_tokens + tokens > config["max_tokens_per_run"]:
+            if len(run_rows) >= call_cap or run_tokens + tokens > token_cap:
                 raise ProviderError("run_limit_exhausted", "The original run call or token budget is exhausted.")
+            db.execute("UPDATE run_limits SET cap_usd=?,max_calls=?,max_tokens=? WHERE run_id=?", (str(run_cap), call_cap, token_cap, run_id))
             db.execute("INSERT INTO model_calls(call_id,authorization_id,run_id,request_hash,status,reserved_usd,reserved_tokens,created) VALUES(?,?,?,?,?,?,?,?)",
                        (call_id, config["authorization_id"], run_id, request_hash, "reserved", str(usd), tokens, time.time()))
         return None
@@ -294,16 +322,19 @@ class BudgetLedger:
 
     def summary(self, run_id=None):
         with self.connection() as db:
-            rows = db.execute("SELECT * FROM model_calls WHERE authorization_id=?", (self.config["authorization_id"],)).fetchall()
-            blocked = bool(db.execute("SELECT blocked FROM authorization WHERE id=?", (self.config["authorization_id"],)).fetchone()[0])
+            rows = db.execute("SELECT * FROM model_calls").fetchall()
+            blocked = bool(db.execute("SELECT EXISTS(SELECT 1 FROM authorization WHERE blocked<>0)").fetchone()[0])
+            run_limit = db.execute("SELECT * FROM run_limits WHERE run_id=?", (run_id,)).fetchone() if run_id is not None else None
         selected = [row for row in rows if row["run_id"] == run_id] if run_id is not None else rows
         charge, held, tokens = self.totals(selected)
         global_charge, global_held, _ = self.totals(rows)
+        effective_cap = min(self.desk_cap, decimal(self.config["cap_usd"]))
+        run_cap = min(decimal(run_limit["cap_usd"]), decimal(self.config["per_run_usd"])) if run_limit else decimal(self.config["per_run_usd"])
         return {"enabled": self.config["enabled"], "authorization_id": self.config["authorization_id"], "config_version": self.config["version"],
-                "cap_usd": str(self.config["cap_usd"]), "per_run_usd": str(self.config["per_run_usd"]),
+                "cap_usd": str(effective_cap), "desk_cap_usd": str(self.desk_cap), "per_run_usd": str(run_cap), "ledger_scope": "desk_lifetime",
                 "reported_spend_usd": str(charge), "held_usd": str(held), "committed_usd": str(charge + held),
                 "authorization_committed_usd": str(global_charge + global_held),
-                "remaining_authorization_usd": str(max(Decimal(0), decimal(self.config["cap_usd"]) - global_charge - global_held)),
+                "remaining_authorization_usd": str(max(Decimal(0), effective_cap - global_charge - global_held)),
                 "model_calls": len(selected), "tokens": tokens, "uncertain_calls": sum(row["status"] == "uncertain" for row in selected),
                 "blocked": blocked, "run_id": run_id}
 
@@ -311,12 +342,16 @@ class BudgetLedger:
 class ReasoningGateway:
     def __init__(self, config, ledger_path, api_key="", transport=None):
         self.config = validate_config(config)
+        self.profile = model_profile(self.config)
         self.ledger = BudgetLedger(ledger_path, self.config)
         self.api_key, self.transport = api_key, transport
 
     def budget(self, run_id=None):
         result = self.ledger.summary(run_id)
         result["provider_key_configured"] = bool(self.api_key)
+        result["models"] = {role: policy["id"] for role, policy in self.profile["models"].items()}
+        result["model_profile"] = self.profile["version"]
+        result["provider"] = self.profile["provider"]
         return result
 
     def complete(self, *, run_id, call_id, role, messages, response_schema, max_output_tokens):
@@ -359,7 +394,7 @@ class ReasoningGateway:
             return {**cached, "cached": True}
         payload = {"model": policy["id"], "messages": messages, "max_tokens": max_output_tokens, "temperature": 0,
                    "response_format": {"type": "json_schema", "json_schema": {"name": "analyst_response", "strict": True, "schema": response_schema}},
-                   "provider": {"only": ["openai"], "allow_fallbacks": False, "require_parameters": True, "data_collection": "deny",
+                   "provider": {"only": [self.profile["provider"]], "allow_fallbacks": False, "require_parameters": True, "data_collection": "deny",
                                 "max_price": {"prompt": float(decimal(policy["prompt_usd_per_token"]) * 1000000), "completion": float(decimal(policy["completion_usd_per_token"]) * 1000000)}}}
         network_error = None
         try:
