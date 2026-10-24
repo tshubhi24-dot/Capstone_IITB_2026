@@ -56,6 +56,7 @@ services:
       MCP_PYTHON_SANDBOX_URL: http://python-sandbox:8013/mcp
       MCP_RESEARCH_PORTAL_URL: http://research-portal:8014/mcp
       CHROMA_URL: http://chroma:8000
+      RETRIEVAL_MODE: hybrid_rerank
     volumes: ["./.runtime/journey/sources:/sources:ro", "runtime:/runtime", "app-auth:/run/credentials:ro"]
     networks: [backend]
     depends_on:
@@ -74,10 +75,25 @@ services:
   filings-kb:
     <<: [*image, *restricted]
     command: [python, -m, desk.tools, filings-kb, --port, "8011"]
-    environment: *service-environment
-    volumes: ["./.runtime/journey/sources:/sources:ro", "filings-auth:/run/credentials:ro"]
+    environment:
+      <<: *service-environment
+      RETRIEVAL_MODE: hybrid_rerank
+      RETRIEVAL_ARTIFACTS: /retrieval
+      CHROMA_URL: http://chroma:8000
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      RETRIEVAL_CPU_THREADS: "2"
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "2"
+      HF_HOME: /tmp/huggingface
+    volumes: ["./.runtime/journey/sources:/sources:ro", "./.runtime/journey/retrieval:/retrieval:ro", "filings-auth:/run/credentials:ro"]
+    mem_limit: 1536m
+    cpus: 2
+    pids_limit: 256
     networks: [backend]
-    depends_on: {init-secrets: {condition: service_completed_successfully}}
+    depends_on: {init-secrets: {condition: service_completed_successfully}, chroma: {condition: service_started}}
 
   edgar:
     <<: [*image, *restricted]

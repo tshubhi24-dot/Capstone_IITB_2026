@@ -274,6 +274,13 @@ def resolved(tmp_path, monkeypatch):
     return json.loads(base.capture(live.compose(docker) + ["config", "--format", "json"], env, "fictional-local-token-" * 3))
 
 
+def test_every_python_service_uses_the_image_built_by_the_live_launcher(resolved):
+    services = resolved["services"]
+    expected = services["app"]["image"]
+    for name in ("init-secrets", "filings-kb", "edgar", "python-sandbox", "research-portal", "pandas-worker", "model-gateway"):
+        assert services[name]["image"] == expected
+
+
 def test_actual_merged_compose_keeps_provider_key_and_egress_only_at_gateway(resolved):
     live.validate(resolved)
     services = resolved["services"]
@@ -282,7 +289,7 @@ def test_actual_merged_compose_keeps_provider_key_and_egress_only_at_gateway(res
     assert services["pandas-worker"]["network_mode"] == "none"
     for service in ("app", "init-secrets", "model-gateway"):
         assert services[service]["image"] == "analyst-desk:amit-live-v1"
-    assert services["edgar"]["image"] == "analyst-desk:amit-step4"
+    assert services["edgar"]["image"] == services["app"]["image"]
     key_mounts = [(name, mount) for name, service in services.items() for mount in service.get("volumes", []) if mount["target"] == "/run/provider/key"]
     assert len(key_mounts) == 1 and key_mounts[0][0] == "model-gateway" and key_mounts[0][1]["read_only"]
     assert all(volume["name"].startswith(base.PROJECT + "_") for volume in resolved["volumes"].values())

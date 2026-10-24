@@ -27,7 +27,7 @@ function researchScope(config,tickers,years,mode){
 }
 function selectedValues(id){return Array.from($(id).selectedOptions,option=>option.value);}
 function updateScope(){
- try{const scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),$('mode').value);$('request-scope').textContent=`Selected: ${scope.tickers.join(' / ')} · fiscal ${scope.years.join(', ')}`;$('start').disabled=!state.connected;}
+ try{if(state.config?.retrieval_details?.ready===false)throw new Error('The search index is unavailable or needs preparation. Research is paused until it is ready.');const scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),$('mode').value);$('request-scope').textContent=`Selected: ${scope.tickers.join(' / ')} · fiscal ${scope.years.join(', ')}`;$('start').disabled=!state.connected;}
  catch(error){$('request-scope').textContent=error.message;$('start').disabled=true;}
 }
 function renderScopeOptions(config){
@@ -39,7 +39,7 @@ function renderScopeOptions(config){
  const years=[...new Set(catalogue.flatMap(company=>company.years))].sort((a,b)=>a-b);$('years').replaceChildren();
  years.forEach(year=>{const option=element('option',year);option.value=String(year);option.selected=true;$('years').append(option);});
  $('companies').disabled=false;$('years').disabled=false;
- $('catalogue-summary').textContent=`${catalogue.length} covered companies · ${sectors.join(' / ')} · actual SEC filings · fiscal ${years.join(', ')}`;
+ $('catalogue-summary').textContent=`${catalogue.length} covered companies · ${sectors.join(' / ')} · actual SEC filings · fiscal ${years.join(', ')}${config.retrieval==='hybrid_rerank'&&config.retrieval_details?.ready?' · hybrid search with local AI reranking':''}`;
 }
 function modeDescription(){
  const live=$('mode').value==='live',budget=state.config?.live_budget;

@@ -13,6 +13,8 @@ import numpy as np
 from desk.retrieval import RetrievalError, canonical_hash
 
 PAGE_SIZE = 256
+# Chroma's cosine storage can renormalize float32 values by a few ULPs.
+STORED_VECTOR_ATOL = 1e-7
 FINGERPRINT_FIELDS = ("index_fingerprint", "corpus_fingerprint", "configuration_hash",
                       "model_fingerprint", "vectors_sha256")
 
@@ -90,7 +92,8 @@ def validate_collection(retriever, collection):
             if not isinstance(row_metadata, dict) or row_metadata != _row_metadata(retriever, index):
                 raise RetrievalError("Chroma passage metadata differs from the frozen source.")
             vector = np.asarray(vector, dtype=np.float32)
-            if vector.shape != retriever.vectors[index].shape or not np.array_equal(vector, retriever.vectors[index]):
+            if (vector.shape != retriever.vectors[index].shape
+                    or not np.allclose(vector, retriever.vectors[index], atol=STORED_VECTOR_ATOL, rtol=0)):
                 raise RetrievalError("Chroma stored vectors differ from the prepared vector artifact.")
             seen.add(identifier)
     if seen != set(by_id):
@@ -206,6 +209,7 @@ def populate_chroma(retriever, url, *, client=None):
     return {"status": status, "backend": "chroma_cosine", "collection": name,
             **{field: metadata[field] for field in FINGERPRINT_FIELDS},
             "passage_count": len(by_id), "dimension": metadata["dimension"],
-            "stored_vector_verification": "all_float32_vectors_match_prepared_artifact",
+            "stored_vector_verification": "all_float32_vectors_match_prepared_artifact_with_absolute_tolerance",
+            "stored_vector_absolute_tolerance": STORED_VECTOR_ATOL,
             "scope_filter": "issuer_and_fiscal_year_and_allowed_canonical_passage_ids_before_ranking",
             "local_embedding_calls": 0, "generative_model_calls": 0, "external_provider_requests": 0}

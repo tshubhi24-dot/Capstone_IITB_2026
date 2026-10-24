@@ -189,6 +189,10 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [ops/prepare_retrieval.py](ops/prepare_retrieval.py), [tests/test_retrieval.py](tests/test_retrieval.py) | Build and verify frozen local artifacts; test scope, changed artifacts, ranking, table cells and concurrent first use. |
 | [desk/vector_store.py](desk/vector_store.py), [ops/prepare_vector_store.py](ops/prepare_vector_store.py), [tests/test_vector_store.py](tests/test_vector_store.py) | Populate Chroma explicitly, validate stored vectors and apply issuer/year/allowed-ID filters before ranking. |
 | [evidence/retrieval_development_comparison.json](evidence/retrieval_development_comparison.json) | Complete paired host comparison, missed labels, model/index identities and diagnostic timings. |
+| [requirements.retrieval.txt](requirements.retrieval.txt), [Dockerfile](Dockerfile), [.dockerignore](.dockerignore), [compose.yaml](compose.yaml), [compose.live.yaml](compose.live.yaml) | CPU dependencies, shared current service images, read-only retrieval artifacts and internal Chroma connectivity. |
+| [desk/tools.py](desk/tools.py), [desk/api.py](desk/api.py), [web/app.js](web/app.js) | Authenticated retrieval readiness, accurate search status and a preflight block for unavailable indexes. |
+| [ops/start_journey.py](ops/start_journey.py), [ops/start_live.py](ops/start_live.py), [ops/verify_runtime.py](ops/verify_runtime.py), [ops/verify_live_runtime.py](ops/verify_live_runtime.py) | Prepare Chroma before starting readers and match deployed retrieval identities to frozen artifacts. |
+| [ops/verify_retrieval_tools.py](ops/verify_retrieval_tools.py), [tests/test_retrieval_tools_verification.py](tests/test_retrieval_tools_verification.py), [tests/test_retrieval_runtime.py](tests/test_retrieval_runtime.py) | Exercise frozen questions through authenticated search and test fail-closed readiness, provenance and result accounting. |
 
 **Capstone connection:** p.3, hybrid BM25/vector retrieval, RRF, reranker, query-side improvement and Recall@5 comparison; p.16, scoped company/year retrieval and preserved table evidence. Provider failure handling supports the observable failure requirement on p.6.
 
@@ -197,6 +201,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 12a — Explain a rate-limited run | The interface explains HTTP 429, retains the diagnostic and reserved-budget display, and offers explicit next actions. Three browser-helper checks pass. |
 | 12b — Freeze the retrieval comparison | Thirty-six questions and 42 source-derived passage labels cover four development issuers, twelve company/year groups and both narrative/table evidence. Thirty-two harness checks pass. Labels were frozen before running retrieval; human review and protected evaluation remain pending. |
 | 12c — Implement and compare local retrieval | Prepared 4,073 × 384 vectors and real pretrained CPU models. Twenty-eight retrieval tests pass. Sampled-label Recall@5 is 75.0% for BM25, 77.8% for hybrid and 98.6% with reranking. Hybrid improves five/regresses five questions; reranking improves nine/regresses none against BM25. These are partial development labels, not independent gold. Docker/Chroma verification follows. |
+| 12d — Deploy the hybrid search service | Docker selects hybrid retrieval with reranking and loads an index-specific Chroma collection. Source, model-file and vector identities are checked; stored float32 vectors allow a measured absolute roundoff tolerance of 0.0000001. Missing or stale retrieval blocks new research before paid planning. All Python services use the newly built image; 780 tests pass. Deployed retrieval and persistence receipts follow. |
 
 ## What the team builds next
 

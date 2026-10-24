@@ -124,6 +124,16 @@ def test_repeat_population_reuses_complete_immutable_collection(retriever):
     assert collection.records == before
 
 
+def test_only_bounded_float32_storage_roundoff_is_accepted(retriever):
+    _, collection, _ = prepared(retriever)
+    vector = collection.records["aapl-2023-a"]["embedding"]
+    vector[2] = 5e-8
+    store.validate_collection(retriever, collection)
+    vector[2] = 2e-7
+    with pytest.raises(RetrievalError, match="stored vectors"):
+        store.validate_collection(retriever, collection)
+
+
 def test_query_filters_company_year_and_exact_allowed_ids_before_ranking(retriever):
     client, collection, _ = prepared(retriever)
     adapter = store.attach_chroma(retriever, "http://chroma:8000", client=client)

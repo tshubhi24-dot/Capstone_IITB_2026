@@ -1,11 +1,17 @@
 *
 !requirements.txt
+!requirements.retrieval.txt
 !Dockerfile
 !desk/
 !desk/**
 !ops/
 !ops/bootstrap.py
 !ops/verify_catalogue_tools.py
+!ops/prepare_vector_store.py
+!ops/evaluate_retrieval.py
+!ops/verify_retrieval_tools.py
+!data/
+!data/retrieval_config.json
 !web/
 !web/**
 **/__pycache__

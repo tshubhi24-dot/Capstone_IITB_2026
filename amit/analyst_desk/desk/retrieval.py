@@ -76,6 +76,10 @@ def model_fingerprint(config):
 
 def verify_model_files(directory, specification):
     root = Path(directory).resolve()
+    actual = {file.relative_to(root).as_posix() for file in root.rglob("*")
+              if file.is_file() or file.is_symlink()}
+    if actual != set(specification["files"]):
+        raise RetrievalError("The local retrieval model bundle contains missing or unpinned files.")
     for name, expected in specification["files"].items():
         file = root / name
         # Model bundles contain data only and may not refer outside their root.

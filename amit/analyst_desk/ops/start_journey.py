@@ -18,8 +18,8 @@ PRIVATE = ROOT / ".runtime/journey"
 ENV_FILE = PRIVATE / "credentials.env"
 PROJECT = "analyst-desk-journey"
 CONTEXT = "desktop-linux"
-START_ORDER = ("pandas-worker", "filings-kb", "edgar", "python-sandbox", "research-portal",
-               "chroma", "app", "prometheus", "grafana", "ingress")
+START_ORDER = ("chroma", "pandas-worker", "filings-kb", "edgar", "python-sandbox", "research-portal",
+               "app", "prometheus", "grafana", "ingress")
 
 
 def docker_binary():
@@ -118,10 +118,22 @@ def start_stack(command, env, token):
             # rebuilt services have started so it does not retain an old IP.
             options.append("--force-recreate")
         capture(command + options + [service], env, token, timeout=150)
+        if service == "chroma":
+            prepare_vector_store(command, env, token)
     running = set(capture(command + ["ps", "--status", "running", "--services"], env, token).splitlines())
     if not set(START_ORDER).issubset(running):
         raise RuntimeError("One or more journey services stopped during startup.")
     local_readiness()
+
+
+def prepare_vector_store(command, env, token):
+    """Populate/reuse the frozen vector collection before starting its reader."""
+    print("Verifying and preparing the local public-evidence vector store.", flush=True)
+    capture(command + ["run", "--rm", "--no-deps", "--pull", "never",
+                       "--entrypoint", "python", "filings-kb", "ops/prepare_vector_store.py",
+                       "--corpus", "/sources/corpus.json", "--artifacts", "/retrieval",
+                       "--chroma-url", "http://chroma:8000", "--wait-seconds", "30"],
+            env, token, timeout=120)
 
 
 def validate(config):
@@ -156,6 +168,15 @@ def validate(config):
             raise ValueError("Source readers must share the prepared read-only snapshot.")
         if service["environment"]["CORPUS_PATH"] != "/sources/corpus.json" or service["networks"] != {"backend": None}:
             raise ValueError("Source identity and private network must match.")
+    retrieval = services["filings-kb"]
+    mount = [item for item in retrieval["volumes"] if item["target"] == "/retrieval"]
+    expected_env = {"RETRIEVAL_MODE": "hybrid_rerank", "RETRIEVAL_ARTIFACTS": "/retrieval",
+                    "CHROMA_URL": "http://chroma:8000", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}
+    if (len(mount) != 1 or not mount[0].get("read_only")
+            or Path(mount[0]["source"]).resolve() != (PRIVATE / "retrieval").resolve()
+            or any(retrieval["environment"].get(key) != value for key, value in expected_env.items())
+            or app.get("RETRIEVAL_MODE") != "hybrid_rerank"):
+        raise ValueError("Retrieval requires the prepared read-only bundle and local offline models.")
 
 
 def prepare(source_corpus=None):

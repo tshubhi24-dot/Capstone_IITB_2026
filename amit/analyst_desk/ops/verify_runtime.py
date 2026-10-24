@@ -73,6 +73,29 @@ def matches_prepared_source(config, expected):
             and config.get("years") == sorted({year for years in expected["company_years"].values() for year in years}))
 
 
+def matches_prepared_retrieval(config, artifact_path=None, config_path=None):
+    """Match service-reported readiness to the independently prepared local index."""
+    from desk.retrieval import canonical_hash, load_config, model_fingerprint
+    try:
+        manifest = json.loads(Path(artifact_path or ROOT / ".runtime/journey/retrieval/manifest.json").read_text())
+        recorded = manifest.pop("index_fingerprint")
+        if canonical_hash(manifest) != recorded:
+            return False
+        policy = load_config(config_path)
+        details = config.get("retrieval_details", {})
+        return (config.get("semantic_retrieval") is True and config.get("retrieval") == "hybrid_rerank"
+                and details.get("mode") == "hybrid_rerank" and details.get("ready") is True
+                and details.get("backend") == "chroma_cosine" and details.get("semantic_retrieval") is True
+                and details.get("source_fingerprint") == config.get("source_fingerprint") == manifest["corpus_fingerprint"]
+                and details.get("index_fingerprint") == recorded
+                and details.get("configuration_hash") == manifest["configuration_hash"] == canonical_hash(policy)
+                and details.get("model_fingerprint") == manifest["model_fingerprint"] == model_fingerprint(policy)
+                and details.get("encoder") == {key: policy["encoder"][key] for key in ("id", "revision")}
+                and details.get("reranker") == {key: policy["reranker"][key] for key in ("id", "revision")})
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return False
+
+
 def analyst_token():
     """Read the existing credential; verification must never create or rotate it."""
     path = launch.ENV_FILE
@@ -133,7 +156,7 @@ def main():
         status, data = get_json("http://127.0.0.1:18080/api/config", token)
         data = data if isinstance(data, dict) else {}
         source_scope = prepared_source_scope()
-        expected = data.get("mode") == "offline" and data.get("data_source") == "sec_edgar" and data.get("transport") == "http" and data.get("semantic_retrieval") is False and matches_prepared_source(data, source_scope)
+        expected = data.get("mode") == "offline" and data.get("data_source") == "sec_edgar" and data.get("transport") == "http" and matches_prepared_retrieval(data) and matches_prepared_source(data, source_scope)
         fingerprint = data.get("source_fingerprint", "")
         safe_fingerprint = fingerprint if isinstance(fingerprint, str) and re.fullmatch(r"[a-f0-9]{64}", fingerprint) else None
         record("authenticated_source_config", status == 200 and expected and bool(safe_fingerprint), http_status=status, expected_company_years=expected, source_sha256=safe_fingerprint)

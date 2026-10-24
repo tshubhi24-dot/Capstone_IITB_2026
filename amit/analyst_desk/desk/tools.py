@@ -14,6 +14,7 @@ from .data import Corpus
 from .store import Store
 
 PERMISSIONS = {
+    "retrieval_status": {"planner", "researcher", "risk", "critic"},
     "search_filings": {"planner", "researcher", "risk", "critic"},
     "get_passage": {"planner", "researcher", "risk", "critic"},
     "get_facts": {"researcher", "quant", "risk", "critic"},
@@ -92,8 +93,13 @@ def create_server(name, *, corpus=None, store=None, config=None):
 
     if name == "filings-kb":
         @server.tool(annotations=READ)
+        def retrieval_status() -> dict:
+            """Validate configured source/index identity without model inference."""
+            return envelope("retrieval_status", data.retrieval_status)
+
+        @server.tool(annotations=READ)
         def search_filings(query: str, ticker: str, years: list[int], k: int = 5) -> dict:
-            """Read bounded BM25 filing evidence in the supplied company/year scope."""
+            """Search the configured lexical/hybrid/reranked index within issuer/year scope."""
             def run():
                 if not query or len(query) > 2000 or not 1 <= k <= 10 or not 1 <= len(years) <= 3:
                     raise ValueError("Search requires a bounded query, scope and result count.")

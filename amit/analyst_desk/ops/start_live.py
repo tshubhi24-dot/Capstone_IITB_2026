@@ -14,7 +14,7 @@ sys.path.insert(0, str(ROOT))
 from ops import prepare_live
 from ops import start_journey as base
 
-LIVE_ORDER = ("pandas-worker", "filings-kb", "edgar", "python-sandbox", "research-portal", "chroma",
+LIVE_ORDER = ("chroma", "pandas-worker", "filings-kb", "edgar", "python-sandbox", "research-portal",
               "model-gateway", "app", "prometheus", "grafana", "ingress")
 
 
@@ -114,6 +114,8 @@ def start_stack(command, env, token):
             # rebuilt app and dashboard are running.
             options.append("--force-recreate")
         base.capture(command + options + [service], env, token, timeout=150)
+        if service == "chroma":
+            base.prepare_vector_store(command, env, token)
     running = set(base.capture(command + ["ps", "--status", "running", "--services"], env, token).splitlines())
     if not set(LIVE_ORDER).issubset(running):
         raise RuntimeError("One or more live-overlay services stopped during startup.")

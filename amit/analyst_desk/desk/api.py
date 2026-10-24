@@ -166,16 +166,34 @@ def config():
     source = app.state.source
     companies = source.companies()
     live_budget, live_enabled = gateway_budget()
-    return {"mode": "offline", "data_source": "sec_edgar", "transport": "http", "semantic_retrieval": False,
+    retrieval = retrieval_configuration()
+    live_enabled = live_enabled and retrieval.get("ready") is True
+    return {"mode": "offline", "data_source": "sec_edgar", "transport": "http", "semantic_retrieval": retrieval.get("semantic_retrieval") is True,
             "available_modes": ["offline", "live"] if live_enabled else ["offline"], "live_enabled": live_enabled,
             "models": (live_budget or {}).get("models", {}),
             "model_profile": (live_budget or {}).get("model_profile"),
             "model_provider": (live_budget or {}).get("provider"),
             "live_budget": live_budget, "live_model_config_version": (live_budget or {}).get("config_version"),
-            "retrieval": "BM25 lexical teaching retrieval; learned vectors and reranker are not active",
+            "retrieval": retrieval.get("mode"), "retrieval_details": retrieval,
             "model_config_version": "fresh-step4-offline-v1", "source_fingerprint": source.fingerprint,
             "companies": companies, "years": sorted({year for company in companies for year in source.years(company["ticker"])}),
             "company_years": {company["ticker"]: source.years(company["ticker"]) for company in companies}}
+
+
+def retrieval_configuration():
+    """Read actual filings service readiness; configuration alone is not evidence."""
+    mode = os.getenv("RETRIEVAL_MODE", "bm25")
+    if mode == "bm25":
+        return {"mode": mode, "ready": True, "semantic_retrieval": False, "backend": "bm25"}
+    try:
+        value = asyncio.run(app.state.engine._wire_call("planner", "filings-kb", "retrieval_status", {}))
+        if (not isinstance(value, dict) or value.get("mode") != mode or value.get("ready") is not True
+                or value.get("source_fingerprint") != app.state.source.fingerprint
+                or value.get("semantic_retrieval") is not True):
+            raise ValueError("Retrieval service identity differs from this desk.")
+        return value
+    except Exception:
+        return {"mode": mode, "ready": False, "semantic_retrieval": False, "backend": "unavailable"}
 
 
 @app.get("/api/budget")
@@ -199,6 +217,8 @@ def create(value: ResearchRequest, background: BackgroundTasks):
         validate_scope(request, app.state.source)
     except ReviewError as exc:
         raise HTTPException(400, str(exc)) from exc
+    if retrieval_configuration().get("ready") is not True:
+        raise HTTPException(409, "The configured retrieval index is unavailable or stale. Prepare and verify it before starting research.")
     if value.mode == "live":
         _, enabled = gateway_budget()
         if not enabled:

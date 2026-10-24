@@ -36,7 +36,7 @@ def test_resolved_stack_has_dedicated_ports_volumes_and_safe_runtime(resolved):
     assert all(s.get("read_only") for s in resolved["services"].values())
 
 
-@pytest.mark.parametrize("mutation", ["public_port", "worker_network", "worker_resources", "writable_source", "provider_key"])
+@pytest.mark.parametrize("mutation", ["public_port", "worker_network", "worker_resources", "writable_source", "provider_key", "writable_models", "online_models"])
 def test_configuration_rejects_boundary_regressions(resolved, mutation):
     model = deepcopy(resolved)
     if mutation == "public_port":
@@ -48,8 +48,13 @@ def test_configuration_rejects_boundary_regressions(resolved, mutation):
     elif mutation == "writable_source":
         source = next(m for m in model["services"]["edgar"]["volumes"] if m["target"] == "/sources")
         source["read_only"] = False
-    else:
+    elif mutation == "provider_key":
         model["services"]["app"]["environment"]["OPENROUTER_API_KEY"] = "unexpected-key"
+    elif mutation == "writable_models":
+        mount = next(m for m in model["services"]["filings-kb"]["volumes"] if m["target"] == "/retrieval")
+        mount["read_only"] = False
+    else:
+        model["services"]["filings-kb"]["environment"]["HF_HUB_OFFLINE"] = "0"
     with pytest.raises(ValueError):
         launch.validate(model)
 

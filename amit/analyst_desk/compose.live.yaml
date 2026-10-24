@@ -6,6 +6,21 @@ x-live-image: &live-image
   build: {context: .}
 
 services:
+  filings-kb:
+    <<: *live-image
+
+  edgar:
+    <<: *live-image
+
+  python-sandbox:
+    <<: *live-image
+
+  research-portal:
+    <<: *live-image
+
+  pandas-worker:
+    <<: *live-image
+
   init-secrets:
     <<: *live-image
     entrypoint: [python, ops/bootstrap.py, init, --model-gateway]

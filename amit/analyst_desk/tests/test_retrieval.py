@@ -113,6 +113,16 @@ def test_learned_modes_fail_closed_when_index_is_absent(corpus, tmp_path):
             retriever.search("currency", "A", [2025], mode=mode)
 
 
+def test_unpinned_model_files_cannot_change_a_verified_bundle(tmp_path):
+    weight = tmp_path / "model.safetensors"
+    weight.write_bytes(b"invented test model data")
+    specification = {"files": {weight.name: hashlib.sha256(weight.read_bytes()).hexdigest()}}
+    verify_model_files(tmp_path, specification)
+    (tmp_path / "adapter_config.json").write_text("{}")
+    with pytest.raises(RetrievalError, match="unpinned"):
+        verify_model_files(tmp_path, specification)
+
+
 def test_scope_is_applied_before_dense_ranking_and_reranking(corpus, tmp_path):
     retriever, models, _ = built(corpus, tmp_path)
     original = retriever.dense_candidates

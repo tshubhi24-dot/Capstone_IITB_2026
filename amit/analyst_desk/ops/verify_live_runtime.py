@@ -132,7 +132,8 @@ def main():
         expected_models = (value.get("models") == state["models"]
                            and value.get("model_profile") == state["model_profile"]
                            and value.get("model_provider") == state["provider"])
-        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and expected_models and source_matches and value.get("semantic_retrieval") is False
+        from ops.verify_runtime import matches_prepared_retrieval
+        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and expected_models and source_matches and matches_prepared_retrieval(value)
         state["config"] = value
         record("live_api_source_and_model_configuration", good, expected_model_ids=expected_models, expected_source_scope=source_matches, learned_retrieval_claimed=value.get("semantic_retrieval") is True)
 
