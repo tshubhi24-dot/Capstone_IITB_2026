@@ -320,8 +320,8 @@ def validate_prose(text, *, comparison_periods=None):
     quantity_text = re.sub(r"\b(?:first|third)[ -]part(?:y|ies)\b", "external party", text, flags=re.I)
     # A reference to the two supplied observations is code-verifiable scope,
     # not a financial amount or a claim that a duration lasted two years.
-    # Only scoped comparisons may use this exact idiom; provenance checks
-    # below still require the issuer and both distinct cited fiscal years.
+    # Only comparisons with verified period scope may use this exact idiom;
+    # validate_claims checks canonical citations before supplying that scope.
     if (isinstance(comparison_periods, (tuple, list)) and len(comparison_periods) == 2
             and all(type(year) is int for year in comparison_periods)
             and comparison_periods[0] != comparison_periods[1]):
@@ -346,8 +346,6 @@ def validate_claims(claims, evidence):
         if not isinstance(identifier, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.:-]{0,119}", identifier) or identifier in identifiers:
             raise ReasoningError("Claim identifiers must be unique and valid.")
         identifiers.add(identifier)
-        comparison_periods = (claim.get("before_year"), claim.get("after_year")) if "ticker" in claim else None
-        validate_prose(claim.get("text"), comparison_periods=comparison_periods)
         if claim.get("category") not in {"risk_observation", "comparability", "limitation"} or claim.get("confidence") not in {"low", "medium", "high"}:
             raise ReasoningError("Unknown narrative category or confidence label.")
         citations = claim.get("citations")
@@ -367,7 +365,9 @@ def validate_claims(claims, evidence):
                 raise ReasoningError("Repeat citations cannot stand in for separate evidence.")
             seen.add(parsed["source_id"])
             cited.append(source)
-        if "ticker" in claim or "before_year" in claim or "after_year" in claim:
+        explicit_comparison = "ticker" in claim or "before_year" in claim or "after_year" in claim
+        comparison_periods = None
+        if explicit_comparison:
             try:
                 required = {(claim["ticker"], claim["before_year"]), (claim["ticker"], claim["after_year"])}
             except KeyError as exc:
@@ -375,7 +375,17 @@ def validate_claims(claims, evidence):
             actual = {(row["ticker"], row["year"]) for row in cited}
             if len(required) != 2 or actual != required:
                 raise ReasoningError("A risk comparison must cite its own issuer and both required years.")
-        elif COMPARATIVE.search(claim["text"]):
+            comparison_periods = (claim["before_year"], claim["after_year"])
+        else:
+            # Summary claims have no model-supplied period fields. Infer only
+            # this temporal pair from their already validated source citations;
+            # mixed issuers or any other year count confer no prose exception.
+            issuers = {row["ticker"] for row in cited}
+            years = {row["year"] for row in cited}
+            if len(issuers) == 1 and len(years) == 2 and all(type(year) is int for year in years):
+                comparison_periods = tuple(sorted(years))
+        validate_prose(claim.get("text"), comparison_periods=comparison_periods)
+        if not explicit_comparison and COMPARATIVE.search(claim["text"]):
             issuers = {row["ticker"] for row in cited}
             if len(issuers) == 1 and len({row["year"] for row in cited}) < 2:
                 raise ReasoningError("An across-year claim needs evidence from both periods.")

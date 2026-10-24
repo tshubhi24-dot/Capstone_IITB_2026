@@ -43,6 +43,10 @@ The original plan subsequently received its own web approval. Research and risk 
 
 An explicit web continuation control is implemented and tested against the existing backend guard. Nineteen UI cases pass, and the combined UI/provider/catalogue/API/session checks pass 144 tests. Deployment waits for the narrow validator correction so the cached response can be checked without buying another writer response merely to change temporal wording.
 
+The validator correction checks canonical citation IDs, exact quotations and uniqueness before inferring temporal scope for summary claims. Only one issuer and exactly two distinct cited fiscal years enable the existing narrow temporal phrase exception. Amounts, durations, arbitrary number words, invalid sources and explicit comparison-scope mismatches remain blocked. Prompts, schemas and model request construction are unchanged.
+
+Two hundred fifty-seven targeted reasoning/workflow/lesson/memory tests pass, including twenty-nine new temporal-provenance cases. A synthetic checkpoint test proves that a stopped writer can replay the identical cached request and proceed to a critic without charging for another writer response. The actual web continuation remains a separate observation to verify after deployment.
+
 ## What the brief requires
 
 Printed p.15 starts the Analyst Desk walkthrough with a request in the research UI and an editable plan. Printed p.16 requires exact-note approval before publication and a demo of linked financial facts, critic correction/security and memory. The common deployment requirements on p.3 include FastAPI streaming, Docker Compose and monitoring.

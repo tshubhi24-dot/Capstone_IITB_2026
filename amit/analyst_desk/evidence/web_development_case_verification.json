@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "writer_validation_false_positive_identified",
+  "stage": "validator_fix_verified_ready_for_deployment",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -124,5 +124,17 @@
     "new_retry_or_extension_flags_exposed": false,
     "automatic_model_calls": 0,
     "human_decisions_created_by_tests": 0
+  },
+  "temporal_guard_fix": {
+    "targeted_tests_passed": 257,
+    "new_focused_cases": 29,
+    "canonical_citations_validated_before_temporal_scope": true,
+    "temporal_inference_requires_one_issuer_and_two_distinct_years": true,
+    "financial_quantities_and_durations_still_rejected": true,
+    "prompts_schemas_and_request_ids_unchanged": true,
+    "cached_writer_replay_fixture_passed": true,
+    "actual_cached_replay_verified": false,
+    "deployed": false,
+    "real_model_calls_in_tests": 0
   }
 }
