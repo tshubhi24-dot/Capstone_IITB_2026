@@ -240,7 +240,7 @@ For developer tests, run `python -m pytest -q`. These use mocks/fixtures and mak
 
 ## 8. Optional live AI: put your own OpenRouter key in the correct place
 
-Offline use does not need this section. For live reasoning, create your own key and arrange credits on your own OpenRouter account. Use [OpenRouter's official quickstart](https://openrouter.ai/docs/quickstart), [key settings](https://openrouter.ai/settings/keys) and [credits settings](https://openrouter.ai/settings/credits). Account access to a particular model/provider is separate from having a valid key.
+Offline use does not need this section. For live reasoning, create your own key and arrange credits on your own OpenRouter account. Use [OpenRouter's official quickstart](https://openrouter.ai/docs/quickstart), [key settings](https://openrouter.ai/settings/keys) and [credits settings](https://openrouter.ai/settings/credits). A funded key does not guarantee access to every model or provider: account permissions, privacy settings and upstream availability still apply.
 
 The two credentials have different jobs:
 
@@ -295,19 +295,24 @@ python ops/start_live.py --start
 
 Keep the printed `proposal_hash` for the next command. The initial default is the original OpenAI profile. Starting it while disabled initializes the local cumulative ledger without making model calls. All Python services use the live overlay's shared image.
 
-To select this build's current Mistral-producer / Google-critic profile, replace the quoted placeholder with that actual initial hash:
+To prepare the opt-in bounded fallback profile, replace the quoted placeholder with that actual initial hash. An existing installation uses its current prepared hash instead:
 
 ```sh
-python ops/prepare_live.py --switch-profile google-critic \
+python ops/prepare_live.py --switch-profile fallbacks \
   --expected-hash 'PASTE_INITIAL_64_CHARACTER_PROPOSAL_HASH'
 ```
 
-The replacement is **disabled** and prints a **new** proposal hash. Review its exact configuration. Expected current profile:
+The replacement is **disabled** and prints a **new** proposal hash. Review its exact configuration. The [reviewed profile](desk/model_profiles.py) is `live-step16-fallbacks-v1`; it becomes active only after your exact-version authorization and gateway reload. Preparing the profile does not change the running gateway or prove provider availability.
 
 | Setting | Value |
 |---|---|
-| Producer | `mistralai/mistral-medium-3.1` through `mistral/zdr`. |
-| Critic | `google/gemini-2.5-flash` through `google-ai-studio`. |
+| Producer model priority | `openai/gpt-4.1-mini`, then `mistralai/mistral-medium-3.1`. |
+| Allowed producer providers | Only `openai`, `azure` and `mistral/zdr`; provider fallback is enabled within this list. |
+| Separate critic | `google/gemini-2.5-flash` through `google-ai-studio`; no producer-model fallback for criticism. |
+| Producer price ceiling | US$0.40 per million prompt tokens / US$2.00 per million completion tokens. |
+| Critic price ceiling | US$0.30 per million prompt tokens / US$2.50 per million completion tokens. |
+| Context bounds | Up to 49,152 reserved prompt tokens; message/schema payload up to 45,056 bytes. Existing tighter bounds stay tighter. |
+| Response/privacy requirements | Strict structured output, supported parameters required and provider data collection denied. |
 | Total local desk cap | US$1.00. |
 | Per-run cap | US$0.50. |
 | Per-run limits | At most 12 model calls and 250,000 tokens. |
@@ -325,6 +330,14 @@ python ops/start_live.py --start
 Do not run the authorization command merely to clear an error. `--human-confirmation` records your decision; it does not independently authenticate a reviewer. The launcher recreates the gateway to load the configuration and preserves existing ledger entries and holds. If a matching proposal is already prepared, `python ops/prepare_live.py --prepare` displays it without replacing its credential or limits.
 
 Reconnect the browser. Confirm live AI is available, the expected producer/critic are shown and an authorized budget is available. Startup itself makes no paid completions. **Clicking Create a plan with Live AI selected can make the first paid planning call**, before the separate research-plan review.
+
+### How bounded fallback works
+
+The gateway sends **one OpenRouter completion request** with the ordered producer model list. Routing can move to the backup model or another allowlisted provider within that request. Mistral is a backup option rather than the only production route. The separate critic, price ceilings, context bounds and privacy requirements remain fixed; an unavailable compliant route still fails closed.
+
+Before sending, the gateway reserves enough for the most expensive allowed route, even when the primary model is cheaper. Successful calls record the requested and returned model; reported usage determines the charge. Check the run's actual-model usage display and reported cost/held budget, rather than assuming the configured primary handled every call. Authenticated run data exposes `requested_model` / `returned_model`; budget metadata exposes the fixed `model_routes` for this profile. If all routes fail or the outcome is uncertain, its reservation remains counted; fallback does not clear previous holds.
+
+Fallback does not automatically replay a stopped research run, add an application retry loop or switch to Offline. Switching profiles also does not resume an existing failure. Any supported continuation remains bound to its existing approved plan; a new research request needs its own exact-plan review. HTTP 429 can reflect upstream rate or capacity limits; funding alone does not remove those limits.
 
 For live tool verification, use the section 7 container command with `-f compose.live.yaml` added after `-f compose.yaml`. It still creates no research run or paid completion. Diagnose live availability using the connected UI, `/health`, Grafana health and the tool check; the historical live verifier's original-note requirement does not apply to your fresh library.
 
@@ -381,7 +394,7 @@ Do not use `down -v`, Docker volume pruning or deletion of `.runtime` as routine
 | Port 18080 / 13080 busy | Check an earlier project or another application. Do not stop unrelated services blindly. |
 | UI says not connected / HTTP 401 | Use the generated analyst-token value, with no `ANALYST_API_TOKEN=` prefix. The provider key is not accepted there. |
 | Live option disabled | Check prepared key/configuration, your exact spending authorization, gateway health, remaining local cap and retrieval readiness; reconnect the browser after reload. |
-| Provider 402 / 403 / 429 | Check your OpenRouter credits/model access, the exact provider error and Activity. A 429 is a provider rate limit. Preserve stopped runs/holds; avoid repeated paid retries. |
+| Provider 402 / 403 / 429 | Check credits/model access, the exact provider error and Activity. HTTP 429 can be an upstream rate/capacity limit even with a funded key. Inspect the active profile, actual returned model and retained holds. The opt-in fallback profile is bounded to its reviewed routes; it cannot guarantee availability or resume a stopped run. |
 | Verifier complains about an old saved note | The historical live verifier expects the original installation. Use fresh-install health/UI/catalogue checks above. An empty new library is normal. |
 | Permission error for live files | The live parent is `0700`; input/authorization are `0600`. Prepared config/key are `0444` inside the private parent so the nonroot gateway can read its narrow mounts. Let helpers manage them. |
 | A plan becomes stale after memory/lesson changes | Create a fresh plan. Revision and revocation checks prevent silent changes to approved research. |

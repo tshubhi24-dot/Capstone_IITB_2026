@@ -18,7 +18,7 @@ from .data import Corpus
 from .store import Store
 from .workflow import Engine, ReviewError, validate_scope
 from .provider import ModelGatewayClient, ProviderError
-from .model_profiles import model_profile
+from .model_profiles import model_profile, model_route
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -361,6 +361,11 @@ def gateway_budget():
         if value.get("models") != models or value.get("provider") != profile["provider"]:
             raise ValueError
         safe.update(models=models, model_profile=profile["version"], provider=profile["provider"])
+        if profile.get("routes"):
+            routes = {role: model_route(profile["version"], role) for role in ("producer", "critic")}
+            if value.get("model_routes") != routes:
+                raise ValueError
+            safe["model_routes"] = routes
         version = value.get("config_version")
         if not isinstance(version, str) or not 1 <= len(version) <= 180 or not all(c.isalnum() or c in "_.:-" for c in version):
             raise ValueError
@@ -383,6 +388,7 @@ def config():
     return {"mode": "offline", "data_source": "sec_edgar", "transport": "http", "semantic_retrieval": retrieval.get("semantic_retrieval") is True,
             "available_modes": ["offline", "live"] if live_enabled else ["offline"], "live_enabled": live_enabled,
             "models": (live_budget or {}).get("models", {}),
+            "model_routes": (live_budget or {}).get("model_routes", {}),
             "model_profile": (live_budget or {}).get("model_profile"),
             "model_provider": (live_budget or {}).get("provider"),
             "live_budget": live_budget, "live_model_config_version": (live_budget or {}).get("config_version"),

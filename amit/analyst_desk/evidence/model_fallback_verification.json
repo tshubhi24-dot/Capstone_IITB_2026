@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "profile": "live-step16-fallbacks-v1",
+  "stage": "implementation_tested_activation_pending",
+  "routes": {
+    "producer": {
+      "models": [
+        "openai/gpt-4.1-mini",
+        "mistralai/mistral-medium-3.1"
+      ],
+      "providers": [
+        "openai",
+        "azure",
+        "mistral/zdr"
+      ],
+      "allow_fallbacks": true,
+      "prompt_usd_per_token": "4E-7",
+      "completion_usd_per_token": "0.000002"
+    },
+    "critic": {
+      "models": [
+        "google/gemini-2.5-flash"
+      ],
+      "providers": [
+        "google-ai-studio"
+      ],
+      "allow_fallbacks": false,
+      "prompt_usd_per_token": "3E-7",
+      "completion_usd_per_token": "0.0000025"
+    }
+  },
+  "verification": {
+    "selected_tests_passed": 370,
+    "provider_tests_passed": 148,
+    "test_mode": "mocked_provider_and_local_application_checks",
+    "test_files": [
+      "tests/test_provider.py",
+      "tests/test_provider_fallbacks.py",
+      "tests/test_live_workflow.py",
+      "tests/test_live_deployment.py",
+      "tests/test_live_api.py",
+      "tests/test_model_route_ui.py",
+      "tests/test_run_selection_ui.py",
+      "tests/test_provider_error_ui.py"
+    ],
+    "live_provider_requests_during_verification": 0
+  },
+  "controls": {
+    "maximum_route_rate_reserved": true,
+    "fixed_role_model_and_provider_allowlists": true,
+    "actual_returned_model_recorded": true,
+    "uncertain_full_holds_preserved": true,
+    "accounting_breaches_block_all_policies": true,
+    "legacy_profiles_preserved": true,
+    "automatic_application_retries": false,
+    "automatic_key_switching": false,
+    "automatic_offline_substitution": false,
+    "original_total_and_per_run_caps_preserved": true
+  },
+  "limitations": [
+    "Mocked success does not establish live provider access or availability.",
+    "The replacement configuration is prepared inactive; runtime activation and a live research response remain separate checks.",
+    "Earlier stopped research and its uncertain reservation are retained; fallback does not resume it."
+  ]
+}

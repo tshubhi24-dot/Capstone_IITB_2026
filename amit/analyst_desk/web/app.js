@@ -8,6 +8,13 @@ function runErrorMessage(error){
  if(text.includes('provider_http_429'))return 'The AI provider rate-limited this request (HTTP 429). This run has stopped; it will not retry automatically. Wait before starting a new live request, or explicitly choose Offline. Any reserved model budget remains visible below. Diagnostic: '+text;
  return text;
 }
+function modelRouteDescription(config){
+ const models=config?.model_routes?.producer?.models;
+ return Array.isArray(models)&&models.length>1?`${models[0]} produces; backup: ${models.slice(1).join(', ')}. ${config.models.critic} reviews independently.`:`${config?.models?.producer} produces; ${config?.models?.critic} reviews.`;
+}
+function completedModels(usage){
+ return [...new Set((usage?.calls||[]).map(call=>call.returned_model||call.model).filter(value=>typeof value==='string'&&value.length<=180))];
+}
 function sourceCatalogue(config){
  const companies=config?.companies,coverage=config?.company_years;
  if(!Array.isArray(companies)||!companies.length||!coverage||typeof coverage!=='object')throw new Error('The source catalogue is unavailable.');
@@ -44,7 +51,7 @@ function renderScopeOptions(config){
 function modeDescription(){
  const live=$('mode').value==='live',budget=state.config?.live_budget;
  $('mode-notice').textContent=live?'Live AI pilot: models plan, select queries and draft cited interpretations. A separate model reviews support; its judgment is not ground truth. Figures stay code-checked and publication needs your approval.':'Offline workflow: no model calls or model charges. Code checks figures; risk interpretation needs your review.';
- $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · up to 12 model calls and 250,000 tokens per request. ${state.config.models.producer} produces; ${state.config.models.critic} reviews.`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
+ $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · up to 12 model calls and 250,000 tokens per request. ${modelRouteDescription(state.config)}`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
  if(state.connected)updateScope();
 }
 async function api(path,options={}){
@@ -106,6 +113,7 @@ function render(run){
  state.run=run;const live=(run.mode||run.request?.mode||'offline')==='live';$('current').hidden=false;$('status').textContent=`${live?'Live AI':'Offline'} · ${run.status.replaceAll('_',' ')} · run ${run.id}`;
  const rawCost=run.usage?.cost_usd,unknown=rawCost===null||rawCost===undefined||run.usage?.accounting_status==='unknown_after_failure',cost=unknown?NaN:Number(rawCost),held=run.usage?.held_usd;
  $('usage').textContent=`${run.usage?.tool_calls||0} tool calls · ${run.usage?.model_calls||0} recorded model calls · ${run.usage?.tokens||0} ${run.usage?.accounting_status==='provider_reported_with_holds'?'reported/reserved tokens':'tokens'} · reported model cost ${Number.isFinite(cost)?'$'+cost.toFixed(6):'unknown'}${held!==null&&held!==undefined?' · reserved model budget $'+held:''}${unknown?' · accounting unavailable; a failed request may still have incurred a charge':''}`;
+ const actualModels=completedModels(run.usage);if(actualModels.length)$('usage').textContent+=` · completed responses: ${actualModels.join(', ')}`;
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
  $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
  if(run.error)message(runErrorMessage(run.error));else if(state.runMessage)message('');state.runMessage=Boolean(run.error);
@@ -166,5 +174,5 @@ $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');
 $('resume-research').onclick=resumeResearch;
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope,runErrorMessage};
+if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope,runErrorMessage,modelRouteDescription,completedModels};
 if(typeof document!=='undefined')initialize();

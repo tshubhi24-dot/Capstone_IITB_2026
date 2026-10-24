@@ -8,13 +8,13 @@ from fastapi.testclient import TestClient
 
 from desk.api import app
 from desk.store import Store
-from desk.model_profiles import model_profile
+from desk.model_profiles import model_profile, model_route
 from desk.workflow import ReviewError
 
 
 def budget_snapshot(profile_name="live-step6-openrouter-v1"):
     profile = model_profile(profile_name)
-    return {"enabled": True, "blocked": False, "provider_key_configured": True,
+    value = {"enabled": True, "blocked": False, "provider_key_configured": True,
             "cap_usd": "2.00", "per_run_usd": "1.00", "reported_spend_usd": "0.04",
             "held_usd": "0.10", "committed_usd": "0.14", "authorization_committed_usd": "0.14",
             "remaining_authorization_usd": "1.86", "model_calls": 2, "tokens": 200,
@@ -22,6 +22,9 @@ def budget_snapshot(profile_name="live-step6-openrouter-v1"):
             "models": {role: policy["id"] for role, policy in profile["models"].items()},
             "model_profile": profile["version"], "provider": profile["provider"],
             "provider_api_key": "secret-must-never-be-returned", "untrusted_extra": "not-public"}
+    if profile.get("routes"):
+        value["model_routes"] = {role: model_route(profile_name, role) for role in ("producer", "critic")}
+    return value
 
 
 class FakeGateway:
@@ -79,7 +82,7 @@ def test_unconfigured_api_remains_explicitly_offline_and_blocks_live(api_fixture
     assert store.get_run(response.json()["id"])["request"]["mode"] == "offline"
 
 
-@pytest.mark.parametrize("profile_name", ["live-step6-openrouter-v1", "live-step10-mistral-v1"])
+@pytest.mark.parametrize("profile_name", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step16-fallbacks-v1"])
 def test_budget_and_configuration_are_safe_reads_and_live_request_stays_live(api_fixture, profile_name):
     client, engine, store = api_fixture
     snapshot = budget_snapshot(profile_name)
@@ -90,6 +93,7 @@ def test_budget_and_configuration_are_safe_reads_and_live_request_stays_live(api
     assert config["models"] == snapshot["models"]
     assert config["model_profile"] == result["model_profile"] == snapshot["model_profile"]
     assert config["model_provider"] == result["provider"] == snapshot["provider"]
+    assert config["model_routes"] == result.get("model_routes", {}) == snapshot.get("model_routes", {})
     assert result["spent_usd"] == .04 and result["held_usd"] == "0.10"
     assert "secret-must-never-be-returned" not in str(config) + str(result)
     assert "provider_api_key" not in result and "untrusted_extra" not in result
@@ -98,6 +102,25 @@ def test_budget_and_configuration_are_safe_reads_and_live_request_stays_live(api
     saved = store.get_run(response.json()["id"])
     assert saved["mode"] == "live" and saved["request"]["max_tokens"] == 250000
     assert engine.model_client.reads == 3
+
+
+@pytest.mark.parametrize("tamper", ["unknown_model", "missing_routes", "wrong_provider", "higher_price"])
+def test_fallback_metadata_must_match_fixed_reviewed_routes(api_fixture, tamper):
+    client, engine, store = api_fixture
+    snapshot = budget_snapshot("live-step16-fallbacks-v1")
+    if tamper == "missing_routes":
+        snapshot.pop("model_routes")
+    elif tamper == "unknown_model":
+        snapshot["model_routes"]["producer"]["models"].append("unreviewed/model")
+    elif tamper == "wrong_provider":
+        snapshot["model_routes"]["critic"]["providers"] = ["openai"]
+    else:
+        snapshot["model_routes"]["producer"]["completion_usd_per_token"] = "99"
+    engine.model_client = FakeGateway(snapshot)
+    config = client.get("/api/config").json()
+    assert not config["live_enabled"] and config["model_routes"] == {}
+    assert config["live_budget"] == {"gateway_status": "unavailable"}
+    assert store.list_runs() == []
 
 
 @pytest.mark.parametrize("changes", [{"enabled": False}, {"blocked": True}, {"provider_key_configured": False},
