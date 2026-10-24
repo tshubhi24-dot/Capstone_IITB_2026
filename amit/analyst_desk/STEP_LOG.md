@@ -2,7 +2,7 @@
 
 This is the implementation sequence we followed to build Analyst Desk. It explains what each step adds, where to find it, and how it supports the capstone. These are **our build steps**, not the brief's numbered request walkthrough.
 
-**Current result:** a Docker Compose application covers twelve companies in two sectors with BM25/vector fusion, local reranking and persistent analyst memory. Editable defaults, coverage and scoped approved history support follow-up research. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
+**Current result:** a Docker Compose application covers twelve companies in two sectors with BM25/vector fusion, local reranking and persistent analyst memory. Editable defaults, coverage and scoped approved history support follow-up research. Reviewed-lesson controls add development admission, reflection, exact decisions and frozen opt-in guidance. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
 
 **Reading the brief references:** general requirements are on pages 2–6. The Analyst Desk section is printed pages **15–16**, which are **PDF pages 7–8** in the supplied extract. The final-review questions are printed p.17 (PDF page 9). References below use the printed page numbers.
 
@@ -233,16 +233,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 13c — Connect memory to research and the interface | Reviewed plans bind preference versions and selected note hashes; changes or expiry block stale approvals and resumed work. Code applies table-first/summary-first layout. Historical references remain local, separate from current SEC evidence and model prompts. The interface exposes preference correction/deletion, coverage, cited history and fact comparison. Memory-off tests preserve verified figures; all 910 tests pass. |
 | 13d — Verify deployed memory and document team usage | Nine preparation checks, eleven checks after a service restart and eight cleanup checks pass using a separate operator namespace. One authenticated planner history call returns three approved references. Sixteen deployed API/preservation checks and nineteen general runtime checks pass. The browser shows scoped history, the exact compared note, six verified margin rows, source buttons and limitations. Existing preferences, note policy, research runs, three approved notes and spending records remain unchanged. No model calls, new research runs, human decisions or note publications are made. |
 
-**Verified memory result:** preferences and source coverage persist locally; approved history is bounded, versioned and separate from current evidence. Analyst controls cover correction, deletion, exclusion and restoration. Independent E3 quality comparison and human-reviewed lessons remain outstanding.
-
-## What the team builds next
-
-1. **Source validation and retrieval review:** validate original Item/table ingestion, obtain independent relevance labels and evaluate protected questions.
-2. **Agents, learning and robustness:** complete specialist ReAct/replanning evidence, reviewed development lessons, relevant lesson retrieval, active-operation recovery, threat model and independently authored attacks.
-3. **Independent evaluation:** protected cases, human risk labels, calibrated outcome judge, fair baselines and repeated E1–E4 comparisons.
-4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.
-
-These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/submission rules and p.16's Analyst Desk build/demo. [docs/START_HERE.md](docs/START_HERE.md) is the entry point; [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) tracks the evaluation protocol.
+**Verified memory result:** preferences and source coverage persist locally; approved history is bounded, versioned and separate from current evidence. Analyst controls cover correction, deletion, exclusion and restoration. Independent L9 memory comparison and genuine lesson-review evidence remain outstanding; Step 14 implements the lesson controls.
 
 ## Step 14 — Add human-reviewed development lessons
 
@@ -257,6 +248,7 @@ These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/
 | [desk/workflow.py](desk/workflow.py), [desk/store.py](desk/store.py), [tests/test_lesson_workflow.py](tests/test_lesson_workflow.py) | Bind reviewed lesson context to plans/notes, apply fixed hints only to producers, reject stale/revoked context and forbid development publication. |
 | [desk/api.py](desk/api.py), [web/lessons.js](web/lessons.js), [web/app.js](web/app.js), [web/index.html](web/index.html) | Authenticated development-case selection, exact proposal review/edit/rejection, explicit playbook freezing and opt-in reuse. |
 | [ops/verify_lessons_runtime.py](ops/verify_lessons_runtime.py), [tests/test_lessons_runtime_verifier.py](tests/test_lessons_runtime_verifier.py), [Dockerfile](Dockerfile), [.dockerignore](.dockerignore) | Package an isolated, explicitly synthetic persistence/revocation check without copying evaluator answers or touching analyst records. |
+| [docs/REVIEWED_LESSONS.md](docs/REVIEWED_LESSONS.md), [evidence/reviewed_lessons_verification.json](evidence/reviewed_lessons_verification.json) | Team usage guide, retention/review limits and observed deployed API/browser/restart checks. |
 
 **Capstone connection:** p.3, L12 development-only Reflexion and reviewed/frozen playbook; pp.15–16, lessons from critic rejections and analyst edits; L9 durable storage and L14 exact-version control. Genuine accepted/rejected human decisions and independent E3 results require separate observed evidence.
 
@@ -265,3 +257,15 @@ These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/
 | 14a — Define development learning and review | Separate registered public development cases from production research. Define immutable proposals, reasoned human decisions, explicit playbook freezing, bounded relevant guidance and revocation checks. Protected evaluation assets remain outside the application. |
 | 14b — Build admitted origins and immutable lesson storage | Bundle twenty public question/scope records with no expected answers; nineteen are within the cached fiscal coverage. Sixteen admission tests and thirty-four core lesson tests pass. Proposals require a persisted failed critic or actual changed-note event from a registered development run. Exact decisions, pending-proposal supersession, frozen versions, actor/source/scope checks and revocation are implemented. Fixture decisions are explicitly synthetic and do not count as human capstone evidence. |
 | 14c — Connect reflection, review and research reuse | Add code-category reflection and an optional schema-constrained AI proposal stage under the originating live run's approved plan and remaining budget. Keep acceptance, freezing and use separate. Plans and notes bind the selected versions; producers receive fixed hints while the critic receives no lesson guidance or metadata. Development scopes remain exact and publication is blocked in both workflow and portal storage. All 1,005 tests pass, including stale-version, revocation, legacy-run and provider-boundary checks. |
+| 14d — Verify persistence and document team use | Fourteen isolated preparation checks, thirteen checks after an app service restart and ten cleanup/revocation checks pass. Twenty-four deployed checks and nineteen runtime checks pass. Browser checks confirm the exact public question/scope, locked development controls and private memory off. Existing runs, preferences, note policy, three approved notes and spending remain unchanged. No paid requests, genuine human decisions, real research runs or publications are made. Synthetic review fixtures remain separate from analyst data and are not capstone review evidence. |
+
+**Verified lesson result:** review, freezing, bounded reuse and revocation controls are implemented and deployed. The real lesson bank remains empty. Genuine development-derived accepted/rejected lessons, an actual live reflection and independent E3 improvement evidence have not been produced by these checks.
+
+## What the team builds next
+
+1. **Genuine development learning:** run registered development questions, inspect actual failures/edits and review their proposals. Record real acceptance/rejection reasons and freeze the playbook before evaluation.
+2. **Source validation and robustness:** validate original Item/table ingestion, obtain independent relevance labels, prove specialist ReAct/replanning and active-operation recovery, and run independently authored attacks.
+3. **Independent evaluation:** protected cases, human risk labels, calibrated outcome judge, L9 memory comparison, fair baselines and repeated E1–E4 comparisons.
+4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.
+
+These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/submission rules and p.16's Analyst Desk build/demo. [docs/START_HERE.md](docs/START_HERE.md) is the entry point; [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) tracks the evaluation protocol.

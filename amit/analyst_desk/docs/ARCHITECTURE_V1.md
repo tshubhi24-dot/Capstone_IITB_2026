@@ -123,7 +123,7 @@ Working v1 limits are at most four companies and three fiscal years per request,
 
 Application and portal processes share the intended local runtime volume, with transactions, bounded write concurrency and database busy handling. Logical store boundaries do not imply operating-system isolation between processes sharing SQLite files. Review the [memory policy](MEMORY_POLICY.md) for retention, inspection, correction and deletion; deleting preferences must not silently erase signed publications or audits.
 
-Private watchlists never enter model prompts, external queries or outbound traces. Credentials remain in private configuration, not memory. Proposed lessons from actual development failures stay pending until a person accepts or rejects them with a reason. Retrieve only relevant accepted lessons from a frozen version. Held-out cases cannot generate lessons or published history.
+Private watchlists never enter model prompts, external queries or outbound traces. Credentials remain in private configuration, not memory. Proposed lessons from actual development failures stay pending until a person accepts or rejects them with a reason. Retrieve only relevant accepted lessons from a frozen version. Held-out cases cannot generate lessons or published history. [Step 14](REVIEWED_LESSONS.md) implements exact development admission, proposal decisions, explicit freezing, producer-only hints and transaction-time revocation checks; genuine human lesson decisions and independent E3 evidence remain pending.
 
 ## 7. Docker and external boundaries
 

@@ -1,0 +1,471 @@
+{
+  "browser_checks": {
+    "development_company_year_controls_locked": true,
+    "development_question_read_only": true,
+    "exact_registered_question_and_scope_displayed": true,
+    "lesson_review_controls_visible": true,
+    "no_research_or_review_action_submitted": true,
+    "normal_research_view_restored": true,
+    "private_memory_disabled_for_development": true,
+    "real_bank_empty_state_visible": true,
+    "registered_case_selector_visible": true,
+    "unsupported_year_case_disabled": true
+  },
+  "deployed_checks": {
+    "altered_development_question_rejected_before_run_creation": true,
+    "cross_origin_lesson_writes_rejected": true,
+    "deployed_app_js_matches_workspace": true,
+    "deployed_lessons_js_matches_workspace": true,
+    "deployed_memory_js_matches_workspace": true,
+    "development_publication_and_expected_answers_disabled": true,
+    "existing_budget_unchanged": true,
+    "existing_memory_note-policy_unchanged": true,
+    "existing_memory_preferences_unchanged": true,
+    "existing_notes_unchanged": true,
+    "existing_runs_unchanged": true,
+    "lesson_api_requires_authentication": true,
+    "lesson_reuse_catalogue_contains_only_four_fixed_actions": true,
+    "memory_routes_remain_available": true,
+    "production_origin_cannot_be_promoted_into_lessons": true,
+    "public_catalogue_has_twenty_questions_nineteen_covered": true,
+    "real_lesson_bank_not_modified_by_operator_fixture": true,
+    "rejected_probes_leave_budget_unchanged": true,
+    "rejected_probes_leave_lesson_bank_unchanged": true,
+    "rejected_probes_leave_notes_unchanged": true,
+    "rejected_probes_leave_runs_unchanged": true,
+    "source_fingerprint_unchanged": true,
+    "standard_live_runtime_verifier_passed": true,
+    "three_approved_notes_preserved": true
+  },
+  "deployed_checks_passed": 24,
+  "deployed_checks_total": 24,
+  "deployed_code_matches_workspace": {
+    "desk/api.py": true,
+    "desk/lessons.py": true,
+    "desk/reflection.py": true,
+    "desk/workflow.py": true,
+    "ops/verify_lessons_runtime.py": true,
+    "web/app.js": true,
+    "web/lessons.js": true
+  },
+  "external_provider_requests": 0,
+  "generative_model_calls": 0,
+  "genuine_reviewed_lesson_count": 0,
+  "human_decisions_submitted": 0,
+  "independent_e3_status": "pending",
+  "limitations": [
+    "Operator accept/reject/revoke records are explicitly synthetic fixtures in a separate database; they are not genuine human-review evidence.",
+    "The real analyst lesson bank remains empty until genuine development-origin proposals are reviewed.",
+    "Optional live reflection is implemented and transport-tested with mocks; this verification sends no provider completion request.",
+    "No independent protected E3 comparison or research-quality improvement is claimed.",
+    "Public development questions and source-derived expectations still require independent source/domain review."
+  ],
+  "live_runtime_checks": {
+    "checked_at_utc": "2026-10-24T13:58:46.652875+00:00",
+    "checks": [
+      {
+        "name": "private_credentials_available",
+        "observed": {
+          "values_disclosed": false
+        },
+        "passed": true
+      },
+      {
+        "name": "api_health",
+        "observed": {
+          "http_status": 200
+        },
+        "passed": true
+      },
+      {
+        "name": "api_missing_token_rejected",
+        "observed": {
+          "http_status": 401
+        },
+        "passed": true
+      },
+      {
+        "name": "live_api_source_and_model_configuration",
+        "observed": {
+          "expected_model_ids": true,
+          "expected_source_scope": true,
+          "learned_retrieval_claimed": true
+        },
+        "passed": true
+      },
+      {
+        "name": "model_ledger_available_and_ui_state_matches",
+        "observed": {
+          "existing_accounting_unchanged": true,
+          "ledger_available": true,
+          "ui_matches_ledger": true
+        },
+        "passed": true
+      },
+      {
+        "name": "existing_offline_approved_note_preserved",
+        "observed": {
+          "note_count": 3,
+          "original_offline_note_present": true
+        },
+        "passed": true
+      },
+      {
+        "name": "disabled_live_request_gate",
+        "observed": {
+          "applicable": false,
+          "reason": "Enabled gateway: verifier performs no run-creation requests.",
+          "request_sent": false
+        },
+        "passed": true
+      },
+      {
+        "name": "project_runtime_services_running",
+        "observed": {
+          "required_services": 11,
+          "unique_service_containers": true
+        },
+        "passed": true
+      },
+      {
+        "name": "provider_key_absent_from_all_container_environments",
+        "observed": {
+          "exposed_value": false,
+          "inspected_container_count": 12
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_private_ports_and_egress",
+        "observed": {
+          "backend_and_provider_egress_only": true,
+          "no_host_ports": true
+        },
+        "passed": true
+      },
+      {
+        "name": "app_and_mcp_remain_backend_only",
+        "observed": {
+          "checked_service_count": 5
+        },
+        "passed": true
+      },
+      {
+        "name": "provider_key_file_is_gateway_only_and_read_only",
+        "observed": {
+          "gateway_only": true,
+          "matching_mount_count": 1
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_has_separate_ledger_and_no_research_history_mount",
+        "observed": {
+          "expected_mount_targets_only": true,
+          "ledger_separate_from_research_history": true,
+          "other_mounts_read_only": true
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_process_restrictions",
+        "observed": {
+          "all_capabilities_dropped": true,
+          "nonroot_user": true,
+          "read_only_root": true
+        },
+        "passed": true
+      },
+      {
+        "name": "calculation_worker_still_networkless_and_queue_only",
+        "observed": {
+          "network_none": true,
+          "queue_only": true,
+          "read_only_root": true
+        },
+        "passed": true
+      },
+      {
+        "name": "model_gateway_rejects_missing_internal_credential",
+        "observed": {
+          "http_status": 401,
+          "paid_completion_requested": false
+        },
+        "passed": true
+      },
+      {
+        "name": "backend_network_remains_internal",
+        "observed": {
+          "expected_project": true,
+          "internal": true
+        },
+        "passed": true
+      },
+      {
+        "name": "prometheus_app_scrape_ready",
+        "observed": {
+          "no_scrape_error": true,
+          "target_up": true
+        },
+        "passed": true
+      },
+      {
+        "name": "grafana_database_ready",
+        "observed": {
+          "http_status": 200
+        },
+        "passed": true
+      }
+    ],
+    "docker_context": "desktop-linux",
+    "human_decisions_performed": false,
+    "model_profile": "live-step10-google-critic-v1",
+    "models": {
+      "critic": "google/gemini-2.5-flash",
+      "producer": "mistralai/mistral-medium-3.1"
+    },
+    "project": "analyst-desk-journey",
+    "provider": "role-specific",
+    "provider_completion_requests_sent_by_verifier": 0,
+    "research_runs_created_by_verifier": 0,
+    "run_creation_probes_sent": 0,
+    "scope": "Live-overlay readiness, disabled-budget rejection when applicable, configured Docker boundaries, and authentication. No paid research, semantic benchmark, active containment attack or alert firing test.",
+    "status": "passed"
+  },
+  "operator_phases": [
+    {
+      "checks": [
+        {
+          "name": "pending_lesson_cannot_be_frozen",
+          "passed": true
+        },
+        {
+          "name": "operator_database_is_separate",
+          "passed": true
+        },
+        {
+          "name": "registered_development_proof_persisted",
+          "passed": true
+        },
+        {
+          "name": "rejection_is_explicit_and_retained",
+          "passed": true
+        },
+        {
+          "name": "playbook_contains_only_fixture_accepted_version",
+          "passed": true
+        },
+        {
+          "name": "rejected_proposal_cannot_enter_playbook",
+          "passed": true
+        },
+        {
+          "name": "accepted_context_survives_reload",
+          "passed": true
+        },
+        {
+          "name": "only_fixed_public_checklist_reaches_producer",
+          "passed": true
+        },
+        {
+          "name": "critic_receives_no_learning_hints",
+          "passed": true
+        },
+        {
+          "name": "changed_source_context_is_blocked",
+          "passed": true
+        },
+        {
+          "name": "changed_scope_context_is_blocked",
+          "passed": true
+        },
+        {
+          "name": "lessons_off_reads_no_lesson_bank",
+          "passed": true
+        },
+        {
+          "name": "real_analyst_namespace_absent_from_isolated_database",
+          "passed": true
+        },
+        {
+          "name": "no_notes_published_by_fixture",
+          "passed": true
+        }
+      ],
+      "checks_passed": 14,
+      "checks_total": 14,
+      "company_count": 12,
+      "external_provider_requests": 0,
+      "fixture_kind": "synthetic_operator_fixture_not_human_learning_evidence",
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "Synthetic operator decisions demonstrate software behavior only.",
+        "No genuine accepted or rejected lesson, independent E3 comparison or research-quality improvement is established.",
+        "The separate synthetic operator database retains its proposals, decisions and revocation audit."
+      ],
+      "phase": "prepare",
+      "real_analyst_namespace_touched": false,
+      "real_notes_published": 0,
+      "real_research_runs_created": 0,
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "synthetic_decisions": 2,
+      "verification_kind": "isolated_lessons_runtime"
+    },
+    {
+      "checks": [
+        {
+          "name": "operator_database_is_separate",
+          "passed": true
+        },
+        {
+          "name": "registered_development_proof_persisted",
+          "passed": true
+        },
+        {
+          "name": "rejection_is_explicit_and_retained",
+          "passed": true
+        },
+        {
+          "name": "playbook_contains_only_fixture_accepted_version",
+          "passed": true
+        },
+        {
+          "name": "rejected_proposal_cannot_enter_playbook",
+          "passed": true
+        },
+        {
+          "name": "accepted_context_survives_reload",
+          "passed": true
+        },
+        {
+          "name": "only_fixed_public_checklist_reaches_producer",
+          "passed": true
+        },
+        {
+          "name": "critic_receives_no_learning_hints",
+          "passed": true
+        },
+        {
+          "name": "changed_source_context_is_blocked",
+          "passed": true
+        },
+        {
+          "name": "changed_scope_context_is_blocked",
+          "passed": true
+        },
+        {
+          "name": "lessons_off_reads_no_lesson_bank",
+          "passed": true
+        },
+        {
+          "name": "real_analyst_namespace_absent_from_isolated_database",
+          "passed": true
+        },
+        {
+          "name": "no_notes_published_by_fixture",
+          "passed": true
+        }
+      ],
+      "checks_passed": 13,
+      "checks_total": 13,
+      "company_count": 12,
+      "external_provider_requests": 0,
+      "fixture_kind": "synthetic_operator_fixture_not_human_learning_evidence",
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "Synthetic operator decisions demonstrate software behavior only.",
+        "No genuine accepted or rejected lesson, independent E3 comparison or research-quality improvement is established.",
+        "The separate synthetic operator database retains its proposals, decisions and revocation audit."
+      ],
+      "phase": "inspect",
+      "real_analyst_namespace_touched": false,
+      "real_notes_published": 0,
+      "real_research_runs_created": 0,
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "synthetic_decisions": 0,
+      "verification_kind": "isolated_lessons_runtime"
+    },
+    {
+      "checks": [
+        {
+          "name": "operator_database_is_separate",
+          "passed": true
+        },
+        {
+          "name": "registered_development_proof_persisted",
+          "passed": true
+        },
+        {
+          "name": "rejection_is_explicit_and_retained",
+          "passed": true
+        },
+        {
+          "name": "playbook_contains_only_fixture_accepted_version",
+          "passed": true
+        },
+        {
+          "name": "rejected_proposal_cannot_enter_playbook",
+          "passed": true
+        },
+        {
+          "name": "only_fixture_acceptance_revoked",
+          "passed": true
+        },
+        {
+          "name": "old_fixture_context_blocked_after_revocation",
+          "passed": true
+        },
+        {
+          "name": "immutable_fixture_audit_retained",
+          "passed": true
+        },
+        {
+          "name": "real_analyst_namespace_absent_from_isolated_database",
+          "passed": true
+        },
+        {
+          "name": "no_notes_published_by_fixture",
+          "passed": true
+        }
+      ],
+      "checks_passed": 10,
+      "checks_total": 10,
+      "company_count": 12,
+      "external_provider_requests": 0,
+      "fixture_kind": "synthetic_operator_fixture_not_human_learning_evidence",
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "Synthetic operator decisions demonstrate software behavior only.",
+        "No genuine accepted or rejected lesson, independent E3 comparison or research-quality improvement is established.",
+        "The separate synthetic operator database retains its proposals, decisions and revocation audit."
+      ],
+      "phase": "cleanup",
+      "real_analyst_namespace_touched": false,
+      "real_notes_published": 0,
+      "real_research_runs_created": 0,
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "synthetic_decisions": 1,
+      "verification_kind": "isolated_lessons_runtime"
+    }
+  ],
+  "real_notes_published": 0,
+  "real_research_runs_created": 0,
+  "restart": {
+    "app_service_restarted": true,
+    "health_after_restart": true,
+    "persistent_volume_retained": true
+  },
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "status": "passed",
+  "step": 14,
+  "test_suite": {
+    "passed": 1005
+  },
+  "verification_kind": "deployed_reviewed_lesson_controls"
+}

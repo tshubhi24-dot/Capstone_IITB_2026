@@ -93,4 +93,4 @@ Step 13 verification passed:
 - Browser inspection of approved history and a six-row comparison with current cached facts.
 - Existing analyst preferences, note-reuse policy, runs and approved notes unchanged across all three Docker verification phases.
 
-Fixture memory-on/off checks remain implementation checks. The independent E3 memory experiment and human-reviewed lesson learning have not been performed here. The [evaluation plan](EVALUATION_PLAN.md) defines remaining final cases, ownership and measurements.
+Fixture memory-on/off checks remain implementation checks. Independent L9 memory comparison remains pending. [Step 14](REVIEWED_LESSONS.md) implements lesson review and reuse; genuine lesson decisions and the separate E3 lesson experiment remain pending. The [evaluation plan](EVALUATION_PLAN.md) defines remaining final cases, ownership and measurements.
