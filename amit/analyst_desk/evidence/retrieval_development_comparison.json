@@ -1,0 +1,3758 @@
+{
+  "canonical_evidence_unit": "original_cached_passage_id; no inferred duplicate relevance labels",
+  "company_year_group_count": 12,
+  "evaluation_kind": "public_source_derived_development_comparison",
+  "execution": {
+    "dense_backend": "numpy_exact_cosine",
+    "device": "cpu",
+    "network_requests_during_comparison": 0,
+    "packages": {
+      "numpy": "2.5.4",
+      "sentence-transformers": "4.1.0",
+      "torch": "2.14.1",
+      "transformers": "4.57.6"
+    }
+  },
+  "external_provider_requests": 0,
+  "generative_model_calls": 0,
+  "k": 5,
+  "label_count": 42,
+  "label_review_status": "source_derived_not_human_reviewed",
+  "label_scope": "partial_relevant_passage_set",
+  "limitations": [
+    "Partial source-derived labels are development checks, not exhaustive relevance, human labels or independent gold.",
+    "Repeated topics across fiscal years are grouped and correlated; the thirty-six queries are not independent samples.",
+    "BM25, hybrid and reranking use the same table-aware passage representation and exact issuer/year scope.",
+    "A hit establishes labelled evidence retrieval, not answer correctness, risk interpretation or full-capstone success.",
+    "Unlabelled relevant evidence may exist; no pass/fail claim against the provisional eighty-five-percent final target is made.",
+    "Model/index initialization and warming vary by arm; elapsed time is diagnostic and is not a controlled latency benchmark."
+  ],
+  "local_model_inference": "Hybrid embeds the query; hybrid_rerank also scores candidates with the local cross-encoder.",
+  "metric_definition": "Per-query labelled relevant passage IDs in top five divided by that query's labelled set; macro-average over every attempted query.",
+  "modes": [
+    "bm25",
+    "hybrid",
+    "hybrid_rerank"
+  ],
+  "paired_comparisons": {
+    "hybrid_minus_bm25": {
+      "improved": 5,
+      "mean_sampled_label_recall_difference": 0.027777777777777776,
+      "query_count": 36,
+      "regressed": 5,
+      "unchanged": 26
+    },
+    "hybrid_rerank_minus_bm25": {
+      "improved": 9,
+      "mean_sampled_label_recall_difference": 0.2361111111111111,
+      "query_count": 36,
+      "regressed": 0,
+      "unchanged": 27
+    }
+  },
+  "per_query": {
+    "bm25": [
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.12745554100001755,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "query_id": "retrieval-dev-msft-2023-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:66",
+          "sec:MSFT:2023:0000950170-23-035122:item7:51",
+          "sec:MSFT:2023:0000950170-23-035122:item7:65",
+          "sec:MSFT:2023:0000950170-23-035122:item7:64",
+          "sec:MSFT:2023:0000950170-23-035122:item7:73"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.0005668750000040745,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2023-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:24",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:5",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:16",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:36"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.0005919169998378493,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2023-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:17",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:45",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:26",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:19"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.003537749999850348,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "query_id": "retrieval-dev-msft-2024-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:67",
+          "sec:MSFT:2024:0000950170-24-087843:item7:68",
+          "sec:MSFT:2024:0000950170-24-087843:item7:75",
+          "sec:MSFT:2024:0000950170-24-087843:item7:66",
+          "sec:MSFT:2024:0000950170-24-087843:item7:71"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.0005301249993863166,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "query_id": "retrieval-dev-msft-2024-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:25",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:16",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:47",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:36"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.0005491660003826837,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2024-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:18",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:11",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:27",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:22"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.003471457999694394,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "query_id": "retrieval-dev-msft-2025-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65",
+          "sec:MSFT:2025:0000950170-25-100235:item7:73",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:40",
+          "sec:MSFT:2025:0000950170-25-100235:item7:52",
+          "sec:MSFT:2025:0000950170-25-100235:item7:78"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.0005440420000013546,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2025-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:44",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:25",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4",
+          "sec:MSFT:2025:0000950170-25-100235:item7:83",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:7"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.0005948750003881287,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "query_id": "retrieval-dev-msft-2025-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:16",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:10",
+          "sec:MSFT:2025:0000950170-25-100235:item7:54",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:27"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.002402250000159256,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:18",
+          "sec:AAPL:2023:0000320193-23-000106:item7:52",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:7",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:42",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:20"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.00046395799927267944,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:1",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:45",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:20"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.00045829099963157205,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:13",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:4",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:20",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:36"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.002359874999456224,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item7:51"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-aapl-2024-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:18",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:7",
+          "sec:AAPL:2024:0000320193-24-000123:item7:50",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:41",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:15"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.0004668340006901417,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:1",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:44",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:34"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.0004889169995294651,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:13",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:44",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:7",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:23"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.002433624999866879,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item7:55"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-aapl-2025-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:19",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:10",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:43",
+          "sec:AAPL:2025:0000320193-25-000079:item7:54",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:31"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.00047937500039552106,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:46",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:0",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:35",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:3"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.0004701669995483826,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:15",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:46",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:36",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:10"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.0034170419994552503,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2023-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:113",
+          "sec:ABBV:2023:0001551152-24-000011:item7:81",
+          "sec:ABBV:2023:0001551152-24-000011:item7:118",
+          "sec:ABBV:2023:0001551152-24-000011:item7:59",
+          "sec:ABBV:2023:0001551152-24-000011:item7:127"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.000586666999879526,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2023-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:115",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:5",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:17",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:2",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:29"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.0005758750003224122,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:43",
+          "sec:ABBV:2023:0001551152-24-000011:item7:58",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:11",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:20"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.0034446660001776763,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2024-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:113",
+          "sec:ABBV:2024:0001551152-25-000020:item7:81",
+          "sec:ABBV:2024:0001551152-25-000020:item7:127",
+          "sec:ABBV:2024:0001551152-25-000020:item7:118",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:31"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.0005882089999431628,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2024-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:5",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:17",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:2",
+          "sec:ABBV:2024:0001551152-25-000020:item7:115",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:29"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.0005757919998359284,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:44",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:11",
+          "sec:ABBV:2024:0001551152-25-000020:item7:66",
+          "sec:ABBV:2024:0001551152-25-000020:item7:61"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.0035863339999195887,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2025-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:121",
+          "sec:ABBV:2025:0001551152-26-000008:item7:135",
+          "sec:ABBV:2025:0001551152-26-000008:item7:126",
+          "sec:ABBV:2025:0001551152-26-000008:item7:69",
+          "sec:ABBV:2025:0001551152-26-000008:item7:68"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.0006521249997604173,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:71",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:4",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:20",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:33"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.0005926670000917511,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:12",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:49",
+          "sec:ABBV:2025:0001551152-26-000008:item7:74",
+          "sec:ABBV:2025:0001551152-26-000008:item7:65"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.006258416000491707,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:124",
+          "sec:AMGN:2023:0000318154-24-000011:item7:125",
+          "sec:AMGN:2023:0000318154-24-000011:item7:114",
+          "sec:AMGN:2023:0000318154-24-000011:item7:132",
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.0009297079996031243,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:74",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:85",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:66",
+          "sec:AMGN:2023:0000318154-24-000011:item7:189"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.0006950000006327173,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:104",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:1",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:43"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.006355875000735978,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:128",
+          "sec:AMGN:2024:0000318154-25-000010:item7:129",
+          "sec:AMGN:2024:0000318154-25-000010:item7:134",
+          "sec:AMGN:2024:0000318154-25-000010:item7:127",
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.0009870000003502355,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:79",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:90",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:69",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:103"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.0007247080002343864,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:35"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:110",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:1",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:106",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:38"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.005841334000251663,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:125"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-amgn-2025-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:128",
+          "sec:AMGN:2025:0000318154-26-000010:item7:127",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:18",
+          "sec:AMGN:2025:0000318154-26-000010:item7:129",
+          "sec:AMGN:2025:0000318154-26-000010:item7:126"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.0008340829999724519,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:74",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:7",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:86",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:64"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.0006929999999556458,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:105",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:1",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:101"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      }
+    ],
+    "hybrid": [
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 3.0618337500000052,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "query_id": "retrieval-dev-msft-2023-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:66",
+          "sec:MSFT:2023:0000950170-23-035122:item7:73",
+          "sec:MSFT:2023:0000950170-23-035122:item7:65",
+          "sec:MSFT:2023:0000950170-23-035122:item7:64",
+          "sec:MSFT:2023:0000950170-23-035122:item7:71"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.009571542000230693,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2023-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:24",
+          "sec:MSFT:2023:0000950170-23-035122:item7:54",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:5",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:8"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.011177041999872017,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2023-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:17",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:13",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:12",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:20"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.010991000000103668,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "query_id": "retrieval-dev-msft-2024-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:75",
+          "sec:MSFT:2024:0000950170-24-087843:item7:66",
+          "sec:MSFT:2024:0000950170-24-087843:item7:73",
+          "sec:MSFT:2024:0000950170-24-087843:item7:77",
+          "sec:MSFT:2024:0000950170-24-087843:item7:72"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.008713417000763002,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "query_id": "retrieval-dev-msft-2024-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:25",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:6",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:16",
+          "sec:MSFT:2024:0000950170-24-087843:item7:57"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.010500291000425932,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2024-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:18",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:11",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:27",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:13"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.010041292000096291,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "query_id": "retrieval-dev-msft-2025-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:73",
+          "sec:MSFT:2025:0000950170-25-100235:item7:65",
+          "sec:MSFT:2025:0000950170-25-100235:item7:75",
+          "sec:MSFT:2025:0000950170-25-100235:item7:71",
+          "sec:MSFT:2025:0000950170-25-100235:item7:77"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.008859583000230487,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2025-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:25",
+          "sec:MSFT:2025:0000950170-25-100235:item7:69",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:44",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:7"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.0097896250008489,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "query_id": "retrieval-dev-msft-2025-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:16",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:11",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:21",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:27"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.00986650000049849,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-aapl-2023-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:18",
+          "sec:AAPL:2023:0000320193-23-000106:item7:48",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:42",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:8",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:14"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.009210707999955048,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:3",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:1",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:35",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:45"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.009554332999869075,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:4",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:13",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:1",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.009457332999772916,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item7:51"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-aapl-2024-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:18",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:20",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:8",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:13",
+          "sec:AAPL:2024:0000320193-24-000123:item7:50"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.009535332999803359,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:1",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:3",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:44"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.00949212500017893,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:13",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:4",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:5"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.009742749999531952,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item7:55"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-aapl-2025-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:19",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:43",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:16",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:10",
+          "sec:AAPL:2025:0000320193-25-000079:item7:49"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.009414375000233122,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:3",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:0",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:46",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:15",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.009477999999944586,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:7",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:16",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:46",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:27"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.010982499999954598,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76",
+          "sec:ABBV:2023:0001551152-24-000011:item7:113",
+          "sec:ABBV:2023:0001551152-24-000011:item7:81",
+          "sec:ABBV:2023:0001551152-24-000011:item7:115",
+          "sec:ABBV:2023:0001551152-24-000011:item7:78"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.009790125000108674,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:81",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:2",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:17",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:33"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.008511790999364166,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:11",
+          "sec:ABBV:2023:0001551152-24-000011:item7:58",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7",
+          "sec:ABBV:2023:0001551152-24-000011:item7:62",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:2"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.010855332999199163,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76",
+          "sec:ABBV:2024:0001551152-25-000020:item7:113",
+          "sec:ABBV:2024:0001551152-25-000020:item7:81",
+          "sec:ABBV:2024:0001551152-25-000020:item7:80",
+          "sec:ABBV:2024:0001551152-25-000020:item7:78"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.01006895800037455,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:81",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:2",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:12",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:5"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.008440958999926806,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:11",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7",
+          "sec:ABBV:2024:0001551152-25-000020:item7:61",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:12",
+          "sec:ABBV:2024:0001551152-25-000020:item7:63"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.011497750000671658,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84",
+          "sec:ABBV:2025:0001551152-26-000008:item7:121",
+          "sec:ABBV:2025:0001551152-26-000008:item7:86",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:34",
+          "sec:ABBV:2025:0001551152-26-000008:item7:88"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.009870500000033644,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:12",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:20",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:30",
+          "sec:ABBV:2025:0001551152-26-000008:item7:89"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.008534792000318703,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-abbv-2025-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:12",
+          "sec:ABBV:2025:0001551152-26-000008:item7:65",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:9",
+          "sec:ABBV:2025:0001551152-26-000008:item7:70",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:10"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.010318042000108107,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:123",
+          "sec:AMGN:2023:0000318154-24-000011:item7:125",
+          "sec:AMGN:2023:0000318154-24-000011:item7:133",
+          "sec:AMGN:2023:0000318154-24-000011:item7:121",
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.01109216699933313,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:66",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:74",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:85",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68",
+          "sec:AMGN:2023:0000318154-24-000011:item7:189"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.010273207999489387,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:42",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:1",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:43"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.010287791999871843,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-amgn-2024-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:127",
+          "sec:AMGN:2024:0000318154-25-000010:item7:129",
+          "sec:AMGN:2024:0000318154-25-000010:item7:124",
+          "sec:AMGN:2024:0000318154-25-000010:item7:133",
+          "sec:AMGN:2024:0000318154-25-000010:item7:135"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.011461708000751969,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:69",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:79",
+          "sec:AMGN:2024:0000318154-25-000010:item7:199",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:90"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.01018374999966909,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:35"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:110",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:38",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:36",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:45"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.01031158299974777,
+        "error_type": null,
+        "hit_at_5": 0,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:125"
+        ],
+        "matched_passage_ids": [],
+        "query_id": "retrieval-dev-amgn-2025-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:128",
+          "sec:AMGN:2025:0000318154-26-000010:item7:126",
+          "sec:AMGN:2025:0000318154-26-000010:item7:130",
+          "sec:AMGN:2025:0000318154-26-000010:item7:124",
+          "sec:AMGN:2025:0000318154-26-000010:item7:123"
+        ],
+        "sampled_label_recall_at_5": 0.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.011286250000011933,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:64",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:86",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:74",
+          "sec:AMGN:2025:0000318154-26-000010:item7:197",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.010341708999476396,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:105",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:35",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:33",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:40"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      }
+    ],
+    "hybrid_rerank": [
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.6764671250002721,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:64"
+        ],
+        "query_id": "retrieval-dev-msft-2023-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item7:66",
+          "sec:MSFT:2023:0000950170-23-035122:item7:64",
+          "sec:MSFT:2023:0000950170-23-035122:item7:73",
+          "sec:MSFT:2023:0000950170-23-035122:item7:65",
+          "sec:MSFT:2023:0000950170-23-035122:item7:82"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.4739149159995577,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2023-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:4",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:16",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:24",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:14",
+          "sec:MSFT:2023:0000950170-23-035122:item7:54"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2023",
+        "elapsed_seconds": 0.4660072079996098,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2023-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2023:0000950170-23-035122:item1a:15",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:17",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:12",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:45",
+          "sec:MSFT:2023:0000950170-23-035122:item1a:19"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.5440502920000654,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:66"
+        ],
+        "query_id": "retrieval-dev-msft-2024-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item7:67",
+          "sec:MSFT:2024:0000950170-24-087843:item7:68",
+          "sec:MSFT:2024:0000950170-24-087843:item7:66",
+          "sec:MSFT:2024:0000950170-24-087843:item7:75",
+          "sec:MSFT:2024:0000950170-24-087843:item7:84"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.4687923339997724,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3"
+        ],
+        "query_id": "retrieval-dev-msft-2024-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:3",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:25",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:4",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:16",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:14"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2024",
+        "elapsed_seconds": 0.4581220830004895,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15"
+        ],
+        "query_id": "retrieval-dev-msft-2024-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2024:0000950170-24-087843:item1a:15",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:18",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:11",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:12",
+          "sec:MSFT:2024:0000950170-24-087843:item1a:48"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.5926808329995765,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65"
+        ],
+        "query_id": "retrieval-dev-msft-2025-results_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item7:65",
+          "sec:MSFT:2025:0000950170-25-100235:item7:67",
+          "sec:MSFT:2025:0000950170-25-100235:item7:64",
+          "sec:MSFT:2025:0000950170-25-100235:item7:73",
+          "sec:MSFT:2025:0000950170-25-100235:item7:52"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-results_grid",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.4760862080001971,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4"
+        ],
+        "query_id": "retrieval-dev-msft-2025-ai_investment",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:4",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:25",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:15",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:5",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:13"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-ai_investment",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "MSFT-2025",
+        "elapsed_seconds": 0.45266437499958556,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "matched_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14"
+        ],
+        "query_id": "retrieval-dev-msft-2025-customer_security",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:MSFT:2025:0000950170-25-100235:item1a:14",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:16",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:10",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:11",
+          "sec:MSFT:2025:0000950170-25-100235:item1a:46"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "msft-customer_security",
+        "status": "completed",
+        "ticker": "MSFT",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.5168139999996129,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item7:52",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:18",
+          "sec:AAPL:2023:0000320193-23-000106:item7:50",
+          "sec:AAPL:2023:0000320193-23-000106:item7:54",
+          "sec:AAPL:2023:0000320193-23-000106:item7:57"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.4601015409998581,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:11",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:10",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:1",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:3",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:4"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2023",
+        "elapsed_seconds": 0.500658250000015,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2023-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2023:0000320193-23-000106:item1a:24",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:4",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:25",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:27",
+          "sec:AAPL:2023:0000320193-23-000106:item1a:2"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.45103329199992004,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item7:51"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item7:51"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:18",
+          "sec:AAPL:2024:0000320193-24-000123:item7:51",
+          "sec:AAPL:2024:0000320193-24-000123:item7:56",
+          "sec:AAPL:2024:0000320193-24-000123:item7:52",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:20"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.48784670799977903,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:11",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:10",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:1",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:3",
+          "sec:AAPL:2024:0000320193-24-000123:item7:60"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2024",
+        "elapsed_seconds": 0.4875769170002968,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2024-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2024:0000320193-24-000123:item1a:24",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:4",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:25",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:27",
+          "sec:AAPL:2024:0000320193-24-000123:item1a:2"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.5107605829998647,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item7:55"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item7:55"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-sales_mix_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:19",
+          "sec:AAPL:2025:0000320193-25-000079:item7:55",
+          "sec:AAPL:2025:0000320193-25-000079:item7:60",
+          "sec:AAPL:2025:0000320193-25-000079:item7:56",
+          "sec:AAPL:2025:0000320193-25-000079:item7:58"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-sales_mix_grid",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.4879518329998973,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-outsourcing_concentration",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:13",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:3",
+          "sec:AAPL:2025:0000320193-25-000079:item7:51",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:4",
+          "sec:AAPL:2025:0000320193-25-000079:item7:64"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-outsourcing_concentration",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AAPL-2025",
+        "elapsed_seconds": 0.46973570799946174,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "matched_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24"
+        ],
+        "query_id": "retrieval-dev-aapl-2025-systems_continuity",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AAPL:2025:0000320193-25-000079:item1a:24",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:7",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:27",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:2",
+          "sec:AAPL:2025:0000320193-25-000079:item1a:25"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "aapl-systems_continuity",
+        "status": "completed",
+        "ticker": "AAPL",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.8455550420003419,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:76"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item7:78",
+          "sec:ABBV:2023:0001551152-24-000011:item7:80",
+          "sec:ABBV:2023:0001551152-24-000011:item7:76",
+          "sec:ABBV:2023:0001551152-24-000011:item7:81",
+          "sec:ABBV:2023:0001551152-24-000011:item7:75"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.5630076669995105,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:1",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:2",
+          "sec:ABBV:2023:0001551152-24-000011:item7:81",
+          "sec:ABBV:2023:0001551152-24-000011:item7:88",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:17"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2023",
+        "elapsed_seconds": 0.5418001250000088,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2023-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2023:0001551152-24-000011:item1a:7",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:11",
+          "sec:ABBV:2023:0001551152-24-000011:item1a:21",
+          "sec:ABBV:2023:0001551152-24-000011:item7:62",
+          "sec:ABBV:2023:0001551152-24-000011:item7:84"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.830998708000152,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item7:76",
+          "sec:ABBV:2024:0001551152-25-000020:item7:78",
+          "sec:ABBV:2024:0001551152-25-000020:item7:80",
+          "sec:ABBV:2024:0001551152-25-000020:item7:81",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:31"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.521520999999666,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:1",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:2",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:17",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:10",
+          "sec:ABBV:2024:0001551152-25-000020:item7:81"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2024",
+        "elapsed_seconds": 0.5735999999997148,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7"
+        ],
+        "query_id": "retrieval-dev-abbv-2024-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2024:0001551152-25-000020:item1a:7",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:11",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:10",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:12",
+          "sec:ABBV:2024:0001551152-25-000020:item1a:2"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.8473877079995873,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-geographic_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item7:84",
+          "sec:ABBV:2025:0001551152-26-000008:item7:86",
+          "sec:ABBV:2025:0001551152-26-000008:item7:89",
+          "sec:ABBV:2025:0001551152-26-000008:item7:68",
+          "sec:ABBV:2025:0001551152-26-000008:item7:102"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-geographic_revenue_grid",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.5145158750001428,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:3"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:3"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-exclusivity_erosion",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:2",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:3",
+          "sec:ABBV:2025:0001551152-26-000008:item7:89",
+          "sec:ABBV:2025:0001551152-26-000008:item7:71",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:9"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-exclusivity_erosion",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "ABBV-2025",
+        "elapsed_seconds": 0.5931200420000096,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8"
+        ],
+        "matched_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8"
+        ],
+        "query_id": "retrieval-dev-abbv-2025-development_payoff",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:ABBV:2025:0001551152-26-000008:item1a:8",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:12",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:24",
+          "sec:ABBV:2025:0001551152-26-000008:item1a:17",
+          "sec:ABBV:2025:0001551152-26-000008:item7:70"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "abbv-development_payoff",
+        "status": "completed",
+        "ticker": "ABBV",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.9005004160007957,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:122"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item7:114",
+          "sec:AMGN:2023:0000318154-24-000011:item7:122",
+          "sec:AMGN:2023:0000318154-24-000011:item7:120",
+          "sec:AMGN:2023:0000318154-24-000011:item7:133",
+          "sec:AMGN:2023:0000318154-24-000011:item7:125"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.49927275000027294,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:68",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:74",
+          "sec:AMGN:2023:0000318154-24-000011:item7:189",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:66",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:72"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2023",
+        "elapsed_seconds": 0.4477546669995718,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "query_id": "retrieval-dev-amgn-2023-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2023:0000318154-24-000011:item1a:35",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:43",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:104",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:38",
+          "sec:AMGN:2023:0000318154-24-000011:item1a:36"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2023
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.8272824169998785,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item7:129",
+          "sec:AMGN:2024:0000318154-25-000010:item7:133",
+          "sec:AMGN:2024:0000318154-25-000010:item7:135",
+          "sec:AMGN:2024:0000318154-25-000010:item7:127",
+          "sec:AMGN:2024:0000318154-25-000010:item7:126"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.48735254100029124,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:72",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:79",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:69",
+          "sec:AMGN:2024:0000318154-25-000010:item7:199",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:2"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2024",
+        "elapsed_seconds": 0.46589700000004086,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:35"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34"
+        ],
+        "query_id": "retrieval-dev-amgn-2024-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2024:0000318154-25-000010:item1a:34",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:38",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:106",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:44",
+          "sec:AMGN:2024:0000318154-25-000010:item1a:45"
+        ],
+        "sampled_label_recall_at_5": 0.5,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2024
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.6502309170000444,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:125"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:125"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-product_revenue_grid",
+        "query_kind": "financial_table",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item7:128",
+          "sec:AMGN:2025:0000318154-26-000010:item7:130",
+          "sec:AMGN:2025:0000318154-26-000010:item7:125",
+          "sec:AMGN:2025:0000318154-26-000010:item7:123",
+          "sec:AMGN:2025:0000318154-26-000010:item7:127"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-product_revenue_grid",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.544115249999777,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 1,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-trial_timing",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:67",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:74",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:64",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:18",
+          "sec:AMGN:2025:0000318154-26-000010:item7:197"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-trial_timing",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      },
+      {
+        "achievable_recall_at_5": 1.0,
+        "company_year_group_id": "AMGN-2025",
+        "elapsed_seconds": 0.4709189590003007,
+        "error_type": null,
+        "hit_at_5": 1,
+        "labelled_relevant_count": 2,
+        "labelled_relevant_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "matched_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32"
+        ],
+        "query_id": "retrieval-dev-amgn-2025-digital_operational_risk",
+        "query_kind": "narrative",
+        "retrieved_passage_ids": [
+          "sec:AMGN:2025:0000318154-26-000010:item1a:32",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:1",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:31",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:35",
+          "sec:AMGN:2025:0000318154-26-000010:item1a:101"
+        ],
+        "sampled_label_recall_at_5": 1.0,
+        "scenario_group_id": "amgn-digital_operational_risk",
+        "status": "completed",
+        "ticker": "AMGN",
+        "years": [
+          2025
+        ]
+      }
+    ]
+  },
+  "query_count": 36,
+  "query_kind_counts": {
+    "financial_table": 12,
+    "narrative": 24
+  },
+  "query_labels_sha256": "ab0e30ef73499e4adb8f1385e0f9af9f459e1504cc42c77be8a0107769d22d9a",
+  "retrieval_artifact": {
+    "configuration_hash": "b93e9da3bb735de52066f9434ebca7b62cd94b990b0fa8b103099e210c633ea7",
+    "corpus_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+    "dimension": 384,
+    "encoder": {
+      "id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    },
+    "index_fingerprint": "06a7c563124ff6f667f37afb51a3381cdad42a94e080d8e88c6829b92d47cc8c",
+    "model_fingerprint": "1aee457a5caa5f8fe97c201af55e625e8274cb87b2c6b8a7655d4e389bc2ad47",
+    "passage_count": 4073,
+    "query_policy": "original_plus_two_literal_and_semicolon_subquestions_v1",
+    "reranker": {
+      "id": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+    },
+    "text_policy": "passage_and_canonical_table_cells_v1; encoder_254_token_windows_overlap32_mean_normalized; reranker_96_query_tokens_document_windows_overlap32_max_logit",
+    "vectors_sha256": "d8c0d61927bed4a2c132ef6d31be0080a26db90c7adbe1f3f9f9d81caedc1dac"
+  },
+  "scenario_group_count": 12,
+  "source_corpus_sha256": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "status": "completed",
+  "summaries": {
+    "bm25": {
+      "attempted": 36,
+      "by_query_kind": {
+        "financial_table": {
+          "attempted": 12,
+          "errors": 0,
+          "hit_at_5": 0.5,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.5
+        },
+        "narrative": {
+          "attempted": 24,
+          "errors": 0,
+          "hit_at_5": 0.9166666666666666,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.875
+        }
+      },
+      "by_scenario_group_id": {
+        "aapl-outsourcing_concentration": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "aapl-sales_mix_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.3333333333333333,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.3333333333333333
+        },
+        "aapl-systems_continuity": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-development_payoff": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-exclusivity_erosion": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.3333333333333333,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.16666666666666666
+        },
+        "abbv-geographic_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.0
+        },
+        "amgn-digital_operational_risk": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "amgn-product_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.6666666666666666,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.6666666666666666
+        },
+        "amgn-trial_timing": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-ai_investment": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-customer_security": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-results_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "by_ticker": {
+        "AAPL": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.7777777777777778,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.7777777777777778
+        },
+        "ABBV": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.4444444444444444,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.3888888888888889
+        },
+        "AMGN": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.8888888888888888,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "MSFT": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "errors": 0,
+      "hit_at_5": 0.7777777777777778,
+      "macro_achievable_recall_at_5": 1.0,
+      "sampled_label_recall_at_5": 0.75,
+      "total_elapsed_seconds": 0.18520354199972644
+    },
+    "hybrid": {
+      "attempted": 36,
+      "by_query_kind": {
+        "financial_table": {
+          "attempted": 12,
+          "errors": 0,
+          "hit_at_5": 0.5833333333333334,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.5833333333333334
+        },
+        "narrative": {
+          "attempted": 24,
+          "errors": 0,
+          "hit_at_5": 0.9583333333333334,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.875
+        }
+      },
+      "by_scenario_group_id": {
+        "aapl-outsourcing_concentration": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "aapl-sales_mix_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.0
+        },
+        "aapl-systems_continuity": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-development_payoff": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.6666666666666666,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.6666666666666666
+        },
+        "abbv-exclusivity_erosion": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "abbv-geographic_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "amgn-digital_operational_risk": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.6666666666666666
+        },
+        "amgn-product_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 0.3333333333333333,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.3333333333333333
+        },
+        "amgn-trial_timing": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-ai_investment": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-customer_security": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-results_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "by_ticker": {
+        "AAPL": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.6666666666666666,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.6111111111111112
+        },
+        "ABBV": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.8888888888888888,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "AMGN": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 0.7777777777777778,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.6666666666666666
+        },
+        "MSFT": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "errors": 0,
+      "hit_at_5": 0.8333333333333334,
+      "macro_achievable_recall_at_5": 1.0,
+      "sampled_label_recall_at_5": 0.7777777777777778,
+      "total_elapsed_seconds": 3.4113379160007753
+    },
+    "hybrid_rerank": {
+      "attempted": 36,
+      "by_query_kind": {
+        "financial_table": {
+          "attempted": 12,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "narrative": {
+          "attempted": 24,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.9791666666666666
+        }
+      },
+      "by_scenario_group_id": {
+        "aapl-outsourcing_concentration": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "aapl-sales_mix_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "aapl-systems_continuity": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-development_payoff": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-exclusivity_erosion": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "abbv-geographic_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "amgn-digital_operational_risk": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.8333333333333334
+        },
+        "amgn-product_revenue_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "amgn-trial_timing": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-ai_investment": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-customer_security": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "msft-results_grid": {
+          "attempted": 3,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "by_ticker": {
+        "AAPL": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "ABBV": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        },
+        "AMGN": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 0.9444444444444444
+        },
+        "MSFT": {
+          "attempted": 9,
+          "errors": 0,
+          "hit_at_5": 1.0,
+          "macro_achievable_recall_at_5": 1.0,
+          "sampled_label_recall_at_5": 1.0
+        }
+      },
+      "errors": 0,
+      "hit_at_5": 1.0,
+      "macro_achievable_recall_at_5": 1.0,
+      "sampled_label_recall_at_5": 0.9861111111111112,
+      "total_elapsed_seconds": 20.10609528999794
+    }
+  },
+  "tickers": [
+    "AAPL",
+    "ABBV",
+    "AMGN",
+    "MSFT"
+  ]
+}

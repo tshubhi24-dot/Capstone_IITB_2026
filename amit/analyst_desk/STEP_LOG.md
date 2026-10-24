@@ -185,6 +185,10 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [web/app.js](web/app.js), [tests/test_provider_error_ui.py](tests/test_provider_error_ui.py) | Explain provider HTTP 429 failures and stopped-run behavior without automatic paid retries or changing budget records. |
 | [evaluation/retrieval/README.md](evaluation/retrieval/README.md), [development_queries.jsonl](evaluation/retrieval/development_queries.jsonl) | Frozen development questions, partial relevance labels, source hashes and comparison rules. |
 | [ops/evaluate_retrieval.py](ops/evaluate_retrieval.py), [tests/test_retrieval_evaluation.py](tests/test_retrieval_evaluation.py) | Paired Recall@5/Hit@5 comparisons; retain errors and misses in the denominator. |
+| [desk/retrieval.py](desk/retrieval.py), [desk/data.py](desk/data.py), [data/retrieval_config.json](data/retrieval_config.json) | Scoped table-aware BM25, pinned MiniLM vectors, query decomposition, RRF and cross-encoder reranking. |
+| [ops/prepare_retrieval.py](ops/prepare_retrieval.py), [tests/test_retrieval.py](tests/test_retrieval.py) | Build and verify frozen local artifacts; test scope, changed artifacts, ranking, table cells and concurrent first use. |
+| [desk/vector_store.py](desk/vector_store.py), [ops/prepare_vector_store.py](ops/prepare_vector_store.py), [tests/test_vector_store.py](tests/test_vector_store.py) | Populate Chroma explicitly, validate stored vectors and apply issuer/year/allowed-ID filters before ranking. |
+| [evidence/retrieval_development_comparison.json](evidence/retrieval_development_comparison.json) | Complete paired host comparison, missed labels, model/index identities and diagnostic timings. |
 
 **Capstone connection:** p.3, hybrid BM25/vector retrieval, RRF, reranker, query-side improvement and Recall@5 comparison; p.16, scoped company/year retrieval and preserved table evidence. Provider failure handling supports the observable failure requirement on p.6.
 
@@ -192,6 +196,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 |---|---|
 | 12a — Explain a rate-limited run | The interface explains HTTP 429, retains the diagnostic and reserved-budget display, and offers explicit next actions. Three browser-helper checks pass. |
 | 12b — Freeze the retrieval comparison | Thirty-six questions and 42 source-derived passage labels cover four development issuers, twelve company/year groups and both narrative/table evidence. Thirty-two harness checks pass. Labels were frozen before running retrieval; human review and protected evaluation remain pending. |
+| 12c — Implement and compare local retrieval | Prepared 4,073 × 384 vectors and real pretrained CPU models. Twenty-eight retrieval tests pass. Sampled-label Recall@5 is 75.0% for BM25, 77.8% for hybrid and 98.6% with reranking. Hybrid improves five/regresses five questions; reranking improves nine/regresses none against BM25. These are partial development labels, not independent gold. Docker/Chroma verification follows. |
 
 ## What the team builds next
 
