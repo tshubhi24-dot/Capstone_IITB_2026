@@ -15,11 +15,12 @@ This folder contains the current capstone work prepared from the beginning. It d
 | 5 | [Human-reviewed two-company journey](evidence/two_company_journey.json) | Version-bound plan and note approvals recorded; one note saved. [Runtime checks](evidence/runtime_checks.json) and [restart/authentication evidence](evidence/journey_verification.json) pass. |
 | 6 | [Live AI foundation and staged plan](docs/LIVE_AI_STEPS.md) | Provider gateway, persistent spending ledger and known-secret checks prepared and tested. Paid activation remains disabled; workflow/deployment integration follows. |
 | 7 | Evidence-grounded live specialist workflow | AI plan/query/disclosure/writer/critic stages integrated with source checks and existing human gates. Mocked tests pass; paid activation remains disabled. |
+| 8 | [Optional live deployment and review UI](docs/LIVE_AI_RUNBOOK.md) | Running with spending disabled: 153 local tests, 116 networkless-image tests and 19 actual runtime checks pass. [Runtime evidence](evidence/live_runtime_checks.json). |
 
 Each completed step has its own commit. Commit timestamps reflect when work was committed; they do not backdate human reviews or experiments. See [step history](STEP_LOG.md) and [contribution provenance](docs/CONTRIBUTIONS.md).
 
 The six students own problem framing, design, evaluation and interpretation. Proposed targets, AI-assisted preparation and actual measured results are labelled separately. Credentials, runtime databases, downloaded source caches and protected final evaluation assets must stay outside Git.
 
-The first journey uses actual cached SEC data for Microsoft and Apple, FY2023–2025, with deterministic calculations and BM25 retrieval. It makes zero model calls. Learned semantic retrieval, live agent reasoning and full capstone evaluation remain future work. See the [source preparation requirements](data/README.md) before starting a fresh clone.
+The first journey used actual cached SEC data for Microsoft and Apple, FY2023–2025, with deterministic calculations, BM25 retrieval and zero model calls. An optional live reasoning pilot is now implemented and tested; its paid activation remains disabled until explicit spending authorization. Learned semantic retrieval and full capstone evaluation remain future work. See the [source preparation requirements](data/README.md) before starting a fresh clone.
 
 Local research desk: <http://127.0.0.1:18080>. Monitoring: <http://127.0.0.1:13080>. The research desk requires the private analyst credential; it is not included in this repository.

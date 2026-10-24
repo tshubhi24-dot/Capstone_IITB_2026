@@ -1,0 +1,56 @@
+# Optional live-model overlay. Preparation creates a disabled spending proposal.
+# Start with ops/start_live.py; no model requests occur during startup.
+x-live-image: &live-image
+  image: analyst-desk:amit-live-v1
+  pull_policy: build
+  build: {context: .}
+
+services:
+  init-secrets:
+    <<: *live-image
+    entrypoint: [python, ops/bootstrap.py, init, --model-gateway]
+    volumes:
+      - gateway-auth:/secrets/model-gateway
+
+  app:
+    <<: *live-image
+    environment:
+      MODEL_GATEWAY_URL: http://model-gateway:8020
+    depends_on:
+      model-gateway: {condition: service_healthy}
+
+  model-gateway:
+    <<: *live-image
+    read_only: true
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=128m"]
+    restart: unless-stopped
+    command: [python, -m, uvicorn, desk.model_gateway:app, --host, 0.0.0.0, --port, "8020"]
+    environment:
+      SCOPED_CONFIG: /run/credentials/config.json
+      MODEL_CONFIG_FILE: /run/provider/model_config.json
+      OPENROUTER_KEY_FILE: /run/provider/key
+      MODEL_LEDGER_PATH: /runtime/model-ledger.sqlite
+    volumes:
+      - gateway-auth:/run/credentials:ro
+      - model-ledger:/runtime
+      - ./.runtime/live/model_config.json:/run/provider/model_config.json:ro
+      - ./.runtime/live/provider.key:/run/provider/key:ro
+    networks: [backend, provider-egress]
+    depends_on:
+      init-secrets: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8020/health',timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+networks:
+  provider-egress: {}
+
+volumes:
+  gateway-auth:
+  model-ledger:

@@ -1,0 +1,194 @@
+{
+  "checked_at_utc": "2026-10-24T07:46:58.592642+00:00",
+  "project": "analyst-desk-journey",
+  "docker_context": "desktop-linux",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "private_credentials_available",
+      "passed": true,
+      "observed": {
+        "values_disclosed": false
+      }
+    },
+    {
+      "name": "api_health",
+      "passed": true,
+      "observed": {
+        "http_status": 200
+      }
+    },
+    {
+      "name": "api_missing_token_rejected",
+      "passed": true,
+      "observed": {
+        "http_status": 401
+      }
+    },
+    {
+      "name": "live_api_source_and_model_configuration",
+      "passed": true,
+      "observed": {
+        "expected_model_ids": true,
+        "expected_source_scope": true,
+        "learned_retrieval_claimed": false
+      }
+    },
+    {
+      "name": "model_ledger_available_and_ui_state_matches",
+      "passed": true,
+      "observed": {
+        "enabled": false,
+        "cap_usd": "1.00",
+        "per_run_usd": "0.50",
+        "reported_spend_usd": "0",
+        "held_usd": "0",
+        "committed_usd": "0",
+        "remaining_authorization_usd": "1.00",
+        "model_calls": 0,
+        "tokens": 0,
+        "uncertain_calls": 0,
+        "blocked": false
+      }
+    },
+    {
+      "name": "existing_offline_approved_note_preserved",
+      "passed": true,
+      "observed": {
+        "note_count": 2,
+        "original_offline_note_present": true
+      }
+    },
+    {
+      "name": "disabled_live_request_gate",
+      "passed": true,
+      "observed": {
+        "applicable": true,
+        "request_sent": true,
+        "http_status": 409,
+        "run_count_unchanged": true,
+        "model_accounting_unchanged": true,
+        "newly_created_runs": 0
+      }
+    },
+    {
+      "name": "project_runtime_services_running",
+      "passed": true,
+      "observed": {
+        "required_services": 11,
+        "unique_service_containers": true
+      }
+    },
+    {
+      "name": "provider_key_absent_from_all_container_environments",
+      "passed": true,
+      "observed": {
+        "inspected_container_count": 12,
+        "exposed_value": false
+      }
+    },
+    {
+      "name": "gateway_private_ports_and_egress",
+      "passed": true,
+      "observed": {
+        "backend_and_provider_egress_only": true,
+        "no_host_ports": true
+      }
+    },
+    {
+      "name": "app_and_mcp_remain_backend_only",
+      "passed": true,
+      "observed": {
+        "checked_service_count": 5
+      }
+    },
+    {
+      "name": "provider_key_file_is_gateway_only_and_read_only",
+      "passed": true,
+      "observed": {
+        "matching_mount_count": 1,
+        "gateway_only": true
+      }
+    },
+    {
+      "name": "gateway_has_separate_ledger_and_no_research_history_mount",
+      "passed": true,
+      "observed": {
+        "expected_mount_targets_only": true,
+        "ledger_separate_from_research_history": true,
+        "other_mounts_read_only": true
+      }
+    },
+    {
+      "name": "gateway_process_restrictions",
+      "passed": true,
+      "observed": {
+        "read_only_root": true,
+        "nonroot_user": true,
+        "all_capabilities_dropped": true
+      }
+    },
+    {
+      "name": "calculation_worker_still_networkless_and_queue_only",
+      "passed": true,
+      "observed": {
+        "network_none": true,
+        "queue_only": true,
+        "read_only_root": true
+      }
+    },
+    {
+      "name": "model_gateway_rejects_missing_internal_credential",
+      "passed": true,
+      "observed": {
+        "http_status": 401,
+        "paid_completion_requested": false
+      }
+    },
+    {
+      "name": "backend_network_remains_internal",
+      "passed": true,
+      "observed": {
+        "expected_project": true,
+        "internal": true
+      }
+    },
+    {
+      "name": "prometheus_app_scrape_ready",
+      "passed": true,
+      "observed": {
+        "target_up": true,
+        "no_scrape_error": true
+      }
+    },
+    {
+      "name": "grafana_database_ready",
+      "passed": true,
+      "observed": {
+        "http_status": 200
+      }
+    }
+  ],
+  "budget": {
+    "enabled": false,
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0",
+    "held_usd": "0",
+    "committed_usd": "0",
+    "remaining_authorization_usd": "1.00",
+    "model_calls": 0,
+    "tokens": 0,
+    "uncertain_calls": 0,
+    "blocked": false
+  },
+  "models": {
+    "producer": "openai/gpt-4.1-mini",
+    "critic": "openai/gpt-4.1"
+  },
+  "run_creation_probes_sent": 1,
+  "research_runs_created_by_verifier": 0,
+  "human_decisions_performed": false,
+  "provider_completion_requests_sent_by_verifier": 0,
+  "scope": "Live-overlay readiness, disabled-budget rejection when applicable, configured Docker boundaries, and authentication. No paid research, semantic benchmark, active containment attack or alert firing test."
+}

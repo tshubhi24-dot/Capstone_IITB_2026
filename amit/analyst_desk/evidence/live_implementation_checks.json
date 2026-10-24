@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-24",
+  "local_tests": {"passed": 153, "elapsed_seconds": 7.35},
+  "docker_image_tests": {"image": "analyst-desk:amit-live-v1", "passed": 116, "elapsed_seconds": 2.72, "network": "none", "root_filesystem": "read_only", "provider_responses": "fictional fixtures and mocked transport"},
+  "live_runtime_check_count": 19,
+  "live_runtime_status": "passed",
+  "provider_calls_made_by_these_checks": 0,
+  "paid_activation_at_verification": "disabled",
+  "scope": "Implementation and actual local service boundaries. No paid model completion, semantic gold score, final held-out evaluation or active attack effectiveness claim."
+}

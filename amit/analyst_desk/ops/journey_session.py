@@ -12,6 +12,7 @@ required. Full run snapshots and confirmation text remain in private storage.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -117,11 +118,17 @@ def write_json(path: Path, value, *, private: bool = False) -> None:
 class JourneyClient:
     def __init__(self, *, base_url=DEFAULT_BASE_URL, token: str,
                  session_path: Path = DEFAULT_SESSION, receipt_path: Path = DEFAULT_RECEIPT,
-                 timeout: float = 20, wait_seconds: float = 180, poll_seconds: float = 1):
+                 timeout: float = 20, wait_seconds: float = 180, poll_seconds: float = 1, mode: str = "offline"):
         self.base_url = local_base_url(base_url)
         self.token = token
         self.session_path, self.receipt_path = Path(session_path), Path(receipt_path)
         self.timeout, self.wait_seconds, self.poll_seconds = timeout, wait_seconds, poll_seconds
+        if mode not in {"offline", "live"}:
+            raise JourneyError("Choose explicit offline or live research mode.")
+        self.mode = mode
+        self.research_request = deepcopy(REQUEST)
+        if mode == "live":
+            self.research_request.update(mode="live", max_tokens=250000, max_model_calls=12)
         # A local-only client must not send its analyst header via an ambient
         # HTTP proxy, and must never forward it to a redirect destination.
         self.opener = build_opener(ProxyHandler({}), NoRedirect())
@@ -181,6 +188,8 @@ class JourneyClient:
             time.sleep(self.poll_seconds)
 
     def _check_offline_config(self, config):
+        if self.mode == "live" and not config.get("live_enabled"):
+            raise JourneyError("Live spending must be explicitly authorized before preparing a model-assisted request.")
         if config.get("mode") not in {"offline", "demo"} or config.get("data_source") != "sec_edgar":
             raise JourneyError("Prepare requires offline mode with actual SEC data; no live or synthetic request was started.")
         if config.get("transport") != "http":
@@ -211,14 +220,17 @@ class JourneyClient:
             "record_kind": "manual_two_company_learning_journey",
             "updated_at": now(), "base_url": self.base_url, "run_id": run["id"],
             "status": run.get("status"), "stage": run.get("stage"),
-            "configuration": {key: config.get(key) for key in ("mode", "data_source", "transport", "semantic_retrieval", "model_config_version")},
-            "request": {key: request.get(key) for key in ("tickers", "years", "strategy", "max_tokens", "max_tool_calls", "learning_split")},
+            "configuration": {**{key: config.get(key) for key in ("data_source", "transport", "semantic_retrieval")},
+                              "mode": run.get("mode", request.get("mode", self.mode)),
+                              "model_config_version": config.get("live_model_config_version") if self.mode == "live" else config.get("model_config_version")},
+            "request": {key: request.get(key) for key in ("tickers", "years", "strategy", "mode", "max_tokens", "max_model_calls", "max_tool_calls", "learning_split")},
             "pending_review": {"kind": pending.get("kind"), "payload_hash": pending.get("payload_hash"), "plan": plan,
                                "note_title": payload.get("title") if pending.get("kind") == "note" else None},
             "expected_human_action": f"Review the exact {pending['kind']} and explicitly approve, edit or reject it." if pending.get("kind") else None,
-            "verification": {key: critic.get(key) for key in ("passed", "verified_share", "verified_numbers", "total_numbers")},
+            "verification": {key: critic.get(key) for key in ("passed", "verified_share", "verified_numbers", "total_numbers", "semantic_review")},
             "usage": {"tokens": usage.get("tokens", 0), "tool_calls": usage.get("tool_calls", 0),
-                      "model_calls": usage.get("model_calls", len(calls)), "cost_usd": usage.get("cost_usd")},
+                      "model_calls": usage.get("model_calls", len(calls)), "cost_usd": usage.get("cost_usd"),
+                      **{key: usage[key] for key in ("held_usd", "committed_usd", "accounting_status") if key in usage}},
             "note_id": run.get("note_id"),
             "decision_requests": [{key: item[key] for key in ("time", "kind", "action", "payload_hash", "confirmation_sha256", "accepted_by_api")}
                                   for item in self.session.get("decision_requests", [])],
@@ -232,11 +244,11 @@ class JourneyClient:
         config = self.request("GET", "/api/config")
         self._check_offline_config(config)
         if self.session and not new_run:
-            if self.session.get("base_url") != self.base_url or self.session.get("request_digest") != digest(REQUEST):
+            if self.session.get("base_url") != self.base_url or self.session.get("request_digest") != digest(self.research_request):
                 raise JourneyError("The saved session belongs to another service or request; preserve it and explicitly use --new-run if needed.")
             return self.status(self.session["run_id"], config=config)
-        self.session = {"created_at": now(), "request_digest": digest(REQUEST), "decision_requests": []}
-        run = self.request("POST", "/api/runs", REQUEST)
+        self.session = {"created_at": now(), "request_digest": digest(self.research_request), "decision_requests": []}
+        run = self.request("POST", "/api/runs", self.research_request)
         self.save(run, config)
         return self.save(self.wait(run["id"]))
 
@@ -283,8 +295,9 @@ def parser():
     cli.add_argument("--base-url", default=DEFAULT_BASE_URL)
     cli.add_argument("--credentials-file", type=Path, default=DEFAULT_CREDENTIALS)
     cli.add_argument("--token-env", default="ANALYST_API_TOKEN")
-    cli.add_argument("--session-file", type=Path, default=DEFAULT_SESSION)
-    cli.add_argument("--receipt-file", type=Path, default=DEFAULT_RECEIPT)
+    cli.add_argument("--mode", choices=("offline", "live"), default="offline")
+    cli.add_argument("--session-file", type=Path)
+    cli.add_argument("--receipt-file", type=Path)
     cli.add_argument("--wait-seconds", type=float, default=180)
     sub = cli.add_subparsers(dest="command", required=True)
     prepare = sub.add_parser("prepare", help="Create the offline SEC request and stop at human plan review.")
@@ -307,8 +320,9 @@ def main(argv=None):
         if arguments.wait_seconds <= 0:
             raise JourneyError("The wait limit must be positive.")
         client = JourneyClient(base_url=arguments.base_url, token=read_token(arguments.credentials_file, arguments.token_env),
-                               session_path=arguments.session_file, receipt_path=arguments.receipt_file,
-                               wait_seconds=arguments.wait_seconds)
+                               session_path=arguments.session_file or (ROOT / ".runtime/live/session.json" if arguments.mode == "live" else DEFAULT_SESSION),
+                               receipt_path=arguments.receipt_file or (ROOT / "evidence/live_two_company_journey.json" if arguments.mode == "live" else DEFAULT_RECEIPT),
+                               wait_seconds=arguments.wait_seconds, mode=arguments.mode)
         if arguments.command == "prepare":
             result = client.prepare(new_run=arguments.new_run)
         elif arguments.command == "status":

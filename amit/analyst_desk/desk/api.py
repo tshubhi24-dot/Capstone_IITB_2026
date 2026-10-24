@@ -1,6 +1,7 @@
-"""Local-only first research journey; all model behaviour is explicitly offline."""
+"""Local analyst desk with explicit offline or budget-authorized live runs."""
 from contextlib import asynccontextmanager
 import asyncio
+from decimal import Decimal
 import hmac
 import json
 import os
@@ -16,6 +17,7 @@ from typing import Literal
 from .data import Corpus
 from .store import Store
 from .workflow import Engine, ReviewError, validate_scope
+from .provider import ModelGatewayClient, ProviderError
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -23,10 +25,17 @@ ROOT = Path(__file__).resolve().parents[1]
 @asynccontextmanager
 async def lifespan(app):
     if os.getenv("ANALYST_MODE", "offline") != "offline":
-        raise RuntimeError("This first journey supports offline mode only; live operation is not silently substituted.")
+        raise RuntimeError("The desk's default stays offline; choose live mode explicitly per research run.")
     app.state.source = Corpus(os.getenv("CORPUS_PATH", "/sources/corpus.json"))
     app.state.store = Store()
-    app.state.engine = Engine(app.state.store, app.state.source, os.getenv("RUNTIME_DIR", "/runtime"))
+    client = None
+    if os.getenv("MODEL_GATEWAY_URL"):
+        try:
+            client = ModelGatewayClient.from_environment()
+        except ProviderError:
+            # Offline inspection remains available, but live creation is blocked.
+            pass
+    app.state.engine = Engine(app.state.store, app.state.source, os.getenv("RUNTIME_DIR", "/runtime"), model_client=client)
     yield
     app.state.engine.close()
 
@@ -58,8 +67,10 @@ class ResearchRequest(BaseModel):
     tickers: list[str] = Field(default_factory=lambda: ["MSFT", "AAPL"])
     years: list[int] = Field(default_factory=lambda: [2023, 2024, 2025])
     strategy: Literal["multi"] = "multi"
+    mode: Literal["offline", "live"] = "offline"
     max_tool_calls: int = Field(default=60, ge=1, le=200)
-    max_tokens: int = Field(default=100000, ge=100, le=100000)
+    max_tokens: int = Field(default=100000, ge=100, le=500000)
+    max_model_calls: int = Field(default=12, ge=1, le=12)
     memory_enabled: Literal[True] = True
     critic_enabled: Literal[True] = True
     table_aware: Literal[True] = True
@@ -94,11 +105,50 @@ def health():
     return {"status": "ok", "mode": "offline", "data_source": "sec_edgar"}
 
 
+def gateway_budget():
+    """Read safe accounting metadata only; this never requests a completion."""
+    client = getattr(app.state.engine, "model_client", None)
+    if client is None:
+        return None, False
+    try:
+        value = client.budget()
+        if not isinstance(value, dict):
+            raise ValueError
+        safe = {}
+        for key in ("cap_usd", "per_run_usd", "reported_spend_usd", "held_usd", "committed_usd",
+                    "authorization_committed_usd", "remaining_authorization_usd"):
+            amount = Decimal(str(value[key]))
+            if not amount.is_finite() or amount < 0:
+                raise ValueError
+            safe[key] = str(amount)
+        for key in ("model_calls", "tokens", "uncertain_calls"):
+            if type(value[key]) is not int or value[key] < 0:
+                raise ValueError
+            safe[key] = value[key]
+        for key in ("enabled", "blocked", "provider_key_configured"):
+            if type(value[key]) is not bool:
+                raise ValueError
+            safe[key] = value[key]
+        version = value.get("config_version")
+        if isinstance(version, str) and len(version) <= 180 and all(c.isalnum() or c in "_.:-" for c in version):
+            safe["config_version"] = version
+        ready = (safe["enabled"] and safe["provider_key_configured"] and not safe["blocked"]
+                 and Decimal(safe["remaining_authorization_usd"]) > 0)
+        return safe, ready
+    except Exception:
+        # Provider errors, credentials and gateway response bodies stay private.
+        return {"gateway_status": "unavailable"}, False
+
+
 @app.get("/api/config")
 def config():
     source = app.state.source
     companies = source.companies()
+    live_budget, live_enabled = gateway_budget()
     return {"mode": "offline", "data_source": "sec_edgar", "transport": "http", "semantic_retrieval": False,
+            "available_modes": ["offline", "live"] if live_enabled else ["offline"], "live_enabled": live_enabled,
+            "models": {"producer": "openai/gpt-4.1-mini", "critic": "openai/gpt-4.1"},
+            "live_budget": live_budget, "live_model_config_version": (live_budget or {}).get("config_version"),
             "retrieval": "BM25 lexical teaching retrieval; learned vectors and reranker are not active",
             "model_config_version": "fresh-step4-offline-v1", "source_fingerprint": source.fingerprint,
             "companies": companies, "years": sorted({year for company in companies for year in source.years(company["ticker"])}),
@@ -107,7 +157,16 @@ def config():
 
 @app.get("/api/budget")
 def budget():
-    return {"cap_usd": 0, "spent_usd": 0, "model_calls": 0, "mode": "offline", "provider_key_configured": False}
+    live_budget, live_enabled = gateway_budget()
+    offline = {"cap_usd": 0, "spent_usd": 0, "model_calls": 0, "mode": "offline", "provider_key_configured": False}
+    if live_budget is None:
+        return offline
+    if live_budget.get("gateway_status") == "unavailable":
+        return {**offline, "cap_usd": None, "spent_usd": None, "model_calls": None,
+                "provider_key_configured": None, "gateway_status": "unavailable",
+                "accounting_status": "unavailable", "live_enabled": False}
+    return {**live_budget, "spent_usd": float(live_budget["reported_spend_usd"]),
+            "mode": "live" if live_enabled else "offline", "live_enabled": live_enabled}
 
 
 @app.post("/api/runs", status_code=202)
@@ -117,6 +176,10 @@ def create(value: ResearchRequest, background: BackgroundTasks):
         validate_scope(request, app.state.source)
     except ReviewError as exc:
         raise HTTPException(400, str(exc)) from exc
+    if value.mode == "live":
+        _, enabled = gateway_budget()
+        if not enabled:
+            raise HTTPException(409, "Live AI is unavailable or its approved budget is disabled, blocked or exhausted. No offline run was substituted.")
     if any(run["status"] in {"queued", "running"} for run in app.state.store.list_runs("local-analyst")):
         raise HTTPException(409, "Wait for the current research operation to pause.")
     run = app.state.store.create_run(request)
@@ -200,4 +263,12 @@ def note(note_id: str):
 def metrics():
     saved = app.state.store.list_runs("local-analyst")
     ratio = next((item["critic"]["verified_share"] for item in saved if item.get("critic")), "NaN")
-    return f"analyst_verified_number_share {ratio}\nanalyst_research_runs_total {len(saved)}\nanalyst_model_calls_total 0\nanalyst_tool_calls_total {sum(item.get('usage', {}).get('tool_calls', 0) for item in saved)}\nanalyst_published_notes {len(app.state.store.notes('local-analyst'))}\n"
+    usage = [item.get("usage", {}) for item in saved]
+    costs = [item.get("cost_usd", 0) for item in usage]
+    spend = sum(float(value) for value in costs) if all(value is not None for value in costs) else "NaN"
+    return (f"analyst_verified_number_share {ratio}\nanalyst_research_runs_total {len(saved)}\n"
+            f"analyst_model_calls_total {sum(item.get('model_calls', 0) for item in usage)}\n"
+            f"analyst_model_tokens_total {sum(item.get('tokens', 0) for item in usage)}\n"
+            f"analyst_model_spend_usd_total {spend}\n"
+            f"analyst_tool_calls_total {sum(item.get('tool_calls', 0) for item in usage)}\n"
+            f"analyst_published_notes {len(app.state.store.notes('local-analyst'))}\n")

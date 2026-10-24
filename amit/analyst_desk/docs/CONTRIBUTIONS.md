@@ -14,6 +14,7 @@ The course guide permits AI coding assistance and assigns problem framing, desig
 | 24 October 2026 | Current architecture preparation and portable shared-repository export | AI-assisted design and artifact preparation; implementation and runtime validation are separate work. |
 | 24 October 2026 | Fresh Docker research journey implementation | AI-assisted current code, UI, source extraction helpers and boundary tests; offline processing, zero model calls. Actual human decisions and final evaluation are not claimed. |
 | 24 October 2026 | Actual Docker learning journey and two human review gates | The exact research plan and note were approved through separate review gates. One note was saved; measured receipts, persistence/authentication checks and limitations appear in the step log. This is not independent final evaluation. |
+| 24 October 2026 | Live AI increment, steps 6–8 | AI-assisted provider/ledger, bounded cited reasoning, graph/API/UI, private deployment controls and tests. The live-capable stack runs with paid activation disabled; mocked results are not claimed as a paid run or independent evaluation. |
 
 ## Team role assignments
 

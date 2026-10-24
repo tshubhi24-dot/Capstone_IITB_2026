@@ -148,3 +148,27 @@ def test_saved_decisions_cannot_be_attached_to_another_run(client, monkeypatch):
     with pytest.raises(journey.JourneyError, match="different run"):
         client.decision("run-2", kind="plan", action="approve", expected_hash=HASH, human_confirmation="Mocked test confirmation")
     assert calls == []
+
+
+def test_live_client_requires_enabled_configuration_before_any_research_post(tmp_path, monkeypatch):
+    client = journey.JourneyClient(token=TOKEN, mode="live", session_path=tmp_path / "live.json", receipt_path=tmp_path / "receipt.json")
+    calls = []
+    monkeypatch.setattr(client, "request", lambda method, path, body=None: calls.append(method) or config(mode="offline", live_enabled=False))
+    with pytest.raises(journey.JourneyError, match="explicitly authorized"):
+        client.prepare()
+    assert calls == ["GET"]
+
+
+def test_live_client_sends_explicit_live_limits_and_keeps_human_gate(tmp_path, monkeypatch):
+    client = journey.JourneyClient(token=TOKEN, mode="live", session_path=tmp_path / "live.json", receipt_path=tmp_path / "receipt.json")
+    calls = []
+    def request(method, path, body=None):
+        calls.append((method, path, body))
+        return config(mode="offline", live_enabled=True, live_model_config_version="test-live-v1") if path == "/api/config" else run(mode="live", request=client.research_request)
+    monkeypatch.setattr(client, "request", request)
+    receipt = client.prepare()
+    body = next(body for method, _, body in calls if method == "POST")
+    assert body["mode"] == "live" and body["max_tokens"] == 250000 and body["max_model_calls"] == 12
+    assert receipt["configuration"]["mode"] == "live" and receipt["configuration"]["model_config_version"] == "test-live-v1"
+    assert receipt["status"] == "awaiting_plan" and receipt["decision_requests"] == []
+    assert journey.REQUEST.get("mode") is None

@@ -24,7 +24,7 @@ def atomic_write(path, text, mode=0o600):
     temporary.replace(path)
 
 
-def initialize(root=Path("/secrets")):
+def initialize(root=Path("/secrets"), include_model_gateway=False):
     app_file = root / "app/config.json"
     if app_file.exists():
         app = json.loads(app_file.read_text())
@@ -35,6 +35,12 @@ def initialize(root=Path("/secrets")):
     else:
         app = {"roles": {role: secrets.token_urlsafe(36) for role in ROLES},
                "publication_secret": secrets.token_urlsafe(48), "metrics_token": secrets.token_urlsafe(36)}
+    if include_model_gateway:
+        if "model_token" not in app:
+            app["model_token"] = secrets.token_urlsafe(36)
+        if not isinstance(app["model_token"], str) or len(app["model_token"]) < 32:
+            raise ValueError("Existing model gateway credential is invalid; refusing silent rotation.")
+        atomic_write(root / "model-gateway/config.json", json.dumps({"model_token": app["model_token"]}) + "\n")
     atomic_write(app_file, json.dumps(app) + "\n")
     for service, roles in SERVICE_ROLES.items():
         scoped = {"roles": {role: app["roles"][role] for role in roles}}
@@ -54,7 +60,7 @@ def execute(arguments):
     location = os.environ.get("SCOPED_CONFIG")
     if location:
         config = json.loads(Path(location).read_text())
-        if set(config) - {"roles", "publication_secret", "metrics_token"}:
+        if set(config) - {"roles", "publication_secret", "metrics_token", "model_token"}:
             raise ValueError("Unexpected scoped credential fields.")
         if config.get("publication_secret"):
             os.environ["PUBLICATION_SECRET"] = config["publication_secret"]
@@ -65,7 +71,7 @@ def execute(arguments):
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2 and sys.argv[1] == "init":
-        initialize()
+        initialize(include_model_gateway="--model-gateway" in sys.argv[2:])
     elif len(sys.argv) >= 2 and sys.argv[1] == "exec":
         execute(sys.argv[2:])
     else:

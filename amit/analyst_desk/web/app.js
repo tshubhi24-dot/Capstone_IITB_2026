@@ -1,8 +1,13 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {run:null,reviewKey:null,timer:null,connected:false};
+const state = {run:null,reviewKey:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
+function modeDescription(){
+ const live=$('mode').value==='live',budget=state.config?.live_budget;
+ $('mode-notice').textContent=live?'Live AI pilot: models plan, select queries and draft cited interpretations. A separate model reviews support; its judgment is not ground truth. Figures stay code-checked and publication needs your approval.':'Offline workflow: no model calls or model charges. Code checks figures; risk interpretation needs your review.';
+ $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · up to 12 model calls and 250,000 tokens per request. ${state.config.models.producer} produces; ${state.config.models.critic} reviews.`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
+}
 async function api(path,options={}){
  const headers={'Content-Type':'application/json','X-Analyst-Token':sessionStorage.getItem('analyst-token')||''};
  const response=await fetch(path,{...options,headers});const data=await response.json();
@@ -10,14 +15,15 @@ async function api(path,options={}){
 }
 async function connect(){
  try{sessionStorage.setItem('analyst-token',$('token').value.trim());const config=await api('/api/config');
-  if(config.mode!=='offline'||config.data_source!=='sec_edgar')throw new Error('This journey requires offline mode with actual SEC data.');
-  state.connected=true;$('connection').textContent='Connected · real SEC snapshot · HTTP MCP · no model calls';$('start').disabled=false;
+  if(config.data_source!=='sec_edgar')throw new Error('This desk requires the actual SEC source snapshot.');
+  state.config=config;const live=$('mode').querySelector('option[value="live"]');live.disabled=!config.live_enabled;$('mode').value=config.live_enabled?'live':'offline';modeDescription();
+  state.connected=true;$('connection').textContent=`Connected · real SEC snapshot · HTTP MCP · live AI ${config.live_enabled?'available':'disabled'}`;$('start').disabled=false;
   await loadRuns();await loadNotes();const requested=new URLSearchParams(location.search).get('run');if(requested)await selectRun(requested);
- }catch(error){message(error.message);}
+ }catch(error){state.connected=false;$('start').disabled=true;$('connection').textContent='Not connected';message(error.message);}
 }
 async function loadRuns(){
  const runs=await api('/api/runs');$('runs').replaceChildren(element('option','Select a saved run'));$('runs').firstChild.value='';
- runs.forEach(run=>{const option=element('option',`${run.request?.tickers?.join(' / ')||run.id} · ${run.status} · ${run.id.slice(0,8)}`);option.value=run.id;$('runs').append(option);});
+ runs.forEach(run=>{const option=element('option',`${run.request?.tickers?.join(' / ')||run.id} · ${run.mode||run.request?.mode||'offline'} · ${run.status} · ${run.id.slice(0,8)}`);option.value=run.id;$('runs').append(option);});
  if(state.run)$('runs').value=state.run.id;
 }
 async function selectRun(id){clearTimeout(state.timer);state.reviewKey=null;await refresh(id);}
@@ -28,17 +34,19 @@ async function refresh(id){
  }catch(error){message(error.message);}
 }
 function render(run){
- state.run=run;$('current').hidden=false;$('status').textContent=`${run.status.replaceAll('_',' ')} · run ${run.id}`;
- $('usage').textContent=`${run.usage?.tool_calls||0} tool calls · ${run.usage?.model_calls||0} model calls · model charges $0`;
+ state.run=run;const live=(run.mode||run.request?.mode||'offline')==='live';$('current').hidden=false;$('status').textContent=`${live?'Live AI':'Offline'} · ${run.status.replaceAll('_',' ')} · run ${run.id}`;
+ const rawCost=run.usage?.cost_usd,unknown=rawCost===null||rawCost===undefined||run.usage?.accounting_status==='unknown_after_failure',cost=unknown?NaN:Number(rawCost),held=run.usage?.held_usd;
+ $('usage').textContent=`${run.usage?.tool_calls||0} tool calls · ${run.usage?.model_calls||0} recorded model calls · ${run.usage?.tokens||0} ${run.usage?.accounting_status==='provider_reported_with_holds'?'reported/reserved tokens':'tokens'} · reported model cost ${Number.isFinite(cost)?'$'+cost.toFixed(6):'unknown'}${held!==null&&held!==undefined?' · reserved model budget $'+held:''}${unknown?' · accounting unavailable; a failed request may still have incurred a charge':''}`;
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
- $('checks').textContent=run.critic?JSON.stringify(run.critic,null,2):'Checks have not run.';
+ $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
  if(run.error)message(run.error);
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
  if(pending){const key=`${run.id}:${pending.kind}:${pending.payload_hash}`;
   if(key!==state.reviewKey){state.reviewKey=key;const plan=pending.kind==='plan';
    $('review-title').textContent=plan?'Review the research plan':'Review this exact note';$('editor-label').textContent=plan?'Outline · one task per line':'Note body · edits trigger fresh checks';
    $('editor').value=plan?pending.payload.outline.join('\n'):pending.payload.body;
-   $('scope').textContent=plan?`${pending.payload.tickers.join(' / ')} · fiscal ${pending.payload.years.join(', ')} · ${pending.payload.caveats.join(' ')}`:'Code checks support the financial rows. Inspect the sources and risk interpretation before deciding.';
+   $('scope').textContent=plan?`${pending.payload.tickers.join(' / ')} · fiscal ${pending.payload.years.join(', ')} · ${pending.payload.caveats.join(' ')}`:'Inspect the financial sources, narrative citations, model review and limitations before deciding.';
+   $('edit-policy').textContent=!plan&&live?'For live notes, edit only the wording of existing claim bullets. Keep the table, headings, citations and limitations unchanged. Edits invalidate the previous model review and require fresh checks; unsupported changes block approval.':'';
    $('fingerprint').textContent=`Exact version: ${pending.payload_hash}`;$('approve').textContent=plan?'Approve plan and continue':'Approve and publish this exact note';
   }
   $('approve').disabled=pending.kind==='note'&&!run.critic?.passed;
@@ -49,6 +57,9 @@ function render(run){
  const risks=run.risks||[];$('risk-panel').hidden=!risks.length;$('risks').replaceChildren();
  risks.forEach(risk=>{const detail=element('details');detail.append(element('summary',`${risk.ticker}: ${risk.before_year} to ${risk.after_year} · ${risk.text_changed?'text differs':'unchanged text'}`),element('p',risk.interpretation));
   risk.source_ids.forEach(id=>{const button=element('button',id);button.className='secondary';button.onclick=()=>showEvidence(id);detail.append(button);});$('risks').append(detail);});
+ const claims=run.draft?.narrative_claims||[];$('reasoning-panel').hidden=!claims.length;$('claims').replaceChildren();
+ claims.forEach(claim=>{const detail=element('details');detail.append(element('summary',claim.text),element('p',`Model confidence: ${claim.confidence}. This label is not a correctness score.`));
+  claim.citations.forEach(citation=>{detail.append(element('blockquote',citation.quote));const button=element('button',citation.source_id);button.className='secondary';button.onclick=()=>showEvidence(citation.source_id);detail.append(button);});$('claims').append(detail);});
 }
 async function decide(action){
  const run=state.run,pending=run?.pending;if(!pending||!run.status.startsWith('awaiting_'))return;
@@ -62,8 +73,9 @@ async function decide(action){
 }
 async function showEvidence(id){try{$('evidence').textContent=JSON.stringify(await api(`/api/evidence/${encodeURIComponent(id)}`),null,2);$('evidence-panel').hidden=false;$('evidence-panel').scrollIntoView({behavior:'smooth'});}catch(error){message(error.message);}}
 async function loadNotes(){const notes=await api('/api/notes');$('notes').replaceChildren();if(!notes.length)$('notes').append(element('p','No approved notes yet.'));
- notes.forEach(note=>{const detail=element('details');detail.append(element('summary',note.title||note.id),element('p',`Approved version: ${note.payload_hash||note.digest||''}`),element('pre',note.body||JSON.stringify(note)));$('notes').append(detail);});}
+ notes.forEach(note=>{const detail=element('details');detail.append(element('summary',note.title||note.id),element('p',`${note.model_mode==='live'?'Live AI':'Offline'} · approved version: ${note.payload_hash||note.digest||''}`),element('pre',note.body||JSON.stringify(note)));$('notes').append(detail);});}
 $('connect').onclick=connect;$('runs').onchange=()=>{if($('runs').value)selectRun($('runs').value);};
-$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,tickers:['MSFT','AAPL'],years:[2023,2024,2025],strategy:'multi',max_tool_calls:60,max_tokens:100000,learning_split:'production'})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{$('start').disabled=!state.connected;}};
+$('mode').onchange=modeDescription;
+$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const mode=$('mode').value;const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,tickers:['MSFT','AAPL'],years:[2023,2024,2025],strategy:'multi',mode,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,learning_split:'production'})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{$('start').disabled=!state.connected;}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
