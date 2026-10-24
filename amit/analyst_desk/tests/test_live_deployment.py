@@ -181,13 +181,66 @@ def test_profile_switch_refuses_symlink_archive_without_changing_active_policy(p
     assert prep.load_config() == original["config"] and list(outside.iterdir()) == []
 
 
-@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1"])
+@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1"])
 def test_prepared_configuration_accepts_only_exact_reviewed_profile_prices(version):
+    profile = model_profile(version)
     config = {**deepcopy(prep.DEFAULTS), "authorization_id": "b" * 32,
-              "version": version, "models": model_profile(version)["models"]}
+              "version": version, "models": profile["models"], **profile.get("limits", {})}
     assert prep.validate_config(config) == config
     config["models"]["producer"]["completion_usd_per_token"] = "0.00000001"
     with pytest.raises(ValueError, match="model and pricing"):
+        prep.validate_config(config)
+
+
+@pytest.mark.parametrize("prior_limits,expected_limits", [
+    ({"prompt_token_ceiling": 65536, "max_message_bytes": 60000}, {"prompt_token_ceiling": 49152, "max_message_bytes": 45056}),
+    ({"prompt_token_ceiling": 32768, "max_message_bytes": 28000}, {"prompt_token_ceiling": 32768, "max_message_bytes": 28000}),
+])
+def test_large2407_switch_only_tightens_context_and_preserves_original_authority(private, prior_limits, expected_limits):
+    prep.prepare(private)
+    previous = prep.load_config()
+    old_profile = model_profile("live-step10-mistral-v1")
+    previous.update(version=old_profile["version"], models=old_profile["models"], max_output_tokens=2000, **prior_limits)
+    prep.write_private(prep.CONFIG_FILE, json.dumps(previous), 0o444)
+    old_hash = prep.proposal_hash(previous)
+    prep.authorize(old_hash, "Synthetic original live authorization")
+    approved = prep.load_config()
+    approval_bytes, key_bytes = prep.APPROVAL_FILE.read_bytes(), prep.KEY_FILE.read_bytes()
+    ledger = prep.PRIVATE / "ledger-sentinel"
+    ledger.write_bytes(b"existing charges and both uncertain holds")
+
+    result = prep.switch_profile("mistral-large2407", old_hash)
+    current = prep.load_config()
+    assert current["version"] == "live-step10-mistral-large2407-v1" and current["enabled"] is False
+    assert current["authorization_id"] != approved["authorization_id"]
+    assert current["models"]["producer"] == approved["models"]["producer"]
+    assert current["models"]["critic"]["id"] == "mistralai/mistral-large-2407"
+    for key, value in expected_limits.items():
+        assert current[key] == value and current[key] <= approved[key]
+    for key in ("cap_usd", "per_run_usd", "max_calls_per_run", "max_tokens_per_run", "max_output_tokens"):
+        assert current[key] == approved[key]
+    assert current["cap_usd"] == "1.00" and current["per_run_usd"] == "0.50"
+    assert current["max_calls_per_run"] == 12 and current["max_tokens_per_run"] == 250000
+    assert prep.KEY_FILE.read_bytes() == key_bytes and ledger.read_bytes() == b"existing charges and both uncertain holds"
+    assert result["ledger_changed"] is False and result["paid_calls_performed"] == 0
+    assert result["proposal_hash"] != old_hash and not prep.APPROVAL_FILE.exists()
+    archive = next((prep.PRIVATE / "policy_history").iterdir())
+    assert json.loads((archive / "model_config.json").read_text()) == approved
+    assert (archive / "authorization.json").read_bytes() == approval_bytes
+    assert prep.prepare()["config"] == current
+    with pytest.raises(ValueError, match="stale"):
+        prep.authorize(old_hash, "Synthetic old authorization cannot enable replacement")
+
+
+@pytest.mark.parametrize("limits", [
+    {"prompt_token_ceiling": 49153, "max_message_bytes": 45056},
+    {"prompt_token_ceiling": 49153, "max_message_bytes": 45057},
+])
+def test_large2407_preparation_refuses_context_above_reviewed_bounds(limits):
+    profile = model_profile("live-step10-mistral-large2407-v1")
+    config = {**deepcopy(prep.DEFAULTS), "authorization_id": "b" * 32,
+              "version": profile["version"], "models": profile["models"], **limits}
+    with pytest.raises(ValueError, match="reviewed profile limit"):
         prep.validate_config(config)
 
 

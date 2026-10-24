@@ -17,6 +17,14 @@ MODEL_PROFILES = {
         },
         "provider": "mistral/zdr",
     },
+    "live-step10-mistral-large2407-v1": {
+        "models": {
+            "producer": {"id": "mistralai/mistral-medium-3.1", "prompt_usd_per_token": "0.0000004", "completion_usd_per_token": "0.000002"},
+            "critic": {"id": "mistralai/mistral-large-2407", "prompt_usd_per_token": "0.000002", "completion_usd_per_token": "0.000006"},
+        },
+        "provider": "mistral/zdr",
+        "limits": {"prompt_token_ceiling": 49152, "max_message_bytes": 45056},
+    },
 }
 
 

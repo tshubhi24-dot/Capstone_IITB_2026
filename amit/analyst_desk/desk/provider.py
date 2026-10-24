@@ -201,6 +201,8 @@ def validate_config(value):
         profile = model_profile(value)
     except ValueError:
         raise ProviderError("invalid_configuration", "Only a reviewed producing and critic model pair is allowed.") from None
+    if any(value[key] > ceiling for key, ceiling in profile.get("limits", {}).items()):
+        raise ProviderError("invalid_configuration", "The model context exceeds its reviewed profile limit.")
     for role in ("producer", "critic"):
         expected = profile["models"][role]["id"]
         policy = models[role]
@@ -352,6 +354,9 @@ class ReasoningGateway:
         result["models"] = {role: policy["id"] for role, policy in self.profile["models"].items()}
         result["model_profile"] = self.profile["version"]
         result["provider"] = self.profile["provider"]
+        result["policy_hash"] = self.ledger.policy_hash
+        for key in ("prompt_token_ceiling", "max_message_bytes", "max_output_tokens", "max_calls_per_run", "max_tokens_per_run"):
+            result[key] = self.config[key]
         return result
 
     def complete(self, *, run_id, call_id, role, messages, response_schema, max_output_tokens):

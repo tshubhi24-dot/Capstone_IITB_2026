@@ -35,7 +35,7 @@ DEFAULTS = {
     "max_output_tokens": 4096,
     "models": model_profile("live-step6-openrouter-v1")["models"],
 }
-SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1"}
+SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1", "mistral-large2407": "live-step10-mistral-large2407-v1"}
 
 
 def now():
@@ -87,6 +87,8 @@ def validate_config(value):
     for key in ("max_calls_per_run", "max_tokens_per_run", "prompt_token_ceiling", "max_message_bytes", "max_output_tokens"):
         if type(value[key]) is not int or value[key] <= 0:
             raise ValueError("Live call and token limits must be positive integers.")
+    if any(value[key] > ceiling for key, ceiling in profile.get("limits", {}).items()):
+        raise ValueError("The model context exceeds its reviewed profile limit.")
     if value["max_message_bytes"] + 4096 > value["prompt_token_ceiling"]:
         raise ValueError("The prompt reservation must cover message bytes and format overhead.")
     if value["prompt_token_ceiling"] + value["max_output_tokens"] > value["max_tokens_per_run"]:
@@ -195,6 +197,8 @@ def switch_profile(name, expected_hash):
         raise ValueError("This model profile is already prepared; its authorization was not changed.")
     replacement = {**deepcopy(previous), "enabled": False, "authorization_id": uuid.uuid4().hex,
                    "version": profile["version"], "models": profile["models"]}
+    for key, ceiling in profile.get("limits", {}).items():
+        replacement[key] = min(previous[key], ceiling)
     validate_config(replacement)
     approval = None
     if APPROVAL_FILE.is_symlink() or APPROVAL_FILE.exists() and not APPROVAL_FILE.is_file():

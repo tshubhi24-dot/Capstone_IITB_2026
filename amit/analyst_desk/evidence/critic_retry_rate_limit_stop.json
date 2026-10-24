@@ -1,0 +1,28 @@
+{
+  "record_kind": "critic_explicit_retry_rate_limit_stop",
+  "checked_at_utc": "2026-10-24T10:41:48.925663+00:00",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "approved_plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+  "status": "error",
+  "error_code": "provider_http_429",
+  "critic_attempts": 2,
+  "same_model_explicit_retry_exhausted": true,
+  "critic_verdict_available": false,
+  "frozen_body_sha256": "8c23f947656f49cba6694bd749384ab39e7cf30baa9dd42d6534145a147ef677",
+  "observed_tokens": 60185,
+  "model_calls": 11,
+  "provider_reported_cost_usd": "0.0290148",
+  "run_uncertain_holds_usd": "0.071536",
+  "run_gateway_tokens_including_reservations": 195257,
+  "lifetime_budget": {
+    "cap_usd": "1.00",
+    "reported_spend_usd": "0.0296596",
+    "held_usd": "0.2403424",
+    "committed_usd": "0.2700020",
+    "remaining_authorization_usd": "0.7299980"
+  },
+  "old_note_count": 2,
+  "note_approval_recorded": false,
+  "live_note_published": false,
+  "next_step": "One separately controlled supported critic policy replacement may fit the remaining original call/token limits; no automatic retry."
+}

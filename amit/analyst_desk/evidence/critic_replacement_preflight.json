@@ -1,0 +1,19 @@
+{
+  "checked_at_utc": "2026-10-24T10:41:08.083333+00:00",
+  "generation_requests": 0,
+  "catalogue_url": "https://openrouter.ai/api/v1/models/user",
+  "model_listed": true,
+  "model_id": "mistralai/mistral-large-2407",
+  "payload_measurement_only": true,
+  "role": "critic",
+  "request_bytes": 23285,
+  "max_output_tokens": 2000,
+  "cited_records": 19,
+  "claims": 7,
+  "message_byte_limit": 45056,
+  "prompt_token_ceiling": 49152,
+  "reservation_tokens": 51152,
+  "existing_reserved_and_observed_tokens": 195257,
+  "worst_case_run_tokens": 246409,
+  "original_run_token_cap": 250000
+}

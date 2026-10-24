@@ -1,0 +1,279 @@
+{
+  "checked_at_utc": "2026-10-24T10:29:10.860756+00:00",
+  "generation_requests": 0,
+  "models": [
+    {
+      "id": "mistralai/mistral-large-2407",
+      "source": "https://openrouter.ai/api/v1/models/mistralai/mistral-large-2407/endpoints",
+      "endpoints": [
+        {
+          "tag": "mistral/zdr",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.000002",
+            "completion": "0.000006",
+            "input_cache_read": "0.0000002",
+            "discount": 0
+          },
+          "context_length": 131072,
+          "max_completion_tokens": 104857,
+          "supported_parameters": [
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice"
+          ],
+          "status": 0
+        },
+        {
+          "tag": "mistral",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.000002",
+            "completion": "0.000006",
+            "input_cache_read": "0.0000002",
+            "discount": 0
+          },
+          "context_length": 131072,
+          "max_completion_tokens": 104857,
+          "supported_parameters": [
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice"
+          ],
+          "status": 0
+        },
+        {
+          "tag": "mistral/eu",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.0000022",
+            "completion": "0.0000066",
+            "input_cache_read": "0.00000022",
+            "discount": 0
+          },
+          "context_length": 131072,
+          "max_completion_tokens": 104857,
+          "supported_parameters": [
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice"
+          ],
+          "status": 0
+        }
+      ]
+    },
+    {
+      "id": "mistralai/mistral-medium-3-5",
+      "source": "https://openrouter.ai/api/v1/models/mistralai/mistral-medium-3-5/endpoints",
+      "endpoints": [
+        {
+          "tag": "mistral/zdr",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.0000015",
+            "completion": "0.0000075",
+            "discount": 0
+          },
+          "context_length": 262144,
+          "max_completion_tokens": 209715,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0
+        },
+        {
+          "tag": "mistral",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.0000015",
+            "completion": "0.0000075",
+            "discount": 0
+          },
+          "context_length": 262144,
+          "max_completion_tokens": 209715,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0
+        },
+        {
+          "tag": "mistral/eu",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.00000165",
+            "completion": "0.00000825",
+            "discount": 0
+          },
+          "context_length": 262144,
+          "max_completion_tokens": 209715,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "reasoning_effort"
+          ],
+          "status": 0
+        }
+      ]
+    },
+    {
+      "id": "mistralai/mistral-large-4-0",
+      "source": "https://openrouter.ai/api/v1/models/mistralai/mistral-large-4-0/endpoints",
+      "endpoints": [
+        {
+          "tag": "mistral/zdr",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.00000136",
+            "completion": "0.00000418",
+            "input_cache_read": "0.00000014",
+            "discount": 0
+          },
+          "context_length": 1048576,
+          "max_completion_tokens": 262144,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "logprobs",
+            "top_logprobs",
+            "reasoning_effort"
+          ],
+          "status": 0
+        },
+        {
+          "tag": "mistral",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.00000136",
+            "completion": "0.00000418",
+            "input_cache_read": "0.00000014",
+            "discount": 0
+          },
+          "context_length": 1048576,
+          "max_completion_tokens": 262144,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "logprobs",
+            "top_logprobs",
+            "reasoning_effort"
+          ],
+          "status": -2
+        },
+        {
+          "tag": "mistral/eu",
+          "provider_name": "Mistral",
+          "pricing": {
+            "prompt": "0.000001496",
+            "completion": "0.000004598",
+            "input_cache_read": "0.000000154",
+            "discount": 0
+          },
+          "context_length": 524288,
+          "max_completion_tokens": 262144,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "frequency_penalty",
+            "presence_penalty",
+            "seed",
+            "response_format",
+            "structured_outputs",
+            "tools",
+            "tool_choice",
+            "logprobs",
+            "top_logprobs",
+            "reasoning_effort"
+          ],
+          "status": 0
+        }
+      ]
+    }
+  ]
+}

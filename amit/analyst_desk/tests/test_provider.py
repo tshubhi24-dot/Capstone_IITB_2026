@@ -128,9 +128,81 @@ def test_model_profiles_return_independent_copies_and_preserve_legacy_versions(c
     assert profile["version"] == "live-step6-openrouter-v1" and profile["provider"] == "openai"
     profile["models"]["producer"]["id"] = "unapproved"
     assert model_profile(config)["models"]["producer"]["id"] == "openai/gpt-4.1-mini"
-    assert set(MODEL_PROFILES) == {"live-step6-openrouter-v1", "live-step10-mistral-v1"}
+    assert set(MODEL_PROFILES) == {"live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1"}
     with pytest.raises(ValueError):
         model_profile("unapproved")
+
+
+def test_large2407_profile_preserves_producer_route_and_exposes_frozen_budget_policy(tmp_path, config):
+    profile = model_profile("live-step10-mistral-large2407-v1")
+    revised = {**config, "version": profile["version"], "models": profile["models"], **profile["limits"]}
+    engine, calls = gateway(tmp_path, revised)
+    engine.complete(**arguments(role="critic", call_id="large2407-critic"))
+    payload = json.loads(calls[0].content)
+    assert profile["models"]["producer"] == model_profile("live-step10-mistral-v1")["models"]["producer"]
+    assert payload["model"] == "mistralai/mistral-large-2407"
+    assert payload["provider"] == {"only": ["mistral/zdr"], "allow_fallbacks": False, "require_parameters": True,
+                                   "data_collection": "deny", "max_price": {"prompt": 2.0, "completion": 6.0}}
+    summary = engine.budget("run-one")
+    assert summary["policy_hash"] == engine.ledger.policy_hash
+    assert summary["model_profile"] == profile["version"]
+    for key in ("prompt_token_ceiling", "max_message_bytes", "max_output_tokens", "max_calls_per_run", "max_tokens_per_run"):
+        assert summary[key] == revised[key]
+    disabled = ReasoningGateway({**revised, "enabled": False}, tmp_path / "ledger.sqlite", KEY)
+    assert disabled.budget("run-one")["policy_hash"] == summary["policy_hash"]
+    assert KEY not in json.dumps(summary)
+
+
+@pytest.mark.parametrize("field,excess", [("prompt_token_ceiling", 49153), ("max_message_bytes", 45057)])
+def test_large2407_gateway_refuses_context_above_reviewed_limit(tmp_path, config, field, excess):
+    profile = model_profile("live-step10-mistral-large2407-v1")
+    revised = {**config, "version": profile["version"], "models": profile["models"], **profile["limits"], field: excess}
+    if field == "max_message_bytes":
+        # Keep generic formatting overhead valid so the reviewed bound is tested.
+        revised["max_message_bytes"] = 45057
+        revised["prompt_token_ceiling"] = 49153
+    with pytest.raises(ProviderError) as error:
+        gateway(tmp_path, revised)
+    assert error.value.code == "invalid_configuration"
+
+
+def test_tightened_final_critic_reservation_preserves_original_twelve_call_token_limit_and_holds(tmp_path, config):
+    old_profile = model_profile("live-step10-mistral-v1")
+    original = {**config, "version": old_profile["version"], "models": old_profile["models"],
+                "max_calls_per_run": 12, "max_tokens_per_run": 250000, "prompt_token_ceiling": 65536,
+                "max_message_bytes": 60000, "max_output_tokens": 2000}
+    path = tmp_path / "same-run.sqlite"
+    ledger = BudgetLedger(path, original)
+    for index, total_tokens in enumerate([6000] * 8 + [12185]):
+        ledger.reserve("same-run", f"settled-{index}", f"hash-{index}", Decimal(".04"), 67536)
+        ledger.settle(f"settled-{index}", {"cost_usd": ".001", "total_tokens": total_tokens}, {"content": "Synthetic result"})
+    for index in range(2):
+        ledger.reserve("same-run", f"uncertain-{index}", f"uncertain-hash-{index}", Decimal(".035768"), 67536)
+        ledger.uncertain(f"uncertain-{index}", "provider_http_429")
+    previous = ledger.summary("same-run")
+    assert previous["tokens"] == 195257 and previous["model_calls"] == 11 and previous["uncertain_calls"] == 2
+
+    profile = model_profile("live-step10-mistral-large2407-v1")
+    revised = {**original, "authorization_id": "final-critic-policy", "version": profile["version"],
+               "models": profile["models"], **profile["limits"]}
+    engine = ReasoningGateway(revised, path, KEY)
+    with pytest.raises(ProviderError) as oversized:
+        engine.ledger.reserve("same-run", "oversized-final", "oversized-hash", Decimal(".110304"), 67536)
+    assert oversized.value.code == "run_limit_exhausted"
+    engine.ledger.reserve("same-run", "final-critic", "final-hash", Decimal(".110304"),
+                          revised["prompt_token_ceiling"] + revised["max_output_tokens"])
+    current = engine.budget("same-run")
+    assert current["tokens"] == 246409 and current["model_calls"] == 12 and current["uncertain_calls"] == 2
+    assert current["max_tokens_per_run"] == 250000 and current["max_calls_per_run"] == 12
+    assert current["cap_usd"] == "1.00" and Decimal(current["per_run_usd"]) == Decimal(".50")
+    with pytest.raises(ProviderError) as thirteenth:
+        engine.ledger.reserve("same-run", "thirteenth-call", "thirteenth-hash", Decimal(".000001"), 1)
+    assert thirteenth.value.code == "run_limit_exhausted"
+    with engine.ledger.connection() as db:
+        holds = db.execute("SELECT authorization_id,status,reserved_tokens,reserved_usd,error_code FROM model_calls WHERE call_id LIKE 'uncertain-%' ORDER BY call_id").fetchall()
+        original_policy = db.execute("SELECT policy_hash FROM authorization WHERE id=?", (original["authorization_id"],)).fetchone()[0]
+    assert [tuple(row) for row in holds] == [(original["authorization_id"], "uncertain", 67536, "0.035768", "provider_http_429")] * 2
+    assert original_policy == ledger.policy_hash and current["policy_hash"] != original_policy
 
 
 @pytest.mark.parametrize("failure", ["mixed_pair", "unreviewed_model", "price_increase", "mismatched_version"])

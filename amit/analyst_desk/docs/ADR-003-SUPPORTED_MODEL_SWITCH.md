@@ -1,6 +1,6 @@
 # ADR-003: supported replacement models within the original spending cap
 
-**Status:** implemented; actual replacement journey stopped at writer validation, final note review pending
+**Status:** writer output verified; two critic rate-limit stops retained; final supported critic policy prepared
 
 **Date:** 24 October 2026
 **Decision basis:** Bounded replacement model profiles preserve the existing spending authorization, source validation and separate human review gates.
@@ -57,3 +57,13 @@ Implement and commit in separate steps: cumulative ledger/profile support; priva
 - [Mistral partner-served deployment terms](https://legal.mistral.ai/terms/partner-served-deployment-terms/)
 
 Observed endpoint metadata is recorded in `evidence/model_switch_preparation.json`. Runtime receipts will establish what actually worked.
+
+## Step 10n: a bounded replacement after critic capacity failures
+
+The corrected writer passed local checks, including all eighteen financial values. Large 3 then returned HTTP 429 twice: the original critic request and one explicit retry. Neither produced an AI verdict. Both uncertain reservations remain, and the same-model retry path is exhausted. These capacity failures are distinct from the earlier refused route; that route remains stopped.
+
+Prepare a separate reviewed profile with the same Medium 3.1 producer and `mistralai/mistral-large-2407` critic, pinned to `mistral/zdr`. The authenticated account catalogue lists this critic; its [public endpoint metadata](https://openrouter.ai/api/v1/models/mistralai/mistral-large-2407/endpoints) advertises structured outputs, a 131,072-token context and input/output ceilings of US$2/US$6 per million tokens. Selection remains within the existing model-selection and spending authorization. No new spending grant or exact-model human review is claimed.
+
+Tighten the prompt reservation ceiling to 49,152 tokens and the combined message/schema limit to 45,056 bytes. The exact unchanged critic payload measures 23,285 bytes, contains seven claims and nineteen full cited evidence records, and requires no truncation. With 2,000 output tokens, the final reservation is 51,152 tokens and at most US$0.110304. The run already accounts for 195,257 tokens including both failed-call holds; the worst total is 246,409 tokens and twelve calls, within its original limits. Earlier reservations cannot be released or replaced to make room.
+
+The profile switch archives the old private policy and stages a fresh disabled policy ID. Activation and the subsequent critic-only continuation are separate operations. The controller must bind that continuation to the deployed ledger policy hash, unchanged approved plan, frozen draft and failed checkpoint, allow it only once, and retain all prior accounting. A passing internal critic still requires separate human note approval. Catalogue and payload checks are recorded in `evidence/critic_replacement_catalogue.json` and `evidence/critic_replacement_preflight.json`; these checks made no generation request.
