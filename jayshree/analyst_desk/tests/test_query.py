@@ -26,6 +26,14 @@ class DecomposeTests(unittest.TestCase):
         self.assertEqual([(s.company, s.year) for s in subs],
                          [("MSFT", 2023), ("MSFT", 2024), ("GOOGL", 2023), ("GOOGL", 2024)])
 
+    def test_rewrite_strips_names_tickers_and_years(self):
+        subs = decompose("What was Goldman Sachs' provision for credit losses in FY2023?")
+        self.assertEqual(subs[0].text, "What was provision for credit losses in")
+        self.assertEqual(decompose("JPM vs GS fiscal year 2024 fees")[0].text, "vs fees")
+
+    def test_rewrite_keeps_question_if_nothing_left(self):
+        self.assertEqual(decompose("Microsoft 2024")[0].text, "Microsoft 2024")
+
     def test_no_company_searches_question_as_is(self):
         subs = decompose("What are the main cybersecurity risks?")
         self.assertEqual([(s.company, s.year) for s in subs], [(None, None)])

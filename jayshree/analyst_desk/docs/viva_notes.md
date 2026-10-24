@@ -199,6 +199,8 @@ Each passage is turned into an embedding with `all-MiniLM-L6-v2`, a small local 
 
 **Why.** Searched as one query, all five results can come from one company, leaving the other with no evidence. Round-robin guarantees every company and year named gets evidence.
 
+**Rewrite.** Each sub-query has the company name, ticker and year removed ("What was Goldman Sachs' provision for credit losses in 2023?" becomes "What was provision for credit losses in"), because the metadata filter already covers them. See 3.8 for why this matters.
+
 **Why code, not an LLM?** Company names and years can be found exactly from our supported list. That makes it deterministic, free and unit-tested (rule 1). An LLM technique such as HyDE can be compared later.
 
 ### 3.6 Engineering fixes made along the way
@@ -228,7 +230,49 @@ Each passage is turned into an embedding with `all-MiniLM-L6-v2`, a small local 
 
 ### 3.8 Results and what they mean
 
-*(to be completed after the evaluation run)*
+**Final numbers** (Recall@5, 36 queries, v2 labels). Full table: [retrieval_eval.md](retrieval_eval.md).
+
+| Step added | Table-aware passages | Plain passages |
+|---|---|---|
+| BM25 only | 0.361 | 0.472 |
+| Vector only | 0.264 | 0.417 |
+| Hybrid (RRF) | 0.389 | 0.472 |
+| + cross-encoder reranker | 0.472 | 0.514 |
+| + decomposition (filters only) | 0.792 | 0.778 |
+| + sub-query rewrite | **0.903** | **0.944** |
+
+**The "before and after one change" required by the minimum bar.** Adding decomposition with rewrite to hybrid+rerank raised Recall@5 from **0.472 to 0.903** (table-aware). That is our query-side technique.
+
+**What each step teaches you (say these in the viva):**
+
+1. **Hybrid beats either method alone.** BM25 and vectors find different things, and RRF keeps the best of both.
+2. **Vectors are weakest on numbers.** A small embedding model doesn't "understand" that 201,183 is iPhone revenue. Exact-match search (BM25) and metadata filters matter more for financial look-ups.
+3. **The reranker helps** (+0.08), but it's the slowest step: about 0.7–1 s per query on CPU against about 0.06 s without it.
+4. **Decomposition is the biggest single gain** (+0.32). Most questions name a company and a year. Filtering on that metadata removes thousands of wrong passages before ranking even starts.
+5. **Rewrite adds another +0.11.** Inside a filtered search, the company name and year in the query match the footer on every page ("Goldman Sachs 2023 Form 10-K"), which drowns out the topic. Stripping them lets the real topic words count. We found this by tracing a failure step by step, not by trial and error.
+
+**Table-aware vs plain (the E4 question).** On this set, table-aware parsing did **not** improve Recall@5 (0.903 vs 0.944):
+- On table questions both reach 1.000.
+- The gap is entirely in the 5 comparison queries (0.5 vs 0.8), which is 3 targets out of 10. That is too small a sample to claim either way.
+- Honest reading: table-aware parsing doesn't make passages easier to *find*. Its value is that a found table is *usable*: every number keeps its row and column label, so a number can be cited as a specific cell and checked by code (signature challenge A).
+- Recall@5 doesn't measure that. E4 should therefore also be measured downstream: the share of numbers in a generated note that are correct and correctly labelled, with table-aware vs plain passages.
+
+**Two caveats you must volunteer:**
+
+1. **Labels were revised after the first run.** The first run's results are saved in `data/evaluation/results/`, and the original labels in `retrieval_queries_v1.jsonl`. The revision followed one rule, applied to all 36 queries rather than only the failing ones:
+   - A target matches on company, year and evidence, without requiring a particular Item. The same fact legitimately appears in both Item 1A and Item 7.
+   - A figure in millions also accepts its rounded billions form (`1,028` → `1.03 billion`), because the prose states figures that way.
+   - Two abbreviation and paraphrase additions (DMA, export rule).
+
+   Every relaxation came from reading a "miss" that actually *was* a correct answer. Example: the retriever found "Provision for credit losses was $1.03 billion", but the label only accepted "1,028".
+2. **This is development data.** The labels were drafted with AI help, and I tuned retrieval while looking at them. A teammate (role 5) should write a fresh held-out retrieval set to confirm the numbers.
+
+**First-run (v1) numbers, for the record:** best configuration 0.653 (table) / 0.694 (plain), before the label rule and the rewrite.
+
+**Likely questions:**
+- *"Isn't changing labels after seeing results cheating?"* It would be if we only relaxed the failing ones, or if this were the held-out set. We applied one written rule to every query, kept the original labels and results, and the held-out check is still to be done by someone who didn't tune the system.
+- *"Why is the reranker so slow?"* It runs a transformer on each (query, passage) pair: 50 pairs per query, on CPU. A GPU or a smaller candidate pool would cut it.
+- *"Why does decomposition help so much?"* Metadata filtering. "Goldman Sachs 2023" narrows about 12,600 passages down to about 560 before any ranking happens.
 
 ---
 

@@ -1,0 +1,5318 @@
+{
+  "table/bm25": {
+    "recall@5": 0.361,
+    "by_type": {
+      "comparison": 0.4,
+      "table": 0.214,
+      "text": 0.471
+    },
+    "seconds_per_query": 0.027,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2024_item7_001",
+          "AAPL_2022_item7_002",
+          "AAPL_2023_item7_002",
+          "AAPL_2022_item7_001",
+          "AAPL_2022_item7_010"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2022_item7_010",
+          "AAPL_2024_item7_006",
+          "AAPL_2023_item7_009",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item7_005"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_033",
+          "NVDA_2024_item7_034",
+          "NVDA_2023_item7_033",
+          "NVDA_2024_item7_036",
+          "NVDA_2024_item7_035"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_004",
+          "NVDA_2024_item7_016",
+          "ORCL_2024_item7_070",
+          "MSFT_2024_item7_027",
+          "NVDA_2023_item7_030"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2023_item7_061",
+          "META_2024_item7_040",
+          "META_2022_item7_068",
+          "META_2024_item7_041",
+          "META_2023_item7_050"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_081",
+          "GS_2023_item7_039",
+          "GS_2024_item7_039",
+          "GS_2023_item7_059",
+          "GS_2023_item7_144"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_144",
+          "GS_2023_item7_046",
+          "GS_2023_item7_102",
+          "GS_2022_item7_047",
+          "GS_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_015",
+          "WFC_2024_item7_215",
+          "WFC_2023_item7_021",
+          "WFC_2022_item7_021",
+          "WFC_2024_item7_018"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017",
+          "MSFT_2023_item7_014",
+          "MSFT_2022_item7_017",
+          "MSFT_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_113",
+          "JPM_2024_item7_012",
+          "JPM_2024_item7_105",
+          "BAC_2024_item7_081",
+          "JPM_2023_item7_114"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_007",
+          "AMD_2024_item7_023"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_078",
+          "ORCL_2023_item7_077",
+          "ORCL_2022_item7_074",
+          "ORCL_2023_item7_055",
+          "ORCL_2024_item7_066"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_009",
+          "NVDA_2024_item7_042",
+          "NVDA_2024_item7_037",
+          "AMD_2024_item7_006",
+          "JPM_2024_item7_392"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_020",
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_021",
+          "MSFT_2022_item7_022",
+          "MSFT_2024_item7_017"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_045",
+          "MSFT_2023_item1a_041",
+          "META_2023_item1a_029",
+          "MSFT_2024_item7_018",
+          "AMD_2023_item1a_066"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2022_item1a_094",
+          "GOOGL_2024_item1a_082",
+          "GOOGL_2024_item1a_065",
+          "META_2022_item1a_095",
+          "META_2023_item1a_104"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2022_item7_035",
+          "GOOGL_2022_item7_018",
+          "GOOGL_2024_item7_011"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2023_item1a_017",
+          "AAPL_2022_item1a_020",
+          "AAPL_2023_item1a_020",
+          "AAPL_2023_item1a_019"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2022_item7_006",
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_207",
+          "WFC_2024_item7_003",
+          "WFC_2023_item7_003"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_020",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_148",
+          "JPM_2023_item7_004"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item1a_130",
+          "META_2024_item1a_146",
+          "META_2024_item1a_145",
+          "META_2023_item1a_141",
+          "META_2023_item1a_007"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2023_item7_006",
+          "MS_2023_item7_000",
+          "MS_2024_item7_000",
+          "MS_2024_item7_007"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2024_item7_051",
+          "NVDA_2024_item7_013",
+          "ORCL_2024_item1a_047",
+          "ORCL_2022_item1a_049",
+          "ORCL_2024_item7_082"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_013",
+          "V_2022_item1a_012",
+          "V_2022_item1a_005",
+          "V_2022_item1a_007",
+          "V_2024_item1a_000"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2022_item7_016",
+          "V_2024_item1a_063",
+          "NVDA_2024_item1a_077",
+          "GS_2022_item7_352",
+          "GS_2022_item1a_148"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_002",
+          "AMD_2024_item7_001",
+          "AMD_2023_item7_003",
+          "AMD_2023_item7_007"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2023_item7_151",
+          "BAC_2024_item7_255",
+          "GS_2024_item7_294",
+          "BAC_2022_item7_160",
+          "BAC_2023_item7_307"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_006",
+          "GS_2023_item7_006",
+          "GS_2024_item7_214",
+          "GS_2023_item7_007",
+          "GS_2023_item7_085"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_003",
+          "WFC_2023_item7_045",
+          "WFC_2024_item7_038",
+          "WFC_2022_item7_044",
+          "MSFT_2024_item7_009"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_003",
+          "JPM_2024_item7_073",
+          "WFC_2023_item7_045",
+          "WFC_2024_item7_038",
+          "META_2022_item7_006"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_081",
+          "NVDA_2024_item1a_082"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_011",
+          "ORCL_2024_item7_066",
+          "MSFT_2022_item7_022",
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_034"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_081",
+          "GS_2023_item7_059",
+          "GS_2022_item7_039",
+          "GS_2023_item7_039",
+          "GS_2022_item7_059"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "V_2024_item7_028",
+          "V_2024_item7_030",
+          "V_2024_item7_032",
+          "META_2024_item7_053",
+          "V_2024_item7_025"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "NVDA_2024_item1a_073",
+          "MSFT_2024_item1a_055",
+          "GOOGL_2023_item1a_060",
+          "MS_2023_item7_004",
+          "AAPL_2022_item1a_063"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_014",
+          "AMD_2024_item7_001",
+          "NVDA_2023_item7_012",
+          "AMD_2024_item7_023",
+          "NVDA_2024_item7_015"
+        ]
+      }
+    ]
+  },
+  "table/vector": {
+    "recall@5": 0.264,
+    "by_type": {
+      "comparison": 0.1,
+      "table": 0.143,
+      "text": 0.412
+    },
+    "seconds_per_query": 0.01,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2024_item7_010",
+          "AAPL_2022_item7_001",
+          "AAPL_2024_item7_005",
+          "AAPL_2022_item7_005",
+          "AAPL_2023_item7_015"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2022_item7_012",
+          "AAPL_2023_item7_011",
+          "AAPL_2024_item7_007",
+          "AAPL_2024_item7_006",
+          "AAPL_2023_item7_010"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_033",
+          "NVDA_2024_item7_034",
+          "NVDA_2023_item7_029",
+          "NVDA_2023_item7_030",
+          "NVDA_2022_item7_032"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2023_item7_065",
+          "NVDA_2022_item7_014",
+          "META_2023_item7_066",
+          "META_2022_item7_073",
+          "META_2024_item7_055"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2022_item7_003",
+          "MSFT_2022_item7_051",
+          "NVDA_2022_item7_032",
+          "NVDA_2023_item7_029",
+          "MSFT_2024_item7_050"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2022_item7_039",
+          "GS_2024_item7_081",
+          "GS_2024_item7_133",
+          "GS_2023_item7_039",
+          "GS_2022_item7_047"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2022_item7_047",
+          "GS_2023_item7_046",
+          "GS_2023_item7_144",
+          "GS_2024_item7_144",
+          "BAC_2023_item7_264"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2024_item7_075",
+          "WFC_2024_item7_063",
+          "WFC_2023_item7_071",
+          "WFC_2022_item7_085",
+          "WFC_2022_item7_071"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_002",
+          "MSFT_2024_item7_001",
+          "MSFT_2022_item7_021",
+          "MSFT_2023_item7_023",
+          "MSFT_2022_item7_017"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_113",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_012",
+          "JPM_2024_item7_102"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_023",
+          "AMD_2023_item7_025",
+          "AMD_2022_item7_031",
+          "AMD_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2022_item7_050",
+          "ORCL_2022_item7_074",
+          "ORCL_2022_item7_079",
+          "AMD_2023_item7_033",
+          "ORCL_2023_item7_078"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2023_item7_031",
+          "AMD_2022_item7_038",
+          "META_2022_item7_081",
+          "NVDA_2024_item7_041",
+          "AMD_2024_item7_029"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_020",
+          "NVDA_2024_item7_033",
+          "MSFT_2022_item7_021",
+          "MSFT_2022_item7_017",
+          "MSFT_2023_item7_023"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_001",
+          "MSFT_2023_item1a_013",
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_045",
+          "GOOGL_2023_item1a_005"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2022_item1a_054",
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2022_item1a_055"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_053"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2023_item1a_018",
+          "AAPL_2023_item1a_004",
+          "AAPL_2022_item7_003",
+          "AAPL_2022_item7_022"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2022_item7_301",
+          "WFC_2023_item7_301",
+          "WFC_2024_item1a_037",
+          "WFC_2023_item7_002",
+          "WFC_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item1a_104",
+          "JPM_2024_item7_268",
+          "JPM_2024_item1a_002",
+          "JPM_2023_item7_004"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "META_2024_item1a_145",
+          "META_2024_item1a_146",
+          "META_2022_item1a_129",
+          "META_2022_item1a_130",
+          "META_2023_item1a_142"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_100",
+          "MS_2024_item7_012",
+          "MS_2024_item7_006",
+          "MS_2023_item7_006",
+          "GS_2022_item7_109"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2024_item7_001",
+          "ORCL_2022_item7_050",
+          "ORCL_2022_item7_001",
+          "ORCL_2023_item7_001",
+          "ORCL_2023_item1a_065"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "V_2024_item1a_011",
+          "V_2022_item1a_007",
+          "V_2023_item1a_010",
+          "MA_2022_item1a_006",
+          "V_2024_item1a_008"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item7_005",
+          "MA_2022_item1a_071",
+          "MA_2022_item7_003",
+          "V_2022_item7_003",
+          "V_2024_item1a_063"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_007",
+          "NVDA_2024_item7_034"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_243",
+          "BAC_2024_item1a_006",
+          "BAC_2024_item7_255",
+          "BAC_2023_item7_259",
+          "BAC_2023_item1a_007"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_214",
+          "GS_2023_item7_006",
+          "GS_2024_item7_006",
+          "GS_2024_item7_045",
+          "GS_2024_item7_215"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "AMZN_2022_item7_061",
+          "AMZN_2024_item7_059",
+          "AMZN_2023_item7_058",
+          "AAPL_2024_item7_000",
+          "AMZN_2024_item7_027"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item7_030",
+          "MSFT_2023_item7_011",
+          "AAPL_2024_item7_017",
+          "AMD_2022_item7_029",
+          "JPM_2023_item7_023"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item1a_092",
+          "NVDA_2024_item1a_091",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_083",
+          "NVDA_2024_item1a_081"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2024_item7_040",
+          "GOOGL_2022_item7_028",
+          "GOOGL_2023_item7_051",
+          "MSFT_2023_item7_024",
+          "MSFT_2022_item7_022"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_113",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_012",
+          "JPM_2022_item7_099"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MA_2022_item7_000",
+          "MA_2022_item7_045",
+          "MA_2024_item7_000",
+          "MA_2022_item7_001",
+          "MA_2023_item7_000"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_055",
+          "GOOGL_2022_item1a_000",
+          "MS_2024_item1a_045",
+          "MSFT_2024_item1a_058",
+          "MSFT_2023_item1a_051"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "NVDA_2022_item7_010",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_013",
+          "NVDA_2023_item7_009",
+          "AMD_2024_item7_023"
+        ]
+      }
+    ]
+  },
+  "table/hybrid": {
+    "recall@5": 0.389,
+    "by_type": {
+      "comparison": 0.2,
+      "table": 0.214,
+      "text": 0.588
+    },
+    "seconds_per_query": 0.06,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2022_item7_001",
+          "AAPL_2024_item7_001",
+          "AAPL_2024_item7_005",
+          "AAPL_2022_item7_005",
+          "AAPL_2023_item7_008"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2024_item7_006",
+          "AAPL_2022_item7_010",
+          "AAPL_2023_item7_009",
+          "AAPL_2024_item7_008",
+          "AAPL_2023_item7_010"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_033",
+          "NVDA_2024_item7_034",
+          "NVDA_2024_item7_036",
+          "NVDA_2024_item7_013",
+          "NVDA_2023_item7_033"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_027",
+          "NVDA_2022_item7_014",
+          "NVDA_2024_item7_016",
+          "NVDA_2023_item7_030",
+          "MSFT_2023_item7_031"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "META_2023_item7_061",
+          "NVDA_2022_item7_034",
+          "META_2022_item7_003",
+          "META_2022_item7_065",
+          "META_2023_item7_062"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_081",
+          "GS_2023_item7_039",
+          "GS_2022_item7_039",
+          "GS_2024_item7_039",
+          "GS_2023_item7_143"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2023_item7_144",
+          "GS_2023_item7_046",
+          "GS_2022_item7_047",
+          "GS_2024_item7_081",
+          "GS_2022_item7_153"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_018",
+          "WFC_2024_item7_075",
+          "WFC_2024_item7_015",
+          "WFC_2022_item7_021",
+          "WFC_2024_item7_063"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_020",
+          "MSFT_2022_item7_017",
+          "MSFT_2023_item7_014",
+          "MSFT_2024_item7_012",
+          "MSFT_2023_item7_002"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_113",
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_012",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_017"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_023",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_025"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2022_item7_074",
+          "ORCL_2023_item7_078",
+          "ORCL_2023_item7_077",
+          "ORCL_2022_item7_050",
+          "ORCL_2024_item7_064"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item7_041",
+          "NVDA_2023_item7_026",
+          "MSFT_2024_item7_034",
+          "ORCL_2022_item7_099",
+          "JPM_2024_item7_025"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_020",
+          "MSFT_2022_item7_021",
+          "MSFT_2023_item7_023",
+          "MSFT_2022_item7_017",
+          "MSFT_2022_item7_022"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_045",
+          "MSFT_2023_item1a_041",
+          "MSFT_2024_item7_018",
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item7_001"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_061",
+          "AAPL_2023_item1a_059",
+          "AAPL_2024_item1a_061",
+          "GOOGL_2023_item1a_060"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2023_item1a_053",
+          "GOOGL_2023_item1a_061"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2023_item1a_004",
+          "AAPL_2023_item1a_019",
+          "AAPL_2023_item1a_018",
+          "AAPL_2022_item7_022"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_207",
+          "WFC_2024_item1a_037",
+          "WFC_2022_item7_006",
+          "WFC_2023_item7_002"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_004",
+          "JPM_2023_item7_020",
+          "JPM_2023_item7_148"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item1a_145",
+          "META_2024_item1a_146",
+          "META_2022_item1a_130",
+          "META_2022_item1a_129",
+          "META_2023_item1a_141"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2023_item7_006",
+          "MS_2024_item7_012",
+          "MS_2022_item7_006",
+          "MS_2024_item7_007"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2022_item7_050",
+          "ORCL_2023_item7_078",
+          "ORCL_2024_item7_000",
+          "ORCL_2022_item7_097",
+          "ORCL_2022_item1a_065"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2022_item1a_007",
+          "V_2022_item1a_005",
+          "V_2024_item1a_008",
+          "V_2022_item1a_012",
+          "V_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item1a_063",
+          "MA_2022_item1a_071",
+          "GS_2022_item7_352",
+          "MA_2022_item7_003",
+          "MA_2022_item7_005"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_007",
+          "AMD_2022_item7_003"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_255",
+          "BAC_2023_item1a_008",
+          "BAC_2022_item7_317",
+          "BAC_2023_item1a_055",
+          "BAC_2023_item7_259"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_006",
+          "GS_2024_item7_214",
+          "GS_2023_item7_006",
+          "GS_2023_item7_007",
+          "GS_2024_item7_045"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_011",
+          "AMZN_2022_item7_061",
+          "MSFT_2024_item7_009",
+          "AMZN_2023_item7_058",
+          "NVDA_2024_item7_030"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_011",
+          "WFC_2024_item7_038",
+          "NVDA_2024_item7_030",
+          "MSFT_2024_item7_009",
+          "NVDA_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_081",
+          "NVDA_2024_item1a_091",
+          "NVDA_2024_item1a_082"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2022_item7_022",
+          "MSFT_2024_item7_011",
+          "MSFT_2023_item7_020",
+          "MSFT_2023_item7_002",
+          "MSFT_2022_item7_002"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_113",
+          "GS_2024_item7_081",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MA_2022_item7_000",
+          "MA_2024_item7_042",
+          "MA_2022_item7_001",
+          "JPM_2024_item7_083",
+          "MA_2024_item7_026"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MSFT_2024_item1a_055",
+          "NVDA_2024_item1a_073",
+          "GOOGL_2023_item1a_060",
+          "MSFT_2023_item1a_049",
+          "MSFT_2022_item1a_046"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_023",
+          "NVDA_2024_item7_013",
+          "NVDA_2023_item7_012",
+          "NVDA_2023_item7_009"
+        ]
+      }
+    ]
+  },
+  "table/hybrid+rerank": {
+    "recall@5": 0.472,
+    "by_type": {
+      "comparison": 0.2,
+      "table": 0.357,
+      "text": 0.647
+    },
+    "seconds_per_query": 0.73,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item7_001",
+          "AAPL_2024_item7_010",
+          "AAPL_2024_item7_004",
+          "AAPL_2023_item7_008",
+          "AAPL_2023_item7_007"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2023_item7_009",
+          "AAPL_2024_item7_005",
+          "AAPL_2024_item7_006",
+          "AAPL_2022_item7_010",
+          "AAPL_2023_item7_010"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_033",
+          "NVDA_2024_item7_034",
+          "NVDA_2024_item7_013",
+          "NVDA_2023_item7_030",
+          "NVDA_2024_item7_036"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_030",
+          "META_2024_item7_056",
+          "NVDA_2022_item7_014",
+          "NVDA_2023_item7_009",
+          "META_2024_item7_055"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2022_item7_069",
+          "META_2022_item7_003",
+          "META_2023_item7_003",
+          "META_2023_item7_062",
+          "META_2023_item7_061"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_081",
+          "GS_2022_item7_039",
+          "GS_2023_item7_144",
+          "GS_2023_item7_079",
+          "GS_2024_item7_133"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2022_item7_047",
+          "GS_2023_item7_046",
+          "GS_2023_item7_006",
+          "GS_2024_item7_006",
+          "GS_2023_item7_144"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_015",
+          "WFC_2023_item7_021",
+          "WFC_2022_item7_021",
+          "WFC_2024_item7_018",
+          "WFC_2024_item7_075"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_021",
+          "MSFT_2023_item7_024",
+          "MSFT_2022_item7_022"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_113",
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_024",
+          "JPM_2023_item7_024",
+          "JPM_2024_item7_105"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2023_item7_025",
+          "AMD_2024_item7_023",
+          "AMD_2022_item7_003",
+          "AMD_2022_item7_031",
+          "AMD_2023_item7_024"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_078",
+          "ORCL_2024_item7_064",
+          "ORCL_2024_item7_068",
+          "ORCL_2023_item7_077",
+          "ORCL_2022_item7_079"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_083",
+          "JPM_2024_item7_009",
+          "V_2024_item7_044",
+          "BAC_2024_item7_019",
+          "NVDA_2023_item7_026"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item7_024",
+          "MSFT_2024_item7_021",
+          "MSFT_2022_item7_022",
+          "MSFT_2022_item7_021",
+          "MSFT_2024_item7_020"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item1a_014",
+          "GOOGL_2023_item1a_005",
+          "GOOGL_2024_item1a_005",
+          "MSFT_2023_item1a_006",
+          "META_2023_item7_018"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item7_047",
+          "GOOGL_2022_item7_067"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2023_item1a_053",
+          "GOOGL_2023_item1a_061"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2023_item1a_019",
+          "AAPL_2022_item1a_020",
+          "AAPL_2023_item1a_017",
+          "AAPL_2023_item1a_005"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2024_item7_004",
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_006",
+          "WFC_2022_item7_207",
+          "WFC_2024_item1a_037"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_004",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_020",
+          "JPM_2024_item7_268"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item1a_130",
+          "META_2023_item1a_142",
+          "META_2024_item1a_146",
+          "META_2024_item1a_144",
+          "META_2023_item1a_141"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "JPM_2023_item7_080",
+          "MS_2022_item7_006",
+          "MS_2024_item7_007",
+          "JPM_2024_item7_138"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_054",
+          "ORCL_2023_item7_077",
+          "ORCL_2022_item7_050",
+          "ORCL_2023_item7_078",
+          "ORCL_2022_item1a_065"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "V_2024_item7_007",
+          "V_2023_item1a_006",
+          "V_2024_item1a_006",
+          "V_2023_item1a_010",
+          "MA_2024_item1a_005"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2022_item7_003",
+          "MA_2023_item1a_011",
+          "MA_2022_item7_003",
+          "MA_2022_item7_005",
+          "V_2023_item1a_059"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_061",
+          "AMD_2024_item7_001",
+          "AMD_2022_item7_003"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_255",
+          "BAC_2024_item7_016",
+          "BAC_2023_item7_246",
+          "BAC_2023_item7_259",
+          "BAC_2023_item7_151"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_007",
+          "GS_2024_item7_214",
+          "GS_2024_item7_006",
+          "GS_2023_item7_006",
+          "GS_2023_item7_085"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_009",
+          "MSFT_2023_item7_011",
+          "AAPL_2022_item7_007",
+          "NVDA_2023_item7_029",
+          "NVDA_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item7_005",
+          "JPM_2024_item7_073",
+          "MSFT_2024_item7_009",
+          "MSFT_2023_item7_011",
+          "AAPL_2022_item7_007"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_091",
+          "NVDA_2024_item1a_093"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_021",
+          "MSFT_2023_item7_024",
+          "MSFT_2023_item7_020",
+          "MSFT_2022_item7_002"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2023_item7_114",
+          "JPM_2024_item7_113",
+          "GS_2024_item7_081",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MA_2022_item7_045",
+          "MA_2022_item7_009",
+          "MA_2024_item7_042",
+          "MA_2022_item7_001",
+          "MA_2024_item7_037"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item1a_049",
+          "MSFT_2022_item1a_046",
+          "MSFT_2024_item1a_055",
+          "MS_2023_item1a_045",
+          "GOOGL_2022_item1a_000"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_023",
+          "NVDA_2023_item7_012",
+          "AMD_2023_item7_025",
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_014"
+        ]
+      }
+    ]
+  },
+  "table/+decompose (filters only)": {
+    "recall@5": 0.792,
+    "by_type": {
+      "comparison": 0.5,
+      "table": 0.786,
+      "text": 0.882
+    },
+    "seconds_per_query": 1.195,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_010",
+          "AAPL_2024_item7_004",
+          "AAPL_2024_item7_005",
+          "AAPL_2024_item7_001",
+          "AAPL_2024_item7_015"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_005",
+          "AAPL_2024_item7_006",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item7_007",
+          "AAPL_2024_item7_004"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_034",
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_036",
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item1a_064"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_038",
+          "NVDA_2024_item7_039",
+          "NVDA_2024_item7_027",
+          "NVDA_2024_item7_016"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2022_item7_069",
+          "META_2022_item7_003",
+          "META_2022_item7_070",
+          "META_2022_item7_004",
+          "META_2022_item7_068"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2023_item7_144",
+          "GS_2023_item7_079",
+          "GS_2023_item7_103",
+          "GS_2023_item7_094",
+          "GS_2023_item7_039"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_046",
+          "GS_2023_item7_006",
+          "GS_2023_item7_144",
+          "GS_2023_item7_102",
+          "GS_2023_item7_048"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_015",
+          "WFC_2024_item7_018",
+          "WFC_2024_item7_075",
+          "WFC_2024_item7_000",
+          "WFC_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_021",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_020",
+          "MSFT_2024_item7_011"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_113",
+          "JPM_2024_item7_024",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_012",
+          "JPM_2024_item7_017"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2022_item7_003",
+          "AMD_2022_item7_031",
+          "AMD_2022_item7_030",
+          "AMD_2022_item7_035",
+          "AMD_2022_item7_007"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_078",
+          "ORCL_2023_item7_077",
+          "ORCL_2023_item7_072",
+          "ORCL_2023_item7_056",
+          "ORCL_2023_item7_069"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_044",
+          "V_2024_item7_031",
+          "V_2024_item7_030",
+          "V_2024_item7_003",
+          "V_2024_item7_032"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_021",
+          "MSFT_2024_item7_020",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_009"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item1a_014",
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_007",
+          "MSFT_2023_item1a_013",
+          "MSFT_2024_item7_001"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item7_047",
+          "GOOGL_2024_item7_048",
+          "GOOGL_2024_item7_040"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2023_item1a_053",
+          "GOOGL_2023_item1a_061"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item1a_019",
+          "AAPL_2023_item1a_017",
+          "AAPL_2023_item1a_005",
+          "AAPL_2023_item1a_004",
+          "AAPL_2023_item7_019"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2022_item7_006",
+          "WFC_2022_item7_207",
+          "WFC_2022_item7_071",
+          "WFC_2022_item7_067",
+          "WFC_2022_item7_000"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_004",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_020",
+          "JPM_2023_item7_163"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2023_item1a_142",
+          "META_2023_item1a_141",
+          "META_2023_item1a_013",
+          "META_2023_item1a_008",
+          "META_2023_item1a_140"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2024_item7_007",
+          "MS_2024_item7_012",
+          "MS_2024_item7_065",
+          "MS_2024_item7_062"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_054",
+          "ORCL_2023_item7_077",
+          "ORCL_2023_item7_078",
+          "ORCL_2023_item7_018",
+          "ORCL_2023_item7_096"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_006",
+          "V_2023_item1a_010",
+          "V_2023_item1a_000",
+          "V_2023_item1a_005",
+          "V_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item7_003",
+          "MA_2022_item7_005",
+          "MA_2022_item7_029",
+          "MA_2022_item1a_071",
+          "MA_2022_item7_032"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_061",
+          "AMD_2023_item1a_014",
+          "AMD_2023_item7_029",
+          "AMD_2023_item1a_017"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_255",
+          "BAC_2024_item7_016",
+          "BAC_2024_item7_189",
+          "BAC_2024_item7_293",
+          "BAC_2024_item7_221"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_007",
+          "GS_2023_item7_006",
+          "GS_2023_item7_085",
+          "GS_2023_item7_048",
+          "GS_2023_item7_144"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "AMZN_2023_item7_058",
+          "AMZN_2023_item7_057",
+          "AMZN_2023_item7_043",
+          "AMZN_2023_item7_032",
+          "AMZN_2023_item7_031"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item7_005",
+          "META_2024_item7_003",
+          "META_2024_item7_004",
+          "META_2024_item7_060",
+          "META_2024_item7_019"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2023_item1a_068",
+          "NVDA_2023_item7_030",
+          "NVDA_2023_item1a_070",
+          "NVDA_2023_item7_004"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_002",
+          "GOOGL_2024_item7_047",
+          "MSFT_2024_item7_021",
+          "GOOGL_2024_item7_040",
+          "MSFT_2024_item7_011"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "JPM_2023_item7_114",
+          "GS_2023_item7_059",
+          "JPM_2023_item7_024",
+          "GS_2023_item7_079",
+          "JPM_2023_item7_088"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "V_2024_item7_032",
+          "MA_2024_item7_042",
+          "V_2024_item7_030",
+          "MA_2024_item1a_076",
+          "V_2024_item7_025"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "GOOGL_2023_item7_000",
+          "META_2023_item1a_142",
+          "GOOGL_2023_item1a_061",
+          "META_2023_item1a_099",
+          "GOOGL_2023_item1a_060"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_023",
+          "NVDA_2024_item7_014",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_034"
+        ]
+      }
+    ]
+  },
+  "table/+decompose +rewrite": {
+    "recall@5": 0.903,
+    "by_type": {
+      "comparison": 0.5,
+      "table": 1.0,
+      "text": 0.941
+    },
+    "seconds_per_query": 1.322,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_004",
+          "AAPL_2024_item1a_034",
+          "AAPL_2024_item7_010",
+          "AAPL_2024_item7_005",
+          "AAPL_2024_item7_015"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_007",
+          "AAPL_2024_item7_006",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item1a_069",
+          "AAPL_2024_item7_005"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item7_036",
+          "NVDA_2024_item7_034",
+          "NVDA_2024_item1a_064",
+          "NVDA_2024_item7_033"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_038",
+          "NVDA_2024_item7_039",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item1a_050",
+          "NVDA_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item7_069",
+          "META_2022_item7_070",
+          "META_2022_item7_065",
+          "META_2022_item7_035",
+          "META_2022_item7_030"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_038",
+          "GS_2023_item7_039",
+          "GS_2023_item7_042",
+          "GS_2023_item7_078",
+          "GS_2023_item7_101"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_006",
+          "GS_2023_item7_048",
+          "GS_2023_item7_046",
+          "GS_2023_item7_047",
+          "GS_2023_item7_102"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_015",
+          "WFC_2024_item7_016",
+          "WFC_2024_item7_050",
+          "WFC_2024_item7_247",
+          "WFC_2024_item7_075"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_020",
+          "MSFT_2024_item7_012",
+          "MSFT_2024_item7_022",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_021"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_113",
+          "JPM_2024_item7_099",
+          "JPM_2024_item7_105",
+          "JPM_2024_item7_024",
+          "JPM_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2022_item7_003",
+          "AMD_2022_item7_030",
+          "AMD_2022_item7_031",
+          "AMD_2022_item7_029",
+          "AMD_2022_item7_035"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_052",
+          "ORCL_2023_item7_076",
+          "ORCL_2023_item7_080",
+          "ORCL_2023_item7_055",
+          "ORCL_2023_item7_072"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_030",
+          "V_2024_item7_032",
+          "V_2024_item7_002",
+          "V_2024_item7_029",
+          "V_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_020",
+          "MSFT_2024_item7_021",
+          "MSFT_2024_item7_009",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_019"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_007",
+          "MSFT_2023_item1a_014",
+          "MSFT_2024_item1a_014",
+          "MSFT_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item1a_066",
+          "GOOGL_2024_item1a_076",
+          "GOOGL_2024_item1a_064"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2023_item7_076",
+          "GOOGL_2024_item1a_035"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item1a_017",
+          "AAPL_2023_item1a_019",
+          "AAPL_2023_item1a_005",
+          "AAPL_2023_item1a_020",
+          "AAPL_2023_item7_019"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2022_item1a_011",
+          "WFC_2022_item7_002",
+          "WFC_2022_item7_004",
+          "WFC_2022_item1a_040",
+          "WFC_2022_item7_207"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_048",
+          "JPM_2023_item7_159",
+          "JPM_2023_item7_004",
+          "JPM_2023_item7_486"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2023_item1a_141",
+          "META_2023_item1a_008",
+          "META_2023_item1a_142",
+          "META_2023_item1a_002",
+          "META_2023_item1a_007"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item1a_005",
+          "MS_2024_item7_071",
+          "MS_2024_item7_065",
+          "MS_2024_item7_006",
+          "MS_2024_item7_064"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item1a_032",
+          "ORCL_2023_item7_019",
+          "ORCL_2023_item1a_044",
+          "ORCL_2023_item1a_030",
+          "ORCL_2023_item7_020"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_000",
+          "V_2023_item1a_012",
+          "V_2023_item1a_003",
+          "V_2023_item1a_006",
+          "V_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item1a_071",
+          "MA_2022_item1a_012",
+          "MA_2022_item7_005",
+          "MA_2022_item1a_070",
+          "MA_2022_item7_003"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item1a_061",
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_014",
+          "AMD_2023_item1a_017",
+          "AMD_2023_item7_029"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_299",
+          "BAC_2024_item1a_004",
+          "BAC_2024_item1a_023",
+          "BAC_2024_item7_269",
+          "BAC_2024_item7_005"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_048",
+          "GS_2023_item7_006",
+          "GS_2023_item7_007",
+          "GS_2023_item7_137",
+          "GS_2023_item7_087"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMZN_2023_item7_027",
+          "AMZN_2023_item7_042",
+          "AMZN_2023_item7_032",
+          "AMZN_2023_item7_013",
+          "AMZN_2023_item1a_002"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item7_004",
+          "META_2024_item7_005",
+          "META_2024_item7_003",
+          "META_2024_item7_060",
+          "META_2024_item1a_200"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2023_item1a_068",
+          "NVDA_2023_item1a_066",
+          "NVDA_2023_item1a_064",
+          "NVDA_2023_item1a_072",
+          "NVDA_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MSFT_2024_item7_021",
+          "GOOGL_2024_item7_037",
+          "MSFT_2024_item7_011",
+          "GOOGL_2024_item7_036",
+          "MSFT_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "JPM_2023_item7_114",
+          "GS_2023_item7_078",
+          "JPM_2023_item7_102",
+          "GS_2023_item7_071",
+          "JPM_2023_item7_106"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "V_2024_item7_030",
+          "MA_2024_item7_039",
+          "V_2024_item7_032",
+          "MA_2024_item7_040",
+          "V_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2023_item1a_010",
+          "META_2023_item1a_091",
+          "GOOGL_2023_item1a_053",
+          "META_2023_item1a_046",
+          "GOOGL_2023_item1a_059"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_037",
+          "AMD_2024_item7_023",
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_014"
+        ]
+      }
+    ]
+  },
+  "plain/bm25": {
+    "recall@5": 0.472,
+    "by_type": {
+      "comparison": 0.4,
+      "table": 0.357,
+      "text": 0.588
+    },
+    "seconds_per_query": 0.031,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2024_item7_001",
+          "AAPL_2022_item7_002",
+          "AAPL_2023_item7_002",
+          "AAPL_2022_item7_001",
+          "AAPL_2024_item7_003"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_006",
+          "AAPL_2022_item7_008",
+          "AAPL_2023_item7_008",
+          "AAPL_2024_item7_007",
+          "AMD_2024_item7_025"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item7_030"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_004",
+          "NVDA_2024_item7_015",
+          "ORCL_2024_item7_065",
+          "NVDA_2023_item7_009",
+          "MSFT_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2024_item7_039",
+          "META_2023_item7_057",
+          "META_2022_item7_063",
+          "META_2024_item7_040",
+          "META_2023_item7_049"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "GS_2023_item7_037",
+          "GS_2023_item7_055",
+          "GS_2024_item7_037",
+          "GS_2023_item7_070"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_044",
+          "GS_2022_item7_045",
+          "GS_2023_item7_086",
+          "GS_2023_item7_111",
+          "GS_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_014",
+          "WFC_2022_item7_020",
+          "WFC_2024_item7_220",
+          "WFC_2024_item7_018",
+          "WFC_2023_item7_270"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_017",
+          "MSFT_2023_item7_014",
+          "MSFT_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_019",
+          "JPM_2024_item7_110",
+          "JPM_2024_item7_118",
+          "JPM_2022_item7_104",
+          "JPM_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2023_item7_024",
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_022",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2023_item7_072",
+          "ORCL_2024_item7_062",
+          "ORCL_2022_item7_072",
+          "ORCL_2022_item7_080"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_016",
+          "NVDA_2024_item7_035",
+          "NVDA_2024_item7_012",
+          "JPM_2024_item7_378",
+          "AMD_2024_item7_006"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2022_item7_020",
+          "MSFT_2022_item7_017",
+          "MSFT_2023_item7_020",
+          "MSFT_2023_item7_023"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_045",
+          "MSFT_2023_item1a_041",
+          "META_2023_item1a_029",
+          "MSFT_2024_item7_001",
+          "V_2024_item1a_031"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2022_item1a_094",
+          "GOOGL_2024_item1a_082",
+          "GOOGL_2024_item1a_065",
+          "META_2022_item1a_095",
+          "META_2023_item1a_104"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2022_item7_033",
+          "GOOGL_2023_item7_032",
+          "GOOGL_2022_item7_018"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2022_item7_015",
+          "AAPL_2023_item1a_017",
+          "AAPL_2022_item1a_020",
+          "AAPL_2023_item1a_020"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2022_item7_006",
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_213",
+          "WFC_2024_item7_003",
+          "WFC_2023_item7_003"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_027",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_011",
+          "JPM_2023_item7_152"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item1a_130",
+          "META_2024_item1a_146",
+          "META_2024_item1a_145",
+          "META_2023_item1a_141",
+          "META_2023_item1a_007"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2023_item7_006",
+          "MS_2024_item7_053",
+          "MS_2023_item7_000",
+          "MS_2024_item7_000"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "ORCL_2024_item7_049",
+          "ORCL_2024_item1a_047",
+          "ORCL_2022_item1a_049",
+          "ORCL_2023_item7_071"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_013",
+          "V_2022_item1a_005",
+          "V_2022_item1a_012",
+          "V_2022_item1a_007",
+          "V_2024_item1a_000"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2022_item7_024",
+          "V_2024_item1a_063",
+          "NVDA_2024_item1a_077",
+          "GS_2022_item7_309",
+          "GS_2022_item1a_148"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_002",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_022",
+          "AMD_2023_item7_024"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2023_item7_155",
+          "GS_2024_item7_252",
+          "BAC_2024_item7_221",
+          "BAC_2023_item7_315",
+          "BAC_2024_item7_254"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_174",
+          "GS_2024_item7_006",
+          "GS_2023_item7_006",
+          "GS_2023_item7_007",
+          "GS_2023_item7_076"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_010",
+          "WFC_2023_item7_048",
+          "WFC_2024_item7_039",
+          "WFC_2022_item7_046",
+          "MSFT_2024_item7_009"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_010",
+          "JPM_2024_item7_078",
+          "META_2024_item7_004",
+          "WFC_2023_item7_048",
+          "WFC_2024_item7_039"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_081",
+          "NVDA_2024_item1a_082"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_011",
+          "NVDA_2024_item7_016",
+          "MSFT_2022_item7_020",
+          "NVDA_2024_item7_015",
+          "NVDA_2024_item7_030"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "GS_2023_item7_055",
+          "GS_2022_item7_037",
+          "GS_2022_item7_057",
+          "GS_2023_item7_037"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "V_2024_item7_023",
+          "V_2024_item7_024",
+          "V_2022_item7_021",
+          "V_2023_item7_020",
+          "MA_2024_item7_032"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "NVDA_2024_item1a_073",
+          "MSFT_2024_item1a_055",
+          "GOOGL_2023_item1a_060",
+          "MS_2023_item7_004",
+          "AAPL_2022_item1a_063"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_014",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_022",
+          "AMD_2024_item7_002"
+        ]
+      }
+    ]
+  },
+  "plain/vector": {
+    "recall@5": 0.417,
+    "by_type": {
+      "comparison": 0.4,
+      "table": 0.429,
+      "text": 0.412
+    },
+    "seconds_per_query": 0.008,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2022_item7_004",
+          "AAPL_2022_item7_001",
+          "AAPL_2024_item7_008",
+          "AAPL_2023_item7_006",
+          "AAPL_2023_item7_011"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2022_item7_008",
+          "AAPL_2023_item7_008",
+          "AAPL_2023_item7_003",
+          "AAPL_2022_item7_009",
+          "AAPL_2024_item7_006"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_029",
+          "NVDA_2023_item7_011",
+          "NVDA_2023_item7_026"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_014",
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_013",
+          "NVDA_2022_item7_012",
+          "NVDA_2023_item7_011"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item7_003",
+          "META_2022_item7_061",
+          "META_2023_item7_057",
+          "META_2023_item7_055",
+          "V_2023_item7_022"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_068",
+          "GS_2022_item7_037",
+          "GS_2024_item7_074",
+          "GS_2023_item7_037",
+          "GS_2022_item7_050"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_044",
+          "GS_2022_item7_045",
+          "GS_2023_item7_111",
+          "GS_2022_item7_119",
+          "GS_2024_item7_074"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2024_item7_072",
+          "WFC_2023_item7_018",
+          "WFC_2023_item7_029",
+          "WFC_2022_item7_077",
+          "WFC_2022_item7_080"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item7_002",
+          "MSFT_2024_item7_001",
+          "MSFT_2024_item7_019",
+          "MSFT_2023_item7_023",
+          "MSFT_2022_item7_002"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2022_item7_104",
+          "JPM_2024_item7_019",
+          "JPM_2022_item7_152",
+          "JPM_2024_item7_133",
+          "JPM_2024_item7_110"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_008",
+          "AMD_2022_item7_030",
+          "AMD_2023_item7_024"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2022_item7_050",
+          "ORCL_2023_item7_071",
+          "ORCL_2022_item7_072",
+          "ORCL_2024_item7_062",
+          "AMD_2023_item7_033"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2023_item7_031",
+          "JPM_2024_item7_146",
+          "V_2024_item7_023",
+          "V_2023_item7_020",
+          "V_2024_item7_000"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item7_023",
+          "MSFT_2024_item7_019",
+          "MSFT_2023_item7_025",
+          "MSFT_2024_item7_001",
+          "MSFT_2023_item7_011"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_001",
+          "MSFT_2023_item1a_013",
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_045",
+          "GOOGL_2023_item1a_005"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2022_item1a_054",
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2022_item1a_055"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_053"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2023_item1a_018",
+          "AAPL_2023_item1a_004",
+          "AAPL_2022_item7_015",
+          "AAPL_2022_item7_003"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2022_item7_302",
+          "WFC_2023_item7_300",
+          "WFC_2024_item1a_037",
+          "WFC_2023_item7_002",
+          "WFC_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item1a_104",
+          "JPM_2024_item1a_002",
+          "JPM_2023_item7_011",
+          "JPM_2024_item7_484"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "META_2024_item1a_145",
+          "META_2024_item1a_146",
+          "META_2022_item1a_129",
+          "META_2022_item1a_130",
+          "META_2023_item1a_142"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2022_item7_058",
+          "MS_2024_item7_012",
+          "MS_2024_item7_006",
+          "GS_2023_item7_084",
+          "MS_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2024_item7_001",
+          "ORCL_2022_item7_050",
+          "ORCL_2022_item7_001",
+          "ORCL_2023_item7_001",
+          "ORCL_2022_item7_000"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "V_2024_item1a_011",
+          "V_2022_item1a_007",
+          "V_2023_item1a_010",
+          "MA_2022_item1a_006",
+          "V_2024_item1a_008"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item7_005",
+          "MA_2022_item1a_071",
+          "MA_2022_item7_003",
+          "V_2024_item1a_063",
+          "V_2022_item7_004"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_007",
+          "AMD_2023_item7_026"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item1a_006",
+          "BAC_2023_item1a_007",
+          "BAC_2024_item1a_005",
+          "BAC_2023_item1a_008",
+          "BAC_2022_item7_005"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_174",
+          "GS_2023_item7_006",
+          "GS_2024_item7_006",
+          "GS_2024_item7_175",
+          "GS_2024_item7_043"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "AMZN_2022_item7_057",
+          "AMZN_2024_item7_057",
+          "AMZN_2023_item7_057",
+          "AAPL_2024_item7_000",
+          "AMZN_2024_item7_027"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_011",
+          "AAPL_2024_item7_014",
+          "AMD_2022_item7_029",
+          "META_2022_item1a_028",
+          "MS_2022_item7_169"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item1a_092",
+          "NVDA_2024_item1a_091",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_083",
+          "NVDA_2024_item1a_081"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MSFT_2022_item7_015",
+          "MSFT_2024_item7_019",
+          "GOOGL_2022_item7_024",
+          "MSFT_2023_item7_020",
+          "MSFT_2023_item7_023"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2022_item7_104",
+          "JPM_2024_item7_110",
+          "JPM_2024_item7_019",
+          "JPM_2022_item7_030",
+          "JPM_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MA_2022_item7_000",
+          "MA_2024_item7_032",
+          "MA_2024_item7_033",
+          "MA_2022_item7_040",
+          "MA_2024_item7_000"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_055",
+          "GOOGL_2022_item1a_000",
+          "MS_2024_item1a_045",
+          "MSFT_2024_item1a_058",
+          "MSFT_2023_item1a_051"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_001",
+          "NVDA_2023_item7_011",
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_001"
+        ]
+      }
+    ]
+  },
+  "plain/hybrid": {
+    "recall@5": 0.472,
+    "by_type": {
+      "comparison": 0.4,
+      "table": 0.357,
+      "text": 0.588
+    },
+    "seconds_per_query": 0.067,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AAPL_2022_item7_001",
+          "AAPL_2024_item7_001",
+          "AAPL_2022_item7_004",
+          "AAPL_2024_item7_002",
+          "AAPL_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2022_item7_008",
+          "AAPL_2023_item7_008",
+          "AAPL_2024_item7_006",
+          "AAPL_2024_item7_007",
+          "AAPL_2022_item7_009"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item7_013",
+          "NVDA_2023_item7_011",
+          "NVDA_2022_item7_034"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "NVDA_2022_item7_010",
+          "ORCL_2024_item7_065",
+          "NVDA_2024_item7_015",
+          "NVDA_2022_item7_014"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2023_item7_057",
+          "META_2024_item7_039",
+          "META_2023_item7_058",
+          "META_2023_item7_059",
+          "META_2022_item7_065"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "GS_2023_item7_037",
+          "GS_2022_item7_037",
+          "GS_2024_item7_037",
+          "GS_2022_item7_124"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_044",
+          "GS_2022_item7_045",
+          "GS_2023_item7_111",
+          "GS_2024_item7_074",
+          "GS_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_018",
+          "WFC_2024_item7_072",
+          "WFC_2024_item7_014",
+          "WFC_2024_item7_061",
+          "WFC_2022_item7_024"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2023_item7_020",
+          "MSFT_2023_item7_014",
+          "MSFT_2023_item7_023",
+          "MSFT_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_019",
+          "JPM_2022_item7_104",
+          "JPM_2024_item7_110",
+          "JPM_2024_item7_024",
+          "JPM_2024_item7_009"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2024_item7_001",
+          "AMD_2023_item7_008",
+          "AMD_2023_item7_024",
+          "AMD_2024_item7_002",
+          "AMD_2024_item7_022"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2024_item7_062",
+          "ORCL_2022_item7_072",
+          "ORCL_2023_item7_072",
+          "ORCL_2022_item7_050"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "V_2024_item7_023",
+          "JPM_2024_item7_032",
+          "V_2024_item7_035",
+          "NVDA_2024_item7_034",
+          "MSFT_2024_item7_028"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2023_item7_023",
+          "MSFT_2022_item7_017",
+          "MSFT_2022_item7_020",
+          "MSFT_2023_item7_011"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item1a_045",
+          "MSFT_2023_item1a_041",
+          "MSFT_2024_item7_001",
+          "MSFT_2023_item1a_006",
+          "META_2023_item1a_029"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_061",
+          "AAPL_2023_item1a_059",
+          "AAPL_2024_item1a_061",
+          "GOOGL_2023_item1a_060"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2023_item1a_053",
+          "GOOGL_2023_item1a_061"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2022_item7_015",
+          "AAPL_2023_item1a_018",
+          "AAPL_2023_item1a_004",
+          "AAPL_2023_item1a_019"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_213",
+          "WFC_2024_item1a_037",
+          "WFC_2022_item7_006",
+          "WFC_2023_item7_002"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_011",
+          "JPM_2023_item7_027",
+          "JPM_2023_item7_152"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item1a_145",
+          "META_2024_item1a_146",
+          "META_2022_item1a_130",
+          "META_2022_item1a_129",
+          "META_2023_item1a_141"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2023_item7_006",
+          "MS_2024_item7_012",
+          "MS_2024_item7_053",
+          "MS_2022_item7_058"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2022_item7_050",
+          "ORCL_2024_item7_062",
+          "ORCL_2024_item7_000",
+          "ORCL_2023_item7_072",
+          "ORCL_2022_item1a_065"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2022_item1a_007",
+          "V_2022_item1a_005",
+          "V_2024_item1a_008",
+          "V_2023_item1a_013",
+          "V_2022_item1a_012"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item1a_063",
+          "MA_2022_item1a_071",
+          "GS_2022_item7_309",
+          "MA_2022_item7_003",
+          "NVDA_2024_item1a_077"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_007",
+          "AMD_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_254",
+          "BAC_2023_item1a_008",
+          "BAC_2023_item1a_055",
+          "GS_2024_item7_252",
+          "BAC_2024_item1a_004"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_174",
+          "GS_2024_item7_006",
+          "GS_2023_item7_006",
+          "GS_2023_item7_007",
+          "GS_2024_item7_043"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_011",
+          "MSFT_2024_item7_009",
+          "AMZN_2022_item7_057",
+          "AMZN_2023_item7_057",
+          "MSFT_2022_item7_008"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item7_011",
+          "WFC_2024_item7_039",
+          "MSFT_2024_item7_009",
+          "AMD_2022_item7_029",
+          "MSFT_2022_item7_008"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_081",
+          "NVDA_2024_item1a_091",
+          "NVDA_2024_item1a_082"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_011",
+          "MSFT_2023_item7_020",
+          "MSFT_2022_item7_002",
+          "MSFT_2023_item7_002",
+          "MSFT_2023_item7_013"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "JPM_2024_item7_110",
+          "JPM_2024_item7_019",
+          "JPM_2022_item7_104",
+          "GS_2022_item7_079"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MA_2024_item7_032",
+          "MA_2024_item7_033",
+          "MA_2022_item7_000",
+          "V_2024_item7_023",
+          "JPM_2024_item7_087"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MSFT_2024_item1a_055",
+          "NVDA_2024_item1a_073",
+          "GOOGL_2023_item1a_060",
+          "MSFT_2023_item1a_049",
+          "AAPL_2024_item1a_061"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_001",
+          "NVDA_2023_item7_011",
+          "NVDA_2024_item7_014",
+          "NVDA_2024_item7_029"
+        ]
+      }
+    ]
+  },
+  "plain/hybrid+rerank": {
+    "recall@5": 0.514,
+    "by_type": {
+      "comparison": 0.3,
+      "table": 0.429,
+      "text": 0.647
+    },
+    "seconds_per_query": 1.083,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item7_001",
+          "AAPL_2024_item7_004",
+          "AAPL_2022_item7_002",
+          "AAPL_2023_item7_003",
+          "AAPL_2023_item7_008"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_006",
+          "AAPL_2023_item7_008",
+          "AAPL_2022_item7_008",
+          "AAPL_2022_item7_010",
+          "AAPL_2023_item7_010"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2022_item7_031",
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item7_015"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2024_item7_065",
+          "NVDA_2022_item7_030",
+          "NVDA_2023_item7_027",
+          "MSFT_2024_item7_024",
+          "NVDA_2024_item7_015"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "META_2022_item7_064",
+          "META_2023_item7_058",
+          "META_2022_item7_003",
+          "META_2023_item7_059",
+          "META_2023_item7_003"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "GS_2022_item7_037",
+          "GS_2023_item7_111",
+          "GS_2023_item7_070",
+          "GS_2024_item7_043"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_044",
+          "GS_2022_item7_045",
+          "GS_2023_item7_006",
+          "GS_2024_item7_006",
+          "GS_2024_item7_091"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2023_item7_022",
+          "WFC_2024_item7_018",
+          "WFC_2022_item7_020",
+          "WFC_2024_item7_000",
+          "WFC_2024_item7_072"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_017",
+          "MSFT_2023_item7_020",
+          "MSFT_2022_item7_020",
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2024_item7_118",
+          "JPM_2023_item7_120",
+          "JPM_2022_item7_111",
+          "JPM_2024_item7_019",
+          "JPM_2024_item7_110"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "AMD_2022_item7_003",
+          "AMD_2023_item7_024",
+          "AMD_2024_item7_022",
+          "AMD_2024_item7_002",
+          "AMD_2024_item7_001"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2023_item7_072",
+          "ORCL_2024_item7_062",
+          "ORCL_2022_item7_080",
+          "ORCL_2022_item7_050"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_032",
+          "V_2024_item7_023",
+          "JPM_2024_item7_016",
+          "NVDA_2024_item7_012",
+          "V_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2023_item7_023",
+          "MSFT_2022_item7_020",
+          "MSFT_2023_item7_011",
+          "MSFT_2022_item7_017"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item1a_014",
+          "GOOGL_2023_item1a_005",
+          "GOOGL_2024_item1a_005",
+          "MSFT_2023_item1a_006",
+          "META_2023_item7_018"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2023_item7_060"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2023_item7_032",
+          "GOOGL_2022_item7_033",
+          "GOOGL_2024_item1a_063"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_017",
+          "AAPL_2022_item7_015",
+          "AAPL_2023_item1a_019",
+          "AAPL_2022_item1a_020",
+          "AAPL_2023_item1a_017"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2024_item7_004",
+          "WFC_2023_item7_006",
+          "WFC_2022_item7_006",
+          "WFC_2022_item7_213",
+          "WFC_2024_item1a_037"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_011",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_027",
+          "JPM_2023_item7_265"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item1a_130",
+          "META_2023_item1a_142",
+          "META_2024_item1a_146",
+          "META_2024_item1a_144",
+          "META_2023_item1a_141"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2023_item7_050",
+          "MS_2024_item7_053",
+          "MS_2022_item7_006",
+          "MS_2024_item7_007"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2022_item7_050",
+          "ORCL_2023_item7_072",
+          "ORCL_2022_item1a_065",
+          "ORCL_2024_item7_018"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "V_2024_item7_007",
+          "V_2023_item1a_006",
+          "V_2024_item1a_006",
+          "V_2023_item1a_010",
+          "MA_2024_item1a_005"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2023_item1a_011",
+          "MA_2022_item7_003",
+          "MA_2022_item7_005",
+          "V_2023_item1a_059",
+          "GS_2022_item7_310"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2024_item7_002",
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_061",
+          "AMD_2024_item7_001",
+          "AMD_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2023_item7_250",
+          "BAC_2023_item7_155",
+          "BAC_2024_item7_221",
+          "MS_2024_item7_059",
+          "BAC_2023_item7_348"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2024_item7_174",
+          "GS_2023_item7_007",
+          "GS_2024_item7_006",
+          "GS_2023_item7_006",
+          "GS_2024_item7_176"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_009",
+          "MSFT_2023_item7_011",
+          "AAPL_2022_item7_006",
+          "AMZN_2022_item7_057",
+          "MSFT_2022_item7_008"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item7_006",
+          "META_2024_item7_004",
+          "MSFT_2024_item7_009",
+          "MSFT_2023_item7_011",
+          "JPM_2024_item7_010"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2024_item1a_083",
+          "NVDA_2023_item1a_068",
+          "NVDA_2024_item1a_091",
+          "NVDA_2024_item1a_093"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2024_item7_002",
+          "MSFT_2023_item7_020",
+          "MSFT_2022_item7_002",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_011"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GS_2024_item7_074",
+          "JPM_2022_item7_104",
+          "JPM_2024_item7_019",
+          "JPM_2024_item7_110",
+          "GS_2023_item7_055"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MA_2024_item7_037",
+          "MA_2024_item7_033",
+          "MA_2022_item7_040",
+          "V_2024_item7_023",
+          "MA_2024_item7_032"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "MSFT_2023_item1a_049",
+          "MSFT_2022_item1a_046",
+          "MSFT_2024_item1a_055",
+          "GOOGL_2023_item7_060",
+          "MS_2023_item1a_045"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_014",
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_029",
+          "AMD_2024_item7_002"
+        ]
+      }
+    ]
+  },
+  "plain/+decompose (filters only)": {
+    "recall@5": 0.778,
+    "by_type": {
+      "comparison": 0.6,
+      "table": 0.786,
+      "text": 0.824
+    },
+    "seconds_per_query": 2.836,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_004",
+          "AAPL_2024_item7_002",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item7_001",
+          "AAPL_2024_item7_006"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_006",
+          "AAPL_2024_item7_007",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item7_004",
+          "AAPL_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item7_015",
+          "NVDA_2024_item1a_064"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_015",
+          "NVDA_2024_item7_016",
+          "NVDA_2024_item7_012",
+          "NVDA_2024_item7_033",
+          "NVDA_2024_item7_014"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item7_064",
+          "META_2022_item7_003",
+          "META_2022_item7_065",
+          "META_2022_item7_004",
+          "META_2022_item7_061"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "GS_2023_item7_111",
+          "GS_2023_item7_070",
+          "GS_2023_item7_087",
+          "GS_2023_item7_081",
+          "GS_2023_item7_055"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_044",
+          "GS_2023_item7_006",
+          "GS_2023_item7_111",
+          "GS_2023_item7_086",
+          "GS_2023_item7_045"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_018",
+          "WFC_2024_item7_000",
+          "WFC_2024_item7_072",
+          "WFC_2024_item7_014",
+          "WFC_2024_item7_026"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_011",
+          "MSFT_2024_item7_021"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_118",
+          "JPM_2024_item7_019",
+          "JPM_2024_item7_110",
+          "JPM_2024_item7_024",
+          "JPM_2024_item7_031"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2022_item7_003",
+          "AMD_2022_item7_030",
+          "AMD_2022_item7_035",
+          "AMD_2022_item7_007",
+          "AMD_2022_item7_031"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 0.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2023_item7_072",
+          "ORCL_2023_item7_066",
+          "ORCL_2023_item7_054",
+          "ORCL_2023_item7_053"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_026",
+          "V_2024_item7_023",
+          "V_2024_item7_003",
+          "V_2024_item7_024",
+          "V_2024_item7_000"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_002",
+          "MSFT_2024_item7_009",
+          "MSFT_2024_item7_012"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item1a_014",
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_007",
+          "MSFT_2023_item1a_013",
+          "MSFT_2024_item7_001"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item7_042",
+          "GOOGL_2024_item7_000",
+          "GOOGL_2024_item1a_028"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2023_item7_032",
+          "GOOGL_2022_item7_033",
+          "GOOGL_2024_item1a_063"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item1a_019",
+          "AAPL_2023_item1a_017",
+          "AAPL_2023_item1a_005",
+          "AAPL_2023_item1a_004",
+          "AAPL_2023_item1a_018"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "WFC_2022_item7_006",
+          "WFC_2022_item7_213",
+          "WFC_2022_item7_000",
+          "WFC_2022_item1a_045",
+          "WFC_2022_item7_257"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_011",
+          "JPM_2023_item1a_104",
+          "JPM_2023_item7_058",
+          "JPM_2023_item7_027"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2023_item1a_142",
+          "META_2023_item1a_141",
+          "META_2023_item1a_013",
+          "META_2023_item1a_008",
+          "META_2023_item1a_140"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item7_006",
+          "MS_2024_item7_053",
+          "MS_2024_item7_007",
+          "MS_2024_item7_068",
+          "MS_2024_item7_052"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_071",
+          "ORCL_2023_item7_072",
+          "ORCL_2023_item7_018",
+          "ORCL_2023_item7_085",
+          "ORCL_2023_item1a_044"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_006",
+          "V_2023_item1a_010",
+          "V_2023_item1a_000",
+          "V_2023_item1a_005",
+          "V_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item7_003",
+          "MA_2022_item7_005",
+          "MA_2022_item7_026",
+          "MA_2022_item1a_071",
+          "MA_2022_item7_028"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_061",
+          "AMD_2023_item7_024",
+          "AMD_2023_item1a_014",
+          "AMD_2023_item7_026"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_016",
+          "BAC_2024_item7_242",
+          "BAC_2024_item7_190",
+          "BAC_2024_item7_294",
+          "BAC_2024_item7_221"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_007",
+          "GS_2023_item7_006",
+          "GS_2023_item7_076",
+          "GS_2023_item7_045",
+          "GS_2023_item7_078"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "AMZN_2023_item7_057",
+          "AMZN_2023_item7_056",
+          "AMZN_2023_item7_043",
+          "AMZN_2023_item7_030",
+          "AMZN_2023_item7_032"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item7_004",
+          "META_2024_item7_003",
+          "META_2024_item7_052",
+          "META_2024_item7_018",
+          "META_2024_item7_045"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2023_item7_006",
+          "NVDA_2023_item1a_068",
+          "NVDA_2023_item1a_070",
+          "NVDA_2023_item7_004",
+          "NVDA_2023_item7_028"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "MSFT_2024_item7_002",
+          "GOOGL_2024_item7_027",
+          "MSFT_2024_item7_017",
+          "GOOGL_2024_item7_042",
+          "MSFT_2024_item7_011"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "JPM_2023_item7_120",
+          "GS_2023_item7_055",
+          "JPM_2023_item7_091",
+          "GS_2023_item7_070",
+          "JPM_2023_item7_009"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_023",
+          "MA_2024_item7_037",
+          "V_2024_item7_025",
+          "MA_2024_item7_033",
+          "V_2024_item7_024"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.5,
+        "hits": [
+          "GOOGL_2023_item7_000",
+          "META_2023_item1a_142",
+          "GOOGL_2023_item7_060",
+          "META_2023_item7_057",
+          "GOOGL_2023_item1a_061"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_014",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_002",
+          "NVDA_2024_item7_029"
+        ]
+      }
+    ]
+  },
+  "plain/+decompose +rewrite": {
+    "recall@5": 0.944,
+    "by_type": {
+      "comparison": 0.8,
+      "table": 1.0,
+      "text": 0.941
+    },
+    "seconds_per_query": 4.086,
+    "per_query": [
+      {
+        "qid": "r01",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item1a_034",
+          "AAPL_2024_item7_004",
+          "AAPL_2024_item7_002",
+          "AAPL_2024_item7_012",
+          "AAPL_2024_item7_006"
+        ]
+      },
+      {
+        "qid": "r02",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2024_item7_007",
+          "AAPL_2024_item7_006",
+          "AAPL_2024_item1a_069",
+          "AAPL_2024_item7_008",
+          "AAPL_2024_item1a_073"
+        ]
+      },
+      {
+        "qid": "r03",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_031",
+          "NVDA_2024_item1a_064",
+          "NVDA_2024_item7_029",
+          "NVDA_2024_item1a_062",
+          "NVDA_2024_item7_028"
+        ]
+      },
+      {
+        "qid": "r04",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_033",
+          "NVDA_2024_item7_028",
+          "NVDA_2024_item1a_050",
+          "NVDA_2024_item7_012",
+          "NVDA_2024_item7_016"
+        ]
+      },
+      {
+        "qid": "r05",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "META_2022_item7_064",
+          "META_2022_item7_065",
+          "META_2022_item7_061",
+          "META_2022_item7_033",
+          "META_2022_item7_028"
+        ]
+      },
+      {
+        "qid": "r06",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_037",
+          "GS_2023_item7_040",
+          "GS_2023_item7_069",
+          "GS_2023_item7_085",
+          "GS_2023_item7_084"
+        ]
+      },
+      {
+        "qid": "r07",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_045",
+          "GS_2023_item7_006",
+          "GS_2023_item7_044",
+          "GS_2023_item7_086",
+          "GS_2023_item7_073"
+        ]
+      },
+      {
+        "qid": "r08",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2024_item7_016",
+          "WFC_2024_item7_251",
+          "WFC_2024_item7_014",
+          "WFC_2024_item7_250",
+          "WFC_2024_item7_281"
+        ]
+      },
+      {
+        "qid": "r09",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_021",
+          "MSFT_2024_item7_012",
+          "MSFT_2024_item7_014"
+        ]
+      },
+      {
+        "qid": "r10",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2024_item7_118",
+          "JPM_2024_item7_031",
+          "JPM_2024_item7_019",
+          "JPM_2024_item7_119",
+          "JPM_2024_item7_110"
+        ]
+      },
+      {
+        "qid": "r11",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2022_item7_003",
+          "AMD_2022_item7_030",
+          "AMD_2022_item7_029",
+          "AMD_2022_item7_035",
+          "AMD_2022_item1a_066"
+        ]
+      },
+      {
+        "qid": "r12",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item7_051",
+          "ORCL_2023_item7_073",
+          "ORCL_2023_item7_070",
+          "ORCL_2023_item7_063",
+          "ORCL_2023_item7_053"
+        ]
+      },
+      {
+        "qid": "r13",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_002",
+          "V_2024_item7_003",
+          "V_2024_item1a_061",
+          "V_2024_item7_024",
+          "V_2024_item7_026"
+        ]
+      },
+      {
+        "qid": "r14",
+        "type": "table",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "MSFT_2024_item7_009",
+          "MSFT_2024_item7_017",
+          "MSFT_2024_item7_012",
+          "MSFT_2024_item7_018"
+        ]
+      },
+      {
+        "qid": "r15",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2023_item1a_006",
+          "MSFT_2024_item1a_007",
+          "MSFT_2023_item1a_014",
+          "MSFT_2024_item1a_014",
+          "MSFT_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r16",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_065",
+          "GOOGL_2024_item1a_063",
+          "GOOGL_2024_item1a_066",
+          "GOOGL_2024_item1a_076",
+          "GOOGL_2024_item1a_064"
+        ]
+      },
+      {
+        "qid": "r17",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GOOGL_2024_item1a_064",
+          "GOOGL_2023_item1a_060",
+          "GOOGL_2023_item1a_061",
+          "GOOGL_2023_item7_068",
+          "GOOGL_2024_item1a_035"
+        ]
+      },
+      {
+        "qid": "r18",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AAPL_2023_item1a_017",
+          "AAPL_2023_item1a_019",
+          "AAPL_2023_item1a_005",
+          "AAPL_2023_item1a_020",
+          "AAPL_2023_item1a_072"
+        ]
+      },
+      {
+        "qid": "r19",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "WFC_2022_item1a_011",
+          "WFC_2022_item7_002",
+          "WFC_2022_item7_004",
+          "WFC_2022_item1a_040",
+          "WFC_2022_item7_213"
+        ]
+      },
+      {
+        "qid": "r20",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item1a_105",
+          "JPM_2023_item7_052",
+          "JPM_2023_item7_162",
+          "JPM_2023_item7_011",
+          "JPM_2023_item7_473"
+        ]
+      },
+      {
+        "qid": "r21",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2023_item1a_141",
+          "META_2023_item1a_008",
+          "META_2023_item1a_142",
+          "META_2023_item1a_002",
+          "META_2023_item1a_007"
+        ]
+      },
+      {
+        "qid": "r22",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MS_2024_item1a_005",
+          "MS_2024_item7_006",
+          "MS_2024_item7_053",
+          "MS_2024_item7_032",
+          "MS_2024_item7_052"
+        ]
+      },
+      {
+        "qid": "r23",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "ORCL_2023_item1a_032",
+          "ORCL_2023_item7_019",
+          "ORCL_2023_item1a_044",
+          "ORCL_2023_item1a_030",
+          "ORCL_2023_item7_020"
+        ]
+      },
+      {
+        "qid": "r24",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "V_2023_item1a_000",
+          "V_2023_item1a_012",
+          "V_2023_item1a_003",
+          "V_2023_item1a_006",
+          "V_2023_item1a_013"
+        ]
+      },
+      {
+        "qid": "r25",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "MA_2022_item1a_071",
+          "MA_2022_item1a_012",
+          "MA_2022_item7_005",
+          "MA_2022_item1a_070",
+          "MA_2022_item7_003"
+        ]
+      },
+      {
+        "qid": "r26",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMD_2023_item1a_061",
+          "AMD_2023_item7_008",
+          "AMD_2023_item1a_014",
+          "AMD_2023_item1a_017",
+          "AMD_2023_item7_026"
+        ]
+      },
+      {
+        "qid": "r27",
+        "type": "text",
+        "recall": 0.0,
+        "hits": [
+          "BAC_2024_item7_300",
+          "BAC_2024_item1a_004",
+          "BAC_2024_item1a_023",
+          "BAC_2024_item7_270",
+          "BAC_2024_item7_005"
+        ]
+      },
+      {
+        "qid": "r28",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "GS_2023_item7_006",
+          "GS_2023_item7_007",
+          "GS_2023_item7_045",
+          "GS_2023_item7_107",
+          "GS_2023_item7_078"
+        ]
+      },
+      {
+        "qid": "r29",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "AMZN_2023_item7_027",
+          "AMZN_2023_item7_042",
+          "AMZN_2023_item7_013",
+          "AMZN_2023_item1a_002",
+          "AMZN_2023_item1a_046"
+        ]
+      },
+      {
+        "qid": "r30",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "META_2024_item7_004",
+          "META_2024_item7_003",
+          "META_2024_item7_055",
+          "META_2024_item1a_200",
+          "META_2024_item7_052"
+        ]
+      },
+      {
+        "qid": "r31",
+        "type": "text",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2023_item1a_068",
+          "NVDA_2023_item1a_066",
+          "NVDA_2023_item1a_064",
+          "NVDA_2023_item1a_072",
+          "NVDA_2023_item7_006"
+        ]
+      },
+      {
+        "qid": "r32",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "MSFT_2024_item7_019",
+          "GOOGL_2024_item7_034",
+          "MSFT_2024_item7_011",
+          "GOOGL_2024_item7_035",
+          "MSFT_2024_item7_002"
+        ]
+      },
+      {
+        "qid": "r33",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "JPM_2023_item7_030",
+          "GS_2023_item7_069",
+          "JPM_2023_item7_120",
+          "GS_2023_item7_064",
+          "JPM_2023_item7_112"
+        ]
+      },
+      {
+        "qid": "r34",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "V_2024_item7_024",
+          "MA_2024_item7_034",
+          "V_2024_item7_023",
+          "MA_2024_item7_033",
+          "V_2024_item7_025"
+        ]
+      },
+      {
+        "qid": "r35",
+        "type": "comparison",
+        "recall": 0.0,
+        "hits": [
+          "GOOGL_2023_item1a_010",
+          "META_2023_item1a_091",
+          "GOOGL_2023_item1a_053",
+          "META_2023_item1a_046",
+          "GOOGL_2023_item1a_059"
+        ]
+      },
+      {
+        "qid": "r36",
+        "type": "comparison",
+        "recall": 1.0,
+        "hits": [
+          "NVDA_2024_item7_013",
+          "AMD_2024_item7_001",
+          "NVDA_2024_item7_014",
+          "AMD_2024_item7_002",
+          "NVDA_2024_item7_029"
+        ]
+      }
+    ]
+  }
+}

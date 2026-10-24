@@ -15,6 +15,7 @@ Configurations form a ladder, each adding one step:
     hybrid          BM25 + vectors merged with RRF
     hybrid+rerank   ... then cross-encoder reranking
     +decompose      ... with one filtered sub-query per company/year
+    +rewrite        ... and company/year words stripped from each sub-query
 
 Usage:
     python scripts/eval_retrieval.py                 # both passage sets
@@ -43,11 +44,12 @@ REPORT = ROOT / "docs" / "retrieval_eval.md"
 TOP_K = 5
 
 CONFIGS = [
-    ("bm25", dict(mode="bm25", rerank=False), False),
-    ("vector", dict(mode="vector", rerank=False), False),
-    ("hybrid", dict(mode="hybrid", rerank=False), False),
-    ("hybrid+rerank", dict(mode="hybrid", rerank=True), False),
-    ("hybrid+rerank+decompose", dict(mode="hybrid", rerank=True), True),
+    ("bm25", dict(mode="bm25", rerank=False), None),
+    ("vector", dict(mode="vector", rerank=False), None),
+    ("hybrid", dict(mode="hybrid", rerank=False), None),
+    ("hybrid+rerank", dict(mode="hybrid", rerank=True), None),
+    ("+decompose (filters only)", dict(mode="hybrid", rerank=True), dict(rewrite=False)),
+    ("+decompose +rewrite", dict(mode="hybrid", rerank=True), dict(rewrite=True)),
 ]
 
 
@@ -68,11 +70,11 @@ def target_found(target: dict, hits: list[dict]) -> bool:
     return False
 
 
-def evaluate(retriever, queries: list[dict], search_kwargs: dict, decompose: bool) -> dict:
+def evaluate(retriever, queries: list[dict], search_kwargs: dict, decompose: dict | None) -> dict:
     per_query, started = [], time.perf_counter()
     for q in queries:
-        if decompose:
-            hits = search_decomposed(retriever, q["query"], top_k=TOP_K, **search_kwargs)
+        if decompose is not None:
+            hits = search_decomposed(retriever, q["query"], top_k=TOP_K, **decompose, **search_kwargs)
         else:
             hits = retriever.search(q["query"], top_k=TOP_K, **search_kwargs)
         found = [target_found(t, hits) for t in q["targets"]]
@@ -108,7 +110,10 @@ def main() -> None:
     for variant in variants:
         passages = load_passages(table_aware=(variant == "table"))
         print(f"\n== {variant}: {len(passages)} passages, {len(queries)} queries")
-        retriever = HybridRetriever(passages, collection_prefix=f"analyst_desk_{variant}")
+        # Same collection prefix as the app's get_retriever(), so the
+        # table-aware index is built once and shared
+        prefix = "analyst_desk" if variant == "table" else "analyst_desk_plain"
+        retriever = HybridRetriever(passages, collection_prefix=prefix)
         for name, kwargs, decompose in CONFIGS:
             r = evaluate(retriever, queries, kwargs, decompose)
             results[f"{variant}/{name}"] = r
@@ -141,6 +146,11 @@ def write_report(results: dict, queries: list[dict]) -> None:
             + " | ".join(f"{r['by_type'].get(t, 0):.3f}" for t in types)
             + f" | {r['seconds_per_query']} |"
         )
+    lines += [
+        "",
+        "Interpretation, label rules and the first-run (v1) results: "
+        "see [viva_notes.md](viva_notes.md), section 3.8.",
+    ]
     REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

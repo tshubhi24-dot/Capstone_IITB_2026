@@ -74,27 +74,50 @@ def find_years(question: str) -> list[int]:
     return years
 
 
-def decompose(question: str) -> list[SubQuery]:
+def strip_entities(question: str) -> str:
+    """Remove company names, tickers and years from a question.
+
+    Once a sub-query is filtered to one company and year, those words only
+    add noise: every passage of Goldman Sachs' 2023 10-K carries the footer
+    "Goldman Sachs 2023 Form 10-K", so BM25 rewards the footer instead of the
+    topic. Falls back to the original if almost nothing is left.
+    """
+    text = question
+    for alias in sorted(_ALIASES, key=len, reverse=True):
+        # also the possessive: "Apple's", "Goldman Sachs'"
+        text = re.sub(rf"\b{re.escape(alias)}(?:['’]s?)?(?!\w)", " ", text, flags=re.I)
+    text = re.sub(
+        r"\b(?:" + "|".join(sorted(_TICKERS, key=len, reverse=True)) + r")(?:['’]s?)?(?!\w)", " ", text
+    )
+    text = re.sub(r"(?<!\d)(?:fiscal\s+year\s+|fiscal\s+|fy\s?)?20\d{2}(?!\d)", " ", text, flags=re.I)
+    text = re.sub(r"\s+", " ", text).strip(" ,.?()")
+    return text if len(text.split()) >= 2 else question
+
+
+def decompose(question: str, rewrite: bool = True) -> list[SubQuery]:
     """Split a question into one filtered sub-query per (company, year).
 
     With no company named, the question is searched as is. With companies but
-    no year, each company is searched across all years.
+    no year, each company is searched across all years. rewrite strips the
+    company and year words the filters already cover.
     """
     companies = find_companies(question)
     if not companies:
         return [SubQuery(question, None, None)]
     years = find_years(question) or [None]
-    return [SubQuery(question, c, y) for c in companies for y in years]
+    text = strip_entities(question) if rewrite else question
+    return [SubQuery(text, c, y) for c in companies for y in years]
 
 
-def search_decomposed(retriever, question: str, top_k: int = 5, **search_kwargs) -> list[dict]:
+def search_decomposed(retriever, question: str, top_k: int = 5,
+                      rewrite: bool = True, **search_kwargs) -> list[dict]:
     """Run each sub-query and merge round-robin into top_k passages.
 
     Round-robin (1st of each, then 2nd of each, ...) guarantees every
     company/year in the question contributes evidence before any one of them
     contributes a second passage.
     """
-    subqueries = decompose(question)
+    subqueries = decompose(question, rewrite)
     per_query = [
         retriever.search(sq.text, top_k=top_k, company=sq.company, year=sq.year, **search_kwargs)
         for sq in subqueries

@@ -428,8 +428,8 @@ config.py                 # all prompts + model IDs in one versioned file
 | Phase | Lecture | Key deliverable | Status |
 |-------|---------|----------------|--------|
 | 0 | Pre-L4 | Scope validation | ✅ Done |
-| 1 | L4, L13 | EDGAR + C0 baseline | — |
-| 2 | L4–L6 | Hybrid retrieval (BM25+vectors+RRF+reranker) | — |
+| 1 | L4, L13 | EDGAR + C0 baseline | ✅ Done (15 companies, as-reported facts, bank pre-tax margin) |
+| 2 | L4–L6 | Hybrid retrieval (BM25+vectors+RRF+reranker) | ✅ Built + Recall@5 measured; labels need team review |
 | 3 | L7 | 4 FastMCP servers | — |
 | 4 | L8, L10 | C1 single agent + LangGraph | — |
 | 5 | L9 | Memory + policy | — |
@@ -449,3 +449,6 @@ config.py                 # all prompts + model IDs in one versioned file
 | Date | Author | Phase | What was done |
 |------|--------|-------|--------------|
 | Oct 2026 | Team | 0 | Scope validation, project structure |
+| Oct 2026 | Jayshree (with Claude Code) | 1 | EDGAR client and cache, C0 baseline, note schema, Gradio demo |
+| 2026-10-24 | Jayshree (with Claude Code) | 1 | Windows setup; as-reported XBRL facts with restatement warnings; full-year filter; bank pre-tax margin |
+| 2026-10-24 | Jayshree (with Claude Code) | 2 | 10-K parser fixes (MA, MS, WFC, BAC, JPM, V); table-aware parsing + plain variant; retrieval switches; query decomposition; 36 labelled queries; Recall@5 ladder |
