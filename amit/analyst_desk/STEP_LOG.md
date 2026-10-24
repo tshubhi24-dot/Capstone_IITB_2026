@@ -208,6 +208,20 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Verified retrieval result:** hybrid search and trained reranking are active in Docker over all 4,073 passages. The 36-question comparison is development evidence with partial, source-derived labels. Independent human relevance review, protected final evaluation and original SEC Item/table validation remain outstanding.
 
+## Step 13 — Add analyst memory
+
+**What this step does:** adds editable analyst preferences, source-derived coverage memory and relevant approved-note references for follow-up research. Memory stays in persistent local storage, with bounded retrieval, revision checks, expiry and explicit correction/deletion controls. Earlier notes remain separate from current SEC evidence.
+
+| Files | Purpose |
+|---|---|
+| [docs/ADR-004-ANALYST-MEMORY.md](docs/ADR-004-ANALYST-MEMORY.md) | Storage decision, permitted memory, review boundaries and verification contract. |
+
+**Capstone connection:** p.3, L9 persistent memory and memory policy; pp.15–16, coverage, analyst preferences, prior research and follow-up questions; p.3, L8/L14 checkpoint and exact-version review. Reviewed lessons and independent memory evaluation remain separate work.
+
+| Increment | Result |
+|---|---|
+| 13a — Define memory storage and controls | Choose actor-namespaced LangGraph SQLite memory alongside publication records so final publication can atomically check memory versions. Define allowlisted preferences, source coverage, bounded approved history and deletion semantics before implementation. |
+
 ## What the team builds next
 
 1. **Source validation, retrieval review and memory:** validate original Item/table ingestion, obtain independent relevance labels and evaluate protected questions. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
