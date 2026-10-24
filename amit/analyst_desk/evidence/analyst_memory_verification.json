@@ -1,0 +1,364 @@
+{
+  "api_checks": {
+    "comparison_1_all_six_rows_current_verified": true,
+    "comparison_2_all_six_rows_current_verified": true,
+    "comparison_3_all_six_rows_current_verified": true,
+    "coverage_matches_twelve_company_snapshot": true,
+    "deployed_app_js_matches_workspace": true,
+    "deployed_memory_js_matches_workspace": true,
+    "existing_budget_unchanged": true,
+    "existing_library_has_three_notes": true,
+    "existing_notes_unchanged": true,
+    "existing_runs_unchanged": true,
+    "memory_requires_authentication": true,
+    "no_real_notes_excluded": true,
+    "no_real_preferences_created": true,
+    "scoped_history_returns_three_references": true,
+    "source_fingerprint_unchanged": true,
+    "standard_live_runtime_verifier_passed": true
+  },
+  "api_checks_passed": 16,
+  "api_checks_total": 16,
+  "approved_history_reference_count": 3,
+  "browser_checks": {
+    "approved_history_visible": true,
+    "exact_compared_note_citation_visible": true,
+    "limitations_visible": true,
+    "memory_controls_visible": true,
+    "no_preference_or_exclusion_changes_submitted": true,
+    "read_compared_note_action_visible": true,
+    "results_scope_label_visible": true,
+    "six_current_verified_margin_rows_visible": true,
+    "source_fact_buttons_visible": true
+  },
+  "external_provider_requests": 0,
+  "generative_model_calls": 0,
+  "human_decisions_submitted": 0,
+  "limitations": [
+    "Operator preferences are synthetic fixtures in a separate namespace; no analyst preferences were chosen by this verification.",
+    "History search and numeric comparison use the existing approved library and cached SEC facts; they do not refresh sources or establish economic causes.",
+    "Independent memory-quality comparison E3 and reviewed learning remain pending.",
+    "Preference deletion retains revision tombstones and minimal audit; secure erasure of SQLite pages, backups and old checkpoints is not claimed."
+  ],
+  "live_runtime_checks": {
+    "checked_at_utc": "2026-10-24T13:40:54.872129+00:00",
+    "checks": [
+      {
+        "name": "private_credentials_available",
+        "observed": {
+          "values_disclosed": false
+        },
+        "passed": true
+      },
+      {
+        "name": "api_health",
+        "observed": {
+          "http_status": 200
+        },
+        "passed": true
+      },
+      {
+        "name": "api_missing_token_rejected",
+        "observed": {
+          "http_status": 401
+        },
+        "passed": true
+      },
+      {
+        "name": "live_api_source_and_model_configuration",
+        "observed": {
+          "expected_model_ids": true,
+          "expected_source_scope": true,
+          "learned_retrieval_claimed": true
+        },
+        "passed": true
+      },
+      {
+        "name": "model_ledger_available_and_ui_state_matches",
+        "observed": {
+          "existing_accounting_unchanged": true,
+          "ledger_available": true,
+          "ui_matches_ledger": true
+        },
+        "passed": true
+      },
+      {
+        "name": "existing_offline_approved_note_preserved",
+        "observed": {
+          "note_count": 3,
+          "original_offline_note_present": true
+        },
+        "passed": true
+      },
+      {
+        "name": "disabled_live_request_gate",
+        "observed": {
+          "applicable": false,
+          "reason": "Enabled gateway: verifier performs no run-creation requests.",
+          "request_sent": false
+        },
+        "passed": true
+      },
+      {
+        "name": "project_runtime_services_running",
+        "observed": {
+          "required_services": 11,
+          "unique_service_containers": true
+        },
+        "passed": true
+      },
+      {
+        "name": "provider_key_absent_from_all_container_environments",
+        "observed": {
+          "exposed_value": false,
+          "inspected_container_count": 12
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_private_ports_and_egress",
+        "observed": {
+          "backend_and_provider_egress_only": true,
+          "no_host_ports": true
+        },
+        "passed": true
+      },
+      {
+        "name": "app_and_mcp_remain_backend_only",
+        "observed": {
+          "checked_service_count": 5
+        },
+        "passed": true
+      },
+      {
+        "name": "provider_key_file_is_gateway_only_and_read_only",
+        "observed": {
+          "gateway_only": true,
+          "matching_mount_count": 1
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_has_separate_ledger_and_no_research_history_mount",
+        "observed": {
+          "expected_mount_targets_only": true,
+          "ledger_separate_from_research_history": true,
+          "other_mounts_read_only": true
+        },
+        "passed": true
+      },
+      {
+        "name": "gateway_process_restrictions",
+        "observed": {
+          "all_capabilities_dropped": true,
+          "nonroot_user": true,
+          "read_only_root": true
+        },
+        "passed": true
+      },
+      {
+        "name": "calculation_worker_still_networkless_and_queue_only",
+        "observed": {
+          "network_none": true,
+          "queue_only": true,
+          "read_only_root": true
+        },
+        "passed": true
+      },
+      {
+        "name": "model_gateway_rejects_missing_internal_credential",
+        "observed": {
+          "http_status": 401,
+          "paid_completion_requested": false
+        },
+        "passed": true
+      },
+      {
+        "name": "backend_network_remains_internal",
+        "observed": {
+          "expected_project": true,
+          "internal": true
+        },
+        "passed": true
+      },
+      {
+        "name": "prometheus_app_scrape_ready",
+        "observed": {
+          "no_scrape_error": true,
+          "target_up": true
+        },
+        "passed": true
+      },
+      {
+        "name": "grafana_database_ready",
+        "observed": {
+          "http_status": 200
+        },
+        "passed": true
+      }
+    ],
+    "docker_context": "desktop-linux",
+    "human_decisions_performed": false,
+    "model_profile": "live-step10-google-critic-v1",
+    "models": {
+      "critic": "google/gemini-2.5-flash",
+      "producer": "mistralai/mistral-medium-3.1"
+    },
+    "project": "analyst-desk-journey",
+    "provider": "role-specific",
+    "provider_completion_requests_sent_by_verifier": 0,
+    "research_runs_created_by_verifier": 0,
+    "run_creation_probes_sent": 0,
+    "scope": "Live-overlay readiness, disabled-budget rejection when applicable, configured Docker boundaries, and authentication. No paid research, semantic benchmark, active containment attack or alert firing test.",
+    "status": "passed"
+  },
+  "notes_published": 0,
+  "numeric_comparisons": [
+    {
+      "current_source_verified_rows": 6,
+      "generative_model_calls": 0,
+      "rows": 6
+    },
+    {
+      "current_source_verified_rows": 6,
+      "generative_model_calls": 0,
+      "rows": 6
+    },
+    {
+      "current_source_verified_rows": 6,
+      "generative_model_calls": 0,
+      "rows": 6
+    }
+  ],
+  "operator_phases": [
+    {
+      "approved_history_reference_count": 0,
+      "authenticated_tool_calls": 0,
+      "checks": {
+        "existing_approved_note_versions_unchanged": true,
+        "existing_research_runs_unchanged": true,
+        "operator_profile_saved_with_compare_and_swap": true,
+        "operator_profile_survives_close_and_reopen": true,
+        "operator_profile_uses_separate_langgraph_namespace": true,
+        "public_coverage_survives_close_and_reopen": true,
+        "real_analyst_note_policy_unchanged": true,
+        "real_analyst_preferences_unchanged": true,
+        "stale_operator_revision_rejected": true
+      },
+      "checks_passed": 9,
+      "checks_total": 9,
+      "company_count": 12,
+      "company_year_count": 36,
+      "existing_approved_note_count": 3,
+      "existing_research_run_count": 10,
+      "external_provider_requests": 0,
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "The operator preference is a declared synthetic fixture in a separate namespace, not an analyst's preference or human review.",
+        "Close/reopen checks confirm database persistence; a receipt from inspect after an externally recorded service restart is separate restart evidence.",
+        "Cleanup removes the synthetic preference values while retaining its revision tombstone, minimal audit and public source coverage.",
+        "This does not claim secure erasure of SQLite pages, backups or old checkpoints, or independent memory-quality evaluation."
+      ],
+      "notes_published": 0,
+      "phase": "prepare",
+      "research_runs_created": 0,
+      "sector_counts": {
+        "Healthcare": 6,
+        "Technology": 6
+      },
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "verification_kind": "operator_persistent_memory_and_authenticated_portal"
+    },
+    {
+      "approved_history_reference_count": 3,
+      "authenticated_tool_calls": 1,
+      "checks": {
+        "authenticated_portal_returns_only_approved_scoped_metadata": true,
+        "existing_approved_note_versions_unchanged": true,
+        "existing_research_runs_unchanged": true,
+        "operator_actor_cannot_read_real_analyst_notes": true,
+        "operator_fixture_leaves_real_namespace_unchanged": true,
+        "operator_profile_persisted": true,
+        "operator_profile_uses_separate_langgraph_namespace": true,
+        "portal_note_hashes_and_archive_flags_match_library": true,
+        "public_coverage_persisted": true,
+        "real_analyst_note_policy_unchanged": true,
+        "real_analyst_preferences_unchanged": true
+      },
+      "checks_passed": 11,
+      "checks_total": 11,
+      "company_count": 12,
+      "company_year_count": 36,
+      "existing_approved_note_count": 3,
+      "existing_research_run_count": 10,
+      "external_provider_requests": 0,
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "The operator preference is a declared synthetic fixture in a separate namespace, not an analyst's preference or human review.",
+        "Close/reopen checks confirm database persistence; a receipt from inspect after an externally recorded service restart is separate restart evidence.",
+        "Cleanup removes the synthetic preference values while retaining its revision tombstone, minimal audit and public source coverage.",
+        "This does not claim secure erasure of SQLite pages, backups or old checkpoints, or independent memory-quality evaluation."
+      ],
+      "notes_published": 0,
+      "phase": "inspect",
+      "research_runs_created": 0,
+      "sector_counts": {
+        "Healthcare": 6,
+        "Technology": 6
+      },
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "verification_kind": "operator_persistent_memory_and_authenticated_portal"
+    },
+    {
+      "approved_history_reference_count": 0,
+      "authenticated_tool_calls": 0,
+      "checks": {
+        "existing_approved_note_versions_unchanged": true,
+        "existing_research_runs_unchanged": true,
+        "operator_preference_deletion_survives_reopen": true,
+        "operator_preferences_deleted_to_empty_version_tombstone": true,
+        "operator_profile_uses_separate_langgraph_namespace": true,
+        "public_coverage_retained_separately": true,
+        "real_analyst_note_policy_unchanged": true,
+        "real_analyst_preferences_unchanged": true
+      },
+      "checks_passed": 8,
+      "checks_total": 8,
+      "company_count": 12,
+      "company_year_count": 36,
+      "existing_approved_note_count": 3,
+      "existing_research_run_count": 10,
+      "external_provider_requests": 0,
+      "generative_model_calls": 0,
+      "human_decisions_submitted": 0,
+      "limitations": [
+        "The operator preference is a declared synthetic fixture in a separate namespace, not an analyst's preference or human review.",
+        "Close/reopen checks confirm database persistence; a receipt from inspect after an externally recorded service restart is separate restart evidence.",
+        "Cleanup removes the synthetic preference values while retaining its revision tombstone, minimal audit and public source coverage.",
+        "This does not claim secure erasure of SQLite pages, backups or old checkpoints, or independent memory-quality evaluation."
+      ],
+      "notes_published": 0,
+      "phase": "cleanup",
+      "research_runs_created": 0,
+      "sector_counts": {
+        "Healthcare": 6,
+        "Technology": 6
+      },
+      "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+      "status": "passed",
+      "verification_kind": "operator_persistent_memory_and_authenticated_portal"
+    }
+  ],
+  "research_runs_created": 0,
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "status": "passed",
+  "step": 13,
+  "test_suite": {
+    "passed": 910
+  },
+  "verification_kind": "deployed_analyst_memory"
+}

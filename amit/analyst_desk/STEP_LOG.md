@@ -2,7 +2,7 @@
 
 This is the implementation sequence we followed to build Analyst Desk. It explains what each step adds, where to find it, and how it supports the capstone. These are **our build steps**, not the brief's numbered request walkthrough.
 
-**Current result:** a Docker Compose application covers twelve companies in two sectors with BM25/vector fusion and local reranking. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
+**Current result:** a Docker Compose application covers twelve companies in two sectors with BM25/vector fusion, local reranking and persistent analyst memory. Editable defaults, coverage and scoped approved history support follow-up research. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
 
 **Reading the brief references:** general requirements are on pages 2–6. The Analyst Desk section is printed pages **15–16**, which are **PDF pages 7–8** in the supplied extract. The final-review questions are printed p.17 (PDF page 9). References below use the printed page numbers.
 
@@ -222,6 +222,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [desk/memory_comparison.py](desk/memory_comparison.py), [tests/test_memory_comparison.py](tests/test_memory_comparison.py) | Compare immutable approved numeric history with current canonical facts only when dates and units match. |
 | [web/memory.js](web/memory.js), [web/app.js](web/app.js), [web/index.html](web/index.html), [web/style.css](web/style.css) | Save/delete defaults, inspect coverage, search cited history, compare facts and exclude/restore future note reuse. |
 | [ops/verify_memory_runtime.py](ops/verify_memory_runtime.py), [tests/test_memory_runtime_verifier.py](tests/test_memory_runtime_verifier.py), [Dockerfile](Dockerfile), [.dockerignore](.dockerignore) | Isolated operator checks for persistent memory and authenticated portal search, packaged explicitly into the shared image. |
+| [docs/ANALYST_MEMORY.md](docs/ANALYST_MEMORY.md), [docs/MEMORY_POLICY.md](docs/MEMORY_POLICY.md), [evidence/analyst_memory_verification.json](evidence/analyst_memory_verification.json) | Team usage guide, precise retention/correction rules and observed Docker/API/browser verification. |
 
 **Capstone connection:** p.3, L9 persistent memory and memory policy; pp.15–16, coverage, analyst preferences, prior research and follow-up questions; p.3, L8/L14 checkpoint and exact-version review. Reviewed lessons and independent memory evaluation remain separate work.
 
@@ -230,10 +231,13 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 13a — Define memory storage and controls | Choose actor-namespaced LangGraph SQLite memory alongside publication records so final publication can atomically check memory versions. Define allowlisted preferences, source coverage, bounded approved history and deletion semantics before implementation. |
 | 13b — Build durable memory and approved-history selection | Save typed preferences with thirty-day expiry and revision-based correction/deletion. Persist source coverage under its fingerprint. Select up to three approved references after actor/company/year filtering, within a fifty-candidate window; excluded notes remain in the approved library. Memory versions and selected note hashes are checked inside the publication transaction. Core storage/history tests cover isolation, rollback, expiry, restart and concurrent changes. |
 | 13c — Connect memory to research and the interface | Reviewed plans bind preference versions and selected note hashes; changes or expiry block stale approvals and resumed work. Code applies table-first/summary-first layout. Historical references remain local, separate from current SEC evidence and model prompts. The interface exposes preference correction/deletion, coverage, cited history and fact comparison. Memory-off tests preserve verified figures; all 910 tests pass. |
+| 13d — Verify deployed memory and document team usage | Nine preparation checks, eleven checks after a service restart and eight cleanup checks pass using a separate operator namespace. One authenticated planner history call returns three approved references. Sixteen deployed API/preservation checks and nineteen general runtime checks pass. The browser shows scoped history, the exact compared note, six verified margin rows, source buttons and limitations. Existing preferences, note policy, research runs, three approved notes and spending records remain unchanged. No model calls, new research runs, human decisions or note publications are made. |
+
+**Verified memory result:** preferences and source coverage persist locally; approved history is bounded, versioned and separate from current evidence. Analyst controls cover correction, deletion, exclusion and restoration. Independent E3 quality comparison and human-reviewed lessons remain outstanding.
 
 ## What the team builds next
 
-1. **Source validation, retrieval review and memory:** validate original Item/table ingestion, obtain independent relevance labels and evaluate protected questions. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
+1. **Source validation and retrieval review:** validate original Item/table ingestion, obtain independent relevance labels and evaluate protected questions.
 2. **Agents, learning and robustness:** complete specialist ReAct/replanning evidence, reviewed development lessons, relevant lesson retrieval, active-operation recovery, threat model and independently authored attacks.
 3. **Independent evaluation:** protected cases, human risk labels, calibrated outcome judge, fair baselines and repeated E1–E4 comparisons.
 4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.

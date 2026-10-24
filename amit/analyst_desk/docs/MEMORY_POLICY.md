@@ -1,31 +1,54 @@
-# Analyst Desk: proposed memory policy
+# Analyst Desk: memory policy
 
-**Current build proposal | 24 October 2026**
+Analyst memory retains explicit research defaults, source-derived coverage and bounded references to approved notes. It serves one authenticated local analyst. Docker restart and persistence verification passed for this step; the implemented controls and storage limits are described below.
 
-This policy defines the intended local implementation. Persistence, access controls, deletion and isolation must be demonstrated before they are reported as working. The initial deployment serves one local analyst; production multi-user privacy is outside this version.
+## What is retained
 
-## What to retain
+| Record | Implemented contents and use |
+|---|---|
+| Current research | SQLite-backed LangGraph checkpoints retain the request, reviewed scope, plan, evidence IDs, progress, usage, draft version and pending human decision. New plans also freeze the selected memory version. |
+| Analyst preferences | Up to four covered default companies, three unique ascending covered fiscal years, `table_first` or `summary_first` report layout, and a history limit from zero through three. Arbitrary profile text and instructions are rejected. |
+| Company coverage | Immutable metadata keyed by the source fingerprint: company/year rows, financial-input counts, section/passage counts, retained-table counts and source limitations, derived from the supplied corpus. |
+| Approved history | The portal retains the exact approved note, source references, calculations, approval record and publication receipt. Memory selects at most three relevant references by actor, company/year scope and local lexical relevance. |
+| Note-reuse policy | At most 256 excluded note IDs per actor, with a monotonic revision. Exclusion removes a note from future memory selection; its approved publication remains in the library. |
+| Memory audit | Actions, revisions and timestamps. Audit entries do not copy prior preference values or historical note bodies. |
 
-**Current research:** a SQLite-backed LangGraph checkpointer stores the question, approved scope, plan/version, evidence identifiers, completed steps, remaining budget, draft hash and pending human decision. Resume revalidates limits and approval expiry. Bounded context sent to a model contains relevant evidence and summaries; a checkpoint is not unlimited model memory.
+The profile, default selections and historical note prose remain local. When the analyst submits research, the companies and years explicitly selected in the form become the requested scope. The profile and saved default lists are not forwarded to reasoning models. Prior note references remain separate from current SEC evidence; saved history does not establish the correctness of a new financial claim.
 
-**Long-term context:** a namespaced LangGraph store saves explicit formatting preferences, the coverage list and human-reviewed lessons. Retrieve only relevant, bounded records. Private watchlists remain system-side: they must never enter model prompts, external queries or outbound traces. Store no provider keys, credentials or unrelated personal details.
+Conversation transcripts, unrelated personal profiles, provider keys and credentials are not memory fields. Actual profiles, note records and runtime databases remain outside Git. Chroma continues to hold public filing vectors; private preferences and note history are not embedded into it.
 
-**Approved research:** the portal stores the exact approved note version, citations, calculation references and approval/publication receipt. Drafts become publication history only after exact-version approval. Corrections create a visibly superseding version and require renewed approval.
+## Storage and access
 
-**Lessons:** proposals from actual development failures remain pending. Record applicability, evidence, reviewer and acceptance/rejection reason. Only relevant accepted lessons from a selected frozen version may influence research. Retain rejected proposals for evaluation traceability.
+The actual `langgraph.store.sqlite.SqliteStore` supplies the namespaced memory store attached to the compiled graph. Its `store` tables share `/runtime/portal.sqlite` with portal runs, notes and approvals. Namespaces separate each actor's preferences, coverage, reuse policy and memory audit. The graph checkpointer remains in `/runtime/checkpoints.sqlite`.
 
-## Access and storage
+Sharing the portal database lets the publisher validate memory revisions, preference expiry, layout, history limits, exclusions and approved-note references inside the same `BEGIN IMMEDIATE` transaction that consumes the exact-version publication approval. A transaction-aware store adapter preserves outer transactions and rolls back failed writes. Concurrent saves require the expected revision; stale edits return a conflict.
 
-Use persistent Docker volumes for the checkpoint, store and portal databases. Restrict host file access to the local account and give services only their required mounts and authenticated tools. Processes sharing a SQLite file do not gain separate operating-system isolation. The proposed setup does not claim encryption at rest or production tenancy.
+The authenticated API fixes the actor to the configured local analyst. Namespaces provide logical separation; processes sharing the database do not gain operating-system isolation from one another. The deployment does not claim production tenancy or encryption at rest. Existing scoped service credentials and the private runtime volume remain the storage boundary.
 
-## Retention, correction and deletion
+## Expiry, correction and deletion
 
-Proposed development defaults: preferences expire after 30 days; completed unapproved run state and scrubbed operational logs expire after 30 days. Approved publications, review receipts and frozen experiment snapshots remain until deliberate deletion under a documented owner decision. These are defaults for team review, not implemented guarantees.
+| Action or record | Exact retention behavior |
+|---|---|
+| Preference expiry | Values become inactive 30 days after the latest save. Reads report `expired` and return no active values. This is logical expiry, not a purge of profiles, audits, SQLite pages or backups. |
+| Preference correction | Saving replaces the allowlisted profile, increments its revision and starts a new 30-day lifetime. The caller supplies the current revision. |
+| Delete saved preferences | Clears current values and expiry. A minimal revision tombstone remains to prevent an old save or snapshot becoming valid again. Prior requests, checkpoints, publications and audit records remain. |
+| Forget an approved note for future research | Adds its ID to the bounded reuse-exclusion policy. The original note, approval receipt and earlier run remain. Eligibility can be restored later. |
+| Coverage correction | Import corrected sources and create coverage under the new fingerprint. An older snapshot's coverage remains immutable. |
+| Published-note correction | This feature does not overwrite approved publications. A new research version requires code checks, plan review and separate exact-note approval. |
+| Runs, publications, logs and backups | This step adds no automatic 30-day deletion job for these records. Existing notes, runs/checkpoints, approval records and backups retain their existing local retention arrangements. |
 
-Provide inspection and correction of preferences, explicit preference deletion and a separately explained research-history deletion operation. Deleting a preference must not silently delete publications or audit records. Define backup deletion and any retained tombstone before claiming complete erasure. Credentials follow separate secret-management procedures.
+Preference changes, deletion, expiry or reuse-policy changes invalidate pending research that used an earlier memory version. Create a fresh plan; a silent memory refresh cannot change a reviewed draft. Published notes preserve their exact approved content.
 
-## Evaluation boundary and required evidence
+SQLite secure deletion is enabled on the memory connection, but it is not a complete-erasure guarantee. Earlier data may remain in WAL files, existing research records, filesystem snapshots or backups. Profile deletion and note exclusion do not remove those copies. Full research-history or backup erasure is a separate owner-controlled operation outside this step.
 
-Keep private final questions, gold and labels evaluator-owned. An individual submitted question/output may enter its isolated evaluation run records, under evaluator-controlled retention; it must not become shared memory, a lesson or a published note. Reset state between treatments according to the frozen protocol.
+## Human review and evaluation boundary
 
-Demonstrate restart/resume, preference inspection/correction/deletion, scoped history retrieval, watchlist non-disclosure, human lesson review, frozen lessons and memory-on/off comparisons. Record failures and remaining gaps in the [evaluation plan](EVALUATION_PLAN.md); implementation checks are still pending.
+Memory cannot approve a plan, authorize spending, bypass numeric/source verification or publish a note. Plans display frozen memory selections; final publication still requires separate approval for the exact note. Memory is revalidated before continuation and inside the publication transaction.
+
+The per-request memory switch skips saved preference/history selection when off. Unit and integration fixtures check on/off behavior, stale revisions, actor isolation, expiry, deletion, restart and atomic publication. These checks are not the independent capstone E3 experiment or evidence of improved research quality.
+
+Verification completed with 910 passing automated tests, nine Docker preparation checks, eleven checks after an actual service restart and eight cleanup checks. An authenticated planner history request returned three approved-note references. Browser inspection of history and a six-row comparison against current facts also passed. Existing analyst preferences, note-reuse policy, runs and approved notes remained unchanged across preparation, restart inspection and cleanup.
+
+Human-reviewed lessons, frozen accepted-lesson versions and learning from development failures remain future work. Protected final cases, gold and labels remain evaluator-owned and must not become shared memory, lessons or published history. The production UI is not an independent evaluation runner; the [evaluation plan](EVALUATION_PLAN.md) defines the remaining separation and experiments.
+
+See the [analyst memory guide](ANALYST_MEMORY.md) for UI controls, API routes and implementation files.
