@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile": "live-step16-fallbacks-v1",
-  "stage": "primary_producers_verified_writer_content_rejected",
+  "stage": "writer_unicode_schema_fixed_before_explicit_continuation",
   "routes": {
     "producer": {
       "models": [
@@ -208,5 +208,38 @@
     "draft_created": false,
     "new_lesson_proposals": 0,
     "research_completed": false
+  },
+  "original_producer_guidance_checks": {
+    "advisory_block_shape_matches_current_code": true,
+    "checkpoint_exact_lesson_and_memory_context": true,
+    "checkpoint_exact_request_and_plan": true,
+    "checkpoint_exact_run_and_actor": true,
+    "checkpoint_metrics_available_and_public_projection_consistent": true,
+    "checkpoint_repairs_match_run": true,
+    "critic_has_no_selected_hints": true,
+    "exact_opted_in_plan_snapshot": true,
+    "live_request_without_private_memory": true,
+    "one_code_owned_advisory_block": true,
+    "public_corpus_matches_run": true,
+    "registered_apple_development_scope": true,
+    "request_hash_recipe_matches_current_code": true,
+    "same_fixed_hint_in_all_selected_producer_stages": true
+  },
+  "writer_schema_fix": {
+    "selected_tests_passed": 239,
+    "new_unicode_tests": 34,
+    "test_files": [
+      "tests/test_writer_unicode_prose.py",
+      "tests/test_reasoning.py",
+      "tests/test_temporal_provenance.py",
+      "tests/test_live_workflow.py"
+    ],
+    "writer_only_positive_english_prose_pattern": true,
+    "all_unicode_numeric_characters_excluded": true,
+    "existing_semantic_quantity_guards_preserved": true,
+    "risk_response_schemas_preserved": true,
+    "saved_invalid_response_blocked_by_both_schema_engines": true,
+    "provider_requests_during_fix_verification": 0,
+    "application_continuation_started_at_checkpoint": false
   }
 }

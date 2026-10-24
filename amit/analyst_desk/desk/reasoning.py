@@ -83,7 +83,10 @@ class QuoteRiskOutput(StrictOutput):
     comparisons: list[QuoteComparisonOutput] = Field(max_length=2)
 
 
-WRITER_TEXT_PATTERN = r"^[^0-9\r\n\[\]<>`%$*_#]*$"
+# A positive English-prose alphabet rejects numeric characters from every
+# Unicode script in both the provider schema and local Pydantic validation.
+# The authoritative validator still enforces additional prose and quantity rules.
+WRITER_TEXT_PATTERN = r"""^[A-Za-z .,;:!?'"()/&‘’“”–—…-]*$"""
 
 
 class QuoteWriterFinding(QuoteFinding):
@@ -163,7 +166,8 @@ QUOTE_SELECTION_INSTRUCTIONS = ("For citations, choose quote_ids only from the s
     "A selected quotation still needs to support the complete claim. Do not force an unsupported finding; "
     "risk comparisons with inadequate support must use status insufficient_evidence.")
 
-WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative prose only. "
+WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative English prose using English letters and ordinary punctuation only. "
+    "Do not include numerals from any script, including Unicode digit substitutes, Roman-numeral characters or superscripts. "
     "Calendar dates and fiscal-year numbers in the question, plan, verified table and quote metadata are context for citations, not wording to copy into claim.text. "
     "Refer to relevant observations as 'across the compared periods' or 'the earlier and later filings'; do not spell out dates or numbers to evade the rule. "
     "A compliant form is 'Selected disclosures continue to discuss supply chain exposure.' Use that form only when the selected quotations actually support the claim. "
