@@ -269,3 +269,15 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.
 
 These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/submission rules and p.16's Analyst Desk build/demo. [docs/START_HERE.md](docs/START_HERE.md) is the entry point; [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) tracks the evaluation protocol.
+
+## Team onboarding — Reproduce the desk on another machine
+
+**What this update does:** makes the repository usable by a teammate starting with a fresh checkout. The README explains the branch/folder, Python/Docker installation, separately shared public source data, pinned model downloads, credential files, offline checks, optional live authorization, first research and safe restart/update steps.
+
+| Files | Purpose |
+|---|---|
+| [README.md](README.md), [repository entry point](../../README.md) | Detailed teammate setup and a direct entry link from GitHub. |
+| [data/README.md](data/README.md), [docs/HYBRID_RETRIEVAL.md](docs/HYBRID_RETRIEVAL.md) | Distinguish original source import from exact prepared-data handoff and use an explicit matching model cache. |
+| [docs/LIVE_AI_RUNBOOK.md](docs/LIVE_AI_RUNBOOK.md), [docs/TWO_COMPANY_JOURNEY.md](docs/TWO_COMPANY_JOURNEY.md) | Align live image/model setup and label historical two-company instructions. |
+
+**Capstone connection:** L16 installation/reproducibility and L14 explicit spending/research review. The guide uses each teammate's own local credentials; public data is handed off separately. Commands are checked against the implementation and in isolated dummy-credential preparation. A complete clean-machine installation on another teammate's hardware remains a separate validation.

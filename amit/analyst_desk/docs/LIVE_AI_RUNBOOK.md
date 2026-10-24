@@ -1,10 +1,10 @@
 # Run the live reasoning pilot
 
-The optional live deployment adds model reasoning to the existing Microsoft/Apple journey. The offline mode and its approved note remain available. Use [ADR-002](ADR-002-LIVE_REASONING.md) for the design, scope and limits. Work remains on `Amit/analyst_desk`.
+The optional live deployment adds model reasoning to the current twelve-company desk. Existing offline research and approved notes remain available. For a fresh teammate installation, follow the [complete setup guide](../README.md), including public-data acquisition, retrieval preparation and your own credentials. Use [ADR-002](ADR-002-LIVE_REASONING.md) for the design, scope and limits. Work remains on `Amit/analyst_desk`.
 
 ## Prepare privately, without spending
 
-First prepare the reviewed SEC source snapshot as described in the [original journey runbook](TWO_COMPANY_JOURNEY.md). A current clone also needs the offline image built once before the live overlay, because unchanged MCP/worker services retain that image.
+First prepare the matching public SEC source snapshot and local retrieval bundle as described in the [current setup guide](../README.md). The live overlay builds and assigns its shared image to every Python service, including the MCP tools and worker; no separate prior offline image is required. The README recommends testing offline first to establish a working baseline.
 
 From this contribution folder, prepare a disabled proposal using a local private env file containing `OPENROUTER_API_KEY`:
 
@@ -12,8 +12,9 @@ From this contribution folder, prepare a disabled proposal using a local private
 python3 ops/prepare_live.py --prepare --provider-env /absolute/path/to/private.env
 python3 ops/start_live.py --check
 python3 ops/start_live.py --start
-python3 ops/verify_live_runtime.py
 ```
+
+The historical `verify_live_runtime.py` also expects a specific approved note from the original installation. It is not a universal fresh-install check; use the README health/UI/catalogue checks on a new teammate machine.
 
 The helper extracts only the requested key. It never evaluates an env file or copies the older application. The key file is inside ignored `.runtime/live/`, whose directory is private. Only the gateway receives its read-only bind mount; the key is not a browser token, model prompt, container environment value or Git artifact. The nonroot gateway reads this one file. Keep the private folder and its contents out of shared archives as well as Git.
 
@@ -27,7 +28,7 @@ After a real authorization, run `python3 ops/start_live.py --start` again. It re
 
 ## Change a reviewed model profile without resetting spending
 
-ADR-003 selects Mistral Medium 3.1 and Mistral Large 3 through the pinned `mistral/zdr` endpoint. Before switching an older installation, start the updated gateway once with its unchanged original policy. This safely initializes the cumulative ledger ceiling from that original policy; a new policy cannot perform the legacy migration.
+ADR-003 records the earlier Mistral profile. The current profile uses Mistral Medium 3.1 for producing roles and Google Gemini 2.5 Flash for criticism; the [teammate setup guide](../README.md#9-prepare-review-and-authorize-the-live-configuration) gives the fresh-install `google-critic` switch and genuine authorization sequence. The earlier all-Mistral profile uses the pinned `mistral/zdr` endpoint. Before switching an older installation, start the updated gateway once with its unchanged original policy. This safely initializes the cumulative ledger ceiling from that original policy; a new policy cannot perform the legacy migration.
 
 Use `python3 ops/prepare_live.py --switch-profile mistral --expected-hash CURRENT_HASH`. The helper privately archives the old policy and authorization, retains credentials and all limits, and creates a disabled replacement with a fresh policy ID. It does not change the ledger or contact a provider. Review the resulting exact hash before recording activation and reloading the gateway. Record the actual basis of authorization truthfully: an explicit request delegating supported model selection within a previously approved, unchanged cap is distinct from a human review of the exact model IDs. Neither authorizes the generated research plan or note.
 
@@ -80,4 +81,4 @@ Paid responses now have a gateway-private output audit with a bounded generation
 
 Run `python3 ops/check_secrets.py --history` before each commit/push. It checks the real local provider and analyst credentials, plus regular nonsymlink key files in private `.runtime/live/retired/` and `.runtime/live/key_vault/`, against staged content and reachable history without printing their values. Separately stored keys are checked even if they have never been active. Keep all credential archives private so key replacement does not remove them from later scans. Replacing the gateway credential must preserve the existing authorization, ledger and all reservations; reload the gateway to use the replacement file. Provider refusals require diagnosis; automatic credential fallback is disabled. The guard supplements `.gitignore`; it is not a general-purpose secret detector for unknown credentials.
 
-The model gateway restricts the provider URL/models in code. Its egress network is not a domain firewall. Learned semantic retrieval, trained injection/safety classifiers, full original-section validation, independent semantic evaluation and crash recovery during active operations remain future work. Exact quotations establish provenance; internal model criticism and human approval do not establish an independent benchmark score.
+The model gateway restricts the provider URL/models in code. Its egress network is not a domain firewall. Hybrid retrieval and trained local reranking are implemented; see the [retrieval guide](HYBRID_RETRIEVAL.md). Trained injection/safety classifiers, full original-section validation, independent semantic evaluation and crash recovery during active operations remain outstanding. Exact quotations establish provenance; internal model criticism and human approval do not establish an independent benchmark score.

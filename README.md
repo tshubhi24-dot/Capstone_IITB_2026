@@ -1,18 +1,22 @@
-# Amit's Analyst Desk contribution
+# Analyst Desk: Amit's contribution
 
-This branch, `Amit/analyst_desk`, contains Amit's current capstone work under
-[`amit/analyst_desk`](amit/analyst_desk/README.md).
+To try the current project, use branch **`Amit/analyst_desk`** and follow the detailed [teammate installation and first-run guide](amit/analyst_desk/README.md).
 
-- [Start here](amit/analyst_desk/docs/START_HERE.md)
-- [Step-by-step implementation and evidence](amit/analyst_desk/STEP_LOG.md)
-- [Current live-pilot status](amit/analyst_desk/evidence/live_pilot_status.json)
+That guide covers:
 
-Other contributors' folders inherited from the original repository are excluded
-from this branch's current file tree. Their work remains in `main` and Git history.
-This is a branch presentation choice, not a request to delete team work during
-integration. Team integration should include only the intended `amit/` changes.
+- What to clone/pull and which folder to use.
+- Git, Python 3.12, Docker Desktop and the required Docker context.
+- The separate public SEC data package and pinned local model downloads.
+- Offline startup, the generated analyst token, health/tool checks and your first research note.
+- Your own OpenRouter key, its private file location, model selection and explicit spending authorization.
+- Memory, reviewed lessons, stopping/restarting, updates and troubleshooting.
 
-Work is committed in separate steps. Nothing is merged directly into `main`.
-Provider keys, local research history and runtime files stay private and outside Git.
+**A clone alone cannot run:** the public SEC source snapshot is shared separately; the guide explains how to obtain, verify and install it. Each teammate generates their own credentials. Keys, local research history, authorizations and runtime databases are not in Git.
 
-Repository documentation records implementation decisions, measured results and contribution attribution. Keep conversation transcripts, personal account information and credential inventories in private local storage.
+Useful project references:
+
+- [Step-by-step implementation and capstone connections](amit/analyst_desk/STEP_LOG.md)
+- [Architecture and current project status](amit/analyst_desk/docs/START_HERE.md)
+- [Independent evaluation plan](amit/analyst_desk/docs/EVALUATION_PLAN.md)
+
+This branch contains the contribution under `amit/analyst_desk`. Other teammates' work remains in `main`; nothing here is merged directly into `main`. See [branch scope](amit/analyst_desk/docs/BRANCH_SCOPE.md).

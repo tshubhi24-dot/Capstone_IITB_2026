@@ -65,15 +65,17 @@ Download only the pinned public model files during preparation. This network ste
 
 ```sh
 python - <<'PY'
+from pathlib import Path
 from huggingface_hub import snapshot_download
 from desk.retrieval import load_config
 
+cache = Path.home() / ".cache/huggingface/hub"
 config = load_config()
 for role in ("encoder", "reranker"):
     model = config[role]
     snapshot_download(
         repo_id=model["id"], revision=model["revision"],
-        allow_patterns=list(model["files"]), token=False,
+        allow_patterns=list(model["files"]), cache_dir=str(cache), token=False,
     )
 PY
 ```

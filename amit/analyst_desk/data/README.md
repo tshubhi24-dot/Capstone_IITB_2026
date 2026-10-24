@@ -36,6 +36,8 @@ The [final runtime check](../evidence/retrieval_deployment_runtime.json) passed 
 
 ## Prepare the source snapshot
 
+For a teammate reproducing the current build, use the [public source handoff](../README.md#4-obtain-the-public-sec-data-package): copy the byte-identical prepared snapshot only after checking its tracked manifest hash. The importer below is for an **original consolidated input corpus**, not an already-normalized installed snapshot. It does not download SEC data.
+
 Supply a public SEC corpus with `metadata`, `companies`, `facts` and `passages`:
 
 ```sh

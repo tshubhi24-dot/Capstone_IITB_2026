@@ -1,5 +1,7 @@
 # First two-company research journey
 
+**Historical Step 4–5 milestone.** This page records the original two-company/BM25 build and its evidence. The current default covers twelve companies with hybrid retrieval and reranking; use the [teammate installation guide](../README.md) for current setup. Commands below describe the earlier milestone and are not a fresh-install checklist.
+
 This step builds a fresh Docker Compose workflow for Microsoft and Apple, fiscal years 2023–2025. It uses actual cached SEC annual facts and filing passages. Research is deterministic and offline: BM25 lexical retrieval, fixed calculations and text comparisons, with **zero language-model calls and a zero-dollar model budget**.
 
 **Current verification status:** the local Docker journey completed on 24 October 2026. Both version-bound human review gates completed; one note was saved. The run made 18 actual MCP calls, verified 18 displayed financial values and made zero model calls. All 53 local automated tests and eleven runtime-readiness checks passed. The note survived an application restart; all four running MCP services rejected unauthenticated requests. See the [journey receipt](../evidence/two_company_journey.json), [runtime checks](../evidence/runtime_checks.json) and [restart/authentication evidence](../evidence/journey_verification.json).
