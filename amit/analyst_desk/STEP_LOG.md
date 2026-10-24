@@ -83,3 +83,11 @@ Strengthened the secret scanner to check all locally configured known provider c
 Planner run `85610a1da9094a208354fa3d7c3f5e34` again returned generic HTTP 403 before producing a plan. The ledger then held US$0.1125376 for four uncertain calls. Diagnostic validation and catalogue checks did not establish generation permission or a diagnosed restriction.
 
 Added a bounded HTTP-403 diagnostic reader for fixed provider-reported hints. It can inspect immediate error fields, documented allowlisted metadata codes and one nested provider JSON wrapper in memory; conflicting or unknown hints remain generic. Raw responses, credential values and arbitrary upstream codes do not enter stored traces. All 229 local tests passed in 8.58 seconds with mocked provider responses where applicable. The provider route, privacy restrictions and reservation policy are unchanged. The access-failure receipt remains generic; no cause or successful live output is backfilled.
+
+## Step 9e — Inspect OpenRouter directly and identify the reported refusal
+
+Read-only provider diagnostics and an additional application planner attempt preceded a direct operator probe. No account settings were changed.
+
+After a diagnostic-reader reload preserved the ledger and note library, planner run `e71ebfd9308e4ade87b85609e814cb49` returned generic HTTP 403. Direct operator diagnostic `operator-diagnostic-e193ed3b68d249058a519bb020873a96` used the same approved models/prices, research scope and reservation ledger. Selected provider error fields reported a Terms of Service refusal. The specific rule remains unverified; raw responses and account information are excluded from public evidence.
+
+Five application planner attempts and one direct operator probe now retain US$0.1688064 in uncertain reservations, leaving US$0.8311936 under the original US$1 authorization. Zero reported spend does not establish zero actual charges. Both private notes remain available. Further generation stopped pending provider clarification; no model/provider substitution, control bypass, reservation reset, live human approval or publication occurred. Sanitized evidence is in `evidence/openrouter_access_diagnosis.json`; earlier receipts remain historical. The step does not claim successful live research or independent semantic evaluation.

@@ -19,6 +19,7 @@ The course guide permits AI coding assistance and assigns problem framing, desig
 | 24 October 2026 | Controlled diagnostic attempt and persistence check | A new planner attempt under the same authorization returned HTTP 403. Both holds total US$0.0562688. The ledger and existing private library survived gateway/application restarts; no additional completions were requested after identifying access refusal. Exact provider restriction and successful live execution remain pending. |
 | 24 October 2026 | Explicit retry after access refusal | One separately authorized planner attempt under the same US$1 cap returned HTTP 403. Three holds totalled US$0.0844032; no further completion occurred in this retry. Existing notes remained available. |
 | 24 October 2026 | Provider access probe | One generation attempt returned HTTP 403 with authorization, prior reservations and the library preserved. Four holds totalled US$0.1125376; the exact access restriction remained unresolved. |
+| 24 October 2026 | Direct provider diagnosis | One additional application planner attempt and one direct diagnostic used the existing ledger. The provider reported a Terms of Service refusal; the specific rule remained unknown. Six request attempts retained US$0.1688064 in holds and generation stopped. |
 
 ## Team role assignments
 

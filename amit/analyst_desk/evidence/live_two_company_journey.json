@@ -1,8 +1,8 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T08:26:26.098196+00:00",
+  "updated_at": "2026-10-24T08:47:32.488095+00:00",
   "base_url": "http://127.0.0.1:18080",
-  "run_id": "84a7d9a88ac046e39e3b61d7c7692803",
+  "run_id": "e71ebfd9308e4ade87b85609e814cb49",
   "status": "error",
   "stage": "error",
   "configuration": {

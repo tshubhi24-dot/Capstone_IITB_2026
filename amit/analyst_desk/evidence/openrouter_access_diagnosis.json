@@ -1,0 +1,45 @@
+{
+  "record_kind": "direct_openrouter_access_diagnosis",
+  "recorded_at_utc": "2026-10-24T09:00:02.337385+00:00",
+  "status": "provider_reported_terms_refusal",
+  "latest_application_run_id": "e71ebfd9308e4ade87b85609e814cb49",
+  "direct_operator_probe_run_id": "operator-diagnostic-e193ed3b68d249058a519bb020873a96",
+  "request_attempts": {
+    "application_planner_runs": 5,
+    "direct_operator_diagnostics": 1,
+    "total": 6
+  },
+  "http_status": 403,
+  "stored_gateway_error_code": "provider_http_403",
+  "operator_interpretation": "Selected error field reported a provider Terms of Service refusal; no specific rule was established.",
+  "approved_models_listed": true,
+  "no_model_request_validation_worked": true,
+  "budget": {
+    "enabled": true,
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0",
+    "held_usd": "0.1688064",
+    "committed_usd": "0.1688064",
+    "remaining_authorization_usd": "0.8311936",
+    "model_calls": 6,
+    "tokens": 400416,
+    "uncertain_calls": 6,
+    "blocked": false
+  },
+  "existing_notes_available": 2,
+  "further_generation_requests": "stopped_pending_provider_clarification",
+  "live_plan_approved": false,
+  "live_note_published": false,
+  "checks": {
+    "local_tests_passed": 229,
+    "local_elapsed_seconds": 8.58,
+    "runtime_checks_passed": 19
+  },
+  "limitations": [
+    "Provider-reported refusal does not independently establish that the analyst violated a particular rule.",
+    "Dashboard absence of requests is not proof that no charge occurred. All uncertain holds remain counted.",
+    "The direct operator probe used the same authorization, models, prices and persistent ledger; it was not an application journey or human-approved plan.",
+    "Credential values, account identifiers, raw provider payloads and the full private operator report are excluded from this public receipt."
+  ]
+}
