@@ -146,6 +146,37 @@ def test_invalid_model_output_is_charged_but_never_returned_or_retried(tmp_path,
     assert len(calls) == 1
 
 
+@pytest.mark.parametrize("returned_model", ["openai/gpt-4.1", None, KEY])
+def test_wrong_model_is_charged_and_terminal_with_safe_model_metadata(tmp_path, config, returned_model):
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(200, json=response(model=returned_model)))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "model_output_invalid"
+    summary = engine.budget()
+    assert summary["reported_spend_usd"] == "0.0001" and summary["held_usd"] == "0" and summary["uncertain_calls"] == 0
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT status,result,usage FROM model_calls").fetchone()
+    usage = json.loads(row["usage"])
+    assert row["status"] == "invalid_output" and row["result"] is None
+    assert usage["requested_model"] == "openai/gpt-4.1-mini"
+    assert usage["returned_model"] == ("openai/gpt-4.1" if returned_model == "openai/gpt-4.1" else "unapproved")
+    assert KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    with pytest.raises(ProviderError) as repeat:
+        engine.complete(**arguments())
+    assert repeat.value.code == "call_not_retriable" and len(calls) == 1
+
+
+@pytest.mark.parametrize("prompt,completion", [(32769, 0), (10, 257)])
+def test_prompt_and_completion_tokens_obey_separate_limits(tmp_path, config, prompt, completion):
+    usage = {"prompt_tokens": prompt, "completion_tokens": completion, "total_tokens": prompt + completion, "cost": .0001}
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(200, json=response(usage=usage)))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == "model_output_invalid"
+    assert engine.budget()["reported_spend_usd"] == "0.0001" and engine.budget()["held_usd"] == "0"
+    assert len(calls) == 1
+
+
 def test_provider_credential_echo_never_enters_results_or_private_cache(tmp_path, config):
     engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(200, json=response(content={"answer": KEY})))
     with pytest.raises(ProviderError) as error:

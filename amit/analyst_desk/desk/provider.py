@@ -256,8 +256,11 @@ class ReasoningGateway:
             if raw_usage["total_tokens"] != raw_usage["prompt_tokens"] + raw_usage["completion_tokens"] or raw_usage["total_tokens"] == 0:
                 raise ValueError("Inconsistent provider usage")
             cost = decimal(raw_usage["cost"])
+            returned_model = data.get("model")
+            safe_model = returned_model if isinstance(returned_model, str) and returned_model in MODEL_RATES else "unapproved"
             usage = {"model_calls": 1, **{key: raw_usage[key] for key in ("prompt_tokens", "completion_tokens", "total_tokens")},
-                     "cost_usd": str(cost), "model": policy["id"], "call_id": call_id}
+                     "cost_usd": str(cost), "model": policy["id"], "requested_model": policy["id"],
+                     "returned_model": safe_model, "call_id": call_id}
         except Exception as exc:
             self.ledger.uncertain(call_id, "provider_usage_uncertain")
             network_error = "provider_request_failed" if isinstance(exc, ProviderError) and exc.code == "provider_request_failed" else "provider_usage_uncertain"
@@ -267,8 +270,12 @@ class ReasoningGateway:
             raise ProviderError(network_error, "The provider outcome or charge is uncertain; its full reservation is retained and no automatic retry is allowed.")
         result, output_error = None, None
         try:
-            if data.get("model") != policy["id"] or raw_usage["prompt_tokens"] > config["prompt_token_ceiling"] or raw_usage["completion_tokens"] > max_output_tokens:
-                raise ValueError("Unexpected model or token usage")
+            if returned_model != policy["id"]:
+                raise ValueError("The returned model is not the exact approved model")
+            if raw_usage["prompt_tokens"] > config["prompt_token_ceiling"]:
+                raise ValueError("The provider prompt exceeded its token ceiling")
+            if raw_usage["completion_tokens"] > max_output_tokens:
+                raise ValueError("The provider completion exceeded its token ceiling")
             choice = data["choices"][0]
             if choice.get("finish_reason") != "stop":
                 raise ValueError("Incomplete model output")

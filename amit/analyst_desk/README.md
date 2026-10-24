@@ -14,6 +14,7 @@ This folder contains the current capstone work prepared from the beginning. It d
 | 4 | [Fresh Docker journey implementation](docs/TWO_COMPANY_JOURNEY.md) | Built and running; 53 local automated checks pass. |
 | 5 | [Human-reviewed two-company journey](evidence/two_company_journey.json) | Version-bound plan and note approvals recorded; one note saved. [Runtime checks](evidence/runtime_checks.json) and [restart/authentication evidence](evidence/journey_verification.json) pass. |
 | 6 | [Live AI foundation and staged plan](docs/LIVE_AI_STEPS.md) | Provider gateway, persistent spending ledger and known-secret checks prepared and tested. Paid activation remains disabled; workflow/deployment integration follows. |
+| 7 | Evidence-grounded live specialist workflow | AI plan/query/disclosure/writer/critic stages integrated with source checks and existing human gates. Mocked tests pass; paid activation remains disabled. |
 
 Each completed step has its own commit. Commit timestamps reflect when work was committed; they do not backdate human reviews or experiments. See [step history](STEP_LOG.md) and [contribution provenance](docs/CONTRIBUTIONS.md).
 
