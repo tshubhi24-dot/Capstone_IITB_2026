@@ -9,9 +9,9 @@
     "authenticated_empty_request_http": 400,
     "model_selected": false,
     "generation_possible": false,
-    "model_catalogue_http": 200,
     "producer_model_listed": true,
-    "critic_model_listed": true
+    "critic_model_listed": true,
+    "model_catalogue_http": 200
   },
   "budget": {
     "enabled": true,

@@ -38,7 +38,6 @@
   },
   "limitations": [
     "Provider-reported refusal does not independently establish that the analyst violated a particular rule.",
-    "Dashboard absence of requests is not proof that no charge occurred. All uncertain holds remain counted.",
     "The direct operator probe used the same authorization, models, prices and persistent ledger; it was not an application journey or human-approved plan.",
     "Credential values, account identifiers, raw provider payloads and the full private operator report are excluded from this public receipt."
   ]

@@ -1,5 +1,6 @@
 """Manual client boundary checks; mocked transport makes no real decisions."""
 from copy import deepcopy
+import hashlib
 import importlib.util
 import io
 import json
@@ -80,7 +81,8 @@ def test_note_approval_blocked_by_failed_critic_without_post(client, monkeypatch
     assert calls == ["GET"]
 
 
-def test_explicit_mocked_decision_records_evidence_without_public_confirmation_text(client, monkeypatch):
+@pytest.mark.parametrize("kind", ["plan", "note"])
+def test_explicit_mocked_decision_exports_artifact_approval_without_confirmation_or_hash(client, monkeypatch, kind):
     calls = []
     confirmation = "SIMULATION ONLY: a test supplies this decision evidence."
     def request(method, path, body=None):
@@ -88,18 +90,28 @@ def test_explicit_mocked_decision_records_evidence_without_public_confirmation_t
         if method == "POST":
             return run(status="running")
         if len(calls) == 1:
-            return run()
-        return run("note")
+            return run(kind)
+        return run("note") if kind == "plan" else run("note", status="published", pending=None, note_id="saved-note-1")
     monkeypatch.setattr(client, "request", request)
-    receipt = client.decision("run-1", kind="plan", action="approve", expected_hash=HASH, human_confirmation=confirmation)
-    assert receipt["status"] == "awaiting_note"
+    receipt = client.decision("run-1", kind=kind, action="approve", expected_hash=HASH, human_confirmation=confirmation)
+    assert receipt["status"] == ("awaiting_note" if kind == "plan" else "published")
     posts = [item for item in calls if item[0] == "POST"]
-    assert posts[0][2] == {"kind": "plan", "action": "approve", "payload_hash": HASH, "edits": None}
-    assert confirmation not in client.receipt_path.read_text()
-    assert "Private body" not in client.receipt_path.read_text()
-    assert confirmation in client.session_path.read_text()
-    assert receipt["decision_requests"][0]["accepted_by_api"] is True
-    assert "human_review_verified" not in client.receipt_path.read_text()
+    assert posts[0][2] == {"kind": kind, "action": "approve", "payload_hash": HASH, "edits": None}
+    public_text = client.receipt_path.read_text()
+    confirmation_hash = hashlib.sha256(confirmation.encode()).hexdigest()
+    assert confirmation not in public_text and confirmation_hash not in public_text
+    assert "human_confirmation" not in public_text and "confirmation_sha256" not in public_text
+    assert "Private body" not in public_text
+    private_decision = json.loads(client.session_path.read_text())["decision_requests"][0]
+    assert private_decision["human_confirmation"] == confirmation
+    assert private_decision["confirmation_sha256"] == confirmation_hash
+    assert private_decision["payload_hash"] == HASH
+    public_decision = receipt["decision_requests"][0]
+    assert set(public_decision) == {"time", "kind", "action", "payload_hash", "accepted_by_api"}
+    assert public_decision == {"time": private_decision["time"], "kind": kind, "action": "approve",
+                               "payload_hash": HASH, "accepted_by_api": True}
+    assert any("does not independently verify human identity" in item for item in receipt["limitations"])
+    assert "human_review_verified" not in public_text
 
 
 def test_loopback_only_and_no_redirected_authentication(client):

@@ -235,7 +235,7 @@ class JourneyClient:
                       "model_calls": usage.get("model_calls", len(calls)), "cost_usd": usage.get("cost_usd"),
                       **{key: usage[key] for key in ("held_usd", "committed_usd", "accounting_status") if key in usage}},
             "note_id": run.get("note_id"),
-            "decision_requests": [{key: item[key] for key in ("time", "kind", "action", "payload_hash", "confirmation_sha256", "accepted_by_api")}
+            "decision_requests": [{key: item[key] for key in ("time", "kind", "action", "payload_hash", "accepted_by_api")}
                                   for item in self.session.get("decision_requests", [])],
             "continuation_requests": [{key: item[key] for key in ("time", "plan_hash", "accepted_by_api", "retry_transient", "replace_critic_policy", "critic_extension") if key in item}
                                       for item in self.session.get("continuation_requests", [])],
@@ -243,7 +243,7 @@ class JourneyClient:
                              if key in {"available", "retry_transient_available", "replace_critic_policy_available", "critic_extension_available", "grant_id", "policy_hash", "plan_hash", "failure_kind"}},
             "limitations": ["This is an ordinary learning run, not a protected final benchmark.",
                             "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
-                            "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."],
+                            "Full outputs, errors, confirmation text and its hash are retained privately, not copied into this public receipt."],
         }
         return self.clean(public)
 

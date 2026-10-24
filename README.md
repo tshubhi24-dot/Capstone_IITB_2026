@@ -14,3 +14,5 @@ integration. Team integration should include only the intended `amit/` changes.
 
 Work is committed in separate steps. Nothing is merged directly into `main`.
 Provider keys, local research history and runtime files stay private and outside Git.
+
+Repository documentation records implementation decisions, measured results and contribution attribution. Keep conversation transcripts, personal account information and credential inventories in private local storage.
