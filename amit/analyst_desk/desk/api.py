@@ -72,7 +72,7 @@ class ResearchRequest(BaseModel):
     max_tool_calls: int = Field(default=60, ge=1, le=200)
     max_tokens: int = Field(default=100000, ge=100, le=500000)
     max_model_calls: int = Field(default=12, ge=1, le=12)
-    memory_enabled: Literal[True] = True
+    memory_enabled: bool = Field(default=True, strict=True)
     critic_enabled: Literal[True] = True
     table_aware: Literal[True] = True
     defences_enabled: Literal[True] = True
@@ -105,9 +105,123 @@ class Continuation(BaseModel):
 
 def owned(run_id):
     run = app.state.engine.view(run_id)
-    if not run:
+    if not run or run.get("actor") != "local-analyst":
         raise HTTPException(404, "Research run not found.")
     return run
+
+
+class MemoryPreferences(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    default_companies: list[str] | None = Field(default=None, min_length=1, max_length=4)
+    default_years: list[int] | None = Field(default=None, min_length=1, max_length=3)
+    report_style: Literal["table_first", "summary_first"] | None = None
+    history_limit: int | None = Field(default=None, ge=0, le=3)
+
+
+class MemoryRevision(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    expected_revision: int = Field(ge=0)
+
+
+class MemoryPreferencesWrite(MemoryRevision):
+    values: MemoryPreferences
+
+
+class MemoryEligibility(MemoryRevision):
+    excluded: bool
+
+
+class MemorySearch(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    query: str = Field(min_length=1, max_length=3000)
+    tickers: list[str] = Field(min_length=1, max_length=4)
+    years: list[int] = Field(min_length=1, max_length=3)
+    k: int = Field(default=3, ge=1, le=3)
+
+
+def analyst_memory():
+    return app.state.engine.memory
+
+
+@app.get("/api/memory/preferences")
+def memory_preferences():
+    return analyst_memory().get_preferences("local-analyst")
+
+
+@app.put("/api/memory/preferences")
+def save_memory_preferences(value: MemoryPreferencesWrite):
+    from .memory import MemoryConflict
+    values = value.values.model_dump(exclude_none=True)
+    companies, years = values.get("default_companies"), values.get("default_years")
+    known = {row["ticker"] for row in app.state.source.companies()}
+    if companies is not None and (len(set(companies)) != len(companies) or not set(companies) <= known):
+        raise HTTPException(400, "Saved defaults must select covered companies without duplicates.")
+    if years is not None:
+        issuers = companies or sorted(known)
+        if years != sorted(set(years)) or any(not set(years) <= set(app.state.source.years(ticker)) for ticker in issuers):
+            raise HTTPException(400, "Saved fiscal years must be covered, unique and in ascending order.")
+    try:
+        return analyst_memory().put_preferences("local-analyst", values, value.expected_revision)
+    except MemoryConflict as error:
+        raise HTTPException(409, str(error)) from error
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@app.delete("/api/memory/preferences")
+def delete_memory_preferences(value: MemoryRevision):
+    from .memory import MemoryConflict
+    try:
+        return analyst_memory().delete_preferences("local-analyst", value.expected_revision)
+    except MemoryConflict as error:
+        raise HTTPException(409, str(error)) from error
+
+
+@app.get("/api/memory/coverage")
+def memory_coverage():
+    return analyst_memory().remember_coverage(app.state.source, "local-analyst")
+
+
+@app.get("/api/memory/note-policy")
+def memory_note_policy():
+    return analyst_memory().get_note_policy("local-analyst")
+
+
+@app.post("/api/memory/history/search")
+def search_memory_history(value: MemorySearch):
+    from .history import search_approved_notes
+    try:
+        validate_scope({"tickers": value.tickers, "years": value.years}, app.state.source)
+        refs = search_approved_notes(app.state.store, analyst_memory(), value.query,
+            value.tickers, value.years, value.k, actor="local-analyst",
+            current_source_fingerprint=app.state.source.fingerprint)
+        return {"references": refs, "note_policy": memory_note_policy(),
+                "source_fingerprint": app.state.source.fingerprint,
+                "model_calls": 0, "interpretation": "Historical context; current source analysis is separate."}
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@app.put("/api/memory/notes/{note_id}/eligibility")
+def memory_note_eligibility(note_id: str, value: MemoryEligibility):
+    from .memory import MemoryConflict
+    if app.state.store.approved_note(note_id, "local-analyst") is None:
+        raise HTTPException(404, "Approved note not found.")
+    try:
+        return analyst_memory().set_note_excluded("local-analyst", note_id, value.excluded, value.expected_revision)
+    except MemoryConflict as error:
+        raise HTTPException(409, str(error)) from error
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@app.get("/api/memory/notes/{note_id}/comparison")
+def compare_memory_note(note_id: str):
+    from .memory_comparison import compare_approved_note
+    record = app.state.store.approved_note(note_id, "local-analyst")
+    if record is None or note_id in memory_note_policy()["excluded_note_ids"]:
+        raise HTTPException(404, "Approved note is unavailable for memory use.")
+    return compare_approved_note(record, app.state.source)
 
 
 @app.get("/")

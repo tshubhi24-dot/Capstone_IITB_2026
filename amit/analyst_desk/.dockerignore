@@ -10,6 +10,7 @@
 !ops/prepare_vector_store.py
 !ops/evaluate_retrieval.py
 !ops/verify_retrieval_tools.py
+!ops/verify_memory_runtime.py
 !data/
 !data/retrieval_config.json
 !web/

@@ -234,7 +234,7 @@ def test_live_graph_uses_seven_structured_model_calls_and_separate_human_gates(f
     published = decide(engine, note)
     assert published["status"] == "published", published.get("error")
     assert published["usage"]["model_calls"] == 7 and len(store.notes()) == 1
-    assert published["usage"]["tool_calls"] == 18
+    assert published["usage"]["tool_calls"] == 17  # Local frozen history replaces the old unbounded portal read.
 
 
 def test_live_planner_uses_vetted_annual_coverage_for_every_requested_period(fixture):

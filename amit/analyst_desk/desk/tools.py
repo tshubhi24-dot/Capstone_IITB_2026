@@ -21,6 +21,7 @@ PERMISSIONS = {
     "get_section": {"researcher", "quant", "risk", "critic"},
     "calculate_margin": {"quant"},
     "past_notes": {"planner", "publisher"},
+    "search_past_notes": {"planner"},
     "publish_note": {"publisher"},
 }
 READ = {"readOnlyHint": True, "openWorldHint": False, "destructiveHint": False}
@@ -130,14 +131,34 @@ def create_server(name, *, corpus=None, store=None, config=None):
 
     else:
         records = store if store is not None else Store()
+        from .memory import MemoryStore
+        from .history import search_approved_notes
+        memory = MemoryStore(records.path)
+
+        def scoped_history(query, tickers, years, current_source_fingerprint, k):
+            import re
+            if not re.fullmatch(r"[0-9a-f]{64}", current_source_fingerprint):
+                raise ValueError("Current source identity is required for historical context.")
+            refs = search_approved_notes(records, memory, query, tickers, years, k,
+                actor="local-analyst", current_source_fingerprint=current_source_fingerprint)
+            return {"references": refs, "source_fingerprint": current_source_fingerprint}
 
         @server.tool(annotations=READ)
-        def past_notes(actor: str = "local-analyst") -> dict:
-            """Read approved history for the configured single local analyst."""
+        def search_past_notes(query: str, tickers: list[str], years: list[int], current_source_fingerprint: str, k: int = 3) -> dict:
+            """Read at most three scoped approved-note references; historical text stays local."""
+            return envelope("search_past_notes", lambda: scoped_history(query, tickers, years, current_source_fingerprint, k))
+
+        @server.tool(annotations=READ)
+        def past_notes(actor: str = "local-analyst", query: str = "annual research margins risks",
+                       tickers: list[str] | None = None, years: list[int] | None = None,
+                       current_source_fingerprint: str = "", k: int = 3) -> dict:
+            """Compatibility name for bounded history; explicit issuer/year scope is required."""
             def run():
                 if actor != "local-analyst":
                     raise PermissionError("This deployment serves one configured analyst.")
-                return records.notes(actor)
+                if tickers is None or years is None:
+                    raise ValueError("Approved-history reads require explicit company and fiscal-year scope.")
+                return scoped_history(query, tickers, years, current_source_fingerprint, k)
             return envelope("past_notes", run)
 
         @server.tool(annotations=WRITE)

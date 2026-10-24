@@ -217,6 +217,11 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [docs/ADR-004-ANALYST-MEMORY.md](docs/ADR-004-ANALYST-MEMORY.md) | Storage decision, permitted memory, review boundaries and verification contract. |
 | [desk/memory.py](desk/memory.py), [tests/test_memory.py](tests/test_memory.py) | Actual namespaced LangGraph SQLite storage, expiring preferences, revision checks, coverage records and note exclusion controls. |
 | [desk/history.py](desk/history.py), [desk/store.py](desk/store.py), [tests/test_memory_history.py](tests/test_memory_history.py) | Scoped approved-note selection, frozen references and transactional publication checks against current memory versions. |
+| [desk/workflow.py](desk/workflow.py), [tests/test_memory_workflow.py](tests/test_memory_workflow.py) | Bind memory to the reviewed plan, revalidate before resumed work/model use, apply layout by code and keep historical content out of model prompts. |
+| [desk/api.py](desk/api.py), [desk/tools.py](desk/tools.py), [tests/test_memory_api.py](tests/test_memory_api.py) | Authenticated preference/history controls, bounded portal reads and fixed local-analyst access. |
+| [desk/memory_comparison.py](desk/memory_comparison.py), [tests/test_memory_comparison.py](tests/test_memory_comparison.py) | Compare immutable approved numeric history with current canonical facts only when dates and units match. |
+| [web/memory.js](web/memory.js), [web/app.js](web/app.js), [web/index.html](web/index.html), [web/style.css](web/style.css) | Save/delete defaults, inspect coverage, search cited history, compare facts and exclude/restore future note reuse. |
+| [ops/verify_memory_runtime.py](ops/verify_memory_runtime.py), [tests/test_memory_runtime_verifier.py](tests/test_memory_runtime_verifier.py), [Dockerfile](Dockerfile), [.dockerignore](.dockerignore) | Isolated operator checks for persistent memory and authenticated portal search, packaged explicitly into the shared image. |
 
 **Capstone connection:** p.3, L9 persistent memory and memory policy; pp.15–16, coverage, analyst preferences, prior research and follow-up questions; p.3, L8/L14 checkpoint and exact-version review. Reviewed lessons and independent memory evaluation remain separate work.
 
@@ -224,6 +229,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 |---|---|
 | 13a — Define memory storage and controls | Choose actor-namespaced LangGraph SQLite memory alongside publication records so final publication can atomically check memory versions. Define allowlisted preferences, source coverage, bounded approved history and deletion semantics before implementation. |
 | 13b — Build durable memory and approved-history selection | Save typed preferences with thirty-day expiry and revision-based correction/deletion. Persist source coverage under its fingerprint. Select up to three approved references after actor/company/year filtering, within a fifty-candidate window; excluded notes remain in the approved library. Memory versions and selected note hashes are checked inside the publication transaction. Core storage/history tests cover isolation, rollback, expiry, restart and concurrent changes. |
+| 13c — Connect memory to research and the interface | Reviewed plans bind preference versions and selected note hashes; changes or expiry block stale approvals and resumed work. Code applies table-first/summary-first layout. Historical references remain local, separate from current SEC evidence and model prompts. The interface exposes preference correction/deletion, coverage, cited history and fact comparison. Memory-off tests preserve verified figures; all 910 tests pass. |
 
 ## What the team builds next
 

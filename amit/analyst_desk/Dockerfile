@@ -16,6 +16,7 @@ COPY ops/verify_catalogue_tools.py ./ops/verify_catalogue_tools.py
 COPY ops/prepare_vector_store.py ./ops/prepare_vector_store.py
 COPY ops/evaluate_retrieval.py ./ops/evaluate_retrieval.py
 COPY ops/verify_retrieval_tools.py ./ops/verify_retrieval_tools.py
+COPY ops/verify_memory_runtime.py ./ops/verify_memory_runtime.py
 COPY web ./web
 USER 10001:10001
 ENTRYPOINT ["python", "ops/bootstrap.py", "exec"]
