@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_display_fix_deployed",
+  "stage": "writer_validation_false_positive_identified",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -54,9 +54,10 @@
     "human_lesson_decisions_recorded": 0,
     "development_notes_published": 0,
     "attempt_count": 2,
-    "completed_model_responses": 2,
-    "recorded_model_call_attempts": 3,
-    "operational_failures": 1
+    "completed_model_responses": 5,
+    "recorded_model_call_attempts": 6,
+    "operational_failures": 1,
+    "content_validation_failures": 1
   },
   "attempts": [
     {
@@ -71,13 +72,13 @@
       "publication": false
     },
     {
-      "status": "awaiting_plan",
+      "status": "error",
       "plan_payload_hash": "8751de581ddd49ba62c2908618089da351011349a01c617154ad619c169adc85",
       "admission_hash": "3c2854374a06516bc69f3e232546cce7feb85594fe3149e13f73c41e3fef7771",
-      "human_plan_approval_observed": false,
-      "recorded_model_call_attempts": 1,
-      "completed_model_responses": 1,
-      "failure_code": null,
+      "human_plan_approval_observed": true,
+      "recorded_model_call_attempts": 4,
+      "completed_model_responses": 4,
+      "failure_code": "narrative_quantity_guard",
       "eligible_lesson_origins": 0,
       "publication": false
     }
@@ -112,5 +113,16 @@
     "model_requests_sent": 0,
     "credentials_used": false,
     "original_connection_failure_cause_proven": false
+  },
+  "web_resume_control": {
+    "implementation_ready": true,
+    "deployed": false,
+    "ui_cases_passed": 19,
+    "targeted_tests_passed": 144,
+    "only_existing_content_validation_continuation_exposed": true,
+    "exact_original_plan_hash_required": true,
+    "new_retry_or_extension_flags_exposed": false,
+    "automatic_model_calls": 0,
+    "human_decisions_created_by_tests": 0
   }
 }

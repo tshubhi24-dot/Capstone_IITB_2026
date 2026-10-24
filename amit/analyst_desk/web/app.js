@@ -66,17 +66,19 @@ async function loadRuns(){
  if(state.selectedRunId)$('runs').value=state.selectedRunId;
 }
 function selectedRun(id,version){return state.selectedRunId===id&&state.selectionVersion===version;}
+function canResume(run){return run?.status==='error'&&run.continuation?.available===true&&run.continuation.failure_kind==='content_validation'&&typeof run.continuation.plan_hash==='string'&&/^[a-f0-9]{64}$/.test(run.continuation.plan_hash);}
 function reviewControls(){
  const run=state.run,pending=run?.status.startsWith('awaiting_')?run.pending:null;
- const unavailable=state.loading||state.deciding||run?.id!==state.selectedRunId||!pending;
+ const blocked=state.loading||state.deciding||run?.id!==state.selectedRunId,unavailable=blocked||!pending;
  ['approve','edit','reject'].forEach(id=>$(id).disabled=unavailable);$('editor').disabled=unavailable;
+ $('resume-research').disabled=blocked||!canResume(run);
  if(!unavailable)$('approve').disabled=pending.kind==='note'&&(!run.critic?.passed||run.request?.learning_split==='development');
 }
 async function selectRun(id){
  clearTimeout(state.timer);state.timer=null;state.selectionVersion++;
  if(state.selectedRunId!==id){state.run=null;state.reviewKey=null;}
  state.selectedRunId=id||null;$('runs').value=id||'';state.loading=Boolean(id);state.runMessage=Boolean(id);message(id?'Loading selected research…':'');
- ['current','review','figures','risk-panel','reasoning-panel','run-memory','run-lessons','reflect-development','evidence-panel'].forEach(id=>$(id).hidden=true);
+ ['current','review','continuation','figures','risk-panel','reasoning-panel','run-memory','run-lessons','reflect-development','evidence-panel'].forEach(id=>$(id).hidden=true);
  reviewControls();if(id)await refresh(id,state.selectionVersion);
 }
 async function refresh(id,version=state.selectionVersion){
@@ -99,6 +101,7 @@ function render(run){
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
  $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
  if(run.error)message(runErrorMessage(run.error));else if(state.runMessage)message('');state.runMessage=Boolean(run.error);
+ const resumable=canResume(run);$('continuation').hidden=!resumable;$('continuation-plan').textContent=resumable?`Original approved plan: ${run.continuation.plan_hash}`:'';
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
  if(pending){const key=`${run.id}:${pending.kind}:${pending.payload_hash}`;
   if(key!==state.reviewKey){state.reviewKey=key;const plan=pending.kind==='plan';
@@ -131,6 +134,15 @@ async function decide(action){
   if(selectedRun(run.id,version)){state.reviewKey=null;await refresh(run.id,version);}
  }catch(error){if(selectedRun(run.id,version))message(error.message);}finally{state.deciding=false;reviewControls();}
 }
+async function resumeResearch(){
+ const run=state.run,version=state.selectionVersion;
+ if(state.loading||state.deciding||run?.id!==state.selectedRunId||!canResume(run))return;
+ const planHash=run.continuation.plan_hash;state.deciding=true;reviewControls();
+ try{message('');
+  await api(`/api/runs/${encodeURIComponent(run.id)}/continue`,{method:'POST',body:JSON.stringify({plan_hash:planHash})});
+  if(selectedRun(run.id,version)){state.loading=true;await refresh(run.id,version);}
+ }catch(error){if(selectedRun(run.id,version))message(error.message);}finally{state.deciding=false;reviewControls();}
+}
 async function showEvidence(id){try{$('evidence').textContent=JSON.stringify(await api(`/api/evidence/${encodeURIComponent(id)}`),null,2);$('evidence-panel').hidden=false;$('evidence-panel').scrollIntoView({behavior:'smooth'});}catch(error){message(error.message);}}
 async function loadNotes(){const notes=await api('/api/notes');$('notes').replaceChildren();if(!notes.length)$('notes').append(element('p','No approved notes yet.'));
  notes.forEach(note=>{const detail=element('details');detail.append(element('summary',note.title||note.id),element('p',`${note.model_mode==='live'?'Live AI':'Offline'} · approved version: ${note.payload_hash||note.digest||''}`),element('pre',note.body||JSON.stringify(note)));window.AnalystMemory.renderNote(note,detail);$('notes').append(detail);});}
@@ -142,6 +154,7 @@ $('mode').onchange=modeDescription;
 $('companies').onchange=updateScope;$('years').onchange=updateScope;
 $('research-form').onsubmit=async event=>{event.preventDefault();if(state.creating)return;state.creating=true;try{$('start').disabled=true;const mode=$('mode').value,learning=window.AnalystLessons.requestOptions(),scope=researchScope(state.config,learning.tickers||selectedValues('companies'),learning.years||selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,...learning})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{state.creating=false;updateScope();}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
+$('resume-research').onclick=resumeResearch;
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope,runErrorMessage};

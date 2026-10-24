@@ -18,15 +18,15 @@ function setup(){
  const get=id=>{if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id);};
  const sandbox={module:{exports:{}},console,URLSearchParams,location:{search:''},sessionStorage:{getItem:()=>'',setItem(){}},
   window:{AnalystMemory:{initialize(){},renderRun:run=>rendered.push(['memory',run.id]),renderNote(){}},AnalystLessons:{initialize(){},requestOptions:()=>({}),renderRun:run=>rendered.push(['lessons',run.id])}},
-  fetch:(path,options)=>new Promise((resolve,reject)=>calls.push({path,options,resolve:value=>resolve({ok:true,json:async()=>value}),fail:text=>resolve({ok:false,json:async()=>({detail:text})}),reject})),
+  fetch:(path,options)=>{if((path==='/api/runs'&&!options?.method)||path==='/api/notes')return Promise.resolve({ok:true,json:async()=>[]});return new Promise((resolve,reject)=>calls.push({path,options,resolve:value=>resolve({ok:true,json:async()=>value}),fail:text=>resolve({ok:false,json:async()=>({detail:text})}),reject}));},
   setTimeout:(callback,delay)=>{const id=++nextTimer;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id)};
  vm.createContext(sandbox);
- vm.runInContext(fs.readFileSync(process.argv[1],'utf8')+'\n;globalThis.desk={state,selectRun,refresh,decide,updateScope,initialize};',sandbox);
+ vm.runInContext(fs.readFileSync(process.argv[1],'utf8')+'\n;globalThis.desk={state,selectRun,refresh,decide,resumeResearch,updateScope,initialize};',sandbox);
  sandbox.document={getElementById:get,createElement:element};
  const pending=(id,hash=id+'-exact',status='awaiting_plan')=>({id,status,mode:'live',request:{tickers:['MSFT'],years:[2024,2025]},events:[],pending:{kind:'plan',payload_hash:hash,payload:{outline:['Inspect original evidence'],tickers:['MSFT'],years:[2024,2025],caveats:[]}}});
  return {desk:sandbox.desk,get,calls,timers,rendered,pending};
 }
-async function tick(){await Promise.resolve();await Promise.resolve();await Promise.resolve();}
+async function tick(){await new Promise(resolve=>setImmediate(resolve));}
 """
 
 
@@ -35,10 +35,11 @@ def browser_check(script):
     if node is None:
         pytest.skip("Node.js is required to execute the actual browser handlers")
     result = subprocess.run(
-        [node, "-e", HARNESS + "\n(async()=>{\n" + script + "\n})().catch(error=>{console.error(error);process.exitCode=1;});", str(ROOT / "web/app.js")],
+        [node, "-e", HARNESS + "\n(async()=>{\n" + script + "\nconsole.log('browser-check-completed');})().catch(error=>{console.error(error);process.exitCode=1;});", str(ROOT / "web/app.js")],
         capture_output=True, text=True, timeout=15,
     )
     assert result.returncode == 0, result.stderr or result.stdout
+    assert "browser-check-completed" in result.stdout, "Browser check ended before its asynchronous assertions completed"
 
 
 @pytest.mark.parametrize("obsolete_response", ["success", "failure"])
@@ -147,4 +148,76 @@ await h.get('research-form').onsubmit({preventDefault(){}});
 assert.equal(h.calls.length,1);assert.equal(h.calls[0].path,'/api/runs');
 h.calls[0].fail('fictional creation refused');await first;
 assert.equal(h.desk.state.creating,false);assert.equal(h.get('start').disabled,false);
+""")
+
+
+@pytest.mark.parametrize("unsupported", ["not_error", "unavailable", "provider_connect_error", "rate_limit", "missing_hash", "invalid_hash"])
+def test_resume_is_hidden_and_posts_nothing_for_unsupported_states(unsupported):
+    browser_check(r"""
+const h=setup(),run={...h.pending('stopped-run'),status:'error',error:'ReasoningError: content_validation',continuation:{available:true,failure_kind:'content_validation',plan_hash:'a'.repeat(64)}};
+""" + {
+        "not_error": "run.status='awaiting_plan';",
+        "unavailable": "run.continuation.available=false;",
+        "provider_connect_error": "run.error='ReviewError: provider_connect_error';run.continuation={available:false};",
+        "rate_limit": "run.error='ReviewError: provider_http_429';run.continuation={available:false,retry_transient_available:true,failure_kind:'critic_rate_limit',plan_hash:'a'.repeat(64)};",
+        "missing_hash": "delete run.continuation.plan_hash;",
+        "invalid_hash": "run.continuation.plan_hash='not-an-approved-hash';",
+    }[unsupported] + r"""
+const selected=h.desk.selectRun(run.id);h.calls[0].resolve(run);await selected;
+assert.equal(h.get('continuation').hidden,true);assert.equal(h.get('resume-research').disabled,true);
+await h.desk.resumeResearch();assert.equal(h.calls.length,1);
+""")
+
+
+def test_resume_uses_exact_existing_run_and_plan_hash_once_then_only_polls():
+    browser_check(r"""
+const h=setup();h.desk.initialize();
+const selected=h.desk.selectRun('stopped-run');
+h.calls[0].resolve({...h.pending('stopped-run'),status:'error',error:'ReasoningError: content_validation',continuation:{available:true,failure_kind:'content_validation',plan_hash:'b'.repeat(64)}});await selected;
+assert.equal(h.get('continuation').hidden,false);assert.equal(h.get('resume-research').disabled,false);
+assert.match(h.get('continuation-plan').textContent,new RegExp('b'.repeat(64)));
+assert.equal(h.calls.length,1);  // Rendering the control never continues automatically.
+const resume=h.get('resume-research').onclick();
+assert.equal(h.get('resume-research').disabled,true);await h.desk.resumeResearch();
+assert.equal(h.calls.length,2);assert.equal(h.calls[1].path,'/api/runs/stopped-run/continue');
+assert.deepEqual(JSON.parse(h.calls[1].options.body),{plan_hash:'b'.repeat(64)});
+h.calls[1].resolve({status:'queued'});await tick();
+assert.equal(h.calls[2].path,'/api/runs/stopped-run');
+h.calls[2].resolve({...h.pending('stopped-run'),status:'running',pending:null});await resume;
+assert.equal(h.get('continuation').hidden,true);assert.equal(h.get('resume-research').disabled,true);
+assert.equal(h.timers.size,1);
+await h.desk.resumeResearch();assert.equal(h.calls.length,3);
+""")
+
+
+@pytest.mark.parametrize("result", ["success", "failure"])
+def test_resume_completion_from_previous_selection_cannot_refresh_or_show_error(result):
+    browser_check(r"""
+const h=setup(),selected=h.desk.selectRun('stopped-run');
+h.calls[0].resolve({...h.pending('stopped-run'),status:'error',continuation:{available:true,failure_kind:'content_validation',plan_hash:'c'.repeat(64)}});await selected;
+const resume=h.desk.resumeResearch(),next=h.desk.selectRun('new-run');
+assert.equal(h.get('continuation').hidden,true);
+await h.desk.resumeResearch();assert.equal(h.calls.length,3);
+h.calls[2].resolve(h.pending('new-run'));await next;
+""" + (
+        "h.calls[1].resolve({status:'queued'});"
+        if result == "success" else
+        "h.calls[1].fail('obsolete continuation error');"
+    ) + r"""
+await resume;assert.equal(h.calls.length,3);assert.equal(h.desk.state.run.id,'new-run');
+assert.equal(h.get('message').textContent,'');assert.equal(h.get('approve').disabled,false);
+assert.equal(h.get('resume-research').disabled,true);assert.equal(h.timers.size,1);
+""")
+
+
+def test_failed_read_after_accepted_resume_stays_locked_until_fresh_selection():
+    browser_check(r"""
+const h=setup(),selected=h.desk.selectRun('stopped-run');
+h.calls[0].resolve({...h.pending('stopped-run'),status:'error',continuation:{available:true,failure_kind:'content_validation',plan_hash:'d'.repeat(64)}});await selected;
+const resume=h.desk.resumeResearch();h.calls[1].resolve({status:'queued'});await tick();
+h.calls[2].fail('fictional refresh failed');await resume;
+assert.equal(h.get('resume-research').disabled,true);
+await h.desk.resumeResearch();assert.equal(h.calls.length,3);
+const fresh=h.desk.selectRun('stopped-run');h.calls[3].resolve({...h.pending('stopped-run'),status:'running',pending:null});await fresh;
+assert.equal(h.get('continuation').hidden,true);assert.equal(h.desk.state.loading,false);
 """)

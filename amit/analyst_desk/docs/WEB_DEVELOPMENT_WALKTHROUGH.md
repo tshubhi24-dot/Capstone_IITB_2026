@@ -19,6 +19,12 @@ Use **KDEV018**, the next registered risk-comparison case after KDEV017: Apple, 
 7. If an actual critic rejection or analyst edit exists, select it in **Reflect on this development rehearsal** and prepare a proposal. Code reflection makes no model call; optional AI reflection uses the original run's remaining budget. Read the action, explanation, applicability, counterexamples and exact proposal version in **Reviewed research lessons**.
 8. The analyst enters a reason and accepts or rejects the exact proposal in the app. Acceptance does not apply guidance automatically. Freeze explicitly selected accepted lessons before a later held-out comparison.
 
+### Resume a supported validation failure
+
+When an approved live run stops on a content-validation error, the server may expose a verified continuation. After correcting the cause, select that stopped run and use **Resume approved research**. The control binds the exact original plan hash and retains the original call, token and spending limits, including prior charges and holds. The final note still needs its own review.
+
+The control appears only when the server reports a supported content-validation continuation. It does not expose provider connection retries, rate-limit extensions or policy replacement. Nothing resumes automatically. Loading, an in-flight decision or switching to another run prevents stale or duplicate submissions.
+
 The interface intentionally blocks development publication; its production approval button is not a way to acknowledge a clean rehearsal. A clean development note may remain at the review pause without being falsely rejected or published.
 
 ## Observed web rehearsal
@@ -32,6 +38,10 @@ Web inspection also exposed a polling race: an older in-flight refresh could rep
 Thirty-nine targeted tests pass, including nine synthetic response-order and review-control cases. The app and local entry point were refreshed without changing runs, notes, preferences, note policy, lessons or the complete budget response. Browser verification selected the failed attempt, switched back to the awaiting plan and confirmed the old error cleared while the correct exact plan and development controls remained visible. No approval, retry, model call or research lesson was created by this fix.
 
 A credential-free connection probe first failed DNS resolution and then retrieved the public OpenRouter catalogue successfully. This is consistent with a transient network problem, but does not prove the original failure's precise cause. Preserve both attempts and their accounting rather than deleting the failure or automatically retrying it. The awaiting plan is available for its own human decision in the app.
+
+The original plan subsequently received its own web approval. Research and risk selection completed, but the writer was stopped before criticism by a quantity-guard false positive on the temporal phrase “between the two periods.” Both citations identify the same issuer and the two requested fiscal years. The structured writer response is preserved in the existing paid cache; no critic rejection or analyst edit is claimed.
+
+An explicit web continuation control is implemented and tested against the existing backend guard. Nineteen UI cases pass, and the combined UI/provider/catalogue/API/session checks pass 144 tests. Deployment waits for the narrow validator correction so the cached response can be checked without buying another writer response merely to change temporal wording.
 
 ## What the brief requires
 
