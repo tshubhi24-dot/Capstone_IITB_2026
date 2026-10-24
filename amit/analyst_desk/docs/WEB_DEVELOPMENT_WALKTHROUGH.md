@@ -65,7 +65,15 @@ All **24 actual acceptance-verification checks pass**, including immutable propo
 
 Acceptance is reasonable for a bounded citation-checking reminder. The originating edit identifies a wording omission visible in both retained quotations, applies to Apple fiscal 2024–2025 against the same cached source, and preserves explicit partial-evidence and economic-materiality limits. It does not reinterpret the original cautious claim as a financial error. Its fixed `cite_exact_evidence` hint asks producers to check that cited evidence supports claim wording; the detailed retail-stores explanation remains local.
 
-The proposal covers all four producing stages, while the observed correction concerns note wording. That generic hint is consistent with those stages, but its usefulness beyond the observed risk/writer context has not been measured. This accepted checklist does not demonstrate autonomous learning, an independently authored human quality label or improved model performance. No playbook has been frozen or reused, no development note has published, and this acceptance verification makes no model call. Any later freezing, explicit opt-in and protected comparison remain separate steps.
+The proposal covers all four producing stages, while the observed correction concerns note wording. That generic hint is consistent with those stages, but its usefulness beyond the observed risk/writer context has not been measured. This accepted checklist does not demonstrate autonomous learning, an independently authored human quality label or improved model performance. At the acceptance-verification checkpoint, no playbook had been frozen or reused and no development note had published. That verification made no model call; subsequent freezing and use are recorded separately below.
+
+## Verify the frozen playbook before reuse
+
+Initial inspection of the next checkpoint found **one frozen playbook containing the exact accepted lesson**. Its existing record was preserved; no duplicate freeze request was submitted. All **22 actual freeze checks pass**: the immutable playbook identity/hash, accepted proposal and decision, current source and unrevoked lesson agree. The bank has advanced once since the acceptance checkpoint, without adding another lesson. Runs, the approved library, memory, note policy and budget records are unchanged; live research and retrieval are ready and no operation is active.
+
+This checkpoint establishes a valid frozen playbook, not model use. No fresh plan, model call, lesson reuse or development publication has occurred, and no independent improvement is claimed. The [frozen-playbook receipt](../evidence/frozen_playbook_use_verification.json) records these checks separately from the historical originating-case receipt.
+
+For the next demonstration, explicitly select the frozen playbook and enable **Use a frozen reviewed playbook**, then choose a new **KDEV018 · AAPL · 2024, 2025** public development run with private memory off. The request must retain the exact registered question and current source. Creating its plan can use the original authorized model budget; execution still requires review of that new exact plan. To demonstrate actual use, verify a nonempty relevant lesson reference in the reviewed context and that the fixed hint reached a completed producer request. Repeating the originating development case is a scoped use demonstration, not held-out improvement evidence.
 
 ## Files and responsibilities
 
@@ -77,6 +85,7 @@ The proposal covers all four producing stages, while the observed correction con
 | [desk/workflow.py](../desk/workflow.py), [web/app.js](../web/app.js) | Save only an exact-version claim edit, retain code-owned note content, persist its origin and request fresh criticism before further review. |
 | [desk/reflection.py](../desk/reflection.py), [desk/lessons.py](../desk/lessons.py), [web/lessons.js](../web/lessons.js) | Create an edit-derived proposal, preserve immutable supersession and recorded exact-version decisions, and keep acceptance, freezing and reuse separate. |
 | [web case receipt](../evidence/web_development_case_verification.json) | Record observed completion, cached replay, retained failures, preservation checks and the pending human-review boundary. |
+| [frozen-playbook receipt](../evidence/frozen_playbook_use_verification.json) | Verify the existing immutable playbook and accepted membership before any new research; keep readiness distinct from actual prompt use and independent improvement. |
 
 ## What the brief requires
 

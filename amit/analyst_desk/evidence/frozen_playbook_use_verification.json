@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "case_id": "KDEV018",
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "stage": "frozen_playbook_verified_before_reuse",
+  "interface": "research_web_app",
+  "independent_benchmark": false,
+  "reuse_of_originating_development_case": true,
+  "playbook_id": "bd9195270cfa272ba4b44db8199b4c54435ed0596fbd3724b76c77a9b8e0ea00",
+  "playbook_hash": "7a9db1b0a777b0cc9eb76babf941767abffc615a544dd5c6e4b426d0192c0f9f",
+  "reviewed_proposal_hash": "731b89e5a7a57a9c996734fe069e55ccdac39d507f6775e3b98d9b561986c1b3",
+  "action": "cite_exact_evidence",
+  "scope": {
+    "tickers": [
+      "AAPL"
+    ],
+    "years": [
+      2024,
+      2025
+    ],
+    "stages": [
+      "planner",
+      "researcher",
+      "risk",
+      "writer"
+    ]
+  },
+  "phase_checks": {
+    "freeze_verification": {
+      "one_frozen_playbook_observed": true,
+      "playbook_identifier_valid": true,
+      "immutable_playbook_hash_valid": true,
+      "exactly_the_selected_accepted_lesson_frozen": true,
+      "accepted_proposal_and_decision_unchanged": true,
+      "lesson_is_accepted_and_unrevoked": true,
+      "exact_reviewed_proposal_bound": true,
+      "playbook_matches_current_source": true,
+      "scope_is_apple_fiscal_2024_2025": true,
+      "source_wording_action_preserved": true,
+      "bank_records_one_freeze_increment": true,
+      "proposal_ids_unchanged": true,
+      "only_new_playbook_id_added": true,
+      "revocation_revision_unchanged": true,
+      "all_existing_runs_unchanged": true,
+      "approved_library_unchanged": true,
+      "analyst_preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "budget_and_model_accounting_unchanged": true,
+      "live_research_available": true,
+      "retrieval_ready": true,
+      "no_active_operation": true
+    }
+  },
+  "outcome": {
+    "frozen_playbooks": 1,
+    "frozen_lesson_versions": 1,
+    "freeze_already_present_at_initial_inspection": true,
+    "freeze_submissions_during_verification": 0,
+    "new_research_runs": 0,
+    "new_model_calls": 0,
+    "actual_model_request_use_verified": false,
+    "research_completed": false,
+    "independent_improvement_demonstrated": false,
+    "note_publications": 0
+  }
+}
