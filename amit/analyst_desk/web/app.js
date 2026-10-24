@@ -3,6 +3,11 @@ const $ = id => document.getElementById(id);
 const state = {run:null,reviewKey:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
+function runErrorMessage(error){
+ const text=String(error||'');
+ if(text.includes('provider_http_429'))return 'The AI provider rate-limited this request (HTTP 429). This run has stopped; it will not retry automatically. Wait before starting a new live request, or explicitly choose Offline. Any reserved model budget remains visible below. Diagnostic: '+text;
+ return text;
+}
 function sourceCatalogue(config){
  const companies=config?.companies,coverage=config?.company_years;
  if(!Array.isArray(companies)||!companies.length||!coverage||typeof coverage!=='object')throw new Error('The source catalogue is unavailable.');
@@ -73,7 +78,7 @@ function render(run){
  $('usage').textContent=`${run.usage?.tool_calls||0} tool calls · ${run.usage?.model_calls||0} recorded model calls · ${run.usage?.tokens||0} ${run.usage?.accounting_status==='provider_reported_with_holds'?'reported/reserved tokens':'tokens'} · reported model cost ${Number.isFinite(cost)?'$'+cost.toFixed(6):'unknown'}${held!==null&&held!==undefined?' · reserved model budget $'+held:''}${unknown?' · accounting unavailable; a failed request may still have incurred a charge':''}`;
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
  $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
- if(run.error)message(run.error);
+ if(run.error)message(runErrorMessage(run.error));
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
  if(pending){const key=`${run.id}:${pending.kind}:${pending.payload_hash}`;
   if(key!==state.reviewKey){state.reviewKey=key;const plan=pending.kind==='plan';
@@ -116,5 +121,5 @@ $('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }
-if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope};
+if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope,runErrorMessage};
 if(typeof document!=='undefined')initialize();

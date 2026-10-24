@@ -176,6 +176,20 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Verified expansion result:** all 36 deployed margin rows (108 displayed financial values), 72 section groups and twelve search scopes passed. The full suite passed 613 tests and all nineteen runtime checks passed. The three existing notes and spending records remained unchanged; this expansion made zero model calls.
 
+## Step 12 — Add hybrid retrieval and reranking
+
+**What this step does:** combines exact keyword matching with learned semantic retrieval, merges candidate ranks and reranks the shortlist while keeping original passage identifiers and source quotations. Development comparisons use a frozen question set and report the limitations of partial, source-derived labels.
+
+| Files | Purpose |
+|---|---|
+| [web/app.js](web/app.js), [tests/test_provider_error_ui.py](tests/test_provider_error_ui.py) | Explain provider HTTP 429 failures and stopped-run behavior without automatic paid retries or changing budget records. |
+
+**Capstone connection:** p.3, hybrid BM25/vector retrieval, RRF, reranker, query-side improvement and Recall@5 comparison; p.16, scoped company/year retrieval and preserved table evidence. Provider failure handling supports the observable failure requirement on p.6.
+
+| Increment | Result |
+|---|---|
+| 12a — Explain a rate-limited run | The interface explains HTTP 429, retains the diagnostic and reserved-budget display, and offers explicit next actions. Three browser-helper checks pass. |
+
 ## What the team builds next
 
 1. **Retrieval and memory:** validate original Item/table ingestion across the expanded twelve-company catalogue; add vectors, RRF, reranking and retrieval labels. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
