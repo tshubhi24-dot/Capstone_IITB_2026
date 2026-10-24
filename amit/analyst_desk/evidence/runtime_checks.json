@@ -1,0 +1,109 @@
+{
+  "checked_at_utc": "2026-10-24T06:58:41.168306+00:00",
+  "project": "analyst-desk-journey",
+  "docker_context": "desktop-linux",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "private_credential",
+      "passed": true,
+      "observed": {
+        "file_mode": "0600"
+      }
+    },
+    {
+      "name": "api_health",
+      "passed": true,
+      "observed": {
+        "http_status": 200,
+        "expected_offline_source": true
+      }
+    },
+    {
+      "name": "api_rejects_missing_token",
+      "passed": true,
+      "observed": {
+        "http_status": 401
+      }
+    },
+    {
+      "name": "authenticated_source_config",
+      "passed": true,
+      "observed": {
+        "http_status": 200,
+        "expected_company_years": true,
+        "source_sha256": "54b046c0cd59a0d89bea1145cafca818aff23ea9495de0cee805441fd8f5bbcc"
+      }
+    },
+    {
+      "name": "zero_spend_offline_budget",
+      "passed": true,
+      "observed": {
+        "http_status": 200,
+        "cap_zero": true,
+        "spend_zero": true,
+        "model_calls_zero": true,
+        "api_reports_provider_key_absent": true
+      }
+    },
+    {
+      "name": "approved_notes_readable",
+      "passed": true,
+      "observed": {
+        "http_status": 200,
+        "note_count": 1
+      }
+    },
+    {
+      "name": "isolated_worker_configuration",
+      "passed": true,
+      "observed": {
+        "running": true,
+        "network_none": true,
+        "read_only_root": true,
+        "queue_only": true,
+        "memory_bytes": 268435456,
+        "pids_limit": 32,
+        "nano_cpus": 500000000,
+        "capabilities_dropped": true
+      }
+    },
+    {
+      "name": "loopback_ingress_ports_only",
+      "passed": true,
+      "observed": {
+        "expected_loopback_bindings": true,
+        "other_services_unpublished": true
+      }
+    },
+    {
+      "name": "private_backend_network",
+      "passed": true,
+      "observed": {
+        "internal": true,
+        "owned_by_project": true
+      }
+    },
+    {
+      "name": "prometheus_app_scrape_ready",
+      "passed": true,
+      "observed": {
+        "target_up": true,
+        "exactly_one_app_target": true,
+        "no_scrape_error": true
+      }
+    },
+    {
+      "name": "grafana_database_ready",
+      "passed": true,
+      "observed": {
+        "http_status": 200,
+        "database_ok": true
+      }
+    }
+  ],
+  "scope": "Readiness and configured Docker boundaries; no active containment attack or alert firing test.",
+  "alert_firing_tested": false,
+  "research_runs_created_by_verifier": 0,
+  "human_decisions_performed": false
+}

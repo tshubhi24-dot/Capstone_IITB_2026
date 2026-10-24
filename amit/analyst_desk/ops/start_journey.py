@@ -9,12 +9,17 @@ import shutil
 import socket
 import subprocess
 import sys
+import time
+from urllib.error import HTTPError, URLError
+from urllib.request import ProxyHandler, build_opener
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = ROOT / ".runtime/journey"
 ENV_FILE = PRIVATE / "credentials.env"
 PROJECT = "analyst-desk-journey"
 CONTEXT = "desktop-linux"
+START_ORDER = ("pandas-worker", "filings-kb", "edgar", "python-sandbox", "research-portal",
+               "chroma", "app", "prometheus", "grafana", "ingress")
 
 
 def docker_binary():
@@ -57,11 +62,61 @@ def compose(docker):
             "--project-directory", str(ROOT), "--env-file", str(ENV_FILE), "-f", str(ROOT / "compose.yaml")]
 
 
-def capture(command, env, token):
-    result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, timeout=30)
+def capture(command, env, token, timeout=30):
+    result = subprocess.run(command, cwd=ROOT, env=env, capture_output=True, text=True, timeout=timeout)
     if result.returncode:
         raise RuntimeError(result.stderr[-3000:].replace(token, "[redacted]") or "Docker command failed.")
     return result.stdout
+
+
+def local_readiness():
+    opener = build_opener(ProxyHandler({}))
+    deadline = time.monotonic() + 30
+    for url, field, value in (("http://127.0.0.1:18080/health", "status", "ok"),
+                              ("http://127.0.0.1:13080/api/health", "database", "ok")):
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError("The research or dashboard was not ready within 30 seconds.")
+            try:
+                with opener.open(url, timeout=min(8, remaining)) as response:
+                    if response.status != 200 or json.load(response).get(field) != value:
+                        raise RuntimeError("The research or dashboard readiness check failed.")
+                break
+            except HTTPError as error:
+                if error.code != 502:
+                    raise
+            except URLError as error:
+                if not isinstance(error.reason, (ConnectionRefusedError, TimeoutError)):
+                    raise
+            except (ConnectionRefusedError, TimeoutError):
+                pass
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError("The research or dashboard was not ready within 30 seconds.")
+            time.sleep(min(2, remaining))
+
+
+def start_stack(command, env, token):
+    """Issue exactly one container start at a time, including dependencies."""
+    print("Building this journey's shared application image.", flush=True)
+    capture(command + ["--parallel", "1", "build", "app"], env, token, timeout=900)
+    print("Initializing private service credentials.", flush=True)
+    capture(command + ["up", "--no-deps", "--no-build", "--detach", "init-secrets"], env, token, timeout=120)
+    capture(command + ["wait", "init-secrets"], env, token, timeout=120)
+    initializer = capture(command + ["ps", "--all", "--quiet", "init-secrets"], env, token).strip()
+    if not initializer or "\n" in initializer:
+        raise RuntimeError("The credential initializer container is ambiguous or missing.")
+    state = capture([command[0], "--context", CONTEXT, "inspect", "--format", "{{.State.Status}} {{.State.ExitCode}}", initializer], env, token).strip()
+    if state != "exited 0":
+        raise RuntimeError("Private credential initialization did not complete successfully.")
+    for service in START_ORDER:
+        print(f"Starting {service}.", flush=True)
+        capture(command + ["up", "--no-deps", "--no-build", "--detach", "--wait", "--wait-timeout", "120", service], env, token, timeout=150)
+    running = set(capture(command + ["ps", "--status", "running", "--services"], env, token).splitlines())
+    if not set(START_ORDER).issubset(running):
+        raise RuntimeError("One or more journey services stopped during startup.")
+    local_readiness()
 
 
 def validate(config):
@@ -139,9 +194,7 @@ def main():
                         except OSError as exc:
                             raise RuntimeError(f"Port {port} is busy; no existing service was stopped.") from exc
             print("Building and starting this journey's services. Human decisions remain pending.", flush=True)
-            result = subprocess.run(command + ["up", "--build", "--detach", "--wait", "--wait-timeout", "180"], cwd=ROOT, env=env)
-            if result.returncode:
-                raise RuntimeError("Compose startup failed; inspect this project's service logs.")
+            start_stack(command, env, token)
             print("Research: http://127.0.0.1:18080 · Dashboard: http://127.0.0.1:13080")
         print("The analyst credential is saved privately in .runtime/journey/credentials.env; it was not printed.")
         return 0

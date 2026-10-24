@@ -1,0 +1,25 @@
+{
+  "recorded_at_utc": "2026-10-24T07:02:29.761501+00:00",
+  "local": {
+    "command": "python -m pytest tests -q",
+    "passed": 53,
+    "elapsed_seconds": 3.7,
+    "python_version": "3.12.14"
+  },
+  "docker_image": {
+    "image": "analyst-desk:amit-step4",
+    "python_version": "3.12.12",
+    "network": "none",
+    "read_only_root": true,
+    "test_files": [
+      "test_store_data.py",
+      "test_workflow.py",
+      "test_journey_session.py",
+      "test_tools.py"
+    ],
+    "passed": 37,
+    "elapsed_seconds": 2.14,
+    "excluded": "Host Compose-structure/launcher tests run locally; no Docker socket was supplied to the test container."
+  },
+  "scope": "Implementation and boundary tests, including invented fixtures and mocked MCP calls where marked. Separate live Docker journey receipts record actual SEC-source execution. These are not protected final evaluation results."
+}

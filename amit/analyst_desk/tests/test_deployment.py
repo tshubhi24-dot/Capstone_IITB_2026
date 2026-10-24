@@ -1,8 +1,11 @@
 """Resolve the fresh Compose model without building or contacting its daemon."""
 from copy import deepcopy
+from io import BytesIO
 import json
 from pathlib import Path
 import stat
+from types import SimpleNamespace
+from urllib.error import HTTPError, URLError
 
 import pytest
 
@@ -82,3 +85,116 @@ def test_parent_environment_cannot_select_another_daemon_or_pass_provider_keys(m
     command = launch.compose("docker")
     assert command[:3] == ["docker", "--context", "desktop-linux"]
     assert "--env-file" in command
+
+
+def test_serial_start_waits_for_initializer_and_starts_one_service_per_call(monkeypatch):
+    calls = []
+    ready = []
+
+    def fake_capture(command, env, token, timeout=30):
+        calls.append((command, timeout))
+        if command[-4:] == ["ps", "--all", "--quiet", "init-secrets"]:
+            return "a" * 64 + "\n"
+        if "inspect" in command:
+            return "exited 0\n"
+        if command[-4:] == ["ps", "--status", "running", "--services"]:
+            return "\n".join(launch.START_ORDER)
+        return ""
+
+    monkeypatch.setattr(launch, "capture", fake_capture)
+    monkeypatch.setattr(launch, "local_readiness", lambda: ready.append(True))
+    launch.start_stack(["docker", "compose"], {}, "private-test-token")
+    starts = [(command, timeout) for command, timeout in calls if "up" in command]
+    assert [command[-1] for command, _ in starts] == ["init-secrets", *launch.START_ORDER]
+    for command, timeout in starts:
+        assert "--no-deps" in command and "--no-build" in command
+        assert timeout in {120, 150}
+        assert sum(service in command for service in ["init-secrets", *launch.START_ORDER]) == 1
+    wait_at = next(i for i, (command, _) in enumerate(calls) if "wait" in command)
+    worker_at = next(i for i, (command, _) in enumerate(calls) if command[-1] == "pandas-worker")
+    assert wait_at < worker_at
+    assert calls[0][0][-2:] == ["build", "app"] and calls[0][1] == 900
+    assert ready == [True]
+
+
+def test_serial_start_stops_before_other_services_if_initializer_fails(monkeypatch):
+    calls = []
+
+    def fake_capture(command, env, token, timeout=30):
+        calls.append(command)
+        if command[-4:] == ["ps", "--all", "--quiet", "init-secrets"]:
+            return "a" * 64
+        return "exited 1" if "inspect" in command else ""
+
+    monkeypatch.setattr(launch, "capture", fake_capture)
+    monkeypatch.setattr(launch, "local_readiness", lambda: pytest.fail("Must not check readiness after initialization failure"))
+    with pytest.raises(RuntimeError, match="initialization did not complete"):
+        launch.start_stack(["docker", "compose"], {}, "private-test-token")
+    assert [command[-1] for command in calls if "up" in command] == ["init-secrets"]
+
+
+@pytest.fixture
+def readiness_clock(monkeypatch):
+    clock = {"now": 0, "sleeps": []}
+
+    def sleep(seconds):
+        clock["sleeps"].append(seconds)
+        clock["now"] += seconds
+
+    monkeypatch.setattr(launch, "time", SimpleNamespace(monotonic=lambda: clock["now"], sleep=sleep))
+    return clock
+
+
+def test_readiness_retries_ingress_502_connection_refusal_and_timeout(monkeypatch, readiness_clock):
+    statuses = iter([HTTPError("local", 502, "settling", {}, None), {"status": "ok"},
+                     URLError(ConnectionRefusedError()), TimeoutError(), {"database": "ok"}])
+    requests = []
+
+    def opening(url, timeout):
+        requests.append((url, timeout))
+        outcome = next(statuses)
+        if isinstance(outcome, Exception):
+            raise outcome
+        response = BytesIO(json.dumps(outcome).encode())
+        response.status = 200
+        return response
+
+    monkeypatch.setattr(launch, "build_opener", lambda *args: SimpleNamespace(open=opening))
+    launch.local_readiness()
+    assert len(requests) == 5
+    assert readiness_clock["sleeps"] == [2, 2, 2]
+    assert readiness_clock["now"] == 6
+    assert requests[0][0] == requests[1][0] == "http://127.0.0.1:18080/health"
+    assert all(url == "http://127.0.0.1:13080/api/health" for url, _ in requests[2:])
+
+
+def test_readiness_failure_is_bounded_to_one_30_second_window(monkeypatch, readiness_clock):
+    attempts = []
+
+    def opening(url, timeout):
+        attempts.append((url, timeout))
+        if readiness_clock["now"] < 28 or "13080" in url:
+            raise HTTPError(url, 502, "settling", {}, None)
+        response = BytesIO(b'{"status":"ok"}')
+        response.status = 200
+        return response
+
+    monkeypatch.setattr(launch, "build_opener", lambda *args: SimpleNamespace(open=opening))
+    with pytest.raises(RuntimeError, match="within 30 seconds"):
+        launch.local_readiness()
+    assert readiness_clock["now"] == 30
+    assert len(attempts) == 16
+    assert attempts[-1] == ("http://127.0.0.1:13080/api/health", 2)
+    assert max(readiness_clock["sleeps"]) == 2
+
+
+@pytest.mark.parametrize("status", [401, 500, 503])
+def test_readiness_does_not_retry_other_http_failures(monkeypatch, readiness_clock, status):
+    def opening(url, timeout):
+        raise HTTPError(url, status, "failure", {}, None)
+
+    monkeypatch.setattr(launch, "build_opener", lambda *args: SimpleNamespace(open=opening))
+    with pytest.raises(HTTPError) as error:
+        launch.local_readiness()
+    assert error.value.code == status
+    assert readiness_clock["sleeps"] == []

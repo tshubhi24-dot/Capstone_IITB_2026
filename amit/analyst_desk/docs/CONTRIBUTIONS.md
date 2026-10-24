@@ -13,6 +13,7 @@ The course guide permits AI coding assistance and assigns problem framing, desig
 | 22 October 2026 | Initial project definition and evaluation preparation | AI-assisted drafts and public development authoring aids; proposed targets, no claimed human labels or final results. |
 | 24 October 2026 | Current architecture preparation and portable shared-repository export | AI-assisted design and artifact preparation; implementation and runtime validation are separate work. |
 | 24 October 2026 | Fresh Docker research journey implementation | AI-assisted current code, UI, source extraction helpers and boundary tests; offline processing, zero model calls. Actual human decisions and final evaluation are not claimed. |
+| 24 October 2026 | Actual Docker learning journey and two human review gates | The exact research plan and note were approved through separate review gates. One note was saved; measured receipts, persistence/authentication checks and limitations appear in the step log. This is not independent final evaluation. |
 
 ## Team role assignments
 
@@ -33,6 +34,7 @@ Record each action when it occurs, including adopted/rejected AI suggestions, so
 
 | Date | Member | Decision or work performed | Files or run IDs | Evidence and reviewer |
 |---|---|---|---|---|
+| 24 October 2026 | Amit | Approved the MSFT/AAPL plan and the exact checked note through separate review gates. | Run `b1fd4eab632548328f354ef2794f679a`; note `c54ab4c70fc64615a95dfc8c462ba0c3`. | Approval states and exact payload hashes in `evidence/two_company_journey.json`; independent source/domain evaluation not claimed. |
 | Pending | Pending | Pending | Pending | Pending |
 
 ## Human reviews still to record

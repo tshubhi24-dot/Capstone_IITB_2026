@@ -2,7 +2,7 @@
 
 This step builds a fresh Docker Compose workflow for Microsoft and Apple, fiscal years 2023–2025. It uses actual cached SEC annual facts and filing passages. Research is deterministic and offline: BM25 lexical retrieval, fixed calculations and text comparisons, with **zero language-model calls and a zero-dollar model budget**.
 
-**Current verification status:** the application image built successfully and 46 local automated checks passed. Initial Compose startup stalled after one service started, with a Docker engine connection-session healthcheck error. Engine recovery, complete service readiness and a live research run remain pending verification. No actual human plan approval, note approval or publication is claimed here. Update this status only with observed evidence.
+**Current verification status:** the local Docker journey completed on 24 October 2026. Both version-bound human review gates completed; one note was saved. The run made 18 actual MCP calls, verified 18 displayed financial values and made zero model calls. All 53 local automated tests and eleven runtime-readiness checks passed. The note survived an application restart; all four running MCP services rejected unauthenticated requests. See the [journey receipt](../evidence/two_company_journey.json), [runtime checks](../evidence/runtime_checks.json) and [restart/authentication evidence](../evidence/journey_verification.json).
 
 ## 1. Prepare the source snapshot
 
@@ -24,14 +24,14 @@ The local snapshot stays in ignored `.runtime/journey/sources/`. The shareable [
 python3 ops/start_journey.py --start
 ```
 
-The first start downloads images and installs dependencies. It uses the dedicated `analyst-desk-journey` project and loopback-only addresses:
+The first start downloads images and installs dependencies. Services start individually after successful credential initialization, with bounded waits and a short readiness retry for transient proxy errors. If macOS or Docker displays a permission/setup prompt, complete the on-screen step; do not enter passwords into chat. The launcher uses the dedicated `analyst-desk-journey` project and loopback-only addresses:
 
 - Research desk: <http://127.0.0.1:18080>
 - Monitoring dashboard: <http://127.0.0.1:13080>
 
 The research desk's Connection settings need the local analyst token from `.runtime/journey/credentials.env`. Keep this file private; do not put its value in Git, screenshots, chat, or a URL. The launcher preserves existing credentials. It does not copy provider keys into this offline stack.
 
-The app calls four authenticated MCP services. Financial calculations run through a separate pandas worker with no network access, a queue-only mount, a read-only root filesystem and bounded resources. Prometheus and Grafana are configured for monitoring; their readiness and alert behaviour require live verification.
+The app calls four authenticated MCP services. Financial calculations run through a separate pandas worker with no network access, a queue-only mount, a read-only root filesystem and bounded resources. Prometheus scraping and Grafana readiness were verified in the recorded run. Alert firing remains untested.
 
 ## 3. Create the research request and inspect its plan
 
@@ -80,4 +80,4 @@ The helper saves full run snapshots and supplied confirmation text privately in 
 - This is an ordinary learning run. Protected final questions, hidden gold labels and final benchmark scoring are outside this workflow.
 - Six-person team integration, ingestion adapters and the remaining full-capstone requirements need separate work and review.
 
-Steps 1–3 were pushed as separate commits on `Amit/analyst_desk`: `9702d65` (definition), `fb01fc2` (evaluation preparation), and `586e747` (architecture). Step 4 adds the fresh implementation and its tests. Observed live readiness and research decisions will be recorded in subsequent commits. Work stays under `amit/analyst_desk`; no direct merge to `main` is authorized. See the [step log](../STEP_LOG.md) and [contribution record](CONTRIBUTIONS.md).
+Steps 1–4 were pushed as separate commits on `Amit/analyst_desk`: `9702d65` (definition), `fb01fc2` (evaluation preparation), `586e747` (architecture), and `478d05e` (fresh implementation). Step 5 records startup recovery, live readiness and the actual human-approved journey. Work stays under `amit/analyst_desk`; no direct merge to `main` is authorized. See the [step log](../STEP_LOG.md) and [contribution record](CONTRIBUTIONS.md).

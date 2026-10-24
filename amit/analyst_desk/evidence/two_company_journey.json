@@ -1,0 +1,71 @@
+{
+  "record_kind": "manual_two_company_learning_journey",
+  "updated_at": "2026-10-24T06:59:17.634649+00:00",
+  "base_url": "http://127.0.0.1:18080",
+  "run_id": "b1fd4eab632548328f354ef2794f679a",
+  "status": "published",
+  "stage": "published",
+  "configuration": {
+    "mode": "offline",
+    "data_source": "sec_edgar",
+    "transport": "http",
+    "semantic_retrieval": false,
+    "model_config_version": "fresh-step4-offline-v1"
+  },
+  "request": {
+    "tickers": [
+      "MSFT",
+      "AAPL"
+    ],
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "strategy": "multi",
+    "max_tokens": 100000,
+    "max_tool_calls": 60,
+    "learning_split": "production"
+  },
+  "pending_review": {
+    "kind": null,
+    "payload_hash": null,
+    "plan": null,
+    "note_title": null
+  },
+  "expected_human_action": null,
+  "verification": {
+    "passed": true,
+    "verified_share": 1.0,
+    "verified_numbers": 18,
+    "total_numbers": 18
+  },
+  "usage": {
+    "tokens": 0,
+    "tool_calls": 18,
+    "model_calls": 0,
+    "cost_usd": 0
+  },
+  "note_id": "c54ab4c70fc64615a95dfc8c462ba0c3",
+  "decision_requests": [
+    {
+      "time": "2026-10-24T06:55:36.619129+00:00",
+      "kind": "plan",
+      "action": "approve",
+      "payload_hash": "a894b711ebe63e9f162dc9eec495566b40c887a1f677df709855d44bb8070983",
+      "accepted_by_api": true
+    },
+    {
+      "time": "2026-10-24T06:57:50.299688+00:00",
+      "kind": "note",
+      "action": "approve",
+      "payload_hash": "d9b6c97cf3c357151f9cf7df9c42cfe280b15abb4fb91b3d36637b57dc576c56",
+      "accepted_by_api": true
+    }
+  ],
+  "limitations": [
+    "This is an ordinary learning run, not a protected final benchmark.",
+    "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
+    "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."
+  ]
+}

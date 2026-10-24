@@ -1,0 +1,27 @@
+{
+  "checked_at_utc": "2026-10-24T06:59:17.923629+00:00",
+  "run_id": "b1fd4eab632548328f354ef2794f679a",
+  "note_id": "c54ab4c70fc64615a95dfc8c462ba0c3",
+  "published_note_survived_app_restart": true,
+  "approved_note_count_after_restart": 1,
+  "mcp_servers_reject_missing_credentials": {
+    "filings-kb": true,
+    "edgar": true,
+    "python-sandbox": true,
+    "research-portal": true
+  },
+  "source_and_arithmetic_checks": {
+    "passed": true,
+    "verified_share": 1.0,
+    "verified_numbers": 18,
+    "total_numbers": 18
+  },
+  "usage": {
+    "tokens": 0,
+    "tool_calls": 18,
+    "model_calls": 0,
+    "cost_usd": 0
+  },
+  "human_plan_and_note_decisions_recorded": true,
+  "scope": "Actual local Docker learning journey; no semantic benchmark or active attack claim."
+}
