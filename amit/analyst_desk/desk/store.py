@@ -91,6 +91,7 @@ class Store:
         run = self.get_run(run_id)
         if not run or run["actor"] != actor:
             raise ValueError("Unknown run or actor")
+        self._assert_publishable_run(run)
         pending = run.get("pending") or {}
         payload = pending.get("payload") if pending.get("kind") == "note" else run.get("draft")
         if not payload or canonical_hash(payload) != payload_hash:
@@ -99,8 +100,22 @@ class Store:
         if not critic.get("passed"):
             raise ValueError("A failed note cannot be approved")
         with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            current = db.execute("SELECT data FROM runs WHERE id=?", (run_id,)).fetchone()
+            run = json.loads(current["data"]) if current else None
+            if not run or run.get("actor") != actor:
+                raise ValueError("Unknown run or actor")
+            self._assert_publishable_run(run)
+            pending = run.get("pending") or {}
+            payload = pending.get("payload") if pending.get("kind") == "note" else run.get("draft")
+            if not payload or canonical_hash(payload) != payload_hash or not (run.get("critic") or {}).get("passed"):
+                raise ValueError("Approval must match the persisted exact checked note")
+            if run["request"].get("lessons_enabled", False) and "lesson_context" not in payload:
+                raise ValueError("The reviewed note is missing its frozen lesson context")
             if "memory_context" in payload:
                 self._validate_payload_memory(payload, actor, db)
+            if "lesson_context" in payload:
+                self._validate_payload_lessons(payload, actor, db)
             db.execute("INSERT INTO approvals VALUES(?,?,?,?,0) ON CONFLICT(run_id) DO UPDATE SET actor=excluded.actor,payload_hash=excluded.payload_hash,expires=excluded.expires,consumed=0", (run_id, actor, payload_hash, time.time() + ttl))
 
     def make_capability(self, run_id, actor, payload_hash):
@@ -129,6 +144,13 @@ class Store:
             raise ValueError("Invalid or mismatched publication capability") from exc
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
+            persisted = db.execute("SELECT data FROM runs WHERE id=?", (payload["run_id"],)).fetchone()
+            if persisted is None:
+                raise ValueError("The approved research run is unavailable")
+            persisted_run = json.loads(persisted["data"])
+            self._assert_publishable_run(persisted_run)
+            if persisted_run["request"].get("lessons_enabled", False) and "lesson_context" not in payload:
+                raise ValueError("The reviewed note is missing its frozen lesson context")
             previous = db.execute("SELECT * FROM notes WHERE run_id=?", (payload["run_id"],)).fetchone()
             if previous:
                 if previous["payload_hash"] != digest:
@@ -136,6 +158,8 @@ class Store:
                 return {"note_id": previous["id"], "run_id": payload["run_id"], "payload_hash": digest, "idempotent": True}
             if "memory_context" in payload:
                 self._validate_payload_memory(payload, payload["actor"], db)
+            if "lesson_context" in payload:
+                self._validate_payload_lessons(payload, payload["actor"], db)
             row = db.execute("SELECT * FROM approvals WHERE run_id=?", (payload["run_id"],)).fetchone()
             if not row or row["actor"] != payload["actor"] or row["payload_hash"] != digest or row["consumed"] or row["expires"] < time.time() or grant["expires"] < time.time():
                 raise ValueError("Stored human approval is missing, stale or consumed")
@@ -242,3 +266,39 @@ class Store:
                                                           "years": sorted(plan["years"])}):
                 raise ValueError("The frozen memory scope differs from the approved research plan")
         return self.validate_memory_snapshot(context, payload.get("source_fingerprint"), db, actor=actor)
+
+    @staticmethod
+    def _assert_publishable_run(run):
+        request = run.get("request") or {}
+        if (request.get("learning_split", "production") != "production"
+                or request.get("development_case_id") is not None or request.get("development_admission") is not None):
+            raise ValueError("Development and evaluation research cannot receive publication approval or enter the note library")
+
+    def validate_lesson_context(self, snapshot, source_fingerprint=None, db=None, *, actor=None, scope=None):
+        from .lessons import validate_lesson_snapshot
+        selected_actor = actor if actor is not None else snapshot.get("actor")
+        if db is None:
+            with self.connection() as connection:
+                connection.execute("BEGIN")
+                return self.validate_lesson_context(snapshot, source_fingerprint, connection,
+                                                    actor=selected_actor, scope=scope)
+        return validate_lesson_snapshot(db, selected_actor, snapshot,
+                                        source_fingerprint=source_fingerprint, scope=scope)
+
+    def _validate_payload_lessons(self, payload, actor, db):
+        plan = payload.get("plan")
+        if not isinstance(plan, dict):
+            raise ValueError("A reviewed research plan is required for lesson reuse")
+        context = payload["lesson_context"]
+        if plan.get("lesson_context") != context:
+            raise ValueError("The note's lesson context differs from the reviewed plan")
+        current = db.execute("SELECT data FROM runs WHERE id=?", (payload.get("run_id"),)).fetchone()
+        run = json.loads(current["data"]) if current else None
+        if (not run or run.get("actor") != actor or run.get("lesson_context") != context
+                or context.get("enabled") is not run["request"].get("lessons_enabled", False)
+                or context.get("enabled") and context.get("playbook_id") != run["request"].get("playbook_id")
+                or context.get("source_fingerprint") != payload.get("source_fingerprint")
+                or context.get("source_fingerprint") != run.get("source_fingerprint")):
+            raise ValueError("The approved lesson context differs from the original research run")
+        return self.validate_lesson_context(context, payload.get("source_fingerprint"), db, actor=actor,
+            scope={"tickers": sorted(plan["tickers"]), "years": sorted(plan["years"])})

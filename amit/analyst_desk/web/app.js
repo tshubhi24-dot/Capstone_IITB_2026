@@ -27,7 +27,7 @@ function researchScope(config,tickers,years,mode){
 }
 function selectedValues(id){return Array.from($(id).selectedOptions,option=>option.value);}
 function updateScope(){
- try{if(state.config?.retrieval_details?.ready===false)throw new Error('The search index is unavailable or needs preparation. Research is paused until it is ready.');const scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),$('mode').value);$('request-scope').textContent=`Selected: ${scope.tickers.join(' / ')} · fiscal ${scope.years.join(', ')}`;$('start').disabled=!state.connected;}
+ try{if($('development-mode').checked&&!$('development-case').value)throw new Error('Choose a registered public development case.');if(state.config?.retrieval_details?.ready===false)throw new Error('The search index is unavailable or needs preparation. Research is paused until it is ready.');const scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),$('mode').value);$('request-scope').textContent=`Selected: ${scope.tickers.join(' / ')} · fiscal ${scope.years.join(', ')}`;$('start').disabled=!state.connected;}
  catch(error){$('request-scope').textContent=error.message;$('start').disabled=true;}
 }
 function renderScopeOptions(config){
@@ -57,7 +57,7 @@ async function connect(){
   if(config.data_source!=='sec_edgar')throw new Error('This desk requires the actual SEC source snapshot.');
   state.config=config;const live=$('mode').querySelector('option[value="live"]');live.disabled=!config.live_enabled;$('mode').value=config.live_enabled?'live':'offline';modeDescription();
   renderScopeOptions(config);state.connected=true;updateScope();$('connection').textContent=`Connected · real SEC snapshot · HTTP MCP · live AI ${config.live_enabled?'available':'disabled'}`;
-  await window.AnalystMemory.load(config);await loadRuns();await loadNotes();const requested=new URLSearchParams(location.search).get('run');if(requested)await selectRun(requested);
+  await window.AnalystMemory.load(config);await window.AnalystLessons.load();await loadRuns();await loadNotes();const requested=new URLSearchParams(location.search).get('run');if(requested)await selectRun(requested);
  }catch(error){state.connected=false;$('start').disabled=true;$('connection').textContent='Not connected';message(error.message);}
 }
 async function loadRuns(){
@@ -74,6 +74,7 @@ async function refresh(id){
 }
 function render(run){
  window.AnalystMemory.renderRun(run);
+ window.AnalystLessons.renderRun(run);
  state.run=run;const live=(run.mode||run.request?.mode||'offline')==='live';$('current').hidden=false;$('status').textContent=`${live?'Live AI':'Offline'} · ${run.status.replaceAll('_',' ')} · run ${run.id}`;
  const rawCost=run.usage?.cost_usd,unknown=rawCost===null||rawCost===undefined||run.usage?.accounting_status==='unknown_after_failure',cost=unknown?NaN:Number(rawCost),held=run.usage?.held_usd;
  $('usage').textContent=`${run.usage?.tool_calls||0} tool calls · ${run.usage?.model_calls||0} recorded model calls · ${run.usage?.tokens||0} ${run.usage?.accounting_status==='provider_reported_with_holds'?'reported/reserved tokens':'tokens'} · reported model cost ${Number.isFinite(cost)?'$'+cost.toFixed(6):'unknown'}${held!==null&&held!==undefined?' · reserved model budget $'+held:''}${unknown?' · accounting unavailable; a failed request may still have incurred a charge':''}`;
@@ -87,9 +88,9 @@ function render(run){
    $('editor').value=plan?pending.payload.outline.join('\n'):pending.payload.body;
    $('scope').textContent=plan?`${pending.payload.tickers.join(' / ')} · fiscal ${pending.payload.years.join(', ')} · ${pending.payload.caveats.join(' ')}`:'Inspect the financial sources, narrative citations, model review and limitations before deciding.';
    $('edit-policy').textContent=!plan&&live?'For live notes, edit only the wording of existing claim bullets. Keep the table, headings, citations and limitations unchanged. Edits invalidate the previous model review and require fresh checks; unsupported changes block approval.':'';
-   $('fingerprint').textContent=`Exact version: ${pending.payload_hash}`;$('approve').textContent=plan?'Approve plan and continue':'Approve and publish this exact note';
+   $('fingerprint').textContent=`Exact version: ${pending.payload_hash}`;$('approve').textContent=plan?'Approve plan and continue':run.request?.learning_split==='development'?'Development review only · publication blocked':'Approve and publish this exact note';
   }
-  $('approve').disabled=pending.kind==='note'&&!run.critic?.passed;
+  $('approve').disabled=pending.kind==='note'&&(!run.critic?.passed||run.request?.learning_split==='development');
  }
  const rows=run.draft?.metrics||run.metrics||[];$('figures').hidden=!rows.length;$('rows').replaceChildren();
  rows.forEach(row=>{const tr=element('tr');[`${row.ticker} / ${row.year}`,`${row.period_start} to ${row.period_end}`,row.revenue,row.operating_income,`${row.margin_pct}%`].forEach(text=>tr.append(element('td',text)));
@@ -115,11 +116,12 @@ async function showEvidence(id){try{$('evidence').textContent=JSON.stringify(awa
 async function loadNotes(){const notes=await api('/api/notes');$('notes').replaceChildren();if(!notes.length)$('notes').append(element('p','No approved notes yet.'));
  notes.forEach(note=>{const detail=element('details');detail.append(element('summary',note.title||note.id),element('p',`${note.model_mode==='live'?'Live AI':'Offline'} · approved version: ${note.payload_hash||note.digest||''}`),element('pre',note.body||JSON.stringify(note)));window.AnalystMemory.renderNote(note,detail);$('notes').append(detail);});}
 function initialize(){
+window.AnalystLessons.initialize({api,notify:message,applyCase:value=>{if(value){Array.from($('companies').options).forEach(option=>option.selected=value.tickers.includes(option.value));Array.from($('years').options).forEach(option=>option.selected=value.years.includes(Number(option.value)));$('question').value=value.question;}const locked=$('development-mode').checked;$('companies').disabled=locked;$('years').disabled=locked;$('question').readOnly=locked;updateScope();}});
 window.AnalystMemory.initialize({api,getSelection:()=>({question:$('question').value,...researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),'offline')}),applyDefaults:values=>{if(values.companies)Array.from($('companies').options).forEach(option=>option.selected=values.companies.includes(option.value));if(values.years)Array.from($('years').options).forEach(option=>option.selected=values.years.includes(Number(option.value)));updateScope();},showFact:showEvidence,showEvidence:text=>{$('evidence').textContent=text;$('evidence-panel').hidden=false;$('evidence-panel').scrollIntoView({behavior:'smooth'});}});
 $('connect').onclick=connect;$('runs').onchange=()=>{if($('runs').value)selectRun($('runs').value);};
 $('mode').onchange=modeDescription;
 $('companies').onchange=updateScope;$('years').onchange=updateScope;
-$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const mode=$('mode').value,scope=researchScope(state.config,selectedValues('companies'),selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,learning_split:'production'})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{updateScope();}};
+$('research-form').onsubmit=async event=>{event.preventDefault();try{$('start').disabled=true;const mode=$('mode').value,learning=window.AnalystLessons.requestOptions(),scope=researchScope(state.config,learning.tickers||selectedValues('companies'),learning.years||selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,...learning})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{updateScope();}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }

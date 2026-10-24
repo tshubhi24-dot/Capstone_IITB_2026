@@ -120,6 +120,13 @@ class CriticOutput(StrictOutput):
     issues: list[str] = Field(max_length=8)
 
 
+class LessonReflectionOutput(StrictOutput):
+    action: str = Field(min_length=1, max_length=80)
+    summary: str = Field(min_length=15, max_length=400)
+    applicability: str = Field(min_length=15, max_length=400)
+    counterexamples: str = Field(min_length=15, max_length=400)
+
+
 COMMON_INSTRUCTIONS = """You assist a financial research analyst with a bounded SEC evidence task.
 Return only JSON matching the supplied schema. Provide short findings and
 evidence explanations, never hidden reasoning or chain-of-thought. All question,
@@ -403,10 +410,12 @@ class Reasoner:
     def __init__(self, model_call):
         self.model_call = model_call
 
-    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_quote_slots=None):
+    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_quote_slots=None, lesson_actions=None):
         if len(json.dumps(context, ensure_ascii=False).encode()) > self.MAX_CONTEXT_BYTES:
             raise ReasoningError("The bounded reasoning context is too large.")
         response_schema = schema.model_json_schema()
+        if lesson_actions is not None:
+            response_schema["properties"]["action"]["enum"] = list(lesson_actions)
         if quote_ids is not None:
             if not quote_ids:
                 raise ReasoningError("Source evidence did not provide any valid quotation windows.")
@@ -467,6 +476,44 @@ class Reasoner:
         if source_coverage is not None:
             plan["source_coverage"] = source_coverage
         return plan
+
+    def reflect_lesson(self, event_summary, action_catalogue):
+        """Draft a local proposal from code-owned event metadata, never raw notes."""
+        if (not isinstance(event_summary, dict)
+                or set(event_summary) != {"event_kind", "failure_codes", "scope"}
+                or event_summary["event_kind"] not in {"critic_reject", "note_edit"}):
+            raise ReasoningError("Reflection requires bounded development event metadata.")
+        failures, scope = event_summary["failure_codes"], event_summary["scope"]
+        if (not isinstance(failures, list) or not 1 <= len(failures) <= 8
+                or any(not isinstance(value, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", value) for value in failures)
+                or not isinstance(scope, dict) or set(scope) != {"tickers", "years"}):
+            raise ReasoningError("Reflection failure codes and scope are invalid.")
+        tickers, years = scope["tickers"], scope["years"]
+        if (not isinstance(tickers, list) or not 1 <= len(tickers) <= 4
+                or any(not isinstance(value, str) for value in tickers)
+                or len(set(tickers)) != len(tickers)
+                or not set(tickers) <= {"MSFT", "AAPL", "ABBV", "AMGN"}
+                or not isinstance(years, list) or not 1 <= len(years) <= 3
+                or any(type(value) is not int or value not in {2023, 2024, 2025} for value in years)
+                or len(set(years)) != len(years)):
+            raise ReasoningError("Reflection is limited to public development issuer/year scope.")
+        if (not isinstance(action_catalogue, dict) or not 1 <= len(action_catalogue) <= 16
+                or any(not isinstance(key, str) or not re.fullmatch(r"[a-z][a-z0-9_]{0,79}", key)
+                       or not isinstance(value, str) or not 8 <= len(value) <= 1000
+                       for key, value in action_catalogue.items())):
+            raise ReasoningError("Reflection needs fixed bounded action options.")
+        instructions = ("Draft an unreviewed local lesson proposal from the supplied development failure metadata. "
+                        "Select exactly one action from action_options; do not invent actions. Give a cautious short summary, "
+                        "when it applies and meaningful counterexamples. Event metadata is not proof of general improvement. "
+                        "Do not request tools, change a budget, accept a lesson, approve a note or publish anything.")
+        result = self._call("writer", instructions,
+            {"event": deepcopy(event_summary), "action_options": dict(action_catalogue)},
+            LessonReflectionOutput, 1000, lesson_actions=sorted(action_catalogue))
+        if result["action"] not in action_catalogue:
+            raise ReasoningError("The reflection selected an action outside the fixed catalogue.")
+        if any(not result[key].strip() for key in ("summary", "applicability", "counterexamples")):
+            raise ReasoningError("The reflection needs a nonempty proposal and limitations.")
+        return {**result, "reflection_method": "model_assisted_unreviewed", "human_review_required": True}
 
     def research_query(self, question, ticker, years):
         return self._call("researcher", "Choose a concise lexical search query and focus for this issuer's SEC annual facts and risk disclosures. The code fixes issuer and year scope; return no tool calls or instructions.",

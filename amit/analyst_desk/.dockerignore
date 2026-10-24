@@ -11,8 +11,10 @@
 !ops/evaluate_retrieval.py
 !ops/verify_retrieval_tools.py
 !ops/verify_memory_runtime.py
+!ops/verify_lessons_runtime.py
 !data/
 !data/retrieval_config.json
+!data/development_cases.json
 !web/
 !web/**
 **/__pycache__

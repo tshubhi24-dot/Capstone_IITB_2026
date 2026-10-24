@@ -11,12 +11,14 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
     && pip install --no-cache-dir -r requirements.retrieval.txt
 COPY desk ./desk
 COPY data/retrieval_config.json ./data/retrieval_config.json
+COPY data/development_cases.json ./data/development_cases.json
 COPY ops/bootstrap.py ./ops/bootstrap.py
 COPY ops/verify_catalogue_tools.py ./ops/verify_catalogue_tools.py
 COPY ops/prepare_vector_store.py ./ops/prepare_vector_store.py
 COPY ops/evaluate_retrieval.py ./ops/evaluate_retrieval.py
 COPY ops/verify_retrieval_tools.py ./ops/verify_retrieval_tools.py
 COPY ops/verify_memory_runtime.py ./ops/verify_memory_runtime.py
+COPY ops/verify_lessons_runtime.py ./ops/verify_lessons_runtime.py
 COPY web ./web
 USER 10001:10001
 ENTRYPOINT ["python", "ops/bootstrap.py", "exec"]

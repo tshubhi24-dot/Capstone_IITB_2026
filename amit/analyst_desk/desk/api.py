@@ -73,12 +73,23 @@ class ResearchRequest(BaseModel):
     max_tokens: int = Field(default=100000, ge=100, le=500000)
     max_model_calls: int = Field(default=12, ge=1, le=12)
     memory_enabled: bool = Field(default=True, strict=True)
+    lessons_enabled: bool = Field(default=False, strict=True)
+    playbook_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     critic_enabled: Literal[True] = True
     table_aware: Literal[True] = True
     defences_enabled: Literal[True] = True
     plant_error: Literal[False] = False
     inject_article: Literal[False] = False
-    learning_split: Literal["production"] = "production"
+    learning_split: Literal["production", "development"] = "production"
+    development_case_id: str | None = Field(default=None, pattern=r"^KDEV[0-9]{3}$")
+
+    @model_validator(mode="after")
+    def learning_controls(self):
+        if self.lessons_enabled != (self.playbook_id is not None):
+            raise ValueError("Choose one frozen playbook when enabling reviewed lessons.")
+        if self.learning_split == "production" and self.development_case_id is not None:
+            raise ValueError("Ordinary research cannot claim a development case.")
+        return self
 
 
 class Decision(BaseModel):
@@ -224,6 +235,93 @@ def compare_memory_note(note_id: str):
     return compare_approved_note(record, app.state.source)
 
 
+class LessonReflection(MemoryRevision):
+    run_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    event_id: int = Field(ge=1)
+    mode: Literal["rules", "live"] = "rules"
+
+
+class LessonProposalWrite(MemoryRevision):
+    run_id: str = Field(pattern=r"^[a-f0-9]{32}$")
+    event_id: int = Field(ge=1)
+    action: Literal["align_fiscal_periods", "verify_current_facts", "preserve_risk_qualifiers", "cite_exact_evidence"]
+    scope: dict
+    summary: str = Field(min_length=8, max_length=600)
+    applicability: str = Field(min_length=8, max_length=600)
+    counterexamples: str = Field(min_length=8, max_length=600)
+    supersedes: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
+
+
+class LessonDecisionWrite(MemoryRevision):
+    proposal_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    decision: Literal["accept", "reject"]
+    reason: str = Field(min_length=8, max_length=600)
+
+
+class LessonRevocationWrite(MemoryRevision):
+    proposal_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    reason: str = Field(min_length=8, max_length=600)
+
+
+class PlaybookFreeze(MemoryRevision):
+    lesson_ids: list[str] = Field(min_length=1, max_length=16)
+
+
+def lesson_operation(action):
+    from .memory import MemoryConflict
+    try:
+        return action()
+    except MemoryConflict as error:
+        raise HTTPException(409, str(error)) from error
+    except (ValueError, ReviewError) as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@app.get("/api/development/cases")
+def development_cases():
+    from .development import public_cases
+    return {"cases": public_cases(app.state.source), "publication_allowed": False,
+            "independent_benchmark": False, "expected_answers_included": False}
+
+
+@app.get("/api/lessons")
+def lessons():
+    from .lessons import ACTION_HINTS
+    core = app.state.engine.lessons
+    return {"bank": core.get_bank(), "lessons": core.list_lessons(),
+            "playbooks": core.list_playbooks(), "actions": ACTION_HINTS,
+            "human_review_required": True}
+
+
+@app.post("/api/lessons/reflect")
+def reflect_lesson(value: LessonReflection):
+    from .reflection import propose_reflection
+    owned(value.run_id)
+    with app.state.engine.lock(value.run_id):
+        return lesson_operation(lambda: propose_reflection(app.state.engine, **value.model_dump()))
+
+
+@app.post("/api/lessons")
+def propose_lesson(value: LessonProposalWrite):
+    owned(value.run_id)
+    return lesson_operation(lambda: app.state.engine.lessons.propose(**value.model_dump()))
+
+
+@app.post("/api/lessons/{lesson_id}/decision")
+def decide_lesson(lesson_id: str, value: LessonDecisionWrite):
+    return lesson_operation(lambda: app.state.engine.lessons.decide(lesson_id, **value.model_dump()))
+
+
+@app.post("/api/lessons/{lesson_id}/revoke")
+def revoke_lesson(lesson_id: str, value: LessonRevocationWrite):
+    return lesson_operation(lambda: app.state.engine.lessons.revoke(lesson_id, **value.model_dump()))
+
+
+@app.post("/api/playbooks")
+def freeze_playbook(value: PlaybookFreeze):
+    return lesson_operation(lambda: app.state.engine.lessons.freeze_playbook(**value.model_dump()))
+
+
 @app.get("/")
 def home():
     return FileResponse(ROOT / "web/index.html")
@@ -328,8 +426,10 @@ def budget():
 def create(value: ResearchRequest, background: BackgroundTasks):
     request = value.model_dump()
     try:
+        from .development import admit_development
+        request = admit_development(request, app.state.source)
         validate_scope(request, app.state.source)
-    except ReviewError as exc:
+    except (ReviewError, ValueError) as exc:
         raise HTTPException(400, str(exc)) from exc
     if retrieval_configuration().get("ready") is not True:
         raise HTTPException(409, "The configured retrieval index is unavailable or stale. Prepare and verify it before starting research.")

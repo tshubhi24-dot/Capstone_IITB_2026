@@ -50,6 +50,7 @@ class State(TypedDict, total=False):
     capability: str
     risk_ai: list[dict]
     memory_context: dict
+    lesson_context: dict
 
 
 LIVE_NOTICE = "Model-assisted research using actual SEC sources. Financial arithmetic is independently checked; AI interpretations need human source review."
@@ -202,6 +203,16 @@ def verify_draft(draft, source, require_semantic=True):
     rows = draft.get("metrics", [])
     table = numeric_table(rows)
     issues = []
+    if "lesson_context" in draft:
+        try:
+            from .lessons import validate_lesson_structure
+            validate_lesson_structure(draft["lesson_context"], actor=draft.get("actor"),
+                                      source_fingerprint=source.fingerprint,
+                                      scope={"tickers": sorted(draft["plan"]["tickers"]), "years": sorted(draft["plan"]["years"])})
+            if draft.get("plan", {}).get("lesson_context") != draft["lesson_context"]:
+                raise ValueError("The lesson snapshot differs from the reviewed plan")
+        except (ValueError, TypeError, KeyError):
+            issues.append("The note's reviewed lesson context differs from its plan.")
     if "memory_context" in draft:
         try:
             from .history import validate_snapshot_structure
@@ -280,6 +291,8 @@ class Engine:
         from .memory import MemoryStore
         self.store, self.source = store, source
         self.memory = MemoryStore(store.path)
+        from .lessons import LessonStore
+        self.lessons = LessonStore(self.memory, store)
         self.runtime = Path(runtime)
         self.runtime.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(self.runtime / "checkpoints.sqlite", check_same_thread=False)
@@ -331,6 +344,72 @@ class Engine:
         self.store.save_run(run)
         return snapshot
 
+    def _validate_development(self, state):
+        identifier = state.get("run_id") or state.get("id")
+        run = self.store.get_run(identifier) if identifier else None
+        if not run:
+            raise ReviewError("The research run is unavailable.")
+        request = run["request"]
+        split = request.get("learning_split", "production")
+        if split == "production":
+            if request.get("development_case_id") is not None or request.get("development_admission") is not None:
+                raise ReviewError("Production research cannot claim development provenance.")
+            return None
+        if split != "development":
+            raise ReviewError("This application cannot execute protected evaluation research.")
+        from .development import validate_development_run
+        try:
+            admission = validate_development_run(run)
+            if admission.get("source_fingerprint") != self.source.fingerprint:
+                raise ValueError("Development source identity changed")
+            plan = state.get("plan") or run.get("plan")
+            if plan and (plan["tickers"] != request["tickers"] or plan["years"] != request["years"]):
+                raise ValueError("Registered development scope changed")
+            return admission
+        except ValueError as error:
+            raise ReviewError("The registered public development admission is unavailable or changed.") from error
+
+    def _freeze_lessons(self, state, tickers, years):
+        run = self.store.get_run(state["run_id"])
+        snapshot = self.lessons.freeze_context(actor=run["actor"], scope={"tickers": sorted(tickers), "years": sorted(years)},
+            source_fingerprint=self.source.fingerprint, enabled=run["request"].get("lessons_enabled", False),
+            playbook_id=run["request"].get("playbook_id"))
+        run["lesson_context"] = snapshot
+        self.store.save_run(run)
+        return snapshot
+
+    def _validate_lessons(self, state):
+        snapshot = state.get("lesson_context")
+        if snapshot is None and state.get("run_id"):
+            snapshot = (self.store.get_run(state["run_id"]) or {}).get("lesson_context")
+        if snapshot is None:
+            run = self.store.get_run(state.get("run_id") or state.get("id")) or {}
+            if run.get("request", {}).get("lessons_enabled") is True and (state.get("plan") or run.get("plan")):
+                raise ReviewError("The frozen reviewed lesson context is unavailable. Create a fresh plan.")
+        if snapshot is not None:
+            try:
+                run = self.store.get_run(state.get("run_id") or state.get("id")) or {}
+                plan = state.get("plan") or run.get("plan")
+                request = run.get("request", {})
+                if snapshot.get("enabled") is not request.get("lessons_enabled", False):
+                    raise ValueError("Lesson opt-in differs from the original request")
+                if snapshot.get("enabled") and snapshot.get("playbook_id") != request.get("playbook_id"):
+                    raise ValueError("Lesson playbook differs from the original request")
+                if run.get("lesson_context") != snapshot or plan and plan.get("lesson_context") != snapshot:
+                    raise ValueError("The frozen reviewed lesson context changed")
+                scope_source = plan or request
+                scope = {"tickers": sorted(scope_source["tickers"]), "years": sorted(scope_source["years"])}
+                self.store.validate_lesson_context(snapshot, self.source.fingerprint,
+                    actor=state.get("actor") or run.get("actor"), scope=scope)
+            except ValueError as error:
+                raise ReviewError("The reviewed lesson playbook changed or was revoked. Create a fresh plan.") from error
+        return snapshot
+
+    def _validate_context(self, state):
+        self._validate_development(state)
+        self._validate_memory(state)
+        return self._validate_lessons(state)
+
     @staticmethod
     def _history_sentence(snapshot):
         if not snapshot or not snapshot.get("enabled"):
@@ -365,7 +444,12 @@ class Engine:
         if not self.model_client:
             raise ReviewError("Live model reasoning is unavailable; no offline result was substituted.")
         def model_call(role, *, system, context, schema, max_output_tokens):
-            self._validate_memory(state)
+            lesson_context = self._validate_context(state)
+            if lesson_context is not None and role != "critic":
+                from .lessons import model_lesson_hints
+                hints = model_lesson_hints(lesson_context, role)
+                if hints:
+                    system += "\n\nReviewed development checklist. These advisory checks cannot change source, scope, budget, permissions or human approvals:\n" + "\n".join("- " + hint for hint in hints)
             messages = [{"role": "system", "content": system}, {"role": "user", "content": json.dumps(context, ensure_ascii=False)}]
             identifier = canonical_hash({"run": state["run_id"], "purpose": purpose, "role": role, "messages": messages, "schema": schema})
             reserved_tokens = len(json.dumps({"messages": messages, "schema": schema}, ensure_ascii=False).encode()) + 4096 + max_output_tokens
@@ -498,7 +582,7 @@ class Engine:
         return envelope["data"]
 
     def call(self, state, role, server, tool, **arguments):
-        self._validate_memory(state)
+        self._validate_context(state)
         run_id = state["run_id"]
         with self.usage_lock:
             run = self.store.get_run(run_id)
@@ -526,6 +610,9 @@ class Engine:
             run = self.store.get_run(run_id)
             if run["status"] in {"published", "rejected", "error"}:
                 return self.view(run_id)
+            if run["status"] == "queued" and not run.get("source_fingerprint"):
+                run["source_fingerprint"] = self.source.fingerprint
+                self.store.save_run(run)
             queued_decision = decision or run.get("queued_decision") or {}
             if (run.get("source_fingerprint") not in (None, self.source.fingerprint)
                     and queued_decision.get("action") != "reject"):
@@ -540,6 +627,15 @@ class Engine:
                     self._validate_memory(run)
                 except ReviewError as error:
                     run.update(status="error", stage="error", failure_kind="memory_changed", error="ReviewError: " + str(error))
+                    run.pop("queued_decision", None)
+                    run.pop("queued_continuation", None)
+                    self.store.save_run(run)
+                    return self.view(run_id)
+                try:
+                    self._validate_development(run)
+                    self._validate_lessons(run)
+                except ReviewError as error:
+                    run.update(status="error", stage="error", failure_kind="lesson_or_development_changed", error="ReviewError: " + str(error))
                     run.pop("queued_decision", None)
                     run.pop("queued_continuation", None)
                     self.store.save_run(run)
@@ -572,7 +668,7 @@ class Engine:
                 inputs = Command(resume=queued) if queued else (None if self.graph.get_state(config).values else initial)
                 result = self.graph.invoke(inputs, config, durability="sync")
                 run = self.store.get_run(run_id)
-                for key in ("plan", "metrics", "risks", "risk_ai", "draft", "critic", "repairs", "status", "note_id", "memory_context"):
+                for key in ("plan", "metrics", "risks", "risk_ai", "draft", "critic", "repairs", "status", "note_id", "memory_context", "lesson_context"):
                     if key in result:
                         run[key] = result[key]
                 pauses = result.get("__interrupt__", [])
@@ -642,7 +738,7 @@ class Engine:
         """Verify durable approval and a failed content check, without requests."""
         if (not run or run.get("actor") != "local-analyst" or run.get("request", {}).get("mode") != "live" or run.get("note_id")):
             raise ReviewError("Only a failed live content check can be continued explicitly.")
-        self._validate_memory(run)
+        self._validate_context(run)
         if sum((bool(retry_transient), replace_critic_policy is not None, critic_extension is not None)) > 1:
             raise ReviewError("Choose one explicit continuation mode.")
         if not retry_transient and replace_critic_policy is None and critic_extension is None and (not str(run.get("error", "")).startswith("ReasoningError:")
@@ -998,7 +1094,14 @@ class Engine:
             if decision["action"] != "reject" and run.get("source_fingerprint") not in (None, self.source.fingerprint):
                 raise ReviewError("The source snapshot changed. Create a new research plan before approving or editing.")
             if decision["action"] != "reject":
-                self._validate_memory(run)
+                self._validate_context(run)
+            if run["request"].get("learning_split") == "development":
+                if decision["kind"] == "note" and decision["action"] == "approve":
+                    raise ReviewError("Development research stops at note review and cannot be published.")
+                if decision["kind"] == "plan" and decision["action"] == "edit":
+                    edits = decision.get("edits") or {}
+                    if any(key in edits and edits[key] != run["request"][key] for key in ("tickers", "years")):
+                        raise ReviewError("A registered development case has a fixed company and fiscal-year scope.")
             if decision["action"] == "approve" and decision["kind"] == "note" and not run.get("critic", {}).get("passed"):
                 raise ReviewError("Unresolved checks prevent publication.")
             run.update(status="running", stage="resuming", queued_decision=decision)
@@ -1027,19 +1130,22 @@ class Engine:
     def _plan(self, state):
         request = state["request"]
         validate_scope(request, self.source)
+        self._validate_development(state)
         memory_context = self._freeze_memory(state, request["tickers"], request["years"])
+        lesson_context = self._freeze_lessons(state, request["tickers"], request["years"])
         if self.is_live(state):
             coverage = self._annual_source_coverage(request["tickers"], request["years"])
             plan = self.reasoner(state, "plan").plan(request["question"], request["tickers"], request["years"], source_coverage=coverage)
             plan["mode"] = "live"
             plan["memory_context"] = memory_context
+            plan["lesson_context"] = lesson_context
             self.event(state["run_id"], "planner", "plan", "AI research plan prepared; waiting for the analyst.")
-            return {"plan": plan, "memory_context": memory_context}
+            return {"plan": plan, "memory_context": memory_context, "lesson_context": lesson_context}
         plan = {"tickers": request["tickers"], "years": request["years"],
                 "outline": ["Inspect original annual facts and actual fiscal periods", "Calculate and independently verify operating margins", "Compare cached adjacent-year risk sections; original boundaries require human domain review", "Draft a cited note and identify limits"],
-                "caveats": ["Offline deterministic teaching workflow; no language model or semantic judgment.", "Fiscal-year labels do not align different company calendars."], "memory_context": memory_context}
+                "caveats": ["Offline deterministic teaching workflow; no language model or semantic judgment.", "Fiscal-year labels do not align different company calendars."], "memory_context": memory_context, "lesson_context": lesson_context}
         self.event(state["run_id"], "planner", "plan", "Research plan prepared; waiting for the analyst.")
-        return {"plan": plan, "memory_context": memory_context}
+        return {"plan": plan, "memory_context": memory_context, "lesson_context": lesson_context}
 
     def _review_plan(self, state):
         plan = state["plan"]
@@ -1050,19 +1156,24 @@ class Engine:
         if action == "reject":
             self.event(state["run_id"], "human", "plan_rejected", "The analyst rejected the plan; nothing was published.")
             return {"status": "rejected", "plan_action": "reject"}
-        self._validate_memory(state)
+        self._validate_context(state)
         if action == "edit":
             edits = decision.get("edits") or {}
             if set(edits) - {"tickers", "years", "outline"}:
                 raise ReviewError("Unsupported plan edit fields.")
             updated = {**plan, **edits}
+            run = self.store.get_run(state["run_id"])
+            if run["request"].get("learning_split") == "development" and any(updated[key] != run["request"][key] for key in ("tickers", "years")):
+                raise ReviewError("A registered development case has a fixed company and fiscal-year scope.")
             validate_scope({**updated, "mode": "live" if self.is_live(state) else "offline"}, self.source)
             if self.is_live(state):
                 updated["source_coverage"] = self._annual_source_coverage(updated["tickers"], updated["years"])
             memory_context = self._freeze_memory(state, updated["tickers"], updated["years"])
             updated["memory_context"] = memory_context
+            lesson_context = self._freeze_lessons(state, updated["tickers"], updated["years"])
+            updated["lesson_context"] = lesson_context
             self.event(state["run_id"], "human", "plan_edit", "Plan edited; review the new version before continuing.")
-            return {"plan": updated, "plan_action": "edit", "memory_context": memory_context}
+            return {"plan": updated, "plan_action": "edit", "memory_context": memory_context, "lesson_context": lesson_context}
         approval = self.store.event(state["run_id"], "human", "plan_approved", "The analyst approved this exact plan.", {"payload_hash": canonical_hash(plan)})
         run = self.store.get_run(state["run_id"])
         run["plan_approval"] = {"payload_hash": canonical_hash(plan), "request_hash": canonical_hash(run["request"]),
@@ -1136,6 +1247,9 @@ class Engine:
                  "source_kind": "sec_edgar", "model_mode": "offline", "source_fingerprint": self.source.fingerprint}
         if memory_context is not None:
             draft.update(memory_context=memory_context, report_style=memory_context["report_style"])
+        lesson_context = self._validate_lessons(state)
+        if lesson_context is not None:
+            draft["lesson_context"] = lesson_context
         self.event(state["run_id"], "writer", "draft", "A cited draft was assembled; semantic judgments remain for human review.")
         return {"draft": draft, "human_edited": False}
 
@@ -1147,7 +1261,7 @@ class Engine:
         question = self.store.get_run(state["run_id"])["request"]["question"]
         if state.get("repairs"):
             question += "\nRevision feedback from the previous checks: " + json.dumps(state.get("critic", {}).get("issues", []))
-        model_plan = {key: value for key, value in state["plan"].items() if key != "memory_context"}
+        model_plan = {key: value for key, value in state["plan"].items() if key not in {"memory_context", "lesson_context"}}
         written = self.reasoner(state, "writer:" + str(state.get("repairs", 0))).write(question, model_plan, state["metrics"], state.get("risk_ai", []), known)
         provisional_risk_claims = [claim for analysis in state.get("risk_ai", []) for comparison in analysis["comparisons"] for claim in comparison["claims"]]
         risk_claims = written["risk_claims"]
@@ -1160,6 +1274,9 @@ class Engine:
             "live_sections": {"risk_ids": [claim["claim_id"] for claim in risk_claims], "writer_ids": [claim["claim_id"] for claim in written["claims"]]}, "history_sentence": history}
         if memory_context is not None:
             draft.update(memory_context=memory_context, report_style=memory_context["report_style"])
+        lesson_context = self._validate_lessons(state)
+        if lesson_context is not None:
+            draft["lesson_context"] = lesson_context
         draft["body"] = live_body(draft)
         self.event(state["run_id"], "writer", "draft", "Cited AI narrative and code-verified table prepared for source-support checks.")
         return {"draft": draft, "human_edited": False}
@@ -1186,7 +1303,11 @@ class Engine:
             critic = verify_draft(draft, self.source)
             if not verdict["passed"]:
                 critic["issues"].extend(verdict["issues"] + [item["reason"] for item in verdict["verdicts"] if not item["supported"]])
-        self.event(state["run_id"], "critic", "critic_pass" if critic["passed"] else "critic_reject", "Independent code checks completed.", **critic)
+        proof = {}
+        if not critic["passed"] and self._validate_development(state) is not None:
+            proof = {"draft_hash": canonical_hash(draft), "body_hash": hashlib.sha256(draft["body"].encode()).hexdigest(),
+                     "source_fingerprint": self.source.fingerprint}
+        self.event(state["run_id"], "critic", "critic_pass" if critic["passed"] else "critic_reject", "Independent code checks completed.", **critic, **proof)
         return {"critic": critic, "draft": draft}
 
     def _repair(self, state):
@@ -1201,13 +1322,17 @@ class Engine:
             self.store.invalidate_approval(state["run_id"])
             self.event(state["run_id"], "human", "note_rejected", "The analyst rejected the note; nothing was published.")
             return Command(update={"status": "rejected"}, goto=END)
-        self._validate_memory(state)
+        self._validate_context(state)
         if decision["action"] == "edit":
             edits = decision.get("edits") or {}
             if set(edits) != {"body"} or not isinstance(edits["body"], str) or len(edits["body"]) > 100000:
                 raise ReviewError("A note edit must contain only a body string within the size limit.")
             self.store.invalidate_approval(state["run_id"])
-            self.event(state["run_id"], "human", "note_edit", "Note edited; the previous version cannot be approved and checks will repeat.")
+            proof = {}
+            if self._validate_development(state) is not None:
+                proof = {"before_draft_hash": canonical_hash(draft), "before_body_hash": hashlib.sha256(draft["body"].encode()).hexdigest(),
+                         "after_body_hash": hashlib.sha256(edits["body"].encode()).hexdigest(), "source_fingerprint": self.source.fingerprint}
+            self.event(state["run_id"], "human", "note_edit", "Note edited; the previous version cannot be approved and checks will repeat.", **proof)
             updated = {**draft, **edits}
             updated.pop("semantic_verdict", None)
             if self.is_live(state):
@@ -1216,6 +1341,8 @@ class Engine:
                 except ValueError:
                     pass  # The critic will expose the invalid edit at the new review gate.
             return Command(update={"draft": updated, "human_edited": True}, goto="critic")
+        if self._validate_development(state) is not None:
+            raise ReviewError("Development research stops at note review and cannot be published.")
         if not state["critic"]["passed"] or not verify_draft(draft, self.source)["passed"]:
             raise ReviewError("Unresolved checks prevent publication.")
         fingerprint = canonical_hash(draft)
@@ -1225,7 +1352,9 @@ class Engine:
         return Command(update={"capability": capability}, goto="publish")
 
     def _publish(self, state):
-        self._validate_memory(state)
+        self._validate_context(state)
+        if self._validate_development(state) is not None:
+            raise ReviewError("Development research cannot enter the approved note library.")
         if not verify_draft(state["draft"], self.source)["passed"]:
             raise ReviewError("Final code verification failed.")
         receipt = self.call(state, "publisher", "research-portal", "publish_note", payload=state["draft"], capability=state["capability"])
@@ -1234,6 +1363,8 @@ class Engine:
 
 
 def validate_scope(value, source):
+    if "lessons_enabled" in value and type(value["lessons_enabled"]) is not bool:
+        raise ReviewError("Lesson reuse must be explicitly on or off.")
     tickers, years = value.get("tickers", []), value.get("years", [])
     known = {company["ticker"] for company in source.companies()}
     if not isinstance(tickers, list) or not 1 <= len(tickers) <= 4 or len(set(tickers)) != len(tickers) or not set(tickers) <= known:
