@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from desk.api import app
 from desk.store import Store
 from desk.model_profiles import model_profile
+from desk.workflow import ReviewError
 
 
 def budget_snapshot(profile_name="live-step6-openrouter-v1"):
@@ -174,3 +175,53 @@ def test_model_metrics_use_actual_accounting_and_unknown_cost_is_nan(api_fixture
     run["usage"]["cost_usd"] = None
     store.save_run(run)
     assert "analyst_model_spend_usd_total NaN\n" in client.get("/metrics").text
+
+
+def test_continuation_api_authenticates_and_submits_only_existing_plan_hash(api_fixture, monkeypatch):
+    client, engine, store = api_fixture
+    engine.model_client = FakeGateway(budget_snapshot("live-step10-mistral-v1"))
+    run = store.create_run({"mode": "live", "max_tokens": 250000, "max_model_calls": 12})
+    run.update(status="error", usage={"model_calls": 4, "tokens": 80, "cost_usd": .004})
+    store.save_run(run)
+    claims = []
+    def claim(identifier, plan_hash):
+        claims.append((identifier, plan_hash))
+        current = store.get_run(identifier)
+        current.update(status="running", stage="continuing")
+        store.save_run(current)
+    monkeypatch.setattr(engine, "claim_continuation", claim, raising=False)
+    endpoint = "/api/runs/" + run["id"] + "/continue"
+    assert client.post(endpoint, json={"plan_hash": "a" * 64}, headers={"X-Analyst-Token": ""}).status_code == 401
+    assert claims == []
+    response = client.post(endpoint, json={"plan_hash": "a" * 64})
+    assert response.status_code == 202 and claims == [(run["id"], "a" * 64)]
+    current = store.get_run(run["id"])
+    assert current["request"] == run["request"] and current["usage"] == run["usage"]
+    assert len(store.list_runs()) == 1 and store.notes() == []
+
+
+@pytest.mark.parametrize("case", ["unavailable_budget", "other_active_run", "other_actor", "not_eligible", "extra_limits", "invalid_hash"])
+def test_continuation_api_rejects_unavailable_unowned_or_modified_requests(api_fixture, monkeypatch, case):
+    client, engine, store = api_fixture
+    engine.model_client = FakeGateway(budget_snapshot())
+    run = store.create_run({"mode": "live"}, actor="another-analyst" if case == "other_actor" else "local-analyst")
+    run["status"] = "error"
+    store.save_run(run)
+    body = {"plan_hash": "a" * 64}
+    claims = []
+    def claim(*args):
+        claims.append(args)
+        raise ReviewError("The failed checkpoint is not eligible.")
+    monkeypatch.setattr(engine, "claim_continuation", claim, raising=False)
+    if case == "unavailable_budget":
+        engine.model_client = None
+    elif case == "other_active_run":
+        store.create_run({"mode": "offline"})
+    elif case == "extra_limits":
+        body["max_tokens"] = 500000
+    elif case == "invalid_hash":
+        body["plan_hash"] = "invalid"
+    response = client.post("/api/runs/" + run["id"] + "/continue", json=body)
+    assert response.status_code == (404 if case == "other_actor" else 422 if case in {"extra_limits", "invalid_hash"} else 409)
+    assert len(claims) == (1 if case == "not_eligible" else 0)
+    assert store.get_run(run["id"])["status"] == "error" and store.notes() == []

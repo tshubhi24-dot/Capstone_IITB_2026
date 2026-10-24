@@ -6,6 +6,7 @@ import pytest
 
 from desk.provider import ProviderError
 from desk.workflow import ReviewError, verify_draft
+from desk.store import canonical_hash
 from test_workflow import fixture, decide
 
 
@@ -27,15 +28,14 @@ class FakeModelClient:
         elif stage == "researcher":
             content = {"query": "annual revenue operating income and disclosed risks", "focus": "Source-backed annual evidence"}
         elif stage == "risk":
-            def citation(year):
-                row = next(row for row in context["evidence"] if row["year"] == year)
-                return {"source_id": row["id"], "quote": "Test-only source evidence"}
+            def quote_id(year):
+                return next(row["quote_id"] for row in context["quote_menu"] if row["year"] == year)
             content = {"comparisons": [{"before_year": before, "after_year": after, "status": "evidence_available",
-                "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low", "citations": [citation(before), citation(after)]}]} for before, after in context["comparison_pairs"]]}
+                "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low", "quote_ids": [quote_id(before), quote_id(after)]}]} for before, after in context["comparison_pairs"]]}
         elif stage == "writer":
-            row = next(row for row in context["evidence"] if "item1A" in row["id"])
+            row = next(row for row in context["quote_menu"] if "item1A" in row["source_id"])
             content = {"claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low", "category": "limitation",
-                "citations": [{"source_id": row["id"], "quote": "Test-only source evidence"}]}]}
+                "quote_ids": [row["quote_id"]]}]}
         elif stage == "critic":
             bad = "certain disaster" in context["body"]
             content = {"issues": ["The edited claim overstates the evidence."] if bad else [],
@@ -52,6 +52,126 @@ def begin_live(engine, store, max_tokens=250000, max_model_calls=12):
     request = {"question": "Compare annual source-backed margins and risks.", "tickers": ["MSFT", "AAPL"], "years": [2023, 2024, 2025],
         "mode": "live", "max_tool_calls": 60, "max_tokens": max_tokens, "max_model_calls": max_model_calls}
     return engine.execute(store.create_run(request)["id"])
+
+
+class ContentFailureClient(FakeModelClient):
+    def __init__(self):
+        super().__init__()
+        self.invalid_risk = True
+
+    def complete(self, **request):
+        result = super().complete(**request)
+        if request["role"] == "risk" and self.invalid_risk:
+            result["content"]["comparisons"][0]["findings"][0]["quote_ids"] = ["quote-not-in-supplied-menu"]
+            self.cache[request["call_id"]] = deepcopy(result)
+        return result
+
+
+def content_failure(engine, store, *, max_model_calls=12):
+    engine.model_client = ContentFailureClient()
+    plan = begin_live(engine, store, max_model_calls=max_model_calls)
+    failed = decide(engine, plan)
+    assert failed["status"] == "error" and failed["failure_kind"] == "content_validation"
+    assert failed["usage"]["model_calls"] == 4
+    return plan, failed
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_explicit_content_continuation_keeps_existing_approval_request_and_usage(fixture, monkeypatch, legacy):
+    from desk import reasoning
+    engine, store, source, _, _, _ = fixture
+    plan, failed = content_failure(engine, store)
+    plan_hash = plan["pending"]["payload_hash"]
+    original_request, original_calls = deepcopy(failed["request"]), deepcopy(failed["usage"]["calls"])
+    if legacy:
+        # The deployed failure predates these explicit metadata fields. Its
+        # accepted queued decision and completed approval checkpoint remain.
+        stored = store.get_run(failed["id"])
+        for field in ("plan_approval", "source_fingerprint", "failure_kind"):
+            stored.pop(field, None)
+        store.save_run(stored)
+    assert engine.view(failed["id"])["continuation"] == {
+        "available": True, "plan_hash": plan_hash, "failure_kind": "content_validation"}
+    assert engine.execute(failed["id"])["status"] == "error"
+    assert len(engine.model_client.calls) == 4  # No implicit retry.
+    engine.claim_continuation(failed["id"], plan_hash)
+    with pytest.raises(ReviewError, match="once"):
+        engine.claim_continuation(failed["id"], plan_hash)
+    assert store.get_run(failed["id"])["request"] == original_request
+    assert store.get_run(failed["id"])["usage"]["calls"] == original_calls
+    if legacy:
+        assert store.get_run(failed["id"])["plan_approval"]["evidence_origin"] == "retained_accepted_plan_decision_and_checkpoint"
+    # Revised trusted instructions produce a new content-addressed call ID;
+    # earlier completed graph nodes and their billed results stay in place.
+    engine.model_client.invalid_risk = False
+    monkeypatch.setattr(reasoning, "COMMON_INSTRUCTIONS", reasoning.COMMON_INSTRUCTIONS + " Use only the supplied quotation identifiers.")
+    note = engine.execute(failed["id"])
+    assert note["status"] == "awaiting_note", note.get("error")
+    assert note["request"] == original_request and note["plan"] == plan["plan"]
+    assert note["usage"]["model_calls"] == len(engine.model_client.calls) == 8
+    assert note["usage"]["calls"][:4] == original_calls and note["usage"]["cost_usd"] == .008
+    assert [call["role"] for call in engine.model_client.calls].count("planner") == 1
+    assert [call["role"] for call in engine.model_client.calls].count("researcher") == 2
+    assert sum(event["stage"] == "plan_approved" for event in note["events"]) == 1
+    assert sum(event["stage"] == "continuation_requested" for event in note["events"]) == 1
+    assert "error" not in note and "queued_continuation" not in note and store.notes() == []
+    assert verify_draft(note["draft"], source)["passed"]
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(note["id"], plan_hash)
+
+
+@pytest.mark.parametrize("change", ["stale_hash", "request", "plan", "source", "approval", "uncertain", "provider_error", "failure_kind"])
+def test_continuation_rejects_changed_scope_missing_approval_or_uncertainty(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = content_failure(engine, store)
+    stored = store.get_run(failed["id"])
+    expected_hash = plan["pending"]["payload_hash"]
+    if change == "stale_hash":
+        expected_hash = "f" * 64
+    elif change == "request":
+        stored["request"]["max_tokens"] += 1000
+    elif change == "plan":
+        stored["plan"]["outline"].append("Unreviewed extra work")
+    elif change == "source":
+        stored["source_fingerprint"] = "changed-source"
+    elif change == "approval":
+        stored.pop("plan_approval", None)
+        stored.pop("queued_decision", None)
+    elif change == "uncertain":
+        stored["usage"]["model_reservations"] = {"unresolved-provider-call": 100}
+    elif change == "provider_error":
+        stored["error"] = "ReviewError: provider_usage_uncertain"
+    else:
+        stored["failure_kind"] = "not_continuable"
+    store.save_run(stored)
+    before = deepcopy(store.get_run(failed["id"]))
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], expected_hash)
+    assert store.get_run(failed["id"]) == before and len(engine.model_client.calls) == 4
+    assert store.notes() == []
+
+
+def test_continuation_does_not_reset_exhausted_original_call_budget(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = content_failure(engine, store, max_model_calls=4)
+    assert failed["continuation"]["available"] is False
+    with pytest.raises(ReviewError, match="budget"):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"])
+    assert len(engine.model_client.calls) == 4 and store.get_run(failed["id"])["request"]["max_model_calls"] == 4
+
+
+def test_checkpoint_failure_between_claim_and_execution_stops_without_model_requests(fixture, monkeypatch):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = content_failure(engine, store)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"])
+    def unavailable(*args, **kwargs):
+        raise RuntimeError("private-checkpoint-error")
+    monkeypatch.setattr(engine.graph, "get_state", unavailable)
+    stopped = engine.execute(failed["id"])
+    assert stopped["status"] == "error" and len(engine.model_client.calls) == 4
+    assert stopped["usage"] == failed["usage"]
+    assert "private-checkpoint-error" not in json.dumps(stopped)
+    assert "queued_continuation" not in store.get_run(failed["id"])
 
 
 def test_live_graph_uses_seven_structured_model_calls_and_separate_human_gates(fixture):

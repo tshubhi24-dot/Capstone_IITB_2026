@@ -52,7 +52,7 @@ class State(TypedDict, total=False):
 
 
 LIVE_NOTICE = "Model-assisted research using actual SEC sources. Financial arithmetic is independently checked; AI interpretations need human source review."
-LIVE_LIMITS = "Issuer fiscal calendars differ. Evidence selection is partial and original section boundaries are unverified. Selected excerpts cannot establish absent or removed risks or economic materiality. This note provides no investment recommendation."
+LIVE_LIMITS = "Issuer fiscal calendars differ. Risk and writer context uses code-selected verbatim quote windows. Selected risk excerpts are partial and original section boundaries are unverified. Selected excerpts cannot establish absent or removed risks or economic materiality. This note provides no investment recommendation."
 
 
 def semantic_input_hash(draft):
@@ -301,14 +301,26 @@ class Engine:
     def execute(self, run_id, decision=None):
         with self.lock(run_id):
             run = self.store.get_run(run_id)
-            if run["status"] in {"published", "rejected"}:
+            if run["status"] in {"published", "rejected", "error"}:
                 return self.view(run_id)
+            continuation = run.get("queued_continuation")
+            if continuation:
+                try:
+                    snapshot, _ = self._continuation_checkpoint(run, continuation["plan_hash"])
+                    if (snapshot.config["configurable"]["checkpoint_id"] != continuation["checkpoint_id"]
+                            or self.source.fingerprint != continuation["source_fingerprint"]):
+                        raise ReviewError("The failed checkpoint changed before continuation.")
+                except Exception:
+                    run.update(status="error", stage="error", error="ReviewError: The approved continuation checkpoint changed; no model request was sent.")
+                    run.pop("queued_continuation", None)
+                    self.store.save_run(run)
+                    return self.view(run_id)
             run["status"], run["stage"] = "running", "working"
             run.update(mode=run["request"].get("mode", "offline"), data_source="sec_edgar", transport="http", source_fingerprint=self.source.fingerprint)
             self.store.save_run(run)
             config = {"configurable": {"thread_id": run_id}, "recursion_limit": 40}
             try:
-                queued = decision or run.get("queued_decision")
+                queued = None if continuation else decision or run.get("queued_decision")
                 initial = {"run_id": run_id, "actor": run.get("actor", "local-analyst"), "request": run["request"], "findings": [], "repairs": 0}
                 inputs = Command(resume=queued) if queued else (None if self.graph.get_state(config).values else initial)
                 result = self.graph.invoke(inputs, config, durability="sync")
@@ -324,12 +336,18 @@ class Engine:
                     run.pop("pending", None)
                 run["stage"] = run["status"]
                 run.pop("queued_decision", None)
+                run.pop("queued_continuation", None)
+                run.pop("error", None)
+                run.pop("failure_kind", None)
                 self.store.save_run(run)
             except Exception as exc:
                 # MCP credentials and exception bodies never enter public traces.
                 run = self.store.get_run(run_id)
                 detail = str(exc) if isinstance(exc, ReviewError) else "research stopped; inspect service diagnostics"
                 run.update(status="error", stage="error", error=f"{type(exc).__name__}: {detail}")
+                from .reasoning import ReasoningError
+                run["failure_kind"] = "content_validation" if isinstance(exc, ReasoningError) else "not_continuable"
+                run.pop("queued_continuation", None)
                 self.store.save_run(run)
                 self.event(run_id, "system", "error", run["error"])
             return self.view(run_id)
@@ -339,8 +357,81 @@ class Engine:
         if not run:
             return None
         run.pop("queued_decision", None)
+        run.pop("queued_continuation", None)
         run["events"] = self.store.events(run_id)
+        run["continuation"] = {"available": False}
+        if run.get("status") == "error":
+            try:
+                _, proof = self._continuation_checkpoint(self.store.get_run(run_id), canonical_hash(run.get("plan")))
+                run["continuation"] = {"available": True, "plan_hash": proof["payload_hash"], "failure_kind": "content_validation"}
+            except Exception:
+                pass
         return run
+
+    def _continuation_checkpoint(self, run, expected_plan_hash):
+        """Verify durable approval and a failed content check, without requests."""
+        if (not run or run.get("actor") != "local-analyst" or run.get("request", {}).get("mode") != "live"
+                or not str(run.get("error", "")).startswith("ReasoningError:")
+                or run.get("failure_kind") not in {None, "content_validation"}
+                or run.get("usage", {}).get("model_reservations") or run.get("note_id")):
+            raise ReviewError("Only a failed live content check can be continued explicitly.")
+        snapshot = self.graph.get_state({"configurable": {"thread_id": run["id"]}})
+        state = snapshot.values
+        permitted = {"research_company", "quant", "risk", "draft", "critic", "repair"}
+        failures = [task.error for task in snapshot.tasks if task.error]
+        if (not snapshot.next or not set(snapshot.next) <= permitted or not failures
+                or any(not str(error).startswith("ReasoningError(") for error in failures)
+                or state.get("run_id") != run["id"] or state.get("actor") != run["actor"]
+                or state.get("plan_action") != "approve" or state.get("capability")):
+            raise ReviewError("A failed approved research checkpoint is required.")
+        plan = state.get("plan")
+        if (not isinstance(expected_plan_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", expected_plan_hash)
+                or canonical_hash(plan) != expected_plan_hash or canonical_hash(run.get("plan")) != expected_plan_hash
+                or canonical_hash(state.get("request")) != canonical_hash(run["request"])
+                or "source_fingerprint" in run and run["source_fingerprint"] != self.source.fingerprint
+                or (plan or {}).get("source_coverage", {}).get("source_fingerprint") != self.source.fingerprint):
+            raise ReviewError("The approved plan, original request or source snapshot changed.")
+        events = self.store.events(run["id"])
+        proof = run.get("plan_approval")
+        if proof:
+            accepted = any(item["id"] == proof.get("event_id") and item["agent"] == "human"
+                           and item["stage"] == "plan_approved" for item in events)
+            if (not accepted or proof.get("payload_hash") != expected_plan_hash
+                    or proof.get("request_hash") != canonical_hash(run["request"])
+                    or proof.get("source_fingerprint") != self.source.fingerprint):
+                raise ReviewError("The prior human plan approval cannot be verified.")
+        else:
+            # Older checkpoints retained the exact accepted decision when a
+            # later node failed. Preserve that evidence; never invent a vote.
+            queued = run.get("queued_decision") or {}
+            approvals = [item for item in events if item["agent"] == "human" and item["stage"] == "plan_approved"]
+            if (queued.get("kind") != "plan" or queued.get("action") != "approve"
+                    or queued.get("payload_hash") != expected_plan_hash or queued.get("edits") is not None or not approvals):
+                raise ReviewError("The prior human plan approval cannot be verified.")
+            proof = {"payload_hash": expected_plan_hash, "request_hash": canonical_hash(run["request"]),
+                     "source_fingerprint": self.source.fingerprint, "event_id": approvals[-1]["id"],
+                     "evidence_origin": "retained_accepted_plan_decision_and_checkpoint"}
+        usage, request = run.get("usage", {}), run["request"]
+        if (usage.get("model_calls", 0) >= request.get("max_model_calls", 12)
+                or usage.get("tokens", 0) >= request.get("max_tokens", 100000)
+                or usage.get("tool_calls", 0) >= request.get("max_tool_calls", 60)):
+            raise ReviewError("The original run budget is exhausted.")
+        return snapshot, proof
+
+    def claim_continuation(self, run_id, expected_plan_hash):
+        with self.lock(run_id):
+            run = self.store.get_run(run_id)
+            if not run or run.get("status") != "error":
+                raise ReviewError("Only a stopped content-check failure can be continued once.")
+            snapshot, proof = self._continuation_checkpoint(run, expected_plan_hash)
+            run.update(status="running", stage="continuing", plan_approval=proof,
+                       queued_continuation={"plan_hash": expected_plan_hash,
+                                            "checkpoint_id": snapshot.config["configurable"]["checkpoint_id"],
+                                            "source_fingerprint": self.source.fingerprint})
+            run.pop("queued_decision", None)
+            run.pop("pending", None)
+            self.store.save_run(run)
+            self.event(run_id, "system", "continuation_requested", "The operator explicitly continued the failed content check under the existing approved plan and original budgets.", payload_hash=expected_plan_hash)
 
     def claim(self, run_id, decision):
         with self.lock(run_id):
@@ -406,7 +497,11 @@ class Engine:
                 updated["source_coverage"] = self._annual_source_coverage(updated["tickers"], updated["years"])
             self.event(state["run_id"], "human", "plan_edit", "Plan edited; review the new version before continuing.")
             return {"plan": updated, "plan_action": "edit"}
-        self.event(state["run_id"], "human", "plan_approved", "The analyst approved this exact plan.")
+        approval = self.store.event(state["run_id"], "human", "plan_approved", "The analyst approved this exact plan.", {"payload_hash": canonical_hash(plan)})
+        run = self.store.get_run(state["run_id"])
+        run["plan_approval"] = {"payload_hash": canonical_hash(plan), "request_hash": canonical_hash(run["request"]),
+                                "source_fingerprint": self.source.fingerprint, "event_id": approval["id"]}
+        self.store.save_run(run)
         return {"plan_action": "approve"}
 
     def _dispatch(self, state):

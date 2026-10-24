@@ -172,3 +172,59 @@ def test_live_client_sends_explicit_live_limits_and_keeps_human_gate(tmp_path, m
     assert receipt["configuration"]["mode"] == "live" and receipt["configuration"]["model_config_version"] == "test-live-v1"
     assert receipt["status"] == "awaiting_plan" and receipt["decision_requests"] == []
     assert journey.REQUEST.get("mode") is None
+
+
+def test_explicit_continuation_keeps_run_budget_and_does_not_record_another_approval(client, monkeypatch):
+    client.mode = "live"
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live", "max_tokens": 250000, "max_model_calls": 12},
+                 continuation={"available": True, "plan_hash": HASH, "failure_kind": "content_validation"})
+    calls = []
+    def request(method, path, body=None):
+        calls.append((method, path, body))
+        if path == "/api/config":
+            return config(mode="offline", live_enabled=True)
+        if method == "POST":
+            return {**failed, "status": "running", "pending": None}
+        if len(calls) == 2:
+            return failed
+        return run("note", request=failed["request"])
+    monkeypatch.setattr(client, "request", request)
+    receipt = client.continue_run("run-1", expected_plan_hash=HASH)
+    assert receipt["status"] == "awaiting_note" and receipt["decision_requests"] == []
+    assert receipt["request"]["max_tokens"] == 250000 and receipt["request"]["max_model_calls"] == 12
+    assert [item for item in calls if item[0] == "POST"] == [("POST", "/api/runs/run-1/continue", {"plan_hash": HASH})]
+    assert receipt["continuation_requests"][0]["plan_hash"] == HASH
+    assert receipt["continuation_requests"][0]["accepted_by_api"] is True
+    assert "human_confirmation" not in client.session_path.read_text()
+    assert "human_review_verified" not in client.receipt_path.read_text()
+    assert journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH]).command == "continue"
+
+
+@pytest.mark.parametrize("case", ["offline_mode", "disabled_budget", "not_failed", "ineligible", "wrong_hash", "wrong_run_mode"])
+def test_continuation_client_never_posts_for_invalid_or_unready_run(client, monkeypatch, case):
+    client.mode = "offline" if case == "offline_mode" else "live"
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live"},
+                 continuation={"available": True, "plan_hash": HASH})
+    if case == "not_failed":
+        failed["status"] = "awaiting_plan"
+    elif case == "ineligible":
+        failed["continuation"]["available"] = False
+    elif case == "wrong_hash":
+        failed["continuation"]["plan_hash"] = "b" * 64
+    elif case == "wrong_run_mode":
+        failed["request"]["mode"] = "offline"
+    calls = []
+    def request(method, path, body=None):
+        calls.append((method, path, body))
+        return config(mode="offline", live_enabled=case != "disabled_budget") if path == "/api/config" else failed
+    monkeypatch.setattr(client, "request", request)
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH)
+    assert all(method == "GET" for method, _, _ in calls)
+    assert not client.session_path.exists()
+
+
+def test_continuation_cli_requires_existing_plan_hash():
+    with pytest.raises(SystemExit) as error:
+        journey.parser().parse_args(["continue", "run-1"])
+    assert error.value.code == 2

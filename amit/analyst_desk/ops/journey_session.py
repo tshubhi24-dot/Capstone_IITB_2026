@@ -5,7 +5,10 @@ an approval. Every decision requires the exact reviewed hash and an explicit
 operator-supplied human confirmation. That text is evidence supplied by the
 operator, not identity verification performed by this script.
 
-API contract: /api/config, /api/runs and /api/runs/{id}/decision, with
+An explicit continuation can resume a failed content check under its existing
+approved plan and original budgets; it records no new human approval.
+
+API contract: /api/config, /api/runs, /api/runs/{id}/continue and /api/runs/{id}/decision, with
 pending={kind,payload,payload_hash}. This serves the fresh teaching implementation. No application import is
 required. Full run snapshots and confirmation text remain in private storage.
 """
@@ -149,7 +152,7 @@ class JourneyClient:
         if isinstance(value, list):
             return [self.clean(item) for item in value]
         if isinstance(value, dict):
-            return {key: self.clean(item) for key, item in value.items() if key not in {"approval_token", "queued_decision"}}
+            return {key: self.clean(item) for key, item in value.items() if key not in {"approval_token", "queued_decision", "queued_continuation"}}
         return value
 
     def request(self, method: str, path: str, body=None):
@@ -234,6 +237,10 @@ class JourneyClient:
             "note_id": run.get("note_id"),
             "decision_requests": [{key: item[key] for key in ("time", "kind", "action", "payload_hash", "confirmation_sha256", "accepted_by_api")}
                                   for item in self.session.get("decision_requests", [])],
+            "continuation_requests": [{key: item[key] for key in ("time", "plan_hash", "accepted_by_api")}
+                                      for item in self.session.get("continuation_requests", [])],
+            "continuation": {key: value for key, value in (run.get("continuation") or {}).items()
+                             if key in {"available", "plan_hash", "failure_kind"}},
             "limitations": ["This is an ordinary learning run, not a protected final benchmark.",
                             "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
                             "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."],
@@ -264,6 +271,22 @@ class JourneyClient:
             raise JourneyError("The saved session belongs to a different service.")
         if self.session.get("run_id") and self.session["run_id"] != run_id:
             raise JourneyError("The saved session belongs to a different run; use a separate --session-file to inspect another journey.")
+
+    def continue_run(self, run_id, *, expected_plan_hash):
+        self._check_session(run_id)
+        if self.mode != "live" or not re.fullmatch(r"[a-f0-9]{64}", expected_plan_hash or ""):
+            raise JourneyError("Explicit live continuation requires the existing approved plan hash.")
+        config = self.request("GET", "/api/config")
+        self._check_offline_config(config)
+        run = self.request("GET", "/api/runs/" + quote(run_id, safe=""))
+        continuation = run.get("continuation") or {}
+        if (run.get("status") != "error" or run.get("request", {}).get("mode") != "live"
+                or continuation.get("available") is not True or continuation.get("plan_hash") != expected_plan_hash):
+            raise JourneyError("This failed content check cannot continue under the supplied approved plan.")
+        updated = self.request("POST", "/api/runs/" + quote(run_id, safe="") + "/continue", {"plan_hash": expected_plan_hash})
+        self.session.setdefault("continuation_requests", []).append({"time": now(), "plan_hash": expected_plan_hash, "accepted_by_api": True})
+        self.save(updated, config)
+        return self.save(self.wait(run_id))
 
     def decision(self, run_id, *, kind, action, expected_hash, human_confirmation, edits=None):
         self._check_session(run_id)
@@ -304,6 +327,9 @@ def parser():
     prepare.add_argument("--new-run", action="store_true")
     status = sub.add_parser("status", help="Wait for the current run's next review or terminal status.")
     status.add_argument("run_id", nargs="?")
+    continuation = sub.add_parser("continue", help="Explicitly continue a failed content check using its unchanged approved plan and original budgets.")
+    continuation.add_argument("run_id")
+    continuation.add_argument("--expected-plan-hash", required=True)
     decision = sub.add_parser("decision", help="Submit a human's explicit decision for the exact reviewed hash.")
     decision.add_argument("run_id")
     decision.add_argument("--kind", required=True, choices=("plan", "note"))
@@ -327,6 +353,8 @@ def main(argv=None):
             result = client.prepare(new_run=arguments.new_run)
         elif arguments.command == "status":
             result = client.status(arguments.run_id)
+        elif arguments.command == "continue":
+            result = client.continue_run(arguments.run_id, expected_plan_hash=arguments.expected_plan_hash)
         else:
             edits = json.loads(arguments.edits_file.read_text()) if arguments.edits_file else None
             result = client.decision(arguments.run_id, kind=arguments.kind, action=arguments.action,

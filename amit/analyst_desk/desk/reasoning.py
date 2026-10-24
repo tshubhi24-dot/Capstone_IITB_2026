@@ -65,6 +65,31 @@ class WriterOutput(StrictOutput):
     claims: list[WriterFinding] = Field(min_length=1, max_length=3)
 
 
+class QuoteFinding(StrictOutput):
+    text: str = Field(min_length=15, max_length=400)
+    quote_ids: list[str] = Field(min_length=1, max_length=4)
+    confidence: Literal["low", "medium", "high"]
+
+
+class QuoteComparisonOutput(StrictOutput):
+    before_year: int
+    after_year: int
+    status: Literal["evidence_available", "insufficient_evidence"]
+    findings: list[QuoteFinding] = Field(max_length=1)
+
+
+class QuoteRiskOutput(StrictOutput):
+    comparisons: list[QuoteComparisonOutput] = Field(max_length=2)
+
+
+class QuoteWriterFinding(QuoteFinding):
+    category: Literal["risk_observation", "comparability", "limitation"]
+
+
+class QuoteWriterOutput(StrictOutput):
+    claims: list[QuoteWriterFinding] = Field(min_length=1, max_length=3)
+
+
 class Verdict(StrictOutput):
     claim_id: str = Field(min_length=1, max_length=120)
     supported: bool
@@ -91,9 +116,9 @@ Do not put source identifiers, brackets, URLs, markup, Arabic/Unicode digits,
 dates, percentages, quantities or spelled-out numbers in claim text. Do not say
 revenue doubled, margins halved or similar implicit numerical claims. Financial
 figures and arithmetic are supplied by an independently verified table, which you
-must not recreate or modify. Citation identifiers and exact quotes belong only in
-the citations fields; quotes may contain numbers. Copy each quote verbatim from
-the supplied evidence text, at least twelve characters. Every factual claim
+must not recreate or modify. Source identifiers and quotations belong only in
+code-owned citation metadata. When a quote menu is supplied, select quote_ids
+and let code resolve the source and exact quotation. Every factual claim
 needs its own relevant citations. An exact quote does not excuse an unsupported
 interpretation. Conditional risk disclosures do not prove an incident happened.
 Selected excerpts cannot prove a risk is new, removed, absent or no longer
@@ -104,6 +129,86 @@ independently verified. Do not assert complete filing coverage.
 ANNUAL_SCOPE_NOTICE = ("Reported annual financial inputs are available in the cached source for every requested issuer and fiscal year. "
                        "Use their actual annual periods; do not estimate partial years or substitute quarterly filings. "
                        "Risk excerpts remain partial and original section boundaries are unverified.")
+
+QUOTE_SELECTION_INSTRUCTIONS = ("For citations, choose quote_ids only from the supplied code-owned quote_menu. "
+    "Do not copy, rewrite or invent a source ID or quotation. Select at most one quote per source_id in a claim, "
+    "and include relevant source periods for comparative claims. Each menu entry is a code-selected quote window, "
+    "not complete source coverage; fragment=true means it cuts a longer sentence. Preserve uncertainty and negation. "
+    "A selected quotation still needs to support the complete claim. Do not force an unsupported finding; "
+    "risk comparisons with inadequate support must use status insufficient_evidence.")
+
+QUOTE_TERMS = frozenset("risk risks cybersecurity cyber security privacy artificial intelligence regulation competition climate demand supply operations disclosure uncertainty".split())
+
+
+def quote_menu(evidence):
+    """Offer finite exact source windows; IDs bind source text and offsets.
+
+    Full selected evidence remains available for subsequent source verification
+    and the independent critic. This menu deliberately narrows what generation
+    can cite and does not establish semantic support or full filing coverage.
+    """
+    menu = []
+    for row in normalize_evidence(evidence):
+        text = row["text"]
+        candidates = []
+        boundaries = [0] + [match.end() for match in re.finditer(r"(?<=[.!?;])\s+|\n+", text)] + [len(text)]
+        for left, right in zip(boundaries, boundaries[1:]):
+            while left < right and text[left].isspace():
+                left += 1
+            while right > left and text[right - 1].isspace():
+                right -= 1
+            cursor = left
+            while cursor < right:
+                end = min(cursor + 240, right)
+                if end < right:
+                    space = text.rfind(" ", cursor + 12, end)
+                    if space > cursor:
+                        end = space
+                start = cursor
+                while start < end and text[start].isspace():
+                    start += 1
+                while end > start and text[end - 1].isspace():
+                    end -= 1
+                quote = text[start:end]
+                if len(quote) >= 12:
+                    tokens = Counter(re.findall(r"[a-z]+", quote.lower()))
+                    candidates.append({"quote": quote, "start": start, "end": end,
+                        "fragment": start > left or end < right,
+                        "score": sum(min(tokens[term], 3) for term in QUOTE_TERMS)})
+                cursor = max(end, cursor + 1)
+                while cursor < right and text[cursor].isspace():
+                    cursor += 1
+        ranked = sorted(candidates, key=lambda item: (-item["score"], item["fragment"], item["start"]))
+        selected, seen = [], set()
+        for candidate in ranked:
+            if candidate["quote"] not in seen:
+                selected.append(candidate)
+                seen.add(candidate["quote"])
+            if len(selected) == 2:
+                break
+        for candidate in sorted(selected, key=lambda item: item["start"]):
+            identity = json.dumps([row, candidate["start"], candidate["end"], candidate["quote"]],
+                                  sort_keys=True, ensure_ascii=False).encode()
+            entry = {"quote_id": "quote-" + sha256(identity).hexdigest()[:24], "source_id": row["id"],
+                     "ticker": row["ticker"], "year": row["year"], "quote": candidate["quote"],
+                     "start": candidate["start"], "end": candidate["end"], "fragment": candidate["fragment"]}
+            if entry["quote"] != text[entry["start"]:entry["end"]] or not 12 <= len(entry["quote"]) <= 240:
+                raise ReasoningError("A code-selected quote window differs from its source.")
+            menu.append(entry)
+    if len({entry["quote_id"] for entry in menu}) != len(menu):
+        raise ReasoningError("Code-selected quotation identifiers collided.")
+    return menu
+
+
+def expand_quote_selection(finding, menu):
+    """Resolve finite quote choices, never model-provided quotation text."""
+    known = {entry["quote_id"]: entry for entry in menu}
+    choices = finding["quote_ids"]
+    if len(choices) != len(set(choices)) or any(identifier not in known for identifier in choices):
+        raise ReasoningError("A model selected an unknown or repeated quotation identifier.")
+    return {**{key: value for key, value in finding.items() if key != "quote_ids"},
+            "citations": [{"source_id": known[identifier]["source_id"], "quote": known[identifier]["quote"]}
+                          for identifier in choices]}
 
 QUANTITY_WORDS = re.compile(
     r"\b(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|"
@@ -253,11 +358,26 @@ class Reasoner:
     def __init__(self, model_call):
         self.model_call = model_call
 
-    def _call(self, stage, instructions, context, schema, max_output_tokens):
+    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None):
         if len(json.dumps(context, ensure_ascii=False).encode()) > self.MAX_CONTEXT_BYTES:
             raise ReasoningError("The bounded reasoning context is too large.")
+        response_schema = schema.model_json_schema()
+        if quote_ids is not None:
+            if not quote_ids:
+                raise ReasoningError("Source evidence did not provide any valid quotation windows.")
+            def restrict_choices(node):
+                if isinstance(node, dict):
+                    properties = node.get("properties", {})
+                    if "quote_ids" in properties:
+                        properties["quote_ids"]["items"] = {"type": "string", "enum": list(quote_ids)}
+                    for value in node.values():
+                        restrict_choices(value)
+                elif isinstance(node, list):
+                    for value in node:
+                        restrict_choices(value)
+            restrict_choices(response_schema)
         result = self.model_call(stage, system=COMMON_INSTRUCTIONS + instructions,
-                                 context=context, schema=schema.model_json_schema(),
+                                 context=context, schema=response_schema,
                                  max_output_tokens=max_output_tokens)
         try:
             return schema.model_validate(result).model_dump()
@@ -322,9 +442,11 @@ class Reasoner:
         if not expected:
             return {"ticker": ticker, "years": list(years), "comparisons": [], "selected_evidence": evidence,
                     "selection": {"method": "bounded_lexical_excerpts", "complete_original_section": False, "coverage": coverage}}
-        result = self._call("risk", PROSE_INSTRUCTIONS + "Compare each exact adjacent-year pair listed in the context. Cite evidence from BOTH years of that issuer for each finding. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
-                            {"ticker": ticker, "years": years, "comparison_pairs": expected, "evidence": evidence,
-                             "evidence_scope": "Selected bounded excerpts only; original section boundaries unverified."}, RiskOutput, 2600)
+        menu = quote_menu(evidence)
+        result = self._call("risk", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " Compare each exact adjacent-year pair listed in the context. Cite evidence from BOTH years of that issuer for each finding. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
+                            {"ticker": ticker, "years": years, "comparison_pairs": expected, "quote_menu": menu,
+                             "evidence_scope": "Code-selected quote windows within selected bounded excerpts only; original section boundaries unverified."},
+                            QuoteRiskOutput, 2600, quote_ids=[entry["quote_id"] for entry in menu])
         actual = [(value["before_year"], value["after_year"]) for value in result["comparisons"]]
         if actual != expected:
             raise ReasoningError("The model changed, omitted or repeated a comparison period.")
@@ -334,12 +456,13 @@ class Reasoner:
                 raise ReasoningError("The comparison status does not match its cited findings.")
             claims = [{"claim_id": f"risk-{ticker}-{value['before_year']}-{value['after_year']}-{index + 1}",
                        "ticker": ticker, "before_year": value["before_year"], "after_year": value["after_year"],
-                       "category": "risk_observation", **finding} for index, finding in enumerate(value["findings"])]
+                       "category": "risk_observation", **expand_quote_selection(finding, menu)} for index, finding in enumerate(value["findings"])]
             comparisons.append({"before_year": value["before_year"], "after_year": value["after_year"],
                                 "status": value["status"], "claims": validate_claims(claims, evidence)})
         return {"ticker": ticker, "years": list(years), "comparisons": comparisons, "selected_evidence": evidence,
                 "selection": {"method": "bounded_lexical_excerpts", "max_chunks_per_year": self.RISK_CHUNKS_PER_YEAR,
                               "max_characters_per_excerpt": self.EXCERPT_CHARACTERS,
+                              "quotation_selection": "code_selected_exact_windows", "max_quote_windows_per_source": 2,
                               "complete_original_section": False, "coverage": coverage}}
 
     def write(self, question, plan, metrics, risks, evidence):
@@ -348,10 +471,13 @@ class Reasoner:
             raise ReasoningError("A live writer needs supplied source evidence.")
         risk_claims = _flatten_risk_claims(risks)
         validate_claims(risk_claims, known)
-        result = self._call("writer", PROSE_INSTRUCTIONS + "Write a concise qualitative narrative using the supplied checked financial table and cited risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
+        menu = quote_menu(known)
+        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and cited risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
                             {"question": question, "plan": plan, "verified_metrics": metrics,
-                             "risk_observations": risk_claims, "evidence": known}, WriterOutput, 2200)
-        claims = [{"claim_id": f"writer-{index + 1}", **claim} for index, claim in enumerate(result["claims"])]
+                             "risk_observations": risk_claims, "quote_menu": menu,
+                             "evidence_scope": "Code-selected quote windows within selected source evidence; full filing coverage is not established."},
+                            QuoteWriterOutput, 2200, quote_ids=[entry["quote_id"] for entry in menu])
+        claims = [{"claim_id": f"writer-{index + 1}", **expand_quote_selection(claim, menu)} for index, claim in enumerate(result["claims"])]
         return {"claims": validate_claims(claims, known), "evidence": known}
 
     def critique(self, draft, evidence):
@@ -363,9 +489,17 @@ class Reasoner:
         body = draft.get("body")
         if not isinstance(body, str) or not body:
             raise ReasoningError("Semantic review requires the exact displayed note body.")
+        cited_ids = {citation["source_id"] for claim in claims for citation in claim["citations"]}
+        financial_ids = {identifier for row in draft.get("metrics", []) for identifier in row.get("fact_ids", [])}
+        if not financial_ids <= {row["id"] for row in known}:
+            raise ReasoningError("Semantic review is missing canonical financial-table evidence.")
+        relevant_ids = cited_ids | financial_ids
+        review_evidence = [row for row in known if row["id"] in relevant_ids]
         result = self._call("critic", "Act as a separate skeptical source-support reviewer, not as the writer. Review the EXACT body and every listed claim against its supplied sources. Return exactly one verdict for each claim_id. An exact quote and a known citation are not enough: judge whether the text entails the claim, including modality, issuer, period, direction and uncertainty. Conditional language does not establish an event occurred. Reject unsupported certainty, invented causal explanations, quantitative prose outside the canonical table, absent/new/removed-risk inference, incomplete source coverage represented as full, or omitted mandatory limitations. Put body-wide concerns in issues. Do not endorse a claim merely because the writer supplied it. Your verdict is a fallible model judgment, not ground truth.",
                             {"body": body, "source_fingerprint": draft.get("source_fingerprint"),
-                             "claims": claims, "evidence": known,
+                             "claims": claims, "evidence": review_evidence,
+                             "review_evidence_scope": "Full selected text for every cited source and canonical fact records for the financial table; uncited passages omitted. Original section coverage remains unverified.",
+                             "omitted_uncited_source_count": len(known) - len(review_evidence),
                              "required_limits": ["Issuer fiscal calendars differ.", "Evidence selection is partial and original section boundaries unverified.", "No investment recommendation."]}, CriticOutput, 2000)
         actual = [verdict["claim_id"] for verdict in result["verdicts"]]
         if len(actual) != len(expected) or set(actual) != set(expected):

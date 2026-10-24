@@ -4,9 +4,9 @@ from hashlib import sha256
 
 import pytest
 
-from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PlanOutput, QueryOutput, Reasoner,
-                            ReasoningError, RiskOutput, WriterOutput,
-                            normalize_evidence, render_claims, validate_claims,
+from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PlanOutput, QueryOutput, QuoteRiskOutput,
+                            QuoteWriterOutput, Reasoner, ReasoningError, RiskOutput, WriterOutput,
+                            normalize_evidence, quote_menu, render_claims, validate_claims,
                             validate_prose)
 
 
@@ -217,7 +217,7 @@ def test_risk_model_must_preserve_exact_adjacent_periods(evidence):
         Reasoner(lambda *args, **kwargs: response).compare_risks("MSFT", [2023, 2024], sections)
 
 
-@pytest.mark.parametrize("response_model", [PlanOutput, QueryOutput, RiskOutput, WriterOutput, CriticOutput])
+@pytest.mark.parametrize("response_model", [PlanOutput, QueryOutput, RiskOutput, WriterOutput, QuoteRiskOutput, QuoteWriterOutput, CriticOutput])
 def test_live_schemas_forbid_extra_fields_and_require_all_properties(response_model):
     def check(schema):
         if schema.get("type") == "object":
@@ -237,4 +237,133 @@ def test_large_utf8_context_is_refused_before_any_provider_call():
     calls = []
     with pytest.raises(ReasoningError, match="context is too large"):
         Reasoner(lambda *args, **kwargs: calls.append(True)).research_query("अ" * 20000, "MSFT", [2023])
+    assert calls == []
+
+
+def test_quote_menu_is_exact_bounded_stable_and_source_bound(evidence):
+    rows = evidence + [{**evidence[0], "id": "same-wording-later", "year": 2025}]
+    menu = quote_menu(rows)
+    assert menu == quote_menu(list(reversed(rows)))
+    for item in menu:
+        source = next(row for row in rows if row["id"] == item["source_id"])
+        assert source["text"][item["start"]:item["end"]] == item["quote"]
+        assert 12 <= len(item["quote"]) <= 240
+        assert item["ticker"] == source["ticker"] and item["year"] == source["year"]
+    assert all(sum(item["source_id"] == row["id"] for item in menu) <= 2 for row in rows)
+    assert len({item["quote_id"] for item in menu}) == len(menu)
+    original = quote_menu([evidence[0]])
+    changed = quote_menu([{**evidence[0], "text": evidence[0]["text"] + " Changed source context."}])
+    assert {item["quote_id"] for item in original}.isdisjoint(item["quote_id"] for item in changed)
+
+
+def test_quote_menu_keeps_short_sentence_modality_and_marks_long_fragments():
+    text = "The issuer may not withstand cyber attacks. " + "Supply uncertainty and operational risk " * 30 + "."
+    menu = quote_menu([{"id": "long-source", "ticker": "MSFT", "year": 2025, "text": text}])
+    assert len(menu) == 2 and any(item["fragment"] for item in menu)
+    assert all(item["quote"] in text and len(item["quote"]) <= 240 for item in menu)
+    short = quote_menu([{"id": "conditional", "ticker": "MSFT", "year": 2025,
+                         "text": "The issuer may not withstand cyber attacks."}])
+    assert short[0]["quote"] == "The issuer may not withstand cyber attacks."
+    assert short[0]["fragment"] is False
+
+
+def risk_sections(evidence):
+    return {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
+                   "chunks": [row for row in evidence if row["ticker"] == "MSFT" and row["year"] == year]}
+            for year in (2023, 2024)}
+
+
+def test_risk_model_selects_finite_quotes_and_code_expands_exact_citations(evidence):
+    seen = []
+    def model(stage, **request):
+        seen.append(request)
+        menu = request["context"]["quote_menu"]
+        selected = [next(item["quote_id"] for item in menu if item["year"] == year) for year in (2023, 2024)]
+        enum = request["schema"]["$defs"]["QuoteFinding"]["properties"]["quote_ids"]["items"]["enum"]
+        assert enum == [item["quote_id"] for item in menu]
+        assert "citations" not in request["schema"]["$defs"]["QuoteFinding"]["properties"]
+        return {"comparisons": [{"before_year": 2023, "after_year": 2024, "status": "evidence_available",
+            "findings": [{"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low", "quote_ids": selected}]}]}
+    result = Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
+    finding = result["comparisons"][0]["claims"][0]
+    assert "quote_ids" not in finding and len(finding["citations"]) == 2
+    assert validate_claims([finding], result["selected_evidence"])
+    assert "evidence" not in seen[0]["context"]
+    assert "Code-selected quote windows" in seen[0]["context"]["evidence_scope"]
+    assert result["selection"]["quotation_selection"] == "code_selected_exact_windows"
+
+
+@pytest.mark.parametrize("selection", ["invented", "duplicate", "wrong-period", "freeform"])
+def test_invalid_quote_choices_or_freeform_citations_cannot_be_repaired(evidence, selection):
+    def model(stage, **request):
+        menu = request["context"]["quote_menu"]
+        before = next(item for item in menu if item["year"] == 2023)
+        after = next(item for item in menu if item["year"] == 2024)
+        choices = {"invented": [before["quote_id"], "fabricated-quote"],
+                   "duplicate": [before["quote_id"], before["quote_id"]],
+                   "wrong-period": [before["quote_id"]],
+                   "freeform": [before["quote_id"], after["quote_id"]]}[selection]
+        finding = {"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low", "quote_ids": choices}
+        if selection == "freeform":
+            finding["citations"] = [{"source_id": "invented-source", "quote": "An invented model quotation."}]
+        return {"comparisons": [{"before_year": 2023, "after_year": 2024, "status": "evidence_available", "findings": [finding]}]}
+    with pytest.raises(ReasoningError):
+        Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
+
+
+def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
+    seen = []
+    def model(stage, **request):
+        seen.append(request)
+        menu = request["context"]["quote_menu"]
+        return {"claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+                            "category": "limitation", "quote_ids": [menu[0]["quote_id"]]}]}
+    result = Reasoner(model).write("Compare annual sources", {}, [], [], evidence)
+    claim = result["claims"][0]
+    assert claim["citations"] == [{"source_id": seen[0]["context"]["quote_menu"][0]["source_id"],
+                                   "quote": seen[0]["context"]["quote_menu"][0]["quote"]}]
+    assert result["evidence"] == normalize_evidence(evidence)
+    assert "evidence" not in seen[0]["context"]
+    def duplicate_source(stage, **request):
+        choices = [item["quote_id"] for item in request["context"]["quote_menu"] if item["source_id"] == "msft-before"]
+        assert len(choices) == 2
+        return {"claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+                            "category": "limitation", "quote_ids": choices}]}
+    with pytest.raises(ReasoningError, match="Repeat citations"):
+        Reasoner(duplicate_source).write("Compare annual sources", {}, [], [], evidence)
+
+
+def test_writer_unknown_quote_id_is_rejected_and_not_silently_replaced(evidence):
+    response = {"claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
+                            "category": "limitation", "quote_ids": ["invented-quote"]}]}
+    with pytest.raises(ReasoningError, match="unknown or repeated"):
+        Reasoner(lambda *args, **kwargs: response).write("Compare annual sources", {}, [], [], evidence)
+
+
+def test_critic_keeps_full_cited_context_and_financial_facts_without_uncited_bulk(evidence):
+    financial = {"id": "financial-table-fact", "ticker": "MSFT", "year": 2025,
+                 "text": "A code-canonical financial-table fact with its actual annual period."}
+    irrelevant = {"id": "uncited-bulk", "ticker": "AAPL", "year": 2025, "text": "Uncited source text. " * 4000}
+    seen = []
+    def reviewer(stage, **request):
+        seen.append(request["context"])
+        return {"issues": [], "verdicts": [{"claim_id": claim()["claim_id"], "supported": False,
+                    "reason": "The full source retains conditional language, not an established incident."}]}
+    current = {**draft([claim()]), "metrics": [{"fact_ids": [financial["id"]]}]}
+    verdict = Reasoner(reviewer).critique(current, evidence + [financial, irrelevant])
+    assert verdict["passed"] is False
+    reviewed = {row["id"]: row for row in seen[0]["evidence"]}
+    assert set(reviewed) == {"msft-before", "msft-after", financial["id"]}
+    assert reviewed["msft-before"]["text"] == evidence[0]["text"]
+    assert "may interrupt" in reviewed["msft-before"]["text"]
+    assert seen[0]["claims"] == [claim()] and seen[0]["body"] == current["body"]
+    assert seen[0]["omitted_uncited_source_count"] == 2
+
+
+def test_critic_still_validates_all_claim_provenance_before_filtering(evidence):
+    bad = claim()
+    bad["citations"][0]["quote"] = "A quotation not in the original source."
+    calls = []
+    with pytest.raises(ReasoningError, match="quote is not"):
+        Reasoner(lambda *args, **kwargs: calls.append(True)).critique(draft([bad]), evidence)
     assert calls == []

@@ -89,6 +89,11 @@ class Decision(BaseModel):
     edits: dict | None = None
 
 
+class Continuation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    plan_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
 def owned(run_id):
     run = app.state.engine.view(run_id)
     if not run:
@@ -223,6 +228,24 @@ def decision(run_id: str, value: Decision, background: BackgroundTasks):
             raise HTTPException(400, str(exc)) from exc
     try:
         app.state.engine.claim(run_id, value.model_dump())
+    except ReviewError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    background.add_task(app.state.engine.execute, run_id)
+    return owned(run_id)
+
+
+@app.post("/api/runs/{run_id}/continue", status_code=202)
+def continue_research(run_id: str, value: Continuation, background: BackgroundTasks):
+    current = owned(run_id)
+    if current.get("actor") != "local-analyst":
+        raise HTTPException(404, "Research run not found.")
+    if any(run["status"] in {"queued", "running"} for run in app.state.store.list_runs("local-analyst")):
+        raise HTTPException(409, "Wait for the current research operation to pause.")
+    _, enabled = gateway_budget()
+    if not enabled:
+        raise HTTPException(409, "Live AI is unavailable or its original spending authorization is disabled, blocked or exhausted.")
+    try:
+        app.state.engine.claim_continuation(run_id, value.plan_hash)
     except ReviewError as exc:
         raise HTTPException(409, str(exc)) from exc
     background.add_task(app.state.engine.execute, run_id)
