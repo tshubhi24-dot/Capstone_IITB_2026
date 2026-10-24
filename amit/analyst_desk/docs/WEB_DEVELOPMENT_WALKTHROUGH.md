@@ -27,7 +27,11 @@ The first KDEV018 planner was started through **Create a plan** and paused for e
 
 Sixteen admission, version and preservation checks pass. The two attempts have two completed planner responses and one failed call with retained reservation. Neither has produced a draft, critic rejection, analyst edit, lesson proposal or publication. All earlier runs, the approved library, preferences and lesson bank are preserved. The earlier awaiting plan still needs its own exact approval; approval of the failed attempt does not transfer to it.
 
-Web inspection also exposed a polling race: an older in-flight refresh can replace the selected run, and a previous run's error can remain visible after switching. This display issue needs correction before continuing the analyst walkthrough. Preserve both attempts and their accounting rather than deleting the failure or automatically retrying it.
+Web inspection also exposed a polling race: an older in-flight refresh could replace the selected run, and a previous run's error could remain visible after switching. The fix binds responses and timers to the selected run and refresh version, clears previous errors, and locks review controls while loading or submitting a decision. Same-version unsaved edits remain intact. An in-flight creation guard prevents overlapping submissions; it does not establish why the two observed attempts were created.
+
+Thirty-nine targeted tests pass, including nine synthetic response-order and review-control cases. The app and local entry point were refreshed without changing runs, notes, preferences, note policy, lessons or the complete budget response. Browser verification selected the failed attempt, switched back to the awaiting plan and confirmed the old error cleared while the correct exact plan and development controls remained visible. No approval, retry, model call or research lesson was created by this fix.
+
+A credential-free connection probe first failed DNS resolution and then retrieved the public OpenRouter catalogue successfully. This is consistent with a transient network problem, but does not prove the original failure's precise cause. Preserve both attempts and their accounting rather than deleting the failure or automatically retrying it. The awaiting plan is available for its own human decision in the app.
 
 ## What the brief requires
 

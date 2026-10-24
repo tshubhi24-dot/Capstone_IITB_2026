@@ -1,0 +1,150 @@
+"""Exercise real browser handlers with deliberately reordered fake HTTP responses.
+
+The DOM/transport fixtures create no real research, approvals or network calls.
+"""
+from pathlib import Path
+import shutil
+import subprocess
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+
+HARNESS = r"""
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+function setup(){
+ const nodes=new Map(),calls=[],timers=new Map(),rendered=[];let nextTimer=0;
+ function element(tag){return {tag,children:[],value:'',textContent:'',hidden:false,disabled:false,checked:false,selectedOptions:[],options:[],append(...items){this.children.push(...items);},replaceChildren(...items){this.children=[...items];},get firstChild(){return this.children[0];},querySelector(){return {disabled:false};},scrollIntoView(){}};}
+ const get=id=>{if(!nodes.has(id))nodes.set(id,element(id));return nodes.get(id);};
+ const sandbox={module:{exports:{}},console,URLSearchParams,location:{search:''},sessionStorage:{getItem:()=>'',setItem(){}},
+  window:{AnalystMemory:{initialize(){},renderRun:run=>rendered.push(['memory',run.id]),renderNote(){}},AnalystLessons:{initialize(){},requestOptions:()=>({}),renderRun:run=>rendered.push(['lessons',run.id])}},
+  fetch:(path,options)=>new Promise((resolve,reject)=>calls.push({path,options,resolve:value=>resolve({ok:true,json:async()=>value}),fail:text=>resolve({ok:false,json:async()=>({detail:text})}),reject})),
+  setTimeout:(callback,delay)=>{const id=++nextTimer;timers.set(id,{callback,delay});return id;},clearTimeout:id=>timers.delete(id)};
+ vm.createContext(sandbox);
+ vm.runInContext(fs.readFileSync(process.argv[1],'utf8')+'\n;globalThis.desk={state,selectRun,refresh,decide,updateScope,initialize};',sandbox);
+ sandbox.document={getElementById:get,createElement:element};
+ const pending=(id,hash=id+'-exact',status='awaiting_plan')=>({id,status,mode:'live',request:{tickers:['MSFT'],years:[2024,2025]},events:[],pending:{kind:'plan',payload_hash:hash,payload:{outline:['Inspect original evidence'],tickers:['MSFT'],years:[2024,2025],caveats:[]}}});
+ return {desk:sandbox.desk,get,calls,timers,rendered,pending};
+}
+async function tick(){await Promise.resolve();await Promise.resolve();await Promise.resolve();}
+"""
+
+
+def browser_check(script):
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js is required to execute the actual browser handlers")
+    result = subprocess.run(
+        [node, "-e", HARNESS + "\n(async()=>{\n" + script + "\n})().catch(error=>{console.error(error);process.exitCode=1;});", str(ROOT / "web/app.js")],
+        capture_output=True, text=True, timeout=15,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
+@pytest.mark.parametrize("obsolete_response", ["success", "failure"])
+def test_previous_run_response_cannot_render_message_or_schedule_poll(obsolete_response):
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('old-run'),b=h.desk.selectRun('new-run');
+assert.equal(h.get('review').hidden,true);assert.equal(h.get('approve').disabled,true);
+h.calls[1].resolve(h.pending('new-run'));await b;
+assert.equal(h.desk.state.run.id,'new-run');assert.equal(h.get('runs').value,'new-run');
+assert.equal(h.get('message').textContent,'');assert.equal(h.timers.size,1);
+""" + (
+        "h.calls[0].resolve({...h.pending('old-run'),error:'provider_http_429'});"
+        if obsolete_response == "success" else
+        "h.calls[0].reject(new Error('obsolete provider error'));"
+    ) + r"""
+await a;assert.equal(h.desk.state.run.id,'new-run');assert.match(h.get('status').textContent,/new-run/);
+assert.equal(h.get('message').textContent,'');assert.equal(h.timers.size,1);
+assert.deepEqual(h.rendered,[['memory','new-run'],['lessons','new-run']]);
+""")
+
+
+def test_old_poll_callback_cannot_restart_after_switch_or_clear_selection():
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('old-run');h.calls[0].resolve(h.pending('old-run'));await a;
+const oldCallback=[...h.timers.values()][0].callback;
+const b=h.desk.selectRun('new-run');assert.equal(h.timers.size,0);assert.equal(h.get('editor').disabled,true);
+h.calls[1].resolve(h.pending('new-run'));await b;
+await oldCallback();assert.equal(h.calls.length,2);assert.equal(h.desk.state.run.id,'new-run');
+const newCallback=[...h.timers.values()][0].callback;
+await h.desk.selectRun('');await newCallback();
+assert.equal(h.calls.length,2);assert.equal(h.timers.size,0);assert.equal(h.desk.state.run,null);
+assert.equal(h.get('current').hidden,true);assert.equal(h.get('review').hidden,true);
+""")
+
+
+def test_switch_clears_old_run_error_and_blocks_review_until_new_payload_loaded():
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('old-run');
+h.calls[0].resolve({...h.pending('old-run'),error:'provider_http_429'});await a;
+assert.match(h.get('message').textContent,/HTTP 429/);
+const b=h.desk.selectRun('new-run');assert.doesNotMatch(h.get('message').textContent,/429/);
+await h.desk.decide('approve');await h.desk.decide('edit');await h.desk.decide('reject');
+assert.equal(h.calls.length,2);assert.equal(h.get('review').hidden,true);
+h.calls[1].resolve(h.pending('new-run','new-exact-hash'));await b;
+assert.equal(h.get('message').textContent,'');assert.equal(h.get('approve').disabled,false);
+const decision=h.desk.decide('approve');assert.equal(h.calls[2].path,'/api/runs/new-run/decision');
+const body=JSON.parse(h.calls[2].options.body);
+assert.equal(body.payload_hash,'new-exact-hash');assert.equal(body.action,'approve');
+h.calls[2].fail('fictional decision refused');await decision;
+""")
+
+
+def test_same_run_refresh_and_reselection_preserve_unsaved_edits_but_new_hash_requires_review():
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('same-run');h.calls[0].resolve(h.pending('same-run','hash-one'));await a;
+h.get('editor').value='Unsaved analyst wording';
+const refresh=h.desk.refresh('same-run');h.calls[1].resolve(h.pending('same-run','hash-one'));await refresh;
+assert.equal(h.get('editor').value,'Unsaved analyst wording');
+const again=h.desk.selectRun('same-run');h.calls[2].resolve(h.pending('same-run','hash-one'));await again;
+assert.equal(h.get('editor').value,'Unsaved analyst wording');
+await h.desk.decide('approve');assert.equal(h.calls.length,3);assert.match(h.get('message').textContent,/Save your edits first/);
+const newer=h.desk.refresh('same-run');h.calls[3].resolve(h.pending('same-run','hash-two'));await newer;
+assert.equal(h.get('editor').value,'Inspect original evidence');assert.match(h.get('fingerprint').textContent,/hash-two/);
+""")
+
+
+def test_older_refresh_of_same_run_cannot_restore_a_stale_review_version():
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('same-run');h.calls[0].resolve(h.pending('same-run','hash-one'));await a;
+const older=h.desk.refresh('same-run'),newer=h.desk.refresh('same-run');
+h.calls[2].resolve(h.pending('same-run','hash-three'));await newer;
+h.get('editor').value='Current unsaved edit';
+h.calls[1].resolve(h.pending('same-run','hash-two'));await older;
+assert.match(h.get('fingerprint').textContent,/hash-three/);assert.equal(h.get('editor').value,'Current unsaved edit');
+assert.equal(h.timers.size,1);
+""")
+
+
+@pytest.mark.parametrize("decision_result", ["success", "failure"])
+def test_decision_completion_from_old_run_cannot_refresh_or_error_on_new_selection(decision_result):
+    browser_check(r"""
+const h=setup(),a=h.desk.selectRun('old-run');h.calls[0].resolve(h.pending('old-run'));await a;
+const decision=h.desk.decide('approve');
+const b=h.desk.selectRun('new-run');h.calls[2].resolve(h.pending('new-run'));await b;
+assert.equal(h.get('approve').disabled,true);
+""" + (
+        "h.calls[1].resolve({status:'accepted'});"
+        if decision_result == "success" else
+        "h.calls[1].fail('obsolete decision error');"
+    ) + r"""
+await decision;assert.equal(h.calls.length,3);assert.equal(h.desk.state.run.id,'new-run');
+assert.equal(h.get('message').textContent,'');assert.equal(h.get('approve').disabled,false);
+assert.equal(h.timers.size,1);
+""")
+
+
+def test_inflight_create_stays_disabled_on_scope_change_and_repeated_submit_makes_one_request():
+    browser_check(r"""
+const h=setup();h.desk.initialize();h.desk.state.connected=true;
+h.desk.state.config={companies:[{ticker:'MSFT',sector:'Technology'}],company_years:{MSFT:[2024,2025]}};
+h.get('mode').value='live';h.get('companies').selectedOptions=[{value:'MSFT'}];
+h.get('years').selectedOptions=[{value:'2024'},{value:'2025'}];h.get('question').value='Fictional test question';
+const first=h.get('research-form').onsubmit({preventDefault(){}});
+h.desk.updateScope();assert.equal(h.get('start').disabled,true);
+await h.get('research-form').onsubmit({preventDefault(){}});
+assert.equal(h.calls.length,1);assert.equal(h.calls[0].path,'/api/runs');
+h.calls[0].fail('fictional creation refused');await first;
+assert.equal(h.desk.state.creating,false);assert.equal(h.get('start').disabled,false);
+""")

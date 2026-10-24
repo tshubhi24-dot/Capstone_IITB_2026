@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_plan_review_and_connection_failure_observed",
+  "stage": "web_display_fix_deployed",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -81,5 +81,36 @@
       "eligible_lesson_origins": 0,
       "publication": false
     }
-  ]
+  ],
+  "ui_fix": {
+    "targeted_tests_passed": 39,
+    "new_synthetic_race_cases": 9,
+    "test_fixture_approvals_are_not_human_evidence": true,
+    "runtime_preservation_checks": {
+      "runs_unchanged": true,
+      "notes_unchanged": true,
+      "preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "lessons_unchanged": true,
+      "budget_unchanged": true
+    },
+    "browser_checks": {
+      "failed_attempt_displays_its_own_error": true,
+      "switching_to_unapproved_plan_clears_old_error": true,
+      "selector_matches_displayed_run": true,
+      "exact_plan_version_visible": true,
+      "development_memory_and_lesson_controls_restored": true,
+      "no_approval_or_retry_submitted_by_verification": true
+    },
+    "model_calls": 0,
+    "human_decisions": 0,
+    "automatic_retry_added": false
+  },
+  "connectivity_probe": {
+    "public_catalogue_http_status": 200,
+    "dns_probe_succeeded": false,
+    "model_requests_sent": 0,
+    "credentials_used": false,
+    "original_connection_failure_cause_proven": false
+  }
 }
