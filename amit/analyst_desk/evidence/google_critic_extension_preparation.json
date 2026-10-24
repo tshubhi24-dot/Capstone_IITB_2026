@@ -1,0 +1,32 @@
+{
+  "proposal_hash": "158eb0582df2b6b1b0fd4947ad26ee3330b9987dc0f66c73748a240f8484b93a",
+  "proposal": {
+    "grant_id": "54e72b92a65a41a9aa8995de34623773",
+    "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+    "policy_hash": "9c179c562ebd29b23d6108ebcf340d536534586728013e92c38f42a4341e39b0",
+    "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+    "draft_hash": "972fed61aab8e9390ba2bfe08fd206f116988e3b49595dc637fdf77c3b143af1",
+    "call_id": "1fed5491840d0e2539d614380073f2ccc61ba7b2ef05cd5add9f73feef10c737",
+    "request_hash": "04ee00f96678eab4aeb0c6f41676ac13ea13c4569322a1727b6cfacd3a7624bc",
+    "checkpoint_hash": "3638d11d5bf92c537ad5c8c2ef7562d38c480b12fedaa7b60b953e28f6ed692e",
+    "original_calls": 12,
+    "original_tokens": 250000,
+    "max_calls": 13,
+    "max_tokens": 300000,
+    "checkpoint_calls": 12,
+    "checkpoint_tokens": 246409,
+    "checkpoint_uncertain": 3,
+    "checkpoint_reported_spend_usd": "0.0290148",
+    "checkpoint_held_usd": "0.1818400",
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "model_profile": "live-step10-google-critic-v1",
+    "critic_model": "google/gemini-2.5-flash",
+    "role": "critic",
+    "reserved_tokens": 51152,
+    "reservation_usd": "0.0197456"
+  },
+  "paid_calls_performed": 0,
+  "approved": false,
+  "next_reserved_token_total": 297561
+}

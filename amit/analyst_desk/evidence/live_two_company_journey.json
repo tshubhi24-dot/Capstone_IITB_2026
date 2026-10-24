@@ -1,6 +1,6 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T10:14:32.316566+00:00",
+  "updated_at": "2026-10-24T11:12:23.772090+00:00",
   "base_url": "http://127.0.0.1:18080",
   "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
   "status": "error",
@@ -10,7 +10,7 @@
     "transport": "http",
     "semantic_retrieval": false,
     "mode": "live",
-    "model_config_version": "live-step10-mistral-v1"
+    "model_config_version": "live-step10-google-critic-v1"
   },
   "request": {
     "tickers": [
@@ -46,10 +46,10 @@
   "usage": {
     "tokens": 60185,
     "tool_calls": 23,
-    "model_calls": 10,
-    "cost_usd": 0.0290148,
-    "held_usd": 0.035768,
-    "committed_usd": 0.0647828,
+    "model_calls": 13,
+    "cost_usd": 0.0333525,
+    "held_usd": 0.18184,
+    "committed_usd": 0.2151925,
     "accounting_status": "provider_reported_with_holds"
   },
   "note_id": null,
@@ -82,6 +82,24 @@
       "time": "2026-10-24T10:14:10.953514+00:00",
       "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
       "accepted_by_api": true
+    },
+    {
+      "time": "2026-10-24T10:26:30.091977+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true,
+      "retry_transient": true
+    },
+    {
+      "time": "2026-10-24T10:53:24.454681+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true,
+      "replace_critic_policy": "c4d5940936ce8c2382597fd3c696741636898144c24b5f570299f67b2d3a9e1b"
+    },
+    {
+      "time": "2026-10-24T11:12:17.333016+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true,
+      "critic_extension": "54e72b92a65a41a9aa8995de34623773"
     }
   ],
   "continuation": {

@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-24T10:07:32.475883+00:00",
+  "checked_at_utc": "2026-10-24T11:10:27.485948+00:00",
   "project": "analyst-desk-journey",
   "docker_context": "desktop-linux",
   "status": "passed",
@@ -41,20 +41,20 @@
         "enabled": true,
         "cap_usd": "1.00",
         "per_run_usd": "0.50",
-        "reported_spend_usd": "0.0152488",
-        "held_usd": "0.1688064",
-        "committed_usd": "0.1840552",
-        "remaining_authorization_usd": "0.8159448",
-        "model_calls": 14,
-        "tokens": 430806,
-        "uncertain_calls": 6,
+        "reported_spend_usd": "0.0296596",
+        "held_usd": "0.3506464",
+        "committed_usd": "0.3803060",
+        "remaining_authorization_usd": "0.6196940",
+        "model_calls": 19,
+        "tokens": 647353,
+        "uncertain_calls": 9,
         "blocked": false,
         "models": {
           "producer": "mistralai/mistral-medium-3.1",
-          "critic": "mistralai/mistral-large-2512"
+          "critic": "google/gemini-2.5-flash"
         },
-        "model_profile": "live-step10-mistral-v1",
-        "provider": "mistral/zdr"
+        "model_profile": "live-step10-google-critic-v1",
+        "provider": "role-specific"
       }
     },
     {
@@ -176,27 +176,27 @@
     "enabled": true,
     "cap_usd": "1.00",
     "per_run_usd": "0.50",
-    "reported_spend_usd": "0.0152488",
-    "held_usd": "0.1688064",
-    "committed_usd": "0.1840552",
-    "remaining_authorization_usd": "0.8159448",
-    "model_calls": 14,
-    "tokens": 430806,
-    "uncertain_calls": 6,
+    "reported_spend_usd": "0.0296596",
+    "held_usd": "0.3506464",
+    "committed_usd": "0.3803060",
+    "remaining_authorization_usd": "0.6196940",
+    "model_calls": 19,
+    "tokens": 647353,
+    "uncertain_calls": 9,
     "blocked": false,
     "models": {
       "producer": "mistralai/mistral-medium-3.1",
-      "critic": "mistralai/mistral-large-2512"
+      "critic": "google/gemini-2.5-flash"
     },
-    "model_profile": "live-step10-mistral-v1",
-    "provider": "mistral/zdr"
+    "model_profile": "live-step10-google-critic-v1",
+    "provider": "role-specific"
   },
   "models": {
     "producer": "mistralai/mistral-medium-3.1",
-    "critic": "mistralai/mistral-large-2512"
+    "critic": "google/gemini-2.5-flash"
   },
-  "model_profile": "live-step10-mistral-v1",
-  "provider": "mistral/zdr",
+  "model_profile": "live-step10-google-critic-v1",
+  "provider": "role-specific",
   "run_creation_probes_sent": 0,
   "research_runs_created_by_verifier": 0,
   "human_decisions_performed": false,
