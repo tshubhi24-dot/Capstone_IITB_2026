@@ -49,6 +49,16 @@ The user selected and authorized this correction; an operator applied it through
 
 All **31 actual correction checks pass**, including two canonical financial rows, **6/6 financial values**, eight unchanged exact quotations and **4/4 fresh model-supported claims** bound to the new exact note version. Exactly one new critic response was used, bringing the primary attempt to six recorded model calls; the writer and retrieval did not rerun. Earlier usage, the failed-call hold, other runs, the approved library, memory and lessons remain preserved; original spending limits are unchanged. The note remains at **awaiting note review**, and development publication remains blocked. At this correction checkpoint there is **one eligible edit origin, zero lesson proposals and no lesson acceptance, rejection or frozen playbook**. The next action is to prepare an accurately scoped pending proposal for separate human review, not to treat the edit or critic pass as accepted learning or independent improvement.
 
+## Prepare the pending lesson for human review
+
+After the saved correction and fresh checks, the actual `note_edit` event was selected in **Reflect on this development rehearsal**. **Code reflection** created an unreviewed `verify_current_facts` proposal without calling a language model. This rule receives a controlled edit category and public scope; it does not inspect the before/after note prose. Its generic numeric guidance did not describe this wording-precision correction.
+
+An operator inspected and refined the pending proposal in the web interface. **Proposed guidance** changed to `cite_exact_evidence`, with an explanation of the retail-stores wording distinction, applicability limited to Apple fiscal 2024–2025 against the same cached source, and limits covering partial excerpts, economic materiality and the absence of a demonstrated financial error. Saving created a new immutable exact proposal version. The generic initial version is **superseded**, not rejected.
+
+All **27 actual proposal-preparation checks pass**, including exact proposal/origin hashes, immutable parent preservation, valid supersession links and source-scoped applicability. At this checkpoint there are **two immutable proposal versions: one pending and one superseded**. All run, approved-library, memory and budget records remain unchanged. There is no acceptance/rejection decision, frozen playbook or publication, and preparing/refining the proposal made no additional model call or charge. The note remains at its development review pause. This is a proposal derived from a genuine authorized edit and refined by an operator; it is not autonomous AI learning or evidence of improved research quality.
+
+To continue, open the pending item in **Reviewed research lessons** and inspect its exact version, origin, reusable guidance, explanation, applicability and counterexamples. The user must supply their own reason and separately choose **Accept this exact proposal** or **Reject this exact proposal**. Any further edit must first be saved as a fresh version before a decision. Acceptance alone does not change research: accepted guidance must be explicitly frozen into a playbook and selected for later research. Only the fixed allowlisted action hint can reach producing models; the detailed explanation and review reason remain local. Protected evaluation and measured improvement remain separate work.
+
 ## Files and responsibilities
 
 | Files | Purpose |
@@ -57,6 +67,7 @@ All **31 actual correction checks pass**, including two canonical financial rows
 | [tests/test_run_selection_ui.py](../tests/test_run_selection_ui.py) | Execute actual browser handlers with controlled delayed responses; check stale actions, exact hashes, supported continuation and stable note display. |
 | [desk/reasoning.py](../desk/reasoning.py), [tests/test_temporal_provenance.py](../tests/test_temporal_provenance.py) | Infer narrow temporal wording only after canonical source/citation validation, while preserving quantity and comparison-scope checks. |
 | [desk/workflow.py](../desk/workflow.py), [web/app.js](../web/app.js) | Save only an exact-version claim edit, retain code-owned note content, persist its origin and request fresh criticism before further review. |
+| [desk/reflection.py](../desk/reflection.py), [desk/lessons.py](../desk/lessons.py), [web/lessons.js](../web/lessons.js) | Create a pending proposal from the persisted edit, save a refined version with an immutable supersession link and keep human decisions, freezing and reuse separate. |
 | [web case receipt](../evidence/web_development_case_verification.json) | Record observed completion, cached replay, retained failures, preservation checks and the pending human-review boundary. |
 
 ## What the brief requires

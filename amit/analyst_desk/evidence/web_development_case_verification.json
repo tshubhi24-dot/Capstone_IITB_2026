@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_corrected_note_checked_awaiting_lesson_proposal",
+  "stage": "web_corrected_note_checked_pending_lesson_review",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -108,6 +108,35 @@
       "original_caps_and_configuration_preserved": true,
       "global_accounting_adds_only_fresh_critic": true,
       "development_publication_still_blocked": true
+    },
+    "lesson_proposal_preparation": {
+      "one_pending_and_one_superseded_version": true,
+      "pending_proposal_hash_valid": true,
+      "initial_proposal_hash_valid": true,
+      "initial_immutable_proposal_preserved": true,
+      "supersession_binds_exact_versions": true,
+      "same_genuine_origin_preserved": true,
+      "origin_binds_actual_saved_edit": true,
+      "origin_binds_current_source": true,
+      "origin_has_development_admission": true,
+      "original_category_is_financial_fallback": true,
+      "revised_action_matches_source_wording": true,
+      "explanation_identifies_observed_wording_difference": true,
+      "applicability_bound_to_original_scope": true,
+      "counterexamples_exclude_economic_and_financial_inference": true,
+      "no_human_lesson_decision_recorded": true,
+      "no_rejection_or_acceptance_fabricated": true,
+      "no_frozen_playbook_created": true,
+      "bank_revision_tracks_two_proposals": true,
+      "corrected_research_run_unchanged": true,
+      "all_research_runs_unchanged": true,
+      "approved_library_unchanged": true,
+      "analyst_preferences_unchanged": true,
+      "note_policy_unchanged": true,
+      "budget_and_all_model_records_unchanged": true,
+      "corrected_note_still_awaiting_review": true,
+      "lessons_not_applied_to_this_research": true,
+      "development_publication_blocked": true
     }
   },
   "outcome": {
@@ -115,7 +144,7 @@
     "human_plan_decision_observed": true,
     "research_completed": true,
     "eligible_lesson_origins_observed": 1,
-    "lesson_proposals_created": 0,
+    "lesson_proposals_created": 2,
     "human_lesson_decisions_recorded": 0,
     "development_notes_published": 0,
     "attempt_count": 2,
@@ -131,7 +160,9 @@
     "independent_quality_improvement_demonstrated": false,
     "user_authorized_correction_applied_in_web": true,
     "operator_applied_user_selected_correction": true,
-    "independent_human_quality_label": false
+    "independent_human_quality_label": false,
+    "pending_lesson_proposals": 1,
+    "superseded_lesson_proposals": 1
   },
   "attempts": [
     {
@@ -255,6 +286,37 @@
     "new_writer_responses": 0,
     "lesson_origins": 1,
     "lesson_proposals": 0,
+    "independent_improvement_demonstrated": false
+  },
+  "lesson_review": {
+    "origin_kind": "note_edit",
+    "reflection_method": "code_owned_category_reflection_with_operator_revision",
+    "initial_action": "verify_current_facts",
+    "initial_status": "superseded",
+    "pending_action": "cite_exact_evidence",
+    "pending_proposal_hash": "731b89e5a7a57a9c996734fe069e55ccdac39d507f6775e3b98d9b561986c1b3",
+    "scope": {
+      "tickers": [
+        "AAPL"
+      ],
+      "years": [
+        2024,
+        2025
+      ],
+      "stages": [
+        "planner",
+        "researcher",
+        "risk",
+        "writer"
+      ]
+    },
+    "immutable_proposal_versions": 2,
+    "pending_versions": 1,
+    "superseded_versions": 1,
+    "human_decisions": 0,
+    "frozen_playbooks": 0,
+    "new_model_calls": 0,
+    "automatic_acceptance": false,
     "independent_improvement_demonstrated": false
   }
 }
