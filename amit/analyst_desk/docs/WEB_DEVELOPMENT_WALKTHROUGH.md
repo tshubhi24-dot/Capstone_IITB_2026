@@ -93,6 +93,16 @@ All **25 activation checks**, **20 live-plan preservation checks** and **21 comp
 
 Before execution, an operator narrows the outline from extracting all risk disclosures to comparing available quoted excerpts. The edit retains the exact question, company/years, source and model usage, adds no paid call, and pauses for review of the new exact plan. The plan must be approved in the web app before research proceeds. This checkpoint produces no draft, critic verdict, lesson proposal or publication. The [fallback verification receipt](../evidence/model_fallback_verification.json) records this new attempt separately from the earlier stopped-run receipt.
 
+## Continue the approved run and distinguish critic success from task coverage
+
+The exact revised plan is approved in the web app. GPT-4.1 Mini completes the researcher, risk and writer requests without a provider error. The writer includes fiscal labels in Unicode digits, which the original ASCII-only schema permits; the stronger narrative guard rejects them. A read-only replay reproduces this genuine failure. A writer-only English-prose schema fix passes **239 tests**, including **34 Unicode cases**, while preserving the existing quantity guard and reusable risk schemas.
+
+After **19 deployment-preservation checks**, explicitly resuming the original approved checkpoint makes a new writer request with the revised schema. The first Gemini review rejects an incomplete garbled claim. One permitted automatic repair removes that claim and a fresh review passes. The final note pauses at development review: **eight completed responses, 27,655 reported tokens, US$0.01231606, no provider error**, and all earlier charges/uncertain holds retained. Mistral is not used in this live attempt.
+
+All **31 final runtime/source checks** pass, including two canonical financial rows, **6/6 values**, twelve matching selected evidence records, exact quotations, current **2/2 model-supported claims** and exact note/body/source/input bindings. Separate capture-only proofs preserve **34 original producer checks** and pass **71 final guidance/exclusion checks**. Both resumed writers receive the fixed lesson hint; neither actual critic request receives it. These are request-delivery and control checks, not semantic adherence or independent improvement evidence.
+
+**The final model pass is not enough to accept the answer.** Operator review finds two near-duplicate shared-privacy observations, no reported wording differences despite available changes, and a material-scope/emphasis qualifier supported only by a short common phrase. Human review should assess coverage and narrow unsupported interpretation. The application remains at note review with publication blocked; no new lesson proposal or acceptance is created. The genuine critic-rejection event is retained for separate development reflection. The [fallback receipt](../evidence/model_fallback_verification.json) distinguishes the passing technical checks from this unresolved content review.
+
 ## Files and responsibilities
 
 | Files | Purpose |
