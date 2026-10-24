@@ -1,0 +1,44 @@
+{
+  "record_kind": "authorized_live_attempt_verification",
+  "checked_at_utc": "2026-10-24T08:12:10.561817+00:00",
+  "status": "provider_access_refused",
+  "current_run_id": "89740c2115fb4f56afd16f2eccc9b04d",
+  "current_failure_code": "provider_http_403",
+  "total_attempts": 2,
+  "budget": {
+    "enabled": true,
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0",
+    "held_usd": "0.0562688",
+    "committed_usd": "0.0562688",
+    "remaining_authorization_usd": "0.9437312",
+    "model_calls": 2,
+    "tokens": 133472,
+    "uncertain_calls": 2,
+    "blocked": false
+  },
+  "persistence": {
+    "application_restarted": true,
+    "gateway_restarted": true,
+    "ledger_equal_before_after": true,
+    "library_equal_before_after": true,
+    "preserved_note_count": 2
+  },
+  "human_reviews": {
+    "live_plan_approved": false,
+    "live_note_approved": false,
+    "live_note_published": false
+  },
+  "read_only_permissions_check": {
+    "effective_budget_blocks": false,
+    "completion_requested": false
+  },
+  "limitations": [
+    "HTTP 403 identifies access refusal; the exact provider restriction is not established.",
+    "No further completion attempts are made while the access issue is unresolved.",
+    "Zero reported spend is not proof of zero actual cost: both full reservations remain held.",
+    "Ledger tokens include reserved allowances for uncertain calls, not observed model usage.",
+    "The existing private notes and all earlier evidence remain preserved."
+  ]
+}

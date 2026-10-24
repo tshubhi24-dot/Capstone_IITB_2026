@@ -16,6 +16,7 @@ The course guide permits AI coding assistance and assigns problem framing, desig
 | 24 October 2026 | Actual Docker learning journey and two human review gates | The exact research plan and note were approved through separate review gates. One note was saved; measured receipts, persistence/authentication checks and limitations appear in the step log. This is not independent final evaluation. |
 | 24 October 2026 | Live AI increment, steps 6–8 | AI-assisted provider/ledger, bounded cited reasoning, graph/API/UI, private deployment controls and tests. The live-capable stack runs with paid activation disabled; mocked results are not claimed as a paid run or independent evaluation. |
 | 24 October 2026 | Authorized live activation and first stopped attempt | The authorized US$1 policy bounded the first planner attempt, which stopped before the plan gate and retained its US$0.0281344 reservation. AI-assisted diagnostics were added; this attempt produced no live plan/note approval or publication. |
+| 24 October 2026 | Controlled diagnostic attempt and persistence check | A new planner attempt under the same authorization returned HTTP 403. Both holds total US$0.0562688. The ledger and existing private library survived gateway/application restarts; no additional completions were requested after identifying access refusal. Exact provider restriction and successful live execution remain pending. |
 
 ## Team role assignments
 

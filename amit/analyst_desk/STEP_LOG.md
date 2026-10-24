@@ -61,3 +61,11 @@ On 24 October 2026, the human spending gate authorized prepared policy `eed8a14e
 The first actual planner request, run `58d5439f6eb9467eababb5179a9c0375`, stopped before producing a plan. Its US$0.0281344 reservation remains held because usage could not be confirmed. The original adapter collapsed diagnostics, so the original cause cannot be recovered. Its receipt is retained under `evidence/live_attempts/`. Read-only probes checked provider connectivity without requesting a model completion.
 
 Added fixed, allowlisted HTTP/network/JSON/accounting diagnostic codes to the provider ledger, gateway client and run events. Raw provider bodies, headers, arbitrary upstream codes and private exception details remain excluded. No retry, spending-limit reset or release of the first reservation was introduced. All 189 local tests passed in 7.78 seconds using mocked provider responses. Actual continuation, plan review, note review and live publication remain pending.
+
+## Step 9b — Record provider access refusal and verify persistence
+
+After deploying the tested diagnostic update, made one deliberate new planner attempt under the same cumulative authorization. Run `89740c2115fb4f56afd16f2eccc9b04d` returned `provider_http_403` before producing a plan. It was not a retry under the original failed call ID. Its separate full reservation remains held alongside the first attempt: US$0.0562688 committed, US$0.9437312 left within the US$1 authorization. Zero recorded provider spend does not establish zero actual cost for uncertain calls.
+
+The repeated HTTP 403 did not establish the exact provider access restriction. Further completion attempts stopped pending diagnosis. No plan approval, note approval or live publication occurred.
+
+Restarted only the idle application and model gateway. The complete safe ledger summary and existing private note library were identical before and after restart; both prior approved notes remained. Nineteen deployed runtime checks passed again. Sanitized receipts preserve both attempts, and `evidence/live_attempt_verification.json` records the access failure, holds and persistence results. Credentials remain private. Step 9 is unfinished pending access diagnosis and the actual human review journey.
