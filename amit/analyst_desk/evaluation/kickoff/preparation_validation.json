@@ -1,0 +1,63 @@
+{
+  "checked_date": "2026-10-24",
+  "timezone": "Asia/Hong_Kong",
+  "kind": "portable_public_development_export_integrity_only",
+  "status": "passed",
+  "development_cases": 20,
+  "numeric_expected_rows": 25,
+  "outcome_counts": {
+    "supported_answer": 19,
+    "supported_refusal": 1
+  },
+  "checks": {
+    "case_content_unchanged": true,
+    "numeric_and_semantic_expected_content_unchanged": true,
+    "original_source_hashes_preserved": true,
+    "origin_path_references_replaced_with_explicit_external_cache_metadata": true,
+    "arithmetic_recomputed_from_preserved_expected_inputs": true,
+    "blank_templates_unchanged_and_unlabelled": true,
+    "artifact_hashes_refreshed": true,
+    "portable_local_links_verified": 36
+  },
+  "blank_template_slot_counts": {
+    "retrieval_labels_template.csv": 30,
+    "independent_attack_template.csv": 30,
+    "risk_labels_template.csv": 10,
+    "judge_labels_template.csv": 20
+  },
+  "raw_source_corpus_included": false,
+  "raw_source_revalidation_performed": false,
+  "research_runs": 0,
+  "paid_model_calls": 0,
+  "independent_human_reviews": 0,
+  "protected_final_cases_created": 0,
+  "origin_preparation_validation": {
+    "checked_date": "2026-10-22",
+    "timezone": "Asia/Hong_Kong",
+    "kind": "static_preparation_integrity_only",
+    "status": "passed",
+    "development_cases": 20,
+    "numeric_rows_verified_against_cached_source_facts": 25,
+    "risk_passage_references_verified": 551,
+    "outcome_counts": {
+      "supported_answer": 19,
+      "supported_refusal": 1
+    },
+    "source_hash_and_artifact_hashes": "matched",
+    "blank_template_slot_counts": "matched_and_unlabelled",
+    "local_links_verified": 39,
+    "research_runs": 0,
+    "paid_model_calls": 0,
+    "independent_human_reviews": 0,
+    "protected_final_cases_created": 0,
+    "limitations": [
+      "Static consistency is not independent source validation or measured model performance.",
+      "Human semantic annotations and independent protected cases remain pending."
+    ]
+  },
+  "limitations": [
+    "Origin preparation checks refer to the earlier external cached SEC snapshot, not a source file included here.",
+    "Portable checks validate preserved preparation content and metadata; they do not establish independent source truth, human labels or model quality.",
+    "A fresh source import must record its own hashes and explicitly reconcile passage identifiers with the retained origin provenance."
+  ]
+}

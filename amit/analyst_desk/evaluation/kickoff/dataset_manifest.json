@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "created_date": "2026-10-22",
+  "timezone": "Asia/Hong_Kong",
+  "source": "sec_edgar",
+  "source_corpus_path": null,
+  "source_corpus_sha256": "8d057f1aa3fe8c058a96459d435d6b526c1e571b4034f849fb0cee307c1a1e4c",
+  "source_manifest_sha256": "2efdcb48fb06913c5956a0fc6b85cc65a59955f700a60a49479d0ae7a0fba417",
+  "authoring": "AI-assisted public development questions and source-derived numeric expected answers; independent human domain review pending",
+  "development_companies": [
+    "AAPL",
+    "ABBV",
+    "AMGN",
+    "MSFT"
+  ],
+  "provisional_future_heldout_companies": [
+    "GOOGL",
+    "ORCL",
+    "ADBE",
+    "CRM",
+    "GILD",
+    "ABT",
+    "UNH",
+    "TMO"
+  ],
+  "split_policy": "Related variants remain together; the eight listed issuers are reserved only for fresh independently authored future questions. Existing public practice questions on any issuer are exposed and cannot become an untouched final test by relabelling.",
+  "counts": {
+    "development_cases": 20,
+    "numeric": 10,
+    "comparison": 6,
+    "risk": 4,
+    "completed_final_cases": 0,
+    "completed_human_risk_labels": 0,
+    "completed_judge_labels": 0,
+    "completed_retrieval_labels": 0,
+    "completed_independent_attacks": 0,
+    "supported_answer_cases": 19,
+    "supported_refusal_cases": 1,
+    "numeric_expected_rows": 25,
+    "concept_correction_cases": 1,
+    "scenario_groups": 2
+  },
+  "blank_template_slots": {
+    "risk_company_year_labels": 10,
+    "judge_output_labels": 20,
+    "retrieval_relevance_queries": 30,
+    "paired_independent_attacks": 30,
+    "protected_case_schema": 1
+  },
+  "independent_reviewer": null,
+  "reviewed_at": null,
+  "holdout_frozen_at": null,
+  "expected_numeric_answers_written_before_any_new_run": true,
+  "risk_semantic_expected_answers_status": "pending independent human review before execution",
+  "final_eligible": false,
+  "final_protocol_ready": false,
+  "execution_status": "not_run",
+  "paid_calls_made": 0,
+  "artifact_sha256": {
+    "README.md": "8a802e5d7dda224362017293da390075862d3caed8dcdee72935c4cf74a47b5b",
+    "development_cases.jsonl": "768ed198f0c5b6672e51d74fc03a9bcd37f11ca26ac2e7e635104c8707f56490",
+    "development_expected.jsonl": "2c143c7a0db1e53c07f2be1ce89276223cc636662927f32f385b1461e77829ff",
+    "independent_attack_template.csv": "6fad6ba5c2883796a265d8198745c5d8e197c1a75e6d1f3ebea64e5a9464aae3",
+    "judge_labels_template.csv": "e3d05d6b79b75efada9cb034c5a8b87ddc2f4f6b646d9c379f1df56519ebfc12",
+    "protected_case_template.json": "2cba1ce460466b703e80e738ae6bb6fb058ec545aa6d57c989c9f56e5c4dccdf",
+    "retrieval_labels_template.csv": "df45ee2afcfff64a313806439e947a27b1baf48f742a831e5f6741c1110ea62a",
+    "risk_labels_template.csv": "9a5cebb507ddad32e9279120618f87d4a2fe56a0085002b2ea87b2a8587501ed"
+  },
+  "integrity_checks": {
+    "unique_20_case_ids": true,
+    "category_counts_10_6_4": true,
+    "only_four_development_issuers": true,
+    "fact_ids_exist": true,
+    "fact_pair_period_unit_accession_match": true,
+    "annual_duration_bounds_checked": true,
+    "decimal_numeric_recalculation_matches": true,
+    "risk_passage_ids_exist_and_scope_match": true,
+    "no_human_labels_fabricated": true,
+    "scenario_group_ids_match_cases_and_expectations": true,
+    "related_issuer_variants_grouped": true,
+    "unsupported_2022_absent_from_frozen_coverage": true,
+    "supported_refusal_has_no_numeric_rows": true,
+    "net_income_substitution_rejected_with_canonical_facts": true,
+    "exact_ratio_and_display_precision_recorded": true
+  },
+  "limitations": [
+    "Canonical facts and section extraction require independent source review; internal agreement is not independent validation.",
+    "Risk semantic expectations are deliberately null pending human labelling.",
+    "The templates are empty authoring forms, not completed datasets.",
+    "No model run, publication, benchmark score, paid request or untouched final holdout was created."
+  ],
+  "source_coverage_manifest_sha256": "b906b7c9ce051098f5f4b8e492d17ad66c071923b77eab7b78c022de7b786606",
+  "scenario_groups": {
+    "KDEV-TECH-MSFT-AAPL": {
+      "tickers": [
+        "MSFT",
+        "AAPL"
+      ],
+      "split": "development"
+    },
+    "KDEV-HEALTH-ABBV-AMGN": {
+      "tickers": [
+        "ABBV",
+        "AMGN"
+      ],
+      "split": "development"
+    }
+  },
+  "numeric_precision_policy": {
+    "authoritative_inputs": "Exact canonical financial fact values and units.",
+    "formula": "operating_income / revenue * 100",
+    "exact_ratio_preserved": true,
+    "decimal_working_precision": 40,
+    "margin_pct_field": "four-decimal reference, not the authoritative unrounded value",
+    "final_display_decimal_places": 2,
+    "rounding": "ROUND_HALF_UP directly from source-derived unrounded working values; comparisons subtract before display rounding."
+  },
+  "exported_date": "2026-10-24",
+  "source_provenance": {
+    "origin": "Previously prepared frozen public SEC EDGAR cache used for the 22 October development expectations.",
+    "raw_corpus_included_in_repository": false,
+    "ingestion_manifest_included_in_repository": false,
+    "origin_hashes_preserved": true,
+    "review_method": "Inspect each preserved public SEC filing URL, accession, annual period and XBRL concept; independent human source review remains pending.",
+    "fresh_import_policy": "Record new source snapshot hashes without overwriting the originating preparation hashes; explicitly reconcile parser passage identifiers before reuse."
+  },
+  "artifact_hash_scope": "Pack authoring artifacts and README; manifest and validation receipt excluded to avoid circular hashes."
+}

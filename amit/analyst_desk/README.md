@@ -9,7 +9,7 @@ This folder contains the current capstone work prepared from the beginning. It d
 | Step | Deliverable | Status |
 |---|---|---|
 | 1 | [Problem, users, scope and proposed success criteria](docs/PROJECT_DEFINITION.md) | Prepared for team review. |
-| 2 | Evaluation plan and public development preparation | Next commit. |
+| 2 | [Evaluation plan](docs/EVALUATION_PLAN.md) and [public development preparation](evaluation/kickoff/README.md) | Prepared; independent final cases and human labels remain pending. |
 | 3 | Architecture and editable drawings | Next commit. |
 | 4 | One two-company Docker research journey | Under construction. |
 

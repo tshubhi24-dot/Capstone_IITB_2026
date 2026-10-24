@@ -1,6 +1,6 @@
 # Analyst Desk: project definition
 
-**Group 22 | Version 1 | 22 October 2026**  
+**Group 22 | Version 1 | 22 October 2026**
 **Status:** AI-assisted draft for team review, exported to the shared repository on 24 October 2026. The deployment uses Docker Compose. Named owners, real-user/domain review and measured results remain pending. This describes the current build target; the implementation is under construction.
 
 ## Problem, users and outcome
