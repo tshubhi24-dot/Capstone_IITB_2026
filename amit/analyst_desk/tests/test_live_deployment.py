@@ -181,7 +181,7 @@ def test_profile_switch_refuses_symlink_archive_without_changing_active_policy(p
     assert prep.load_config() == original["config"] and list(outside.iterdir()) == []
 
 
-@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1"])
+@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1", "live-step10-google-critic-v1"])
 def test_prepared_configuration_accepts_only_exact_reviewed_profile_prices(version):
     profile = model_profile(version)
     config = {**deepcopy(prep.DEFAULTS), "authorization_id": "b" * 32,

@@ -230,6 +230,14 @@ class BudgetLedger:
                     charged_usd TEXT,usage TEXT,result TEXT,error_code TEXT,created REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS desk_budget(singleton INTEGER PRIMARY KEY CHECK(singleton=1),cap_usd TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS run_limits(run_id TEXT PRIMARY KEY,cap_usd TEXT NOT NULL,max_calls INTEGER NOT NULL,max_tokens INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS run_budget_grants(grant_id TEXT PRIMARY KEY,run_id TEXT NOT NULL UNIQUE,
+                    proposal_hash TEXT NOT NULL,proposal TEXT NOT NULL,approval_sha256 TEXT NOT NULL,created REAL NOT NULL);
+                CREATE TABLE IF NOT EXISTS grant_consumptions(grant_id TEXT PRIMARY KEY,call_id TEXT NOT NULL UNIQUE,
+                    request_hash TEXT NOT NULL,created REAL NOT NULL);
+                CREATE TRIGGER IF NOT EXISTS grant_no_update BEFORE UPDATE ON run_budget_grants BEGIN SELECT RAISE(ABORT,'Run grants are append only'); END;
+                CREATE TRIGGER IF NOT EXISTS grant_no_delete BEFORE DELETE ON run_budget_grants BEGIN SELECT RAISE(ABORT,'Run grants are append only'); END;
+                CREATE TRIGGER IF NOT EXISTS consumption_no_update BEFORE UPDATE ON grant_consumptions BEGIN SELECT RAISE(ABORT,'Grant consumptions are append only'); END;
+                CREATE TRIGGER IF NOT EXISTS consumption_no_delete BEFORE DELETE ON grant_consumptions BEGIN SELECT RAISE(ABORT,'Grant consumptions are append only'); END;
             """)
             db.execute("BEGIN IMMEDIATE")
             previous = db.execute("SELECT policy_hash FROM authorization WHERE id=?", (config["authorization_id"],)).fetchone()
@@ -269,7 +277,79 @@ class BudgetLedger:
         tokens = sum(json.loads(row["usage"])["total_tokens"] if row["usage"] else row["reserved_tokens"] for row in rows)
         return charge, held, tokens
 
-    def reserve(self, run_id, call_id, request_hash, usd, tokens):
+    @staticmethod
+    def checkpoint_hash(rows):
+        fields = ("call_id", "authorization_id", "run_id", "request_hash", "status", "reserved_usd", "reserved_tokens",
+                  "charged_usd", "usage", "error_code", "created")
+        return hashlib.sha256(encoded([{key: row[key] for key in fields} for row in sorted(rows, key=lambda row: row["call_id"])])).hexdigest()
+
+    def grant_run_extension(self, proposal, expected_hash, human_confirmation):
+        """Record one explicit exact-call approval; never alter original limits.
+
+        This trusted local operator method has no HTTP route. Confirmation text
+        is operator-supplied evidence; its digest is retained in the ledger.
+        """
+        fields = {"grant_id", "run_id", "policy_hash", "plan_hash", "draft_hash", "call_id", "request_hash", "checkpoint_hash",
+                  "original_calls", "original_tokens", "max_calls", "max_tokens", "checkpoint_calls", "checkpoint_tokens",
+                  "checkpoint_uncertain", "checkpoint_reported_spend_usd", "checkpoint_held_usd", "cap_usd", "per_run_usd",
+                  "model_profile", "critic_model", "role", "reserved_tokens", "reservation_usd"}
+        if (not isinstance(proposal, dict) or set(proposal) != fields
+                or expected_hash != hashlib.sha256(encoded(proposal)).hexdigest()
+                or not isinstance(human_confirmation, str) or not human_confirmation.strip()):
+            raise ProviderError("invalid_configuration", "An exact reviewed grant and explicit human confirmation are required.")
+        hashes = ("policy_hash", "plan_hash", "draft_hash", "call_id", "request_hash", "checkpoint_hash")
+        if (any(not isinstance(proposal[key], str) or not re.fullmatch(r"[a-f0-9]{64}", proposal[key]) for key in hashes)
+                or not isinstance(proposal["grant_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", proposal["grant_id"])
+                or not isinstance(proposal["run_id"], str) or not IDENTIFIER.fullmatch(proposal["run_id"])):
+            raise ProviderError("invalid_configuration", "The run grant identifiers are invalid.")
+        exact = {"original_calls": 12, "original_tokens": 250000, "max_calls": 13, "max_tokens": 300000,
+                 "checkpoint_calls": 12, "checkpoint_tokens": 246409, "checkpoint_uncertain": 3, "reserved_tokens": 51152}
+        if any(type(proposal[key]) is not int or proposal[key] != value for key, value in exact.items()):
+            raise ProviderError("invalid_configuration", "Only the reviewed one-call critic extension is supported.")
+        profile = model_profile(self.config)
+        price = profile["models"]["critic"]
+        estimate = decimal(price["prompt_usd_per_token"]) * self.config["prompt_token_ceiling"] + decimal(price["completion_usd_per_token"]) * 2000
+        if (profile["version"] != "live-step10-google-critic-v1" or proposal["model_profile"] != profile["version"]
+                or proposal["critic_model"] != "google/gemini-2.5-flash" or proposal["role"] != "critic"
+                or proposal["policy_hash"] != self.policy_hash
+                or self.config["max_calls_per_run"] != 12 or self.config["max_tokens_per_run"] != 250000
+                or self.config["prompt_token_ceiling"] != 49152 or self.config["max_output_tokens"] < 2000
+                or decimal(proposal["reservation_usd"]) != estimate
+                or decimal(proposal["cap_usd"]) != min(self.desk_cap, decimal(self.config["cap_usd"]))
+                or decimal(proposal["per_run_usd"]) != decimal(self.config["per_run_usd"])
+                or decimal(proposal["cap_usd"]) > 1 or decimal(proposal["per_run_usd"]) > Decimal(".50")):
+            raise ProviderError("invalid_configuration", "The grant differs from the reviewed critic policy or dollar limits.")
+        with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            previous = db.execute("SELECT * FROM run_budget_grants WHERE run_id=? OR grant_id=?", (proposal["run_id"], proposal["grant_id"])).fetchone()
+            if previous:
+                if previous["proposal_hash"] == expected_hash and json.loads(previous["proposal"]) == proposal:
+                    return {"approved": True, "changed": False, "grant_id": proposal["grant_id"], "proposal_hash": expected_hash}
+                raise ProviderError("authorization_changed", "This run already has its one immutable extension grant.")
+            rows = db.execute("SELECT * FROM model_calls WHERE run_id=?", (proposal["run_id"],)).fetchall()
+            limits = db.execute("SELECT * FROM run_limits WHERE run_id=?", (proposal["run_id"],)).fetchone()
+            all_rows = db.execute("SELECT * FROM model_calls").fetchall()
+            charge, held, _ = self.totals(all_rows)
+            run_charge, run_held, _ = self.totals(rows)
+            if (not limits or limits["max_calls"] != 12 or limits["max_tokens"] != 250000
+                    or decimal(limits["cap_usd"]) != decimal(proposal["per_run_usd"])
+                    or not self._grant_checkpoint_matches(proposal, rows)
+                    or db.execute("SELECT EXISTS(SELECT 1 FROM authorization WHERE blocked<>0)").fetchone()[0]
+                    or charge + held + estimate > decimal(proposal["cap_usd"])
+                    or run_charge + run_held + estimate > decimal(proposal["per_run_usd"])):
+                raise ProviderError("authorization_changed", "The reviewed run checkpoint, holds or dollar allowance changed.")
+            db.execute("INSERT INTO run_budget_grants VALUES(?,?,?,?,?,?)", (proposal["grant_id"], proposal["run_id"], expected_hash,
+                       encoded(proposal).decode(), hashlib.sha256(human_confirmation.strip().encode()).hexdigest(), time.time()))
+        return {"approved": True, "changed": True, "grant_id": proposal["grant_id"], "proposal_hash": expected_hash}
+
+    def _grant_checkpoint_matches(self, grant, rows):
+        charge, held, tokens = self.totals(rows)
+        return (len(rows) == grant["checkpoint_calls"] and tokens == grant["checkpoint_tokens"]
+                and sum(row["status"] == "uncertain" for row in rows) == grant["checkpoint_uncertain"]
+                and self.checkpoint_hash(rows) == grant["checkpoint_hash"]
+                and charge == decimal(grant["checkpoint_reported_spend_usd"]) and held == decimal(grant["checkpoint_held_usd"]))
+
+    def reserve(self, run_id, call_id, request_hash, usd, tokens, *, role=None):
         config = self.config
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -296,7 +376,15 @@ class BudgetLedger:
             if charge + held + usd > min(self.desk_cap, decimal(config["cap_usd"])) or run_charge + run_held + usd > run_cap:
                 raise ProviderError("budget_exhausted", "The remaining authorized model budget cannot cover this call.")
             if len(run_rows) >= call_cap or run_tokens + tokens > token_cap:
-                raise ProviderError("run_limit_exhausted", "The original run call or token budget is exhausted.")
+                row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone()
+                grant = json.loads(row["proposal"]) if row else None
+                if (not grant or role != "critic" or grant["policy_hash"] != self.policy_hash or grant["call_id"] != call_id
+                        or grant["request_hash"] != request_hash or tokens != grant["reserved_tokens"]
+                        or usd != decimal(grant["reservation_usd"]) or not self._grant_checkpoint_matches(grant, run_rows)
+                        or db.execute("SELECT EXISTS(SELECT 1 FROM grant_consumptions WHERE grant_id=?)", (grant["grant_id"],)).fetchone()[0]
+                        or len(run_rows) + 1 > grant["max_calls"] or run_tokens + tokens > grant["max_tokens"]):
+                    raise ProviderError("run_limit_exhausted", "The original run limit is exhausted; no matching unused exact-call grant applies.")
+                db.execute("INSERT INTO grant_consumptions VALUES(?,?,?,?)", (grant["grant_id"], call_id, request_hash, time.time()))
             db.execute("UPDATE run_limits SET cap_usd=?,max_calls=?,max_tokens=? WHERE run_id=?", (str(run_cap), call_cap, token_cap, run_id))
             db.execute("INSERT INTO model_calls(call_id,authorization_id,run_id,request_hash,status,reserved_usd,reserved_tokens,created) VALUES(?,?,?,?,?,?,?,?)",
                        (call_id, config["authorization_id"], run_id, request_hash, "reserved", str(usd), tokens, time.time()))
@@ -327,6 +415,9 @@ class BudgetLedger:
             rows = db.execute("SELECT * FROM model_calls").fetchall()
             blocked = bool(db.execute("SELECT EXISTS(SELECT 1 FROM authorization WHERE blocked<>0)").fetchone()[0])
             run_limit = db.execute("SELECT * FROM run_limits WHERE run_id=?", (run_id,)).fetchone() if run_id is not None else None
+            grant_row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone() if run_id is not None else None
+            grant = {**json.loads(grant_row["proposal"]), "approved": True,
+                     "consumed": bool(db.execute("SELECT EXISTS(SELECT 1 FROM grant_consumptions WHERE grant_id=?)", (grant_row["grant_id"],)).fetchone()[0])} if grant_row else None
         selected = [row for row in rows if row["run_id"] == run_id] if run_id is not None else rows
         charge, held, tokens = self.totals(selected)
         global_charge, global_held, _ = self.totals(rows)
@@ -338,7 +429,10 @@ class BudgetLedger:
                 "authorization_committed_usd": str(global_charge + global_held),
                 "remaining_authorization_usd": str(max(Decimal(0), effective_cap - global_charge - global_held)),
                 "model_calls": len(selected), "tokens": tokens, "uncertain_calls": sum(row["status"] == "uncertain" for row in selected),
-                "blocked": blocked, "run_id": run_id}
+                "blocked": blocked, "run_id": run_id, "ledger_checkpoint_hash": self.checkpoint_hash(selected),
+                "original_max_calls_per_run": run_limit["max_calls"] if run_limit else self.config["max_calls_per_run"],
+                "original_max_tokens_per_run": run_limit["max_tokens"] if run_limit else self.config["max_tokens_per_run"],
+                "run_budget_grant": grant}
 
 
 class ReasoningGateway:
@@ -354,6 +448,7 @@ class ReasoningGateway:
         result["models"] = {role: policy["id"] for role, policy in self.profile["models"].items()}
         result["model_profile"] = self.profile["version"]
         result["provider"] = self.profile["provider"]
+        result["providers"] = self.profile.get("providers", {role: self.profile["provider"] for role in ("producer", "critic")})
         result["policy_hash"] = self.ledger.policy_hash
         for key in ("prompt_token_ceiling", "max_message_bytes", "max_output_tokens", "max_calls_per_run", "max_tokens_per_run"):
             result[key] = self.config[key]
@@ -394,13 +489,15 @@ class ReasoningGateway:
         request = {"run_id": run_id, "call_id": call_id, "role": role, **bounded, "max_output_tokens": max_output_tokens,
                    "model": policy["id"], "config_version": config["version"]}
         request_hash = hashlib.sha256(encoded(request)).hexdigest()
-        cached = self.ledger.reserve(run_id, call_id, request_hash, estimate, config["prompt_token_ceiling"] + max_output_tokens)
+        cached = self.ledger.reserve(run_id, call_id, request_hash, estimate, config["prompt_token_ceiling"] + max_output_tokens, role=role)
         if cached is not None:
             return {**cached, "cached": True}
         payload = {"model": policy["id"], "messages": messages, "max_tokens": max_output_tokens, "temperature": 0,
                    "response_format": {"type": "json_schema", "json_schema": {"name": "analyst_response", "strict": True, "schema": response_schema}},
-                   "provider": {"only": [self.profile["provider"]], "allow_fallbacks": False, "require_parameters": True, "data_collection": "deny",
+                   "provider": {"only": [self.profile.get("providers", {}).get("critic" if role == "critic" else "producer", self.profile["provider"])], "allow_fallbacks": False, "require_parameters": True, "data_collection": "deny",
                                 "max_price": {"prompt": float(decimal(policy["prompt_usd_per_token"]) * 1000000), "completion": float(decimal(policy["completion_usd_per_token"]) * 1000000)}}}
+        if role == "critic" and "critic_reasoning" in self.profile:
+            payload["reasoning"] = self.profile["critic_reasoning"]
         network_error = None
         try:
             with httpx.Client(transport=self.transport, timeout=120, trust_env=False, follow_redirects=False) as client:

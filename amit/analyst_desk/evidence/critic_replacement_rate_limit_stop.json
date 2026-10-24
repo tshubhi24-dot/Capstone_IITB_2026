@@ -1,0 +1,30 @@
+{
+  "record_kind": "critic_replacement_rate_limit_stop",
+  "checked_at_utc": "2026-10-24T11:01:36.958115+00:00",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "status": "error",
+  "error_code": "provider_http_429",
+  "model": "mistralai/mistral-large-2407",
+  "critic_attempts": 3,
+  "frozen_body_sha256": "8c23f947656f49cba6694bd749384ab39e7cf30baa9dd42d6534145a147ef677",
+  "observed_tokens": 60185,
+  "model_calls_this_run": 12,
+  "gateway_tokens_including_reservations": 246409,
+  "provider_reported_cost_this_run_usd": "0.0290148",
+  "run_uncertain_holds_usd": "0.18184",
+  "critic_verdict_available": false,
+  "note_approval_recorded": false,
+  "live_note_published": false,
+  "lifetime_budget": {
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0.0296596",
+    "held_usd": "0.3506464",
+    "committed_usd": "0.3803060",
+    "remaining_authorization_usd": "0.6196940"
+  },
+  "original_call_limit_reached": true,
+  "old_notes_unchanged": true,
+  "old_note_count": 2,
+  "next_step": "Prepare a different-provider critic and one exact human-approved extension; no further call is authorized yet."
+}

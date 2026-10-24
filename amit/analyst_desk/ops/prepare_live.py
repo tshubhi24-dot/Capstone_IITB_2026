@@ -35,7 +35,8 @@ DEFAULTS = {
     "max_output_tokens": 4096,
     "models": model_profile("live-step6-openrouter-v1")["models"],
 }
-SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1", "mistral-large2407": "live-step10-mistral-large2407-v1"}
+SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1", "mistral-large2407": "live-step10-mistral-large2407-v1",
+                   "google-critic": "live-step10-google-critic-v1"}
 
 
 def now():

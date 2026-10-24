@@ -1,6 +1,6 @@
 # ADR-003: supported replacement models within the original spending cap
 
-**Status:** writer output verified; two critic rate-limit stops retained; final supported critic policy prepared
+**Status:** writer verified; three critic rate-limit stops retained; different-provider critic and exact extra-call approval being prepared
 
 **Date:** 24 October 2026
 **Decision basis:** Bounded replacement model profiles preserve the existing spending authorization, source validation and separate human review gates.
@@ -67,3 +67,11 @@ Prepare a separate reviewed profile with the same Medium 3.1 producer and `mistr
 Tighten the prompt reservation ceiling to 49,152 tokens and the combined message/schema limit to 45,056 bytes. The exact unchanged critic payload measures 23,285 bytes, contains seven claims and nineteen full cited evidence records, and requires no truncation. With 2,000 output tokens, the final reservation is 51,152 tokens and at most US$0.110304. The run already accounts for 195,257 tokens including both failed-call holds; the worst total is 246,409 tokens and twelve calls, within its original limits. Earlier reservations cannot be released or replaced to make room.
 
 The profile switch archives the old private policy and stages a fresh disabled policy ID. Activation and the subsequent critic-only continuation are separate operations. The controller must bind that continuation to the deployed ledger policy hash, unchanged approved plan, frozen draft and failed checkpoint, allow it only once, and retain all prior accounting. A passing internal critic still requires separate human note approval. Catalogue and payload checks are recorded in `evidence/critic_replacement_catalogue.json` and `evidence/critic_replacement_preflight.json`; these checks made no generation request.
+
+## Different provider after the final original call
+
+Large 2407 also returned HTTP 429 on the reviewed route. No AI verdict was obtained. The run now has twelve calls and 246,409 accounted tokens, including three uncertain critic reservations; its original call limit is exhausted. The old request and immutable ledger limits must remain twelve calls and 250,000 tokens. The rate-limit causes remain unverified because only the safe HTTP diagnostic was retained. This is not evidence of a credit or application-dollar-budget failure.
+
+The next critic attempt requires a separate run-limit extension. Prepare `google/gemini-2.5-flash` as critic, pinned to `google-ai-studio`, with Medium 3.1 retained for producing roles through `mistral/zdr`. Routing must be explicit per role, with no fallback. The authenticated account catalogue lists the Google model; its [endpoint metadata](https://openrouter.ai/api/v1/models/google/gemini-2.5-flash/endpoints) advertises structured outputs and input/output rates of US$0.30/US$2.50 per million tokens. Disable optional reasoning for this bounded output; all reported completion tokens remain counted. Endpoint/account listing is a candidate check, not a guarantee of access or successful generation. Any new refusal stops the attempt.
+
+Prepare one append-only human-approved grant for the exact frozen critic request. It binds the existing run, original plan and draft, new policy, exact call ID and gateway request hash, and complete pre-call ledger checkpoint. It permits absolute bounds of thirteen calls and 300,000 tokens for that one critic call only, consumes atomically with its reservation and never raises or rewrites the original limits. A fourteenth call remains blocked. The new 51,152-token reservation would total 297,561 tokens and at most US$0.0197456, within the unchanged US$1 desk and US$0.50 run dollar caps. All previous charges and holds remain. The grant must not be applied before explicit approval of its exact proposal; generated note approval remains separate.

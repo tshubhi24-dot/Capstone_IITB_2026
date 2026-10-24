@@ -25,6 +25,16 @@ MODEL_PROFILES = {
         "provider": "mistral/zdr",
         "limits": {"prompt_token_ceiling": 49152, "max_message_bytes": 45056},
     },
+    "live-step10-google-critic-v1": {
+        "models": {
+            "producer": {"id": "mistralai/mistral-medium-3.1", "prompt_usd_per_token": "0.0000004", "completion_usd_per_token": "0.000002"},
+            "critic": {"id": "google/gemini-2.5-flash", "prompt_usd_per_token": "0.0000003", "completion_usd_per_token": "0.0000025"},
+        },
+        "provider": "role-specific",
+        "providers": {"producer": "mistral/zdr", "critic": "google-ai-studio"},
+        "limits": {"prompt_token_ceiling": 49152, "max_message_bytes": 45056},
+        "critic_reasoning": {"enabled": False},
+    },
 }
 
 
