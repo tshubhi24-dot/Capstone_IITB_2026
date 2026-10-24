@@ -263,7 +263,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 ## Step 15 — Run a genuine development case and review its lessons
 
-**What this step does:** runs registered public case KDEV017 through live planning, evidence-backed risk comparison and criticism, then reviews only proposals supported by actual critic rejections or analyst edits. Every plan and lesson decision remains an exact human review. Development notes cannot enter the approved library.
+**What this step does:** runs registered public development cases through live planning, evidence-backed risk comparison and criticism, then reviews only proposals supported by actual critic rejections or analyst edits. KDEV017 records the first genuine run; KDEV018 exercises the analyst's web workflow. Every plan and lesson decision remains an exact human review. Development notes cannot enter the approved library.
 
 | Files | Purpose |
 |---|---|
@@ -271,6 +271,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [data/development_cases.json](data/development_cases.json), [desk/development.py](desk/development.py) | Existing public question registry and server-created admission for the selected source/company/year scope. |
 | [desk/workflow.py](desk/workflow.py), [desk/reflection.py](desk/reflection.py), [desk/lessons.py](desk/lessons.py) | Existing research/critic gates, event-bound reflection and exact-version human decisions. |
 | [evidence/development_case_verification.json](evidence/development_case_verification.json) | Sanitized observed checks and progress; complete runtime records and human confirmation text stay outside Git. |
+| [docs/WEB_DEVELOPMENT_WALKTHROUGH.md](docs/WEB_DEVELOPMENT_WALKTHROUGH.md), [web case receipt](evidence/web_development_case_verification.json) | Reproduce KDEV018 through the analyst interface and distinguish UI evidence, genuine lessons and the separate planted-error demo. |
 
 **Capstone connection:** p.3 L12 and pp.15–16 require real development failures/edits, reflection, reviewed lessons and frozen reuse. This public development case is not a protected evaluation or proof of improvement.
 
@@ -279,6 +280,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 15a — Select and prepare the first genuine case | KDEV017 compares MSFT risk disclosures for FY2024–2025 without a planted failure. The registered scope is available, hybrid retrieval is ready and live research is available under the original limits. A private preservation baseline is saved; no active operation or existing lesson is present. Research and human review are still pending. |
 | 15b — Run the live planner and present the exact plan | One real planner call succeeds. Sixteen checks validate registered admission, source/scope, exact pending hash, disabled memory/lessons, visible source limitations and preservation of existing runs/library/preferences. The complete plan is available privately for human review. Research is paused at the required plan gate; no critic outcome, lesson or publication is claimed. |
 | 15c — Execute the approved case and review the result | After the actual exact-plan approval, research completes in five total model calls. Twenty-two checks pass; both annual rows, 6/6 displayed financial values and all eight citation instances match the canonical source. The model critic supports 4/4 claims and remains labelled model-assisted, not gold. The analyst reviews the full exact note and requests no correction. No critic rejection or analyst edit has occurred, so there is no eligible proposal to reflect on, accept, reject or freeze. The private receipt records the clean review; the application retains its development review pause without publishing or falsely rejecting the note. Earlier work and the empty lesson bank are preserved. |
+| 15d — Prepare the next case through the web interface | Select KDEV018 for AAPL FY2024–2025 in the running research UI. The exact question and locked scope are visible, memory is off, lessons are off and development publication is blocked. Seven baseline checks pass under the existing limits; earlier runs, approved notes and lesson versions are saved privately for preservation checks. The walkthrough explains the UI, human gates and its connection to the brief. No new research run or human decision has occurred yet. |
 
 ## What the team builds next
 

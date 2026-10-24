@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "case_id": "KDEV018",
+  "case_hash": "fcee5bf8f8dadef8b02d27b71a1102a0d39af8bf2faeb2f65c95ab36c8fb1a37",
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "learning_split": "development",
+  "case_type": "risk",
+  "interface": "research_web_app",
+  "independent_benchmark": false,
+  "stage": "web_form_prepared",
+  "phase_checks": {
+    "baseline": {
+      "live_available": true,
+      "retrieval_ready": true,
+      "registered_case_available": true,
+      "no_active_operation": true,
+      "original_spending_caps_preserved": true,
+      "initial_lesson_bank_empty": true,
+      "private_preservation_baseline_saved": true
+    },
+    "web_form": {
+      "exact_registered_case_visible": true,
+      "apple_fiscal_2024_2025_selected": true,
+      "live_mode_selected": true,
+      "private_memory_disabled": true,
+      "frozen_playbook_disabled": true,
+      "development_publication_block_visible": true
+    }
+  },
+  "outcome": {
+    "research_run_created": false,
+    "human_plan_decision_observed": false,
+    "research_completed": false,
+    "eligible_lesson_origins_observed": 0,
+    "lesson_proposals_created": 0,
+    "human_lesson_decisions_recorded": 0,
+    "development_notes_published": 0
+  }
+}
