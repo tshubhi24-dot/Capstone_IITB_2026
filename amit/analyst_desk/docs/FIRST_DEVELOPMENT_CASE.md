@@ -30,7 +30,13 @@ The four available lesson actions are fiscal-period alignment, current-fact veri
 
 ### Observed progress
 
-The genuine live planner completed one model call and produced the exact registered scope. Sixteen admission, review-boundary and preservation checks passed. The run is paused for human plan review; research, criticism and reflection have not run yet. The approved library, earlier runs, analyst preferences, note policy and empty lesson bank are unchanged. This is an actual development run, separate from the synthetic Step 14 operator fixtures.
+The genuine live planner completed one model call and produced the exact registered scope. Sixteen admission, review-boundary and preservation checks passed. After the analyst approved that exact plan, four further model calls completed query selection, risk analysis, writing and criticism. The run is paused at development note review and has not published.
+
+Twenty-two further checks passed: both annual financial rows match current canonical facts and actual fiscal periods; all six displayed values verify; all eight citation instances match the correct source passages, with both fiscal years cited for every claim. The model critic supports four of four claims, labelled model-assisted rather than gold. Independent inspection found no substantive correction to recommend; that inspection is a development check, not an independently labelled outcome benchmark.
+
+There is no critic rejection or analyst edit, so **zero lesson proposals are eligible**. The analyst reviewed the exact note and requested no correction. This is a clean reviewed development result; no reflection or lesson decision is required for this case. Do not create a failure, dummy edit, rejection or accepted lesson to satisfy a checklist. Reflection, lesson decisions and freezing are conditional on genuine eligible evidence. The approved library, earlier runs, analyst preferences, note policy and empty lesson bank are unchanged. This is an actual development run, separate from the synthetic Step 14 operator fixtures.
+
+The application retains the note at its development review pause, because production note approval would publish and is prohibited for development cases. The local human review receipt records completion without attempting a publication or mislabelling the note as rejected.
 
 [The sanitized receipt](../evidence/development_case_verification.json) records completed checks and the current human-review boundary. It contains no note body, conversation, credentials or personal account metadata. Full runtime evidence stays in the ignored local runtime directory.
 
