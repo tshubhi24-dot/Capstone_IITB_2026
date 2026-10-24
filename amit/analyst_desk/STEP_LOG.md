@@ -31,3 +31,9 @@ Actual Docker run `b1fd4eab632548328f354ef2794f679a` used SEC sources for Micros
 The publisher saved one note, `c54ab4c70fc64615a95dfc8c462ba0c3`. The run made 18 actual HTTP MCP tool calls, checked all 18 displayed financial values and made zero model calls at zero model cost. All eleven runtime-readiness checks passed. The note remained available after restarting the application, and all four deployed MCP services returned HTTP 401 without credentials. Shareable receipts are in `evidence/`; full note content, checkpoints, credentials and confirmation text remain private.
 
 These results establish this offline learning journey. They do not establish full capstone completion, semantic financial/risk correctness, original Item-boundary validation, hidden final performance, active containment testing or alert firing. Those remain separate work.
+
+## Step 6 — Live provider and spending foundation
+
+On 24 October 2026, defined the bounded live increment in ADR-002 and prepared the provider adapter, internal model gateway and dedicated SQLite usage ledger. The public OpenRouter catalogue confirmed the selected producing/critic model IDs, structured-output support and their observed price ceilings. Requests use a fixed endpoint and approved models, strict local schema validation, restricted routing and no automatic paid retries. Unknown charges retain their full reservation. No paid model calls occurred in this step.
+
+Twenty-two mocked provider/ledger/gateway tests passed. Two secret-guard tests proved detection in staged content and reachable Git history using fictional keys in temporary repositories. The guard reads real private keys locally for pre-push checks without printing them. Credentials and private authorization configuration stay under ignored `.runtime/`; provider credentials are never tracked artifacts. Live specialist reasoning, deployment and an actual authorized journey are subsequent steps.

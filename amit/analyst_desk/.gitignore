@@ -15,3 +15,6 @@ __pycache__/
 data/cache/
 data/raw/
 .DS_Store
+*.key
+*.pem
+.secrets/
