@@ -147,6 +147,23 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 10p–10s | Add a different-provider critic, exact-request allowances and private rejected-output diagnostics. |
 | 10t–10u | Pass the critic, obtain exact-note sign-off, save and verify persistence. |
 
+## Step 11 — Expand source coverage to twelve companies
+
+**What this step does:** extends the research catalogue from two companies to six Technology and six Healthcare companies for FY2023–2025. A declared scope drives import and validation, so each company/year needs matching annual revenue and operating income plus cached Item 1A and Item 7 sections. Research requests retain their existing size and spending limits.
+
+| Files | Purpose |
+|---|---|
+| [data/coverage_scope.json](data/coverage_scope.json) | Twelve issuer identities, sectors, fiscal years and required concepts/sections. |
+| [ops/prepare_sources.py](ops/prepare_sources.py) | Validate the complete financial/section matrix and install a reproducible snapshot. |
+| [tests/test_prepare_sources.py](tests/test_prepare_sources.py) | Missing/duplicate coverage, source identity, annual-period, synthetic-data and failed-installation checks. |
+| [data/README.md](data/README.md) | Source schema, import commands and safe snapshot replacement. |
+
+**Capstone connection:** p.16, Retrieval requires 10–15 companies in two sectors over three years; Tools and Signature A require cached original facts with source IDs and comparable periods. This increment expands coverage; hybrid retrieval, reranking and full Item/table validation remain later work.
+
+| Increment | Result |
+|---|---|
+| 11a — Declare and validate scope | Importer supports the twelve-company target and explicit subsets. Fifty-two importer/data tests pass; real-cache validation confirms the target matrix. Installing and deploying the expanded snapshot follows. |
+
 ## What the team builds next
 
 1. **Retrieval and memory:** expand from two companies to twelve across two sectors; validate Item/table ingestion; add vectors, RRF, reranking and retrieval labels. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.

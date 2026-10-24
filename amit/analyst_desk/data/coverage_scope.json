@@ -1,0 +1,20 @@
+{
+  "scope_id": "sec-twelve-company-fy2023-2025-v1",
+  "fiscal_years": [2023, 2024, 2025],
+  "canonical_concepts": ["revenue", "operating_income"],
+  "sections": ["1A", "7"],
+  "companies": [
+    {"ticker": "MSFT", "company": "Microsoft Corporation", "sector": "Technology", "cik": "0000789019"},
+    {"ticker": "AAPL", "company": "Apple Inc.", "sector": "Technology", "cik": "0000320193"},
+    {"ticker": "GOOGL", "company": "Alphabet Inc.", "sector": "Technology", "cik": "0001652044"},
+    {"ticker": "ORCL", "company": "Oracle Corporation", "sector": "Technology", "cik": "0001341439"},
+    {"ticker": "ADBE", "company": "Adobe Inc.", "sector": "Technology", "cik": "0000796343"},
+    {"ticker": "CRM", "company": "Salesforce, Inc.", "sector": "Technology", "cik": "0001108524"},
+    {"ticker": "ABBV", "company": "AbbVie Inc.", "sector": "Healthcare", "cik": "0001551152"},
+    {"ticker": "AMGN", "company": "Amgen Inc.", "sector": "Healthcare", "cik": "0000318154"},
+    {"ticker": "GILD", "company": "Gilead Sciences, Inc.", "sector": "Healthcare", "cik": "0000882095"},
+    {"ticker": "ABT", "company": "Abbott Laboratories", "sector": "Healthcare", "cik": "0000001800"},
+    {"ticker": "UNH", "company": "UnitedHealth Group Incorporated", "sector": "Healthcare", "cik": "0000731766"},
+    {"ticker": "TMO", "company": "Thermo Fisher Scientific Inc.", "sector": "Healthcare", "cik": "0000097745"}
+  ]
+}

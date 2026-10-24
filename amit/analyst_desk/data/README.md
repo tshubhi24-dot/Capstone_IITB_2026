@@ -1,17 +1,40 @@
-# Source data for the first journey
+# SEC source coverage
 
-The current implementation accepts a reviewed public SEC snapshot as JSON with four keys: `metadata`, `companies`, `facts`, and `passages`.
+The declared scope is [coverage_scope.json](coverage_scope.json): FY2023–2025 for twelve companies, split equally across two sectors.
 
-- Companies contain `ticker`, company/name, sector and optional CIK.
-- Facts contain `id`, `ticker`, `fiscal_year`, `concept` (`revenue` or `operating_income`), original `xbrl_concept`, unscaled `value`, `unit`, annual `start`/`end`, `accession`, filing date and original SEC `source_url`.
-- Passages contain `id`, `ticker`, `year`, `item` (`1A` or `7`), `text`, source URL/accession and retained table records where available. Preserve every section chunk, not just retrieved excerpts.
+| Sector | Companies |
+|---|---|
+| Technology | Microsoft (MSFT), Apple (AAPL), Alphabet (GOOGL), Oracle (ORCL), Adobe (ADBE), Salesforce (CRM) |
+| Healthcare | AbbVie (ABBV), Amgen (AMGN), Gilead Sciences (GILD), Abbott (ABT), UnitedHealth (UNH), Thermo Fisher (TMO) |
 
-Prepare the current two-company subset:
+The complete scope requires **36 company-years, 72 canonical financial facts and 72 section groups**: revenue, operating income, Item 1A and Item 7 for each company/year. Passage counts depend on the supplied cache; the importer retains every selected section chunk.
+
+## Prepare the source snapshot
+
+Supply a public SEC corpus with `metadata`, `companies`, `facts` and `passages`:
 
 ```sh
-python ops/prepare_sources.py --source-corpus /absolute/path/to/reviewed-sec-corpus.json
+python ops/prepare_sources.py --source-corpus /path/to/public-sec-corpus.json
 ```
 
-This writes a new local snapshot under `.runtime/journey/sources/` and a public source-identity manifest. The local source snapshot, raw filings and databases are excluded from Git. The shared manifest records the twelve annual facts and provenance hashes so the team can check source selection; it is not an independent domain-review receipt.
+The default imports all twelve companies. To reproduce a two-company scope explicitly:
 
-For this Mac's first journey, data is extracted from the already available public SEC cache. No older application code, test results or provider credentials are imported. Integration with the team's ingestion output is a later adapter task; the startup script fails clearly if the reviewed snapshot is absent. A fresh clone therefore needs this source-preparation step before starting Docker.
+```sh
+python ops/prepare_sources.py --source-corpus /path/to/public-sec-corpus.json --tickers MSFT AAPL
+```
+
+The snapshot is installed at `.runtime/journey/sources/corpus.json`; the shareable inventory is [source_manifest.json](source_manifest.json). `--output` and `--manifest` select alternative destinations. Stop source-reading services before replacing their snapshot, then restart them together so they load the same fingerprint. Preserve old snapshot bytes when retaining earlier run checkpoints.
+
+## Input fields and validation
+
+| Record | Required content |
+|---|---|
+| Company | Declared ticker, company name, sector and ten-digit SEC CIK. |
+| Fact | Unique ID, ticker, fiscal year, canonical concept, original XBRL concept, unscaled USD value, annual start/end, accession, filing date, form `10-K`, original SEC filing URL and source kind. |
+| Passage | Unique ID, ticker, company, fiscal year, Item `1A` or `7`, text, accession, filing date, original SEC filing URL and source kind. Existing table records are preserved. |
+
+The importer rejects missing or duplicate financial cells, incompatible annual periods, nonfinite values, wrong company/sector identities, synthetic datasets and URLs that disagree with the issuer CIK or accession. Every company/year must have both cached section groups. All data is validated and staged before replacement; installation failure restores the prior snapshot.
+
+The manifest records scope/source hashes, canonical fact identities and section chunk counts. Raw filings, source-cache bodies and runtime databases remain outside Git. Automated structural checks do not establish correct original Item boundaries, complete table extraction or the economic interpretation of risks; those need source/domain review. A fresh clone needs a supplied source cache before Docker startup.
+
+SEC provides submissions and XBRL JSON through its [official data APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces). Source collection should follow the [SEC access guidance](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data) and reuse cached responses.
