@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-24",
+  "original_design_artifact_date": "2026-10-22",
+  "kind": "portable_architecture_design_artifact_validation",
+  "status": "passed_static_export_checks",
+  "local_links_verified": 36,
+  "canonical_mermaid_sources_match_document": true,
+  "mermaid_literal_backslash_n_labels": false,
+  "overview_svg_xml": "valid",
+  "overview_png_dimensions": [
+    4020,
+    5500
+  ],
+  "diagram_asset_bytes_unchanged_from_current_preparation": true,
+  "artifact_sha256": {
+    "architecture-v1-workflow.mmd": "110ecde0af2aaf9f462f1f2cdaa78609dab720135ded442c97b5c12cb6118ff1",
+    "architecture-v1-deployment.mmd": "9db12c8c5b2906aeb28b9406cc181d56c08638eae1fe12622af12049c1801532",
+    "architecture-v1-overview.dot": "603698b152995dd049b42542e13469ebe3dab73da4c50e47e716647c2407b924",
+    "architecture-v1-overview.svg": "603640e0f6e6bfaea39e5ebc21f7fc2ed5ebadb999e4b698af7d0a7409fa0952",
+    "architecture-v1-overview.png": "aaa6de7955d0cc49086f6d3316c085b3148cf76cb50dda9bbb11676c5024466e"
+  },
+  "application_code_changed_by_this_export": false,
+  "compose_configuration_changed_by_this_export": false,
+  "stack_started_by_this_export": false,
+  "paid_calls": 0,
+  "team_approval_recorded": false,
+  "limitations": [
+    "Mermaid sources checked for synchronization and portable links, not parsed with a Mermaid renderer.",
+    "Existing current-preparation Graphviz drawings are preserved unchanged; this export does not establish runtime implementation."
+  ]
+}

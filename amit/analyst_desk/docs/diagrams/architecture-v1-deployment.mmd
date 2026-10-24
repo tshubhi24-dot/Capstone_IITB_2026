@@ -1,0 +1,46 @@
+flowchart TB
+    B["Analyst browser<br/>localhost only"] --> IN
+    SEC["SEC EDGAR<br/>Public original filings + XBRL"] --> ING["Separate ingestion job<br/>Identify, rate-limit, cache and preserve tables"]
+    ING --> SNAP[("Versioned read-only SEC snapshot<br/>Company, fiscal period, Item and source IDs")]
+    PROVIDER["External model provider<br/>Versioned producing / critic / guard models"]
+
+    subgraph COMPOSE["Proposed Docker Compose stack on the Mac"]
+        IN["Ingress · 127.0.0.1 only<br/>8000 research · 3000 dashboards"]
+        APP["App container<br/>FastAPI streaming + LangGraph roles<br/>Model adapter, role hooks and shared budget"]
+        KB["filings-kb MCP<br/>BM25 + vectors → RRF → reranker"]
+        ED["edgar MCP<br/>Cached facts + complete filing sections"]
+        CALC["python-sandbox MCP<br/>Validate bounded calculation jobs"]
+        PORTAL["research-portal MCP<br/>Read past notes · gated publish_note"]
+        QUEUE[("Scoped calculation queue")]
+        WORKER["pandas-worker<br/>No network · no credentials<br/>Bounded CPU, memory and time"]
+        VECTOR[("Chroma<br/>Persistent vector index")]
+        MODEL[("Preloaded model cache<br/>Embeddings + reranker + local guard")]
+        RUNTIME[("Persistent runtime volume<br/>Checkpoints · portal SQLite · spend ledger")]
+        PROM["Prometheus<br/>Metrics + working alert rules"]
+        GRAF["Grafana<br/>Verification, latency, errors and cost"]
+        TRACE[("Local run and tool traces<br/>Secrets scrubbed")]
+        IN --> APP
+        IN --> GRAF
+        APP -->|Role-scoped HTTP| KB
+        APP -->|Role-scoped HTTP| ED
+        APP -->|Quant only| CALC
+        APP -->|Scoped history reads / publisher writes| PORTAL
+        CALC --> QUEUE
+        QUEUE <--> WORKER
+        KB <--> VECTOR
+        MODEL -.-> KB
+        MODEL -.-> APP
+        APP <--> RUNTIME
+        PORTAL <--> RUNTIME
+        PROM -->|Scrape authenticated metrics| APP
+        GRAF --> PROM
+        APP --> TRACE
+    end
+
+    SNAP --> KB
+    SNAP --> ED
+    SNAP --> APP
+    APP -->|Proposed app-only outbound route<br/>Provider URL/model allowlist enforced in code| PROVIDER
+    EVAL["Independent evaluator on host<br/>Private questions, gold and labels<br/>Fixed separate outcome judge + E1–E4 + CI"] -->|Authenticated requests<br/>No publication or final-case learning| IN
+    EVAL -->|Outcome judge never feeds producer repairs| PROVIDER
+    EVAL --> RESULTS[("Evaluator-owned results<br/>Outside application image and mounts")]

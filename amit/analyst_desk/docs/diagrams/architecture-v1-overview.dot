@@ -1,0 +1,72 @@
+digraph AnalystDesk {
+  graph [rankdir=TB, bgcolor="#ffffff", fontname="Arial", fontsize=20, pad=0.30, nodesep=0.34, ranksep=0.22, splines=polyline, compound=true, newrank=true, labelloc=t, label=<<B>Analyst Desk</B><BR/><FONT POINT-SIZE="15">Proposed architecture v1 · 22 October 2026</FONT><BR/><FONT POINT-SIZE="12">Team review pending · design to implement and validate</FONT>>];
+  node [shape=box, style="rounded,filled", color="#c4ced6", fillcolor="#edf4f8", fontcolor="#193343", fontname="Arial", fontsize=15, margin="0.16,0.12", penwidth=1.1];
+  edge [color="#6a7e8d", fontcolor="#445d6e", fontname="Arial", fontsize=11, arrowsize=0.65, penwidth=1.1];
+
+  subgraph cluster_workflow {
+    label=<<FONT POINT-SIZE="15"><B>RESEARCH WORKFLOW</B></FONT><BR/><FONT POINT-SIZE="11">Logical roles run inside the app container</FONT>>;
+    color="#dce4e9"; style=rounded; margin=18;
+    ui [label="Analyst question + research UI\nFastAPI streaming", fillcolor="#f5f7f8"];
+    planner [label="Supervisor / planner\nLangGraph · scoped plan + budget"];
+    planreview [label="Human plan review\nContinue · edit · reject", fillcolor="#fff0d7", color="#c5943c"];
+    research [label="Company researchers\nParallel branches · cited evidence"];
+    quant [label="Quant specialist\nCode calculations + Decimal check"];
+    risk [label="Risk specialist\nCompare adjacent-year Item 1A"];
+    writer [label="Writer\nCited narrative + numeric table"];
+    critic [label="Code verification + critic\nNumbers · claim support · policy\nUnresolved at limit → blocked review"];
+    human [label="Human final-note review\nApprove exact version · edit · reject", fillcolor="#fff0d7", color="#c5943c"];
+    publisher [label="Publisher · sole write authority\nHash + expiry + idempotency"];
+    approved [label="Approved research portal\nSaved version + citations + receipt", shape=cylinder, fillcolor="#eaf3ec", color="#8eaf98"];
+    ui -> planner -> planreview -> research -> quant -> risk -> writer -> critic;
+    critic -> human [label="Checks pass"];
+    human -> publisher [label="Approve exact version"];
+    publisher -> approved;
+    planreview -> planner [label="Edit", constraint=false, color="#ad8132"];
+    research -> planner [label="Contradiction:\nbounded replan", constraint=false, style=dashed];
+    critic -> writer [label="Fail: at most\n2 automatic repairs", constraint=false, color="#9d684d"];
+    human -> critic [label="Edit: invalidate\napproval + recheck", constraint=false, color="#ad8132"];
+  }
+
+  subgraph cluster_tools {
+    label=<<FONT POINT-SIZE="15"><B>FOUR MCP SERVICES</B></FONT><BR/><FONT POINT-SIZE="11">Typed contracts · role-scoped access</FONT>>;
+    color="#dce4e9"; style=rounded; margin=18;
+    access [label="Permission + budget hooks\nRead tools scoped to each role", fillcolor="#f5f7f8"];
+    kb [label="filings-kb\nHybrid search → RRF → reranker"];
+    edgar [label="edgar\nCached facts + complete sections"];
+    calc [label="python-sandbox\nValidate bounded calculation jobs"];
+    queue [label="Scoped job queue", shape=cylinder, fillcolor="#f1f4f6", fontsize=12];
+    worker [label="pandas-worker\nNo network · no credentials\nCPU / memory / time limits", fillcolor="#f1f4f6"];
+    portal [label="research-portal\nRead past notes\npublish_note: publisher role only"];
+    snapshot [label="Frozen SEC sources\n12 companies · 2 sectors\nFY2023–2025 · fact / passage IDs", shape=cylinder, fillcolor="#eaf3ec", color="#8eaf98"];
+    access -> kb -> edgar -> calc [style=invis, weight=40];
+    calc -> queue -> worker [label=""];
+    worker -> portal -> snapshot [style=invis, weight=40];
+  }
+
+  subgraph cluster_state {
+    label=<<FONT POINT-SIZE="15"><B>STATE + OPERATIONS</B></FONT><BR/><FONT POINT-SIZE="11">Persistent state · monitoring · model access</FONT>>;
+    color="#dce4e9"; style=rounded; margin=18;
+    checkpoints [label="Run checkpoints · SQLite\nProgress + pending human reviews\nStop and resume", shape=cylinder, fillcolor="#eaf3ec", color="#8eaf98"];
+    memory [label="Scoped long-term memory\nPreferences + coverage\nRelevant approved, frozen lessons", shape=cylinder, fillcolor="#eaf3ec", color="#8eaf98"];
+    history [label="Approved-note history\nPortal SQLite · source references\nExplicit retention / deletion policy", shape=cylinder, fillcolor="#eaf3ec", color="#8eaf98"];
+    lessons [label="Development-only learning\nPropose → human accept / reject\nFreeze approved lesson version", fillcolor="#fff0d7", color="#c5943c"];
+    monitoring [label="Scrubbed traces + metrics\nPrometheus / Grafana\nVerification · cost · latency · errors", fillcolor="#f1f4f6"];
+    external [label="External model provider\nApp-only route: proposed\nNo worker or raw-watchlist access", fillcolor="#f5f7f8"];
+    checkpoints -> memory -> history -> lessons -> monitoring -> external [style=invis, weight=40];
+  }
+
+  {rank=same; ui; access; checkpoints;}
+  {rank=same; planner; kb; memory;}
+  {rank=same; planreview; edgar; history;}
+  {rank=same; research; calc; lessons;}
+  {rank=same; quant; queue; monitoring;}
+  {rank=same; risk; worker; external;}
+  {rank=same; writer; portal;}
+  {rank=same; critic; snapshot;}
+  ui -> access -> checkpoints [style=invis, weight=90];
+
+  note [shape=plain, style="", fontcolor="#445d6e", fontsize=12, label="Amber = human decision. Reject or unresolved checks = stop; nothing published.\nEvaluator owns the private dataset, gold and outcome judgments; submitted questions stay in isolated run state.\nNo shared-memory learning or publication from final cases. Tool hooks and scrubbed traces cover every step."];
+  approved -> note [style=invis, weight=10];
+  snapshot -> note [style=invis, weight=10];
+  external -> note [style=invis, weight=10];
+}

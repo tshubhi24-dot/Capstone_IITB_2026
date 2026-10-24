@@ -1,0 +1,34 @@
+flowchart TD
+    U["1 · Analyst question"] --> API["2 · Research UI + FastAPI<br/>Scope, identity and input checks"]
+    API --> P["3 · LangGraph supervisor<br/>Plan, query decomposition and shared budget"]
+    P --> HP{"4 · Human plan review<br/>Continue, edit or reject"}
+    HP -->|Continue| R1["5a · Company A researcher<br/>ReAct over scoped evidence tools"]
+    HP -->|Continue| R2["5b · Company B researcher<br/>ReAct over scoped evidence tools"]
+    HP -->|Edit| P
+    HP -->|Reject| STOP["Stopped · nothing published"]
+    R1 --> JOIN["6 · Join source-backed findings"]
+    R2 --> JOIN
+    JOIN -->|Contradiction · bounded replan| P
+    JOIN -->|Evidence sufficient| Q["7 · Quant specialist<br/>Pandas calculation + independent Decimal check"]
+    Q --> RISK["8 · Risk specialist<br/>Compare complete adjacent-year Item 1A sections"]
+    RISK --> W["9 · Writer<br/>Cited narrative + code-rendered numeric table"]
+    W --> C{"10 · Code verification + critic<br/>Numbers, evidence and policy pass?"}
+    C -->|Fail · at most two automatic repairs| W
+    C -->|Unresolved at limit| BLOCK["Blocked review · no publication"]
+    C -->|Pass| HN{"11 · Human final-note review<br/>Approve exact version, edit or reject"}
+    HN -->|Edit · invalidate approval and recheck| C
+    HN -->|Reject| STOP
+    HN -->|Approve exact version| A{"12 · Final publication checks<br/>Actor, payload hash, expiry and policy"}
+    A -->|Valid| PUB["Publisher role · sole publication authority"]
+    A -->|Invalid| BLOCK
+    BLOCK -.->|Human correction if budget remains| C
+    PUB --> DB[("13 · Research portal<br/>Approved version + citations + approval receipt")]
+    P -.-> CP[("Run checkpoints<br/>Progress + pending human decisions")]
+    P -.-> MEM[("Scoped preferences + relevant frozen lessons")]
+    DB -.->|Relevant approved history| P
+    C -.-> DEV["Development failures and analyst edits only"]
+    HN -.-> DEV
+    DEV --> LESSON["Propose a lesson with applicability and evidence"]
+    LESSON --> HL{"Human accepts or rejects<br/>Record the reason"}
+    HL -->|Accepted · freeze version before testing| MEM
+    HL -->|Rejected| AUDIT["Keep review record · lesson not used"]
