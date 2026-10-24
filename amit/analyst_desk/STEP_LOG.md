@@ -251,9 +251,12 @@ These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/
 | Files | Purpose |
 |---|---|
 | [docs/ADR-005-REVIEWED-LESSONS.md](docs/ADR-005-REVIEWED-LESSONS.md) | Development admission, reflection, exact-version review, frozen reuse and verification boundaries. |
+| [desk/development.py](desk/development.py), [data/development_cases.json](data/development_cases.json), [tests/test_development.py](tests/test_development.py) | Admit only exact registered public questions and scope, without expected answers or labels. Bind admission to the active source; reject production relabelling and private analyst memory. |
+| [desk/lessons.py](desk/lessons.py), [tests/test_lessons.py](tests/test_lessons.py) | Persist immutable proposals and reasoned decisions in LangGraph SQLite. Invalidate superseded pending proposals, freeze accepted versions and select at most three applicable code-owned hints. Revocation is rechecked transactionally. |
 
 **Capstone connection:** p.3, L12 development-only Reflexion and reviewed/frozen playbook; pp.15–16, lessons from critic rejections and analyst edits; L9 durable storage and L14 exact-version control. Genuine accepted/rejected human decisions and independent E3 results require separate observed evidence.
 
 | Increment | Result |
 |---|---|
 | 14a — Define development learning and review | Separate registered public development cases from production research. Define immutable proposals, reasoned human decisions, explicit playbook freezing, bounded relevant guidance and revocation checks. Protected evaluation assets remain outside the application. |
+| 14b — Build admitted origins and immutable lesson storage | Bundle twenty public question/scope records with no expected answers; nineteen are within the cached fiscal coverage. Sixteen admission tests and thirty-four core lesson tests pass. Proposals require a persisted failed critic or actual changed-note event from a registered development run. Exact decisions, pending-proposal supersession, frozen versions, actor/source/scope checks and revocation are implemented. Fixture decisions are explicitly synthetic and do not count as human capstone evidence. |

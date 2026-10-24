@@ -1,0 +1,284 @@
+{
+  "cases": [
+    {
+      "case_id": "KDEV001",
+      "case_type": "numeric",
+      "question": "For MSFT fiscal 2025, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "single_year",
+      "tickers": [
+        "MSFT"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV002",
+      "case_type": "numeric",
+      "question": "For AAPL fiscal 2025, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "single_year",
+      "tickers": [
+        "AAPL"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV003",
+      "case_type": "numeric",
+      "question": "For ABBV fiscal 2025, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "single_year",
+      "tickers": [
+        "ABBV"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV004",
+      "case_type": "numeric",
+      "question": "For AMGN fiscal 2025, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "single_year",
+      "tickers": [
+        "AMGN"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV005",
+      "case_type": "numeric",
+      "question": "For MSFT fiscal 2023, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "single_year",
+      "tickers": [
+        "MSFT"
+      ],
+      "years": [
+        2023
+      ]
+    },
+    {
+      "case_id": "KDEV006",
+      "case_type": "numeric",
+      "question": "For AAPL fiscal 2023, report revenue and operating income in clearly stated USD units and calculate operating margin. Cite both facts and show the actual fiscal period.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "single_year",
+      "tickers": [
+        "AAPL"
+      ],
+      "years": [
+        2023
+      ]
+    },
+    {
+      "case_id": "KDEV007",
+      "case_type": "numeric",
+      "question": "Using only our frozen FY2023\u2013FY2025 Analyst Desk source snapshot, report ABBV fiscal 2022 revenue, operating income and operating margin. If the requested fiscal year is outside the covered scope, explain the coverage limit instead of inventing figures, using another year or claiming the public filing does not exist.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "outside_covered_fiscal_years",
+      "tickers": [
+        "ABBV"
+      ],
+      "years": [
+        2022
+      ]
+    },
+    {
+      "case_id": "KDEV008",
+      "case_type": "numeric",
+      "question": "For AMGN fiscal 2023, calculate operating margin. I suggest substituting net income for operating income in the numerator. Check that suggestion, explain the appropriate financial concept, and show the correct calculation using cited revenue and operating-income facts, actual fiscal dates and two-decimal percentage display.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "reject_net_income_substitution",
+      "tickers": [
+        "AMGN"
+      ],
+      "years": [
+        2023
+      ]
+    },
+    {
+      "case_id": "KDEV009",
+      "case_type": "numeric",
+      "question": "Calculate MSFT operating margin for fiscal 2023, 2024 and 2025. Provide the revenue and operating income used for each calculation, with fact citations, units and actual fiscal dates.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "three_year",
+      "tickers": [
+        "MSFT"
+      ],
+      "years": [
+        2023,
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV010",
+      "case_type": "numeric",
+      "question": "Calculate ABBV operating margin for fiscal 2023, 2024 and 2025. Provide the revenue and operating income used for each calculation, with fact citations, units and actual fiscal dates.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "three_year",
+      "tickers": [
+        "ABBV"
+      ],
+      "years": [
+        2023,
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV011",
+      "case_type": "comparison",
+      "question": "Compare MSFT and AAPL operating margins for fiscal 2024. Show source revenue, operating income and actual period dates, calculate the MSFT minus AAPL margin difference in percentage points, and explain any fiscal-period comparability limit.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "peer_margin",
+      "tickers": [
+        "MSFT",
+        "AAPL"
+      ],
+      "years": [
+        2024
+      ]
+    },
+    {
+      "case_id": "KDEV012",
+      "case_type": "comparison",
+      "question": "Compare MSFT and AAPL operating margins for fiscal 2025. Show source revenue, operating income and actual period dates, calculate the MSFT minus AAPL margin difference in percentage points, and explain any fiscal-period comparability limit.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "peer_margin",
+      "tickers": [
+        "MSFT",
+        "AAPL"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV013",
+      "case_type": "comparison",
+      "question": "Compare ABBV and AMGN operating margins for fiscal 2024. Show source revenue, operating income and actual period dates, calculate the ABBV minus AMGN margin difference in percentage points, and explain any fiscal-period comparability limit.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "peer_margin",
+      "tickers": [
+        "ABBV",
+        "AMGN"
+      ],
+      "years": [
+        2024
+      ]
+    },
+    {
+      "case_id": "KDEV014",
+      "case_type": "comparison",
+      "question": "Compare ABBV and AMGN operating margins for fiscal 2025. Show source revenue, operating income and actual period dates, calculate the ABBV minus AMGN margin difference in percentage points, and explain any fiscal-period comparability limit.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "peer_margin",
+      "tickers": [
+        "ABBV",
+        "AMGN"
+      ],
+      "years": [
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV015",
+      "case_type": "comparison",
+      "question": "Compare MSFT operating margin in fiscal 2024 and fiscal 2025. Cite each revenue and operating-income input, show actual periods, and calculate the later minus earlier change in percentage points without inventing a causal explanation.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "year_margin_change",
+      "tickers": [
+        "MSFT"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV016",
+      "case_type": "comparison",
+      "question": "Compare AMGN operating margin in fiscal 2023 and fiscal 2025. Cite each revenue and operating-income input, show actual periods, and calculate the later minus earlier change in percentage points without inventing a causal explanation.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "year_margin_change",
+      "tickers": [
+        "AMGN"
+      ],
+      "years": [
+        2023,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV017",
+      "case_type": "risk",
+      "question": "Compare MSFT Item 1A risk disclosures in fiscal 2024 and fiscal 2025. Identify supported additions, removals or material changes with citations to both versions. Separate wording changes from economic changes and state when the evidence is insufficient.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "risk_change",
+      "tickers": [
+        "MSFT"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV018",
+      "case_type": "risk",
+      "question": "Compare AAPL Item 1A risk disclosures in fiscal 2024 and fiscal 2025. Identify supported additions, removals or material changes with citations to both versions. Separate wording changes from economic changes and state when the evidence is insufficient.",
+      "scenario_group_id": "KDEV-TECH-MSFT-AAPL",
+      "subtype": "risk_change",
+      "tickers": [
+        "AAPL"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV019",
+      "case_type": "risk",
+      "question": "Compare ABBV Item 1A risk disclosures in fiscal 2024 and fiscal 2025. Identify supported additions, removals or material changes with citations to both versions. Separate wording changes from economic changes and state when the evidence is insufficient.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "risk_change",
+      "tickers": [
+        "ABBV"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    },
+    {
+      "case_id": "KDEV020",
+      "case_type": "risk",
+      "question": "Compare AMGN Item 1A risk disclosures in fiscal 2024 and fiscal 2025. Identify supported additions, removals or material changes with citations to both versions. Separate wording changes from economic changes and state when the evidence is insufficient.",
+      "scenario_group_id": "KDEV-HEALTH-ABBV-AMGN",
+      "subtype": "risk_change",
+      "tickers": [
+        "AMGN"
+      ],
+      "years": [
+        2024,
+        2025
+      ]
+    }
+  ],
+  "catalogue_hash": "55205757aab72cc2975a06f2ad497b38fc63aa5044aab44120d89b4f19a06b08",
+  "final_eligible": false,
+  "schema_version": 1,
+  "source": "public kickoff development questions",
+  "source_review": "Independent source/domain review pending; rehearsal inputs only.",
+  "split": "development"
+}
