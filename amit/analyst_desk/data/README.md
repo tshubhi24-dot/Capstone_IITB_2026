@@ -11,6 +11,29 @@ The complete scope requires **36 company-years, 72 canonical financial facts and
 
 The current snapshot contains **72 financial inputs and 4,073 filing passages**. Its cached-source checks are recorded in [source_coverage_verification.json](../evidence/source_coverage_verification.json).
 
+## Retrieval artifacts for this snapshot
+
+[retrieval_config.json](retrieval_config.json) pins the public MiniLM embedding model, cross-encoder reranker, exact revisions and file checksums. It also fixes table handling, token-window policies, query decomposition and fusion limits. The [retrieval setup guide](../docs/HYBRID_RETRIEVAL.md) explains public model acquisition and offline preparation.
+
+After importing the source snapshot and obtaining those public cached models, prepare the index:
+
+```sh
+python ops/prepare_retrieval.py \
+  --corpus .runtime/journey/sources/corpus.json \
+  --model-cache "$HOME/.cache/huggingface/hub" \
+  --output .runtime/journey/retrieval
+```
+
+The generated bundle binds 4,073 passage IDs and their retrieval-text hashes to the source/configuration fingerprints and 384-dimensional normalized vectors. It includes only the allowlisted public model files, not the whole user cache. Source text and retained table cells form the same searchable representation in BM25, hybrid and reranked arms; original citation records remain unchanged.
+
+The bundle remains outside Git and is mounted read-only into the filing service. Compose startup explicitly populates the internal Chroma collection from the frozen vectors before research search starts. Runtime search verifies source, collection and model/index identity and fails when the selected learned mode is unavailable. Stored float32 vectors are compared with an absolute `1e-7` tolerance and zero relative tolerance for numerical roundoff. Source or retrieval configuration changes require a matching newly prepared bundle and collection. The host-only exact NumPy backend supports reproducible development comparisons; it is identified separately from Chroma in retrieval metadata.
+
+The [36-query development comparison](../evaluation/retrieval/README.md) uses four declared development companies and partial source-derived labels. It does not replace independent human relevance review or the protected final evaluation.
+
+The [deployed Chroma/MCP verification](../evidence/retrieval_deployed_verification.json) completed all 36 frozen development queries without errors through 37 authenticated tool calls. It reproduced 98.61% sampled-label Recall@5 and 100.00% Hit@5 using local model inference, with no generative-model calls, new research runs or notes. All 36 top-five passage orders matched the host comparison.
+
+The [final runtime check](../evidence/retrieval_deployment_runtime.json) passed all twelve company tool paths, 36 margin calculations with 108 verified values and 72 section groups. Chroma and filing-service restart reused 4,073 vectors and preserved representative search results, existing runs, spending records and all three saved notes. The complete verification records 780 local tests and 19 runtime checks passing. Independent human relevance review remains pending.
+
 ## Prepare the source snapshot
 
 Supply a public SEC corpus with `metadata`, `companies`, `facts` and `passages`:

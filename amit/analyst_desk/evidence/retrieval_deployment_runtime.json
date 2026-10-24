@@ -1,0 +1,248 @@
+{
+  "approved_note_count": 3,
+  "catalogue": {
+    "authenticated_tool_calls": 132,
+    "company_count": 12,
+    "company_year_count": 36,
+    "search_scopes_checked": 12,
+    "section_chunks_checked": 4073,
+    "section_groups_checked": 72,
+    "verified_calculation_rows": 36,
+    "verified_financial_values": 108
+  },
+  "deployed_development_queries": 36,
+  "deployed_sampled_label_recall_at_5": 0.9861111111111112,
+  "generative_model_calls": 0,
+  "host_and_deployed_top5_orders_identical": 36,
+  "human_decisions_submitted": 0,
+  "limitations": [
+    "Partial source-derived development labels require independent human review.",
+    "These checks do not establish complete SEC Item/table extraction or economic risk interpretation."
+  ],
+  "local_tests_passed": 780,
+  "notes_published": 0,
+  "post_restart_searches": {
+    "generative_model_calls": 0,
+    "searches": [
+      {
+        "original_evidence_preserved": true,
+        "query_id": "retrieval-dev-msft-2023-results_grid",
+        "same_ids_and_order": true,
+        "ticker": "MSFT"
+      },
+      {
+        "original_evidence_preserved": true,
+        "query_id": "retrieval-dev-abbv-2023-geographic_revenue_grid",
+        "same_ids_and_order": true,
+        "ticker": "ABBV"
+      }
+    ],
+    "status": "passed"
+  },
+  "preserved": {
+    "budget": true,
+    "notes": true,
+    "runs": true
+  },
+  "provider_completion_requests": 0,
+  "research_runs_created": 0,
+  "retrieval": {
+    "backend": "chroma_cosine",
+    "configuration_hash": "b93e9da3bb735de52066f9434ebca7b62cd94b990b0fa8b103099e210c633ea7",
+    "encoder": {
+      "id": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41"
+    },
+    "index_fingerprint": "06a7c563124ff6f667f37afb51a3381cdad42a94e080d8e88c6829b92d47cc8c",
+    "mode": "hybrid_rerank",
+    "model_fingerprint": "1aee457a5caa5f8fe97c201af55e625e8274cb87b2c6b8a7655d4e389bc2ad47",
+    "query_policy": "original_plus_two_literal_and_semicolon_subquestions_v1",
+    "ready": true,
+    "reranker": {
+      "id": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a"
+    },
+    "semantic_retrieval": true,
+    "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+    "table_aware": true,
+    "text_policy": "passage_and_canonical_table_cells_v1; encoder_254_token_windows_overlap32_mean_normalized; reranker_96_query_tokens_document_windows_overlap32_max_logit"
+  },
+  "runtime_checks": [
+    {
+      "name": "private_credentials_available",
+      "observed": {
+        "values_disclosed": false
+      },
+      "passed": true
+    },
+    {
+      "name": "api_health",
+      "observed": {
+        "http_status": 200
+      },
+      "passed": true
+    },
+    {
+      "name": "api_missing_token_rejected",
+      "observed": {
+        "http_status": 401
+      },
+      "passed": true
+    },
+    {
+      "name": "live_api_source_and_model_configuration",
+      "observed": {
+        "expected_model_ids": true,
+        "expected_source_scope": true,
+        "learned_retrieval_claimed": true
+      },
+      "passed": true
+    },
+    {
+      "name": "model_ledger_available_and_ui_state_matches",
+      "observed": {
+        "existing_accounting_unchanged": true,
+        "ledger_available": true,
+        "ui_matches_ledger": true
+      },
+      "passed": true
+    },
+    {
+      "name": "existing_offline_approved_note_preserved",
+      "observed": {
+        "note_count": 3,
+        "original_offline_note_present": true
+      },
+      "passed": true
+    },
+    {
+      "name": "disabled_live_request_gate",
+      "observed": {
+        "applicable": false,
+        "reason": "Enabled gateway: verifier performs no run-creation requests.",
+        "request_sent": false
+      },
+      "passed": true
+    },
+    {
+      "name": "project_runtime_services_running",
+      "observed": {
+        "required_services": 11,
+        "unique_service_containers": true
+      },
+      "passed": true
+    },
+    {
+      "name": "provider_key_absent_from_all_container_environments",
+      "observed": {
+        "exposed_value": false,
+        "inspected_container_count": 12
+      },
+      "passed": true
+    },
+    {
+      "name": "gateway_private_ports_and_egress",
+      "observed": {
+        "backend_and_provider_egress_only": true,
+        "no_host_ports": true
+      },
+      "passed": true
+    },
+    {
+      "name": "app_and_mcp_remain_backend_only",
+      "observed": {
+        "checked_service_count": 5
+      },
+      "passed": true
+    },
+    {
+      "name": "provider_key_file_is_gateway_only_and_read_only",
+      "observed": {
+        "gateway_only": true,
+        "matching_mount_count": 1
+      },
+      "passed": true
+    },
+    {
+      "name": "gateway_has_separate_ledger_and_no_research_history_mount",
+      "observed": {
+        "expected_mount_targets_only": true,
+        "ledger_separate_from_research_history": true,
+        "other_mounts_read_only": true
+      },
+      "passed": true
+    },
+    {
+      "name": "gateway_process_restrictions",
+      "observed": {
+        "all_capabilities_dropped": true,
+        "nonroot_user": true,
+        "read_only_root": true
+      },
+      "passed": true
+    },
+    {
+      "name": "calculation_worker_still_networkless_and_queue_only",
+      "observed": {
+        "network_none": true,
+        "queue_only": true,
+        "read_only_root": true
+      },
+      "passed": true
+    },
+    {
+      "name": "model_gateway_rejects_missing_internal_credential",
+      "observed": {
+        "http_status": 401,
+        "paid_completion_requested": false
+      },
+      "passed": true
+    },
+    {
+      "name": "backend_network_remains_internal",
+      "observed": {
+        "expected_project": true,
+        "internal": true
+      },
+      "passed": true
+    },
+    {
+      "name": "prometheus_app_scrape_ready",
+      "observed": {
+        "no_scrape_error": true,
+        "target_up": true
+      },
+      "passed": true
+    },
+    {
+      "name": "grafana_database_ready",
+      "observed": {
+        "http_status": 200
+      },
+      "passed": true
+    }
+  ],
+  "runtime_checks_passed": 19,
+  "served_browser_script_matches_workspace": true,
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "status": "passed",
+  "vector_store_after_restart": {
+    "backend": "chroma_cosine",
+    "collection": "analyst-a03ff39f8dcca4daeb31c287991caa4300a44c2f",
+    "configuration_hash": "b93e9da3bb735de52066f9434ebca7b62cd94b990b0fa8b103099e210c633ea7",
+    "corpus_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+    "dimension": 384,
+    "external_provider_requests": 0,
+    "generative_model_calls": 0,
+    "index_fingerprint": "06a7c563124ff6f667f37afb51a3381cdad42a94e080d8e88c6829b92d47cc8c",
+    "local_embedding_calls": 0,
+    "model_fingerprint": "1aee457a5caa5f8fe97c201af55e625e8274cb87b2c6b8a7655d4e389bc2ad47",
+    "passage_count": 4073,
+    "scope_filter": "issuer_and_fiscal_year_and_allowed_canonical_passage_ids_before_ranking",
+    "status": "reused",
+    "stored_vector_absolute_tolerance": 1e-07,
+    "stored_vector_verification": "all_float32_vectors_match_prepared_artifact_with_absolute_tolerance",
+    "vectors_sha256": "d8c0d61927bed4a2c132ef6d31be0080a26db90c7adbe1f3f9f9d81caedc1dac"
+  },
+  "verification_kind": "hybrid_retrieval_deployment_and_persistence"
+}

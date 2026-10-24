@@ -2,7 +2,7 @@
 
 This is the implementation sequence we followed to build Analyst Desk. It explains what each step adds, where to find it, and how it supports the capstone. These are **our build steps**, not the brief's numbered request walkthrough.
 
-**Current result:** a Docker Compose application covers twelve companies in two sectors. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
+**Current result:** a Docker Compose application covers twelve companies in two sectors with BM25/vector fusion and local reranking. Its completed Microsoft/Apple research journey for FY2023–2025 includes plan review, parallel retrieval, code-calculated margins, cited writing, AI criticism, exact-note approval and local publication.
 
 **Reading the brief references:** general requirements are on pages 2–6. The Analyst Desk section is printed pages **15–16**, which are **PDF pages 7–8** in the supplied extract. The final-review questions are printed p.17 (PDF page 9). References below use the printed page numbers.
 
@@ -193,6 +193,8 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [desk/tools.py](desk/tools.py), [desk/api.py](desk/api.py), [web/app.js](web/app.js) | Authenticated retrieval readiness, accurate search status and a preflight block for unavailable indexes. |
 | [ops/start_journey.py](ops/start_journey.py), [ops/start_live.py](ops/start_live.py), [ops/verify_runtime.py](ops/verify_runtime.py), [ops/verify_live_runtime.py](ops/verify_live_runtime.py) | Prepare Chroma before starting readers and match deployed retrieval identities to frozen artifacts. |
 | [ops/verify_retrieval_tools.py](ops/verify_retrieval_tools.py), [tests/test_retrieval_tools_verification.py](tests/test_retrieval_tools_verification.py), [tests/test_retrieval_runtime.py](tests/test_retrieval_runtime.py) | Exercise frozen questions through authenticated search and test fail-closed readiness, provenance and result accounting. |
+| [evidence/retrieval_deployed_verification.json](evidence/retrieval_deployed_verification.json), [evidence/retrieval_deployment_runtime.json](evidence/retrieval_deployment_runtime.json) | Actual deployed question results, service checks, restart persistence and unchanged research/budget records. |
+| [docs/HYBRID_RETRIEVAL.md](docs/HYBRID_RETRIEVAL.md), [data/README.md](data/README.md), [README.md](README.md), [docs/START_HERE.md](docs/START_HERE.md) | Pipeline explanation, reproducible model/index preparation, operating instructions and qualified results. |
 
 **Capstone connection:** p.3, hybrid BM25/vector retrieval, RRF, reranker, query-side improvement and Recall@5 comparison; p.16, scoped company/year retrieval and preserved table evidence. Provider failure handling supports the observable failure requirement on p.6.
 
@@ -202,10 +204,13 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | 12b — Freeze the retrieval comparison | Thirty-six questions and 42 source-derived passage labels cover four development issuers, twelve company/year groups and both narrative/table evidence. Thirty-two harness checks pass. Labels were frozen before running retrieval; human review and protected evaluation remain pending. |
 | 12c — Implement and compare local retrieval | Prepared 4,073 × 384 vectors and real pretrained CPU models. Twenty-eight retrieval tests pass. Sampled-label Recall@5 is 75.0% for BM25, 77.8% for hybrid and 98.6% with reranking. Hybrid improves five/regresses five questions; reranking improves nine/regresses none against BM25. These are partial development labels, not independent gold. Docker/Chroma verification follows. |
 | 12d — Deploy the hybrid search service | Docker selects hybrid retrieval with reranking and loads an index-specific Chroma collection. Source, model-file and vector identities are checked; stored float32 vectors allow a measured absolute roundoff tolerance of 0.0000001. Missing or stale retrieval blocks new research before paid planning. All Python services use the newly built image; 780 tests pass. Deployed retrieval and persistence receipts follow. |
+| 12e — Verify deployed retrieval and persistence | All 36 development questions pass source/scope/ranking checks through 37 authenticated MCP calls, with 98.6% sampled-label Recall@5 and 100% Hit@5. Every top-five result order matches the host reranked arm. All twelve company tool paths, 36 margin rows and nineteen runtime checks pass. After restarting Chroma and the search service, the collection is reused and searches in both sectors return the same evidence. Existing research records, three notes and model-budget accounting remain unchanged; zero generative-model calls, new research runs, human decisions or note publications were made. |
+
+**Verified retrieval result:** hybrid search and trained reranking are active in Docker over all 4,073 passages. The 36-question comparison is development evidence with partial, source-derived labels. Independent human relevance review, protected final evaluation and original SEC Item/table validation remain outstanding.
 
 ## What the team builds next
 
-1. **Retrieval and memory:** validate original Item/table ingestion across the expanded twelve-company catalogue; add vectors, RRF, reranking and retrieval labels. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
+1. **Source validation, retrieval review and memory:** validate original Item/table ingestion, obtain independent relevance labels and evaluate protected questions. Extend persistent checkpoints/notes with preferences, coverage memory and past-note comparisons.
 2. **Agents, learning and robustness:** complete specialist ReAct/replanning evidence, reviewed development lessons, relevant lesson retrieval, active-operation recovery, threat model and independently authored attacks.
 3. **Independent evaluation:** protected cases, human risk labels, calibrated outcome judge, fair baselines and repeated E1–E4 comparisons.
 4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.
