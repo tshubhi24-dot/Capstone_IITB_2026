@@ -18,10 +18,10 @@ from ops import prepare_live
 from ops import start_journey as base
 from ops import start_live as live
 from ops.verify_runtime import analyst_token, PROMETHEUS_CHECK
+from desk.model_profiles import model_profile
 
 BASE_URL = "http://127.0.0.1:18080"
 OFFLINE_NOTE_ID = "c54ab4c70fc64615a95dfc8c462ba0c3"
-MODELS = {"producer": "openai/gpt-4.1-mini", "critic": "openai/gpt-4.1"}
 INSPECT = '''{"project":{{json (index .Config.Labels "com.docker.compose.project")}},"service":{{json (index .Config.Labels "com.docker.compose.service")}},"state":{{json .State.Status}},"network_mode":{{json .HostConfig.NetworkMode}},"networks":{{json .NetworkSettings.Networks}},"read_only":{{json .HostConfig.ReadonlyRootfs}},"ports":{{json .HostConfig.PortBindings}},"env":{{json .Config.Env}},"mounts":{{json .Mounts}},"user":{{json .Config.User}},"cap_drop":{{json .HostConfig.CapDrop}}}'''
 GATEWAY_AUTH_CHECK = '''import json,urllib.request,urllib.error
 try:
@@ -72,6 +72,11 @@ def safe_budget(value):
     if type(value.get("blocked")) is not bool:
         raise ValueError("The live ledger status is invalid")
     output["blocked"] = value["blocked"]
+    profile = model_profile(value.get("model_profile"))
+    models = {role: policy["id"] for role, policy in profile["models"].items()}
+    if value.get("models") != models or value.get("provider") != profile["provider"]:
+        raise ValueError("The live model metadata is inconsistent")
+    output.update(models=models, model_profile=profile["version"], provider=profile["provider"])
     return output
 
 
@@ -99,11 +104,15 @@ def main():
             record(name, False, error_type=type(error).__name__)
 
     def credentials():
+        prepared = prepare_live.load_config()
+        profile = model_profile(prepared["version"])
+        models = {role: policy["id"] for role, policy in profile["models"].items()}
         token = analyst_token()
         key = prepare_live.prepared_key()
         if len(key) < 20:
             raise ValueError("Provider credential unavailable")
-        state.update(token=token, provider_key=key)
+        state.update(token=token, provider_key=key, prepared_enabled=prepared["enabled"],
+                     models=models, model_profile=profile["version"], provider=profile["provider"])
         secrets.extend((token, key))
         record("private_credentials_available", True, values_disclosed=False)
 
@@ -120,9 +129,12 @@ def main():
         if status != 200 or not isinstance(value, dict):
             raise ValueError("Configuration unavailable")
         expected_years = {"MSFT": [2023, 2024, 2025], "AAPL": [2023, 2024, 2025]}
-        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and value.get("models") == MODELS and value.get("company_years") == expected_years and value.get("semantic_retrieval") is False
+        expected_models = (value.get("models") == state["models"]
+                           and value.get("model_profile") == state["model_profile"]
+                           and value.get("model_provider") == state["provider"])
+        good = value.get("data_source") == "sec_edgar" and value.get("transport") == "http" and expected_models and value.get("company_years") == expected_years and value.get("semantic_retrieval") is False
         state["config"] = value
-        record("live_api_source_and_model_configuration", good, expected_model_ids=value.get("models") == MODELS, expected_source_scope=value.get("company_years") == expected_years, learned_retrieval_claimed=value.get("semantic_retrieval") is True)
+        record("live_api_source_and_model_configuration", good, expected_model_ids=expected_models, expected_source_scope=value.get("company_years") == expected_years, learned_retrieval_claimed=value.get("semantic_retrieval") is True)
 
     def budget():
         status, value = request_json("/api/budget", state["token"])
@@ -131,7 +143,9 @@ def main():
         state["raw_budget"] = value
         expected_enabled = bool(safe["enabled"] and not safe["blocked"] and Decimal(safe["remaining_authorization_usd"]) > 0)
         config = state["config"]
-        good = status == 200 and value.get("provider_key_configured") is True and config.get("live_enabled") is expected_enabled and ("live" in config.get("available_modes", [])) is expected_enabled
+        matching_policy = (safe["models"] == state["models"] and safe["model_profile"] == state["model_profile"]
+                           and safe["provider"] == state["provider"] and safe["enabled"] == state["prepared_enabled"])
+        good = status == 200 and matching_policy and value.get("provider_key_configured") is True and config.get("live_enabled") is expected_enabled and ("live" in config.get("available_modes", [])) is expected_enabled
         record("model_ledger_available_and_ui_state_matches", good, **safe)
 
     def notes():
@@ -249,7 +263,9 @@ def main():
     passed = bool(checks) and all(check["passed"] for check in checks)
     report = {"checked_at_utc": datetime.now(timezone.utc).isoformat(), "project": base.PROJECT, "docker_context": base.CONTEXT,
               "status": "passed" if passed else "failed", "checks": checks,
-              "budget": state.get("budget"), "models": MODELS, "run_creation_probes_sent": counters["creation_probes_sent"],
+              "budget": state.get("budget"), "models": state.get("models"),
+              "model_profile": state.get("model_profile"), "provider": state.get("provider"),
+              "run_creation_probes_sent": counters["creation_probes_sent"],
               "research_runs_created_by_verifier": counters["research_runs_created"], "human_decisions_performed": False,
               "provider_completion_requests_sent_by_verifier": 0,
               "scope": "Live-overlay readiness, disabled-budget rejection when applicable, configured Docker boundaries, and authentication. No paid research, semantic benchmark, active containment attack or alert firing test."}

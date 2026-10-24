@@ -16,6 +16,9 @@ import sys
 import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from desk.model_profiles import model_profile
+
 PRIVATE = ROOT / ".runtime/live"
 CONFIG_FILE = PRIVATE / "model_config.json"
 KEY_FILE = PRIVATE / "provider.key"
@@ -30,11 +33,9 @@ DEFAULTS = {
     "prompt_token_ceiling": 65536,
     "max_message_bytes": 60000,
     "max_output_tokens": 4096,
-    "models": {
-        "producer": {"id": "openai/gpt-4.1-mini", "prompt_usd_per_token": "0.0000004", "completion_usd_per_token": "0.0000016"},
-        "critic": {"id": "openai/gpt-4.1", "prompt_usd_per_token": "0.000002", "completion_usd_per_token": "0.000008"},
-    },
+    "models": model_profile("live-step6-openrouter-v1")["models"],
 }
+SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1"}
 
 
 def now():
@@ -72,9 +73,10 @@ def write_private(path, value, mode):
 def validate_config(value):
     if not isinstance(value, dict) or set(value) != set(DEFAULTS) | {"authorization_id"}:
         raise ValueError("Unexpected live proposal fields.")
-    if type(value["enabled"]) is not bool or not re.fullmatch(r"[a-f0-9]{32}", value["authorization_id"]):
+    if type(value["enabled"]) is not bool or not isinstance(value["authorization_id"], str) or not re.fullmatch(r"[a-f0-9]{32}", value["authorization_id"]):
         raise ValueError("Invalid activation or authorization identifier.")
-    if value["version"] != DEFAULTS["version"] or value["models"] != DEFAULTS["models"]:
+    profile = model_profile(value["version"])
+    if value["models"] != profile["models"]:
         raise ValueError("The model and pricing proposal differs from this reviewed implementation.")
     try:
         caps = [Decimal(value[key]) for key in ("cap_usd", "per_run_usd")]
@@ -175,12 +177,57 @@ def disable():
     return {"enabled": False, "proposal_hash": proposal_hash(config), "paid_calls_performed": 0}
 
 
+def switch_profile(name, expected_hash):
+    """Stage a reviewed replacement without changing credentials or ledger files.
+
+    The old policy ID is immutable in the ledger. A replacement therefore gets
+    a new ID; the gateway's lifetime spending cap still counts every old hold
+    and charge. Activation requires a separate decision for the new hash.
+    """
+    if name not in SWITCH_PROFILES:
+        raise ValueError("Unknown reviewed model profile switch.")
+    ensure_private_directory()
+    previous = load_config()
+    if not re.fullmatch(r"[a-f0-9]{64}", expected_hash or "") or proposal_hash(previous) != expected_hash:
+        raise ValueError("The model profile switch refers to a stale proposal hash.")
+    profile = model_profile(SWITCH_PROFILES[name])
+    if previous["version"] == profile["version"] and previous["models"] == profile["models"]:
+        raise ValueError("This model profile is already prepared; its authorization was not changed.")
+    replacement = {**deepcopy(previous), "enabled": False, "authorization_id": uuid.uuid4().hex,
+                   "version": profile["version"], "models": profile["models"]}
+    validate_config(replacement)
+    approval = None
+    if APPROVAL_FILE.is_symlink() or APPROVAL_FILE.exists() and not APPROVAL_FILE.is_file():
+        raise ValueError("The previous authorization must be a regular private file.")
+    if APPROVAL_FILE.is_file():
+        approval = APPROVAL_FILE.read_text()
+    history = PRIVATE / "policy_history"
+    if history.is_symlink() or history.exists() and not history.is_dir():
+        raise ValueError("The private policy archive must be a regular directory.")
+    history.mkdir(mode=0o700, exist_ok=True)
+    history.chmod(0o700)
+    archive = history / (previous["authorization_id"] + "-" + replacement["authorization_id"])
+    archive.mkdir(mode=0o700)
+    write_private(archive / "model_config.json", json.dumps(previous, indent=2) + "\n", 0o600)
+    if approval is not None:
+        write_private(archive / "authorization.json", approval, 0o600)
+    # Archive first; a failed write never discards the previous policy. After
+    # replacement even a leftover old receipt cannot authorize the new hash.
+    write_private(CONFIG_FILE, json.dumps(replacement, indent=2) + "\n", 0o444)
+    APPROVAL_FILE.unlink(missing_ok=True)
+    return {"changed": True, "enabled": False, "proposal_hash": proposal_hash(replacement),
+            "config": replacement, "previous_policy_archived": True, "credentials_changed": False,
+            "ledger_changed": False, "paid_calls_performed": 0,
+            "next_action": "Review this replacement proposal and separately record its spending authorization before activation."}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--prepare", action="store_true")
     action.add_argument("--authorize", action="store_true")
     action.add_argument("--disable", action="store_true")
+    action.add_argument("--switch-profile", choices=sorted(SWITCH_PROFILES))
     parser.add_argument("--provider-env", type=Path)
     parser.add_argument("--expected-hash")
     parser.add_argument("--human-confirmation")
@@ -194,6 +241,10 @@ def main():
             if args.provider_env is not None:
                 raise ValueError("Prepare credentials before reviewing the spending proposal.")
             result = authorize(args.expected_hash, args.human_confirmation)
+        elif args.switch_profile:
+            if args.provider_env is not None or args.human_confirmation:
+                raise ValueError("A model profile switch cannot include credentials or an authorization decision.")
+            result = switch_profile(args.switch_profile, args.expected_hash)
         else:
             if args.provider_env is not None or args.expected_hash or args.human_confirmation:
                 raise ValueError("Disable accepts no credential or approval inputs.")

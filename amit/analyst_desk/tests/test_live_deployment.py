@@ -10,6 +10,7 @@ from ops import prepare_live as prep
 from ops import start_live as live
 from ops import start_journey as base
 from ops.bootstrap import initialize, SERVICE_ROLES
+from desk.model_profiles import model_profile
 
 
 @pytest.fixture
@@ -95,6 +96,99 @@ def test_prepared_files_refuse_symlinks(private, tmp_path):
     with pytest.raises(ValueError, match="first"):
         prep.load_config()
     assert outside.read_text() == "do-not-change"
+
+
+def test_explicit_profile_switch_archives_policy_but_preserves_caps_keys_and_ledger(private):
+    original = prep.prepare(private)
+    previous = prep.load_config()
+    previous.update(per_run_usd="0.40", max_calls_per_run=10, max_tokens_per_run=230000)
+    prep.write_private(prep.CONFIG_FILE, json.dumps(previous), 0o444)
+    old_hash = prep.proposal_hash(previous)
+    prep.authorize(old_hash, "Synthetic prior human confirmation stays private")
+    approved = prep.load_config()
+    old_approval = prep.APPROVAL_FILE.read_bytes()
+    key_bytes = prep.KEY_FILE.read_bytes()
+    retired = prep.PRIVATE / "retired"
+    retired.mkdir(mode=0o700)
+    retired_key = retired / "synthetic.key"
+    retired_key.write_text("retired-fictional-value-never-copy")
+    ledger = prep.PRIVATE / "synthetic-ledger-sentinel"
+    ledger.write_text("old holds and charges remain")
+
+    result = prep.switch_profile("mistral", old_hash)
+    current = prep.load_config()
+    profile = model_profile("live-step10-mistral-v1")
+    assert current["enabled"] is False and current["version"] == profile["version"]
+    assert current["models"] == profile["models"]
+    assert current["authorization_id"] != original["config"]["authorization_id"]
+    for field in set(approved) - {"enabled", "authorization_id", "models", "version"}:
+        assert current[field] == approved[field]
+    assert current["cap_usd"] == "1.00" and current["per_run_usd"] == "0.40"
+    assert prep.KEY_FILE.read_bytes() == key_bytes
+    assert retired_key.read_text() == "retired-fictional-value-never-copy"
+    assert ledger.read_text() == "old holds and charges remain"
+    assert not prep.APPROVAL_FILE.exists()
+    archives = list((prep.PRIVATE / "policy_history").iterdir())
+    assert len(archives) == 1
+    archive = archives[0]
+    assert json.loads((archive / "model_config.json").read_text()) == approved
+    assert (archive / "authorization.json").read_bytes() == old_approval
+    assert stat.S_IMODE(archive.stat().st_mode) == 0o700
+    assert all(stat.S_IMODE(path.stat().st_mode) == 0o600 for path in archive.iterdir())
+    assert result["paid_calls_performed"] == 0 and result["ledger_changed"] is False
+    assert result["credentials_changed"] is False and result["proposal_hash"] == prep.proposal_hash(current)
+    assert "Synthetic prior human confirmation" not in json.dumps(result)
+    assert key_bytes.decode().strip() not in json.dumps(result)
+    # Ordinary preparation preserves the explicit replacement without enabling it.
+    assert prep.prepare()["config"] == current
+
+
+def test_profile_switch_needs_current_hash_and_never_reauthorizes_an_old_decision(private):
+    old = prep.prepare(private)
+    prep.authorize(old["proposal_hash"], "Synthetic old policy approval")
+    old_receipt = prep.APPROVAL_FILE.read_text()
+    with pytest.raises(ValueError, match="stale"):
+        prep.switch_profile("mistral", "0" * 64)
+    assert prep.load_config()["authorization_id"] == old["config"]["authorization_id"]
+    assert not (prep.PRIVATE / "policy_history").exists()
+    with pytest.raises(ValueError, match="Unknown"):
+        prep.switch_profile("unreviewed", old["proposal_hash"])
+    staged = prep.switch_profile("mistral", old["proposal_hash"])
+    with pytest.raises(ValueError, match="already prepared"):
+        prep.switch_profile("mistral", staged["proposal_hash"])
+    assert prep.load_config()["authorization_id"] == staged["config"]["authorization_id"]
+    with pytest.raises(ValueError, match="stale"):
+        prep.authorize(old["proposal_hash"], "Synthetic repeated old approval")
+    # An old receipt cannot enable a replacement by being copied into place.
+    prep.write_private(prep.APPROVAL_FILE, old_receipt, 0o600)
+    tampered = prep.load_config()
+    tampered["enabled"] = True
+    prep.write_private(prep.CONFIG_FILE, json.dumps(tampered), 0o444)
+    with pytest.raises(ValueError, match="differs"):
+        live.prepared_configuration()
+    prep.disable()
+    prep.authorize(staged["proposal_hash"], "Synthetic explicit replacement approval")
+    assert live.prepared_configuration()["enabled"] is True
+
+
+def test_profile_switch_refuses_symlink_archive_without_changing_active_policy(private, tmp_path):
+    original = prep.prepare(private)
+    outside = tmp_path / "outside-archive"
+    outside.mkdir()
+    (prep.PRIVATE / "policy_history").symlink_to(outside)
+    with pytest.raises(ValueError, match="regular directory"):
+        prep.switch_profile("mistral", original["proposal_hash"])
+    assert prep.load_config() == original["config"] and list(outside.iterdir()) == []
+
+
+@pytest.mark.parametrize("version", ["live-step6-openrouter-v1", "live-step10-mistral-v1"])
+def test_prepared_configuration_accepts_only_exact_reviewed_profile_prices(version):
+    config = {**deepcopy(prep.DEFAULTS), "authorization_id": "b" * 32,
+              "version": version, "models": model_profile(version)["models"]}
+    assert prep.validate_config(config) == config
+    config["models"]["producer"]["completion_usd_per_token"] = "0.00000001"
+    with pytest.raises(ValueError, match="model and pricing"):
+        prep.validate_config(config)
 
 
 def test_live_bootstrap_upgrades_stably_without_giving_model_token_to_tools(tmp_path, capsys):

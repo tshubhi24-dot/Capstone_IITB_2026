@@ -25,6 +25,14 @@ Actual spending requires an explicit analyst decision on the prepared proposal. 
 
 After a real authorization, run `python3 ops/start_live.py --start` again. It recreates the gateway to reload the exact configuration; starting it does not itself make a model call. `--disable` on the preparation helper revokes future requests after the same explicit gateway reload. It does not refund or erase earlier charges or pending reservations.
 
+## Change a reviewed model profile without resetting spending
+
+ADR-003 selects Mistral Medium 3.1 and Mistral Large 3 through the pinned `mistral/zdr` endpoint. Before switching an older installation, start the updated gateway once with its unchanged original policy. This safely initializes the cumulative ledger ceiling from that original policy; a new policy cannot perform the legacy migration.
+
+Use `python3 ops/prepare_live.py --switch-profile mistral --expected-hash CURRENT_HASH`. The helper privately archives the old policy and authorization, retains credentials and all limits, and creates a disabled replacement with a fresh policy ID. It does not change the ledger or contact a provider. Review the resulting exact hash before recording activation and reloading the gateway. Record the actual basis of authorization truthfully: an explicit request delegating supported model selection within a previously approved, unchanged cap is distinct from a human review of the exact model IDs. Neither authorizes the generated research plan or note.
+
+The dedicated ledger counts charges and holds across every policy ID within the original desk ceiling. Same-run limits survive a switch, and accounting-anomaly blocks carry forward. The API shows the actual allowlisted gateway pair and route; unknown or inconsistent metadata blocks live creation. The original refused route remains stopped, without provider fallback or location spoofing.
+
 ## Run one question through both reviews
 
 Connect to <http://127.0.0.1:18080> with the existing private **analyst token**. Select **Live AI pilot** after the approved gateway becomes available. The analyst token authorizes the local UI/API; the provider key stays inside the gateway.

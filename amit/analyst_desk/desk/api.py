@@ -18,6 +18,7 @@ from .data import Corpus
 from .store import Store
 from .workflow import Engine, ReviewError, validate_scope
 from .provider import ModelGatewayClient, ProviderError
+from .model_profiles import model_profile
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -129,9 +130,15 @@ def gateway_budget():
             if type(value[key]) is not bool:
                 raise ValueError
             safe[key] = value[key]
+        profile = model_profile(value.get("model_profile"))
+        models = {role: policy["id"] for role, policy in profile["models"].items()}
+        if value.get("models") != models or value.get("provider") != profile["provider"]:
+            raise ValueError
+        safe.update(models=models, model_profile=profile["version"], provider=profile["provider"])
         version = value.get("config_version")
-        if isinstance(version, str) and len(version) <= 180 and all(c.isalnum() or c in "_.:-" for c in version):
-            safe["config_version"] = version
+        if not isinstance(version, str) or not 1 <= len(version) <= 180 or not all(c.isalnum() or c in "_.:-" for c in version):
+            raise ValueError
+        safe["config_version"] = version
         ready = (safe["enabled"] and safe["provider_key_configured"] and not safe["blocked"]
                  and Decimal(safe["remaining_authorization_usd"]) > 0)
         return safe, ready
@@ -147,7 +154,9 @@ def config():
     live_budget, live_enabled = gateway_budget()
     return {"mode": "offline", "data_source": "sec_edgar", "transport": "http", "semantic_retrieval": False,
             "available_modes": ["offline", "live"] if live_enabled else ["offline"], "live_enabled": live_enabled,
-            "models": {"producer": "openai/gpt-4.1-mini", "critic": "openai/gpt-4.1"},
+            "models": (live_budget or {}).get("models", {}),
+            "model_profile": (live_budget or {}).get("model_profile"),
+            "model_provider": (live_budget or {}).get("provider"),
             "live_budget": live_budget, "live_model_config_version": (live_budget or {}).get("config_version"),
             "retrieval": "BM25 lexical teaching retrieval; learned vectors and reranker are not active",
             "model_config_version": "fresh-step4-offline-v1", "source_fingerprint": source.fingerprint,
