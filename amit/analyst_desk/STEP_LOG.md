@@ -261,6 +261,23 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Verified lesson result:** review, freezing, bounded reuse and revocation controls are implemented and deployed. The real lesson bank remains empty. Genuine development-derived accepted/rejected lessons, an actual live reflection and independent E3 improvement evidence have not been produced by these checks.
 
+## Step 15 — Run a genuine development case and review its lessons
+
+**What this step does:** runs registered public case KDEV017 through live planning, evidence-backed risk comparison and criticism, then reviews only proposals supported by actual critic rejections or analyst edits. Every plan and lesson decision remains an exact human review. Development notes cannot enter the approved library.
+
+| Files | Purpose |
+|---|---|
+| [docs/FIRST_DEVELOPMENT_CASE.md](docs/FIRST_DEVELOPMENT_CASE.md) | Exact case, baseline controls, review sequence and honest treatment of clean runs or unsupported lesson proposals. |
+| [data/development_cases.json](data/development_cases.json), [desk/development.py](desk/development.py) | Existing public question registry and server-created admission for the selected source/company/year scope. |
+| [desk/workflow.py](desk/workflow.py), [desk/reflection.py](desk/reflection.py), [desk/lessons.py](desk/lessons.py) | Existing research/critic gates, event-bound reflection and exact-version human decisions. |
+| [evidence/development_case_verification.json](evidence/development_case_verification.json) | Sanitized observed checks and progress; complete runtime records and human confirmation text stay outside Git. |
+
+**Capstone connection:** p.3 L12 and pp.15–16 require real development failures/edits, reflection, reviewed lessons and frozen reuse. This public development case is not a protected evaluation or proof of improvement.
+
+| Increment | Result |
+|---|---|
+| 15a — Select and prepare the first genuine case | KDEV017 compares MSFT risk disclosures for FY2024–2025 without a planted failure. The registered scope is available, hybrid retrieval is ready and live research is available under the original limits. A private preservation baseline is saved; no active operation or existing lesson is present. Research and human review are still pending. |
+
 ## What the team builds next
 
 1. **Genuine development learning:** run registered development questions, inspect actual failures/edits and review their proposals. Record real acceptance/rejection reasons and freeze the playbook before evaluation.

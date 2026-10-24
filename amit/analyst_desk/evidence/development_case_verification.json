@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "case_id": "KDEV017",
+  "case_hash": "e688e35a0adfe5db2f172da5c2eb76de96a376f678940f257480e7578752fea9",
+  "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "learning_split": "development",
+  "independent_benchmark": false,
+  "stage": "baseline_verified",
+  "checks": {
+    "registered_case_available": true,
+    "live_research_available": true,
+    "retrieval_ready": true,
+    "no_active_operation": true,
+    "private_baseline_saved": true,
+    "original_spending_limits_preserved": true,
+    "initial_lesson_bank_empty": true
+  },
+  "outcome": {
+    "research_run_created": false,
+    "human_plan_decision_recorded": false,
+    "eligible_lesson_origins_observed": 0,
+    "lesson_proposals_created": 0,
+    "human_lesson_decisions_recorded": 0,
+    "playbooks_frozen": 0,
+    "development_notes_published": 0
+  }
+}
