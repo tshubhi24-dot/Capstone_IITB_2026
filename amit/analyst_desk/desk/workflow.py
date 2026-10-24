@@ -579,12 +579,14 @@ class Engine:
         if state.get("repairs"):
             question += "\nRevision feedback from the previous checks: " + json.dumps(state.get("critic", {}).get("issues", []))
         written = self.reasoner(state, "writer:" + str(state.get("repairs", 0))).write(question, state["plan"], state["metrics"], state.get("risk_ai", []), known)
-        risk_claims = [claim for analysis in state.get("risk_ai", []) for comparison in analysis["comparisons"] for claim in comparison["claims"]]
+        provisional_risk_claims = [claim for analysis in state.get("risk_ai", []) for comparison in analysis["comparisons"] for claim in comparison["claims"]]
+        risk_claims = written["risk_claims"]
         notes = self.call(state, "planner", "research-portal", "past_notes", actor=state["actor"])
         history = "Approved earlier research is available in the local library; it was not sent to the model in this run." if notes else "There is no previously approved note in this local library."
         draft = {"run_id": state["run_id"], "actor": state["actor"], "title": " / ".join(state["plan"]["tickers"]) + " AI-assisted annual research note",
             "numeric_table": table, "metrics": state["metrics"], "risks": state["risks"], "plan": state["plan"], "source_kind": "sec_edgar", "model_mode": "live", "source_fingerprint": self.source.fingerprint,
             "narrative_claims": risk_claims + written["claims"], "ai_evidence": known, "evidence_selection": [analysis["selection"] for analysis in state.get("risk_ai", [])],
+            "provisional_risk_claims": provisional_risk_claims, "risk_revision_method": "writer_refined_against_same_sources",
             "live_sections": {"risk_ids": [claim["claim_id"] for claim in risk_claims], "writer_ids": [claim["claim_id"] for claim in written["claims"]]}, "history_sentence": history}
         draft["body"] = live_body(draft)
         self.event(state["run_id"], "writer", "draft", "Cited AI narrative and code-verified table prepared for source-support checks.")

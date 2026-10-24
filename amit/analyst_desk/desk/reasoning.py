@@ -93,7 +93,13 @@ class QuoteWriterFinding(QuoteFinding):
     category: Literal["risk_observation", "comparability", "limitation"]
 
 
+class QuoteRiskRevision(QuoteFinding):
+    claim_id: str = Field(min_length=1, max_length=120)
+    text: str = Field(min_length=15, max_length=400, pattern=WRITER_TEXT_PATTERN)
+
+
 class QuoteWriterOutput(StrictOutput):
+    risk_revisions: list[QuoteRiskRevision] = Field(max_length=4)
     claims: list[QuoteWriterFinding] = Field(min_length=1, max_length=3)
 
 
@@ -149,6 +155,14 @@ WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative prose
     "Refer to relevant observations as 'across the compared periods' or 'the earlier and later filings'; do not spell out dates or numbers to evade the rule. "
     "A compliant form is 'Selected disclosures continue to discuss supply chain exposure.' Use that form only when the selected quotations actually support the claim. "
     "The code-owned table and source metadata carry exact fiscal periods and financial figures; do not repeat them in narrative.")
+
+RISK_REVISION_INSTRUCTIONS = ("The supplied risk_observations are provisional model interpretations, not endorsed findings. "
+    "Return exactly one risk_revisions entry for every supplied risk claim_id, preserving its identifier and selecting relevant quotation IDs from both of its compared periods. "
+    "If no provisional risk observations are supplied, return an empty risk_revisions array. "
+    "Refine each observation to what the selected quotations actually entail; preserve conditional language and narrow or remove unsupported certainty from the wording. "
+    "Selected windows cannot establish that entire risk sections, their scope or framing, the overall risk profile or the degree of exposure stayed consistent. "
+    "Do not repeat such broad consistency claims from provisional input. Describe the limited supported disclosure observation instead. "
+    "The same qualitative-only text rules apply to risk_revisions and summary claims. Code retains each risk claim's issuer, comparison periods and category; you cannot change them.")
 
 QUOTE_TERMS = frozenset("risk risks cybersecurity cyber security privacy artificial intelligence regulation competition climate demand supply operations disclosure uncertainty".split())
 
@@ -381,7 +395,7 @@ class Reasoner:
     def __init__(self, model_call):
         self.model_call = model_call
 
-    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None):
+    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_claim_ids=None):
         if len(json.dumps(context, ensure_ascii=False).encode()) > self.MAX_CONTEXT_BYTES:
             raise ReasoningError("The bounded reasoning context is too large.")
         response_schema = schema.model_json_schema()
@@ -399,6 +413,15 @@ class Reasoner:
                     for value in node:
                         restrict_choices(value)
             restrict_choices(response_schema)
+        if risk_claim_ids is not None:
+            # Count and IDs are code-owned. Local validation below also checks
+            # exact-once membership because JSON Schema cannot require unique
+            # values of one field across distinct objects without complex rules.
+            revisions = response_schema["properties"]["risk_revisions"]
+            revisions["minItems"] = len(risk_claim_ids)
+            revisions["maxItems"] = len(risk_claim_ids)
+            if risk_claim_ids:
+                response_schema["$defs"]["QuoteRiskRevision"]["properties"]["claim_id"]["enum"] = list(risk_claim_ids)
         result = self.model_call(stage, system=COMMON_INSTRUCTIONS + instructions,
                                  context=context, schema=response_schema,
                                  max_output_tokens=max_output_tokens)
@@ -494,14 +517,23 @@ class Reasoner:
             raise ReasoningError("A live writer needs supplied source evidence.")
         risk_claims = _flatten_risk_claims(risks)
         validate_claims(risk_claims, known)
+        if len(risk_claims) > 4:
+            raise ReasoningError("The bounded writer cannot revise more than the supported risk comparisons.")
         menu = quote_menu(known)
-        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and cited risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
+        risk_ids = [claim["claim_id"] for claim in risk_claims]
+        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " " + RISK_REVISION_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and provisional risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
                             {"question": question, "plan": plan, "verified_metrics": metrics,
                              "risk_observations": risk_claims, "quote_menu": menu,
                              "evidence_scope": "Code-selected quote windows within selected source evidence; full filing coverage is not established."},
-                            QuoteWriterOutput, 2200, quote_ids=[entry["quote_id"] for entry in menu])
+                            QuoteWriterOutput, 3200, quote_ids=[entry["quote_id"] for entry in menu], risk_claim_ids=risk_ids)
+        actual_ids = [revision["claim_id"] for revision in result["risk_revisions"]]
+        if len(actual_ids) != len(risk_ids) or set(actual_ids) != set(risk_ids):
+            raise ReasoningError("The writer omitted, duplicated or invented a provisional risk claim revision.")
+        revision_by_id = {revision["claim_id"]: revision for revision in result["risk_revisions"]}
+        revised_risks = [{**original, **expand_quote_selection(revision_by_id[original["claim_id"]], menu)}
+                         for original in risk_claims]
         claims = [{"claim_id": f"writer-{index + 1}", **expand_quote_selection(claim, menu)} for index, claim in enumerate(result["claims"])]
-        return {"claims": validate_claims(claims, known), "evidence": known}
+        return {"claims": validate_claims(claims, known), "risk_claims": validate_claims(revised_risks, known), "evidence": known}
 
     def critique(self, draft, evidence):
         known = normalize_evidence(evidence)

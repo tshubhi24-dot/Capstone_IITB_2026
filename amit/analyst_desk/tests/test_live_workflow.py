@@ -34,7 +34,11 @@ class FakeModelClient:
                 "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low", "quote_ids": [quote_id(before), quote_id(after)]}]} for before, after in context["comparison_pairs"]]}
         elif stage == "writer":
             row = next(row for row in context["quote_menu"] if "item1A" in row["source_id"])
-            content = {"claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low", "category": "limitation",
+            revisions = [{"claim_id": claim["claim_id"], "text": claim["text"], "confidence": claim["confidence"],
+                "quote_ids": [next(option["quote_id"] for option in context["quote_menu"]
+                                   if option["source_id"] == citation["source_id"] and option["quote"] == citation["quote"])
+                              for citation in claim["citations"]]} for claim in context["risk_observations"]]
+            content = {"risk_revisions": revisions, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low", "category": "limitation",
                 "quote_ids": [row["quote_id"]]}]}
         elif stage == "critic":
             bad = "certain disaster" in context["body"]
@@ -74,6 +78,40 @@ def content_failure(engine, store, *, max_model_calls=12):
     assert failed["status"] == "error" and failed["failure_kind"] == "content_validation"
     assert failed["usage"]["model_calls"] == 4
     return plan, failed
+
+
+def test_writer_refines_provisional_risk_and_critic_checks_exact_revision(fixture):
+    engine, store, source, _, _, _ = fixture
+    provisional = "Selected disclosures establish consistent scope and framing."
+    revised = "Selected excerpts describe conditional operational uncertainty."
+    class RefiningClient(FakeModelClient):
+        def complete(self, **request):
+            result = super().complete(**request)
+            if request["role"] == "risk":
+                result["content"]["comparisons"][0]["findings"][0]["text"] = provisional
+            if request["role"] == "writer":
+                for revision in result["content"]["risk_revisions"]:
+                    if revision["text"] == provisional:
+                        revision["text"] = revised
+            self.cache[request["call_id"]] = deepcopy(result)
+            return result
+    engine.model_client = RefiningClient()
+    note = decide(engine, begin_live(engine, store))
+    assert note["status"] == "awaiting_note", note.get("error")
+    draft = note["draft"]
+    assert any(item["text"] == provisional for item in draft["provisional_risk_claims"])
+    assert provisional not in draft["body"] and revised in draft["body"]
+    assert draft["risk_revision_method"] == "writer_refined_against_same_sources"
+    original = {item["claim_id"]: item for item in draft["provisional_risk_claims"]}
+    for item in draft["narrative_claims"]:
+        if item["claim_id"] in original:
+            for field in ("ticker", "before_year", "after_year", "category"):
+                assert item[field] == original[item["claim_id"]][field]
+    critic_call = next(call for call in engine.model_client.calls if call["role"] == "critic")
+    critic_context = json.loads(critic_call["messages"][-1]["content"])
+    assert critic_context["body"] == draft["body"]
+    assert all(item["text"] != provisional for item in critic_context["claims"])
+    assert verify_draft(draft, source)["passed"] and store.notes() == []
 
 
 @pytest.mark.parametrize("legacy", [False, True])
