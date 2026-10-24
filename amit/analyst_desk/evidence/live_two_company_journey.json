@@ -1,6 +1,6 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T09:29:22.077825+00:00",
+  "updated_at": "2026-10-24T09:41:25.594781+00:00",
   "base_url": "http://127.0.0.1:18080",
   "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
   "status": "error",
@@ -30,37 +30,12 @@
     "learning_split": "production"
   },
   "pending_review": {
-    "kind": "plan",
-    "payload_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
-    "plan": {
-      "tickers": [
-        "MSFT",
-        "AAPL"
-      ],
-      "years": [
-        2023,
-        2024,
-        2025
-      ],
-      "outline": [
-        "Compare MSFT and AAPL operating margins for FY2023–FY2025 using reported annual revenue and operating income facts",
-        "Identify fiscal-calendar differences (MSFT: Jun-year end; AAPL: Sep-year end) and their impact on comparability",
-        "Summarize source-backed risk factor changes from 10-K Item 1A for each issuer/year",
-        "Note partial evidence limits: risk sections unverified, original boundaries unknown"
-      ],
-      "caveats": [
-        "Reported annual financial inputs are available in the cached source for every requested issuer and fiscal year. Use their actual annual periods; do not estimate partial years or substitute quarterly filings. Risk excerpts remain partial and original section boundaries are unverified.",
-        "Fiscal periods differ: MSFT FY ends Jun 30; AAPL FY ends Sep 27–30",
-        "Risk factor evidence is partial; original section boundaries unverified",
-        "Operating margin derived from vetted SEC facts only; no estimates or forecasts",
-        "Comparability limited by differing fiscal calendars and potential accounting policy differences",
-        "Model-assisted reasoning needs human source review.",
-        "Fiscal calendars differ; selected excerpts do not establish complete original filing coverage."
-      ]
-    },
+    "kind": null,
+    "payload_hash": null,
+    "plan": null,
     "note_title": null
   },
-  "expected_human_action": "Review the exact plan and explicitly approve, edit or reject it.",
+  "expected_human_action": null,
   "verification": {
     "passed": null,
     "verified_share": null,
@@ -69,10 +44,10 @@
     "semantic_review": null
   },
   "usage": {
-    "tokens": 6892,
-    "tool_calls": 13,
-    "model_calls": 4,
-    "cost_usd": 0.0040784
+    "tokens": 11113,
+    "tool_calls": 16,
+    "model_calls": 5,
+    "cost_usd": 0.0061524
   },
   "note_id": null,
   "decision_requests": [
@@ -84,6 +59,18 @@
       "accepted_by_api": true
     }
   ],
+  "continuation_requests": [
+    {
+      "time": "2026-10-24T09:41:19.490567+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true
+    }
+  ],
+  "continuation": {
+    "available": true,
+    "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+    "failure_kind": "content_validation"
+  },
   "limitations": [
     "This is an ordinary learning run, not a protected final benchmark.",
     "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",

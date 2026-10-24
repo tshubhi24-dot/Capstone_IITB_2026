@@ -86,7 +86,8 @@ def edited_live_claims(draft, body):
         suffix = " " + " ".join(f"[{citation['source_id']}]" for citation in claim["citations"])
         if not line.endswith(suffix):
             raise ValueError("Evidence references must stay attached to their claim")
-        claim["text"] = validate_prose(line[2:-len(suffix)])
+        comparison_periods = (claim.get("before_year"), claim.get("after_year")) if "ticker" in claim else None
+        claim["text"] = validate_prose(line[2:-len(suffix)], comparison_periods=comparison_periods)
     updated = [claims[identifier] for identifier in ordered]
     if live_body({**draft, "narrative_claims": updated}) != body:
         raise ValueError("Keep the verified table, headings, evidence and mandatory limitations")

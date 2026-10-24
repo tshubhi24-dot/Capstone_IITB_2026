@@ -268,7 +268,7 @@ immutable Corpus and checks passage excerpts against original source text.
     return [output[key] for key in sorted(output)]
 
 
-def validate_prose(text):
+def validate_prose(text, *, comparison_periods=None):
     if not isinstance(text, str) or not 15 <= len(text) <= 400 or "\n" in text or "\r" in text:
         raise ReasoningError("A claim needs bounded, single-line prose.")
     if any(character.isnumeric() for character in text) or any(char in text for char in "[]<>`%$"):
@@ -276,6 +276,15 @@ def validate_prose(text):
     # These actor categories are not quantities. This narrow idiom exception
     # does not exempt arbitrary number words, year labels or financial amounts.
     quantity_text = re.sub(r"\b(?:first|third)[ -]part(?:y|ies)\b", "external party", text, flags=re.I)
+    # A reference to the two supplied observations is code-verifiable scope,
+    # not a financial amount or a claim that a duration lasted two years.
+    # Only scoped comparisons may use this exact idiom; provenance checks
+    # below still require the issuer and both distinct cited fiscal years.
+    if (isinstance(comparison_periods, (tuple, list)) and len(comparison_periods) == 2
+            and all(type(year) is int for year in comparison_periods)
+            and comparison_periods[0] != comparison_periods[1]):
+        quantity_text = re.sub(r"\bbetween\s+(?:the\s+)?two\s+(?:years|periods)\b",
+                               "between supplied comparison periods", quantity_text, flags=re.I)
     if QUANTITY_WORDS.search(quantity_text):
         raise ReasoningError("A narrative quantity needs a code-verified financial assertion.")
     if ABSENCE_CLAIM.search(text):
@@ -295,7 +304,8 @@ def validate_claims(claims, evidence):
         if not isinstance(identifier, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.:-]{0,119}", identifier) or identifier in identifiers:
             raise ReasoningError("Claim identifiers must be unique and valid.")
         identifiers.add(identifier)
-        validate_prose(claim.get("text"))
+        comparison_periods = (claim.get("before_year"), claim.get("after_year")) if "ticker" in claim else None
+        validate_prose(claim.get("text"), comparison_periods=comparison_periods)
         if claim.get("category") not in {"risk_observation", "comparability", "limitation"} or claim.get("confidence") not in {"low", "medium", "high"}:
             raise ReasoningError("Unknown narrative category or confidence label.")
         citations = claim.get("citations")

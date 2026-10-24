@@ -367,3 +367,29 @@ def test_critic_still_validates_all_claim_provenance_before_filtering(evidence):
     with pytest.raises(ReasoningError, match="quote is not"):
         Reasoner(lambda *args, **kwargs: calls.append(True)).critique(draft([bad]), evidence)
     assert calls == []
+
+
+def test_temporal_pair_idiom_requires_scoped_distinct_cited_periods(evidence):
+    text = "General source disclosures remain consistent between the two years."
+    with pytest.raises(ReasoningError, match="quantity"):
+        validate_prose(text)
+    assert validate_prose(text, comparison_periods=(2023, 2024)) == text
+    for periods in ((2023, 2023), (True, 2024), (2023,), None):
+        with pytest.raises(ReasoningError, match="quantity"):
+            validate_prose(text, comparison_periods=periods)
+    value = claim()
+    value["text"] = text
+    assert validate_claims([value], evidence)[0]["text"] == text
+    value["citations"] = value["citations"][:1]
+    with pytest.raises(ReasoningError, match="both required years"):
+        validate_claims([value], evidence)
+
+
+@pytest.mark.parametrize("text", [
+    "Revenue doubled between the two years.",
+    "The issuer lost two billion dollars between the two years.",
+    "The disruption lasted two years.",
+])
+def test_temporal_idiom_cannot_exempt_financial_quantities_or_durations(text):
+    with pytest.raises(ReasoningError, match="quantity"):
+        validate_prose(text, comparison_periods=(2023, 2024))
