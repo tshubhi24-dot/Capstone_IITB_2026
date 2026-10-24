@@ -278,3 +278,54 @@ def test_explicit_transient_retry_does_not_post_when_hint_is_ineligible(client, 
         client.continue_run("run-1", expected_plan_hash=HASH, retry_transient="true" if case == "invalid_flag" else True)
     assert all(item[0] == "GET" for item in calls)
     assert not client.session_path.exists()
+
+
+def test_replacement_critic_policy_client_requires_explicit_matching_policy_hash(client, monkeypatch):
+    client.mode = "live"
+    policy_hash = "c" * 64
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live", "max_model_calls": 12},
+                 continuation={"available": False, "replace_critic_policy_available": True,
+                               "plan_hash": HASH, "policy_hash": policy_hash, "failure_kind": "critic_rate_limit"})
+    calls = []
+    posted = False
+    def request(method, path, body=None):
+        nonlocal posted
+        calls.append((method, path, body))
+        if path == "/api/config":
+            return config(mode="offline", live_enabled=True)
+        if method == "POST":
+            posted = True
+            return {**failed, "status": "running", "pending": None}
+        return run("note", request=failed["request"]) if posted else failed
+    monkeypatch.setattr(client, "request", request)
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH)
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH, replace_critic_policy="d" * 64)
+    assert all(item[0] == "GET" for item in calls)
+    receipt = client.continue_run("run-1", expected_plan_hash=HASH, replace_critic_policy=policy_hash)
+    assert [item for item in calls if item[0] == "POST"] == [
+        ("POST", "/api/runs/run-1/continue", {"plan_hash": HASH, "replace_critic_policy": policy_hash})]
+    assert receipt["decision_requests"] == []
+    assert receipt["continuation_requests"][-1]["replace_critic_policy"] == policy_hash
+    assert "retry_transient" not in receipt["continuation_requests"][-1]
+    args = journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH,
+                                       "--replace-critic-policy", policy_hash])
+    assert args.replace_critic_policy == policy_hash and not args.retry_transient
+
+
+@pytest.mark.parametrize("replacement,retry", [("bad", False), (True, False), ("c" * 64, True)])
+def test_replacement_critic_policy_client_rejects_invalid_hash_or_combo_before_request(client, monkeypatch, replacement, retry):
+    client.mode = "live"
+    calls = []
+    monkeypatch.setattr(client, "request", lambda *args, **kwargs: calls.append(args))
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH, replace_critic_policy=replacement, retry_transient=retry)
+    assert calls == []
+
+
+def test_replacement_critic_policy_cli_cannot_combine_with_transient_retry():
+    with pytest.raises(SystemExit) as error:
+        journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH,
+                                    "--replace-critic-policy", "c" * 64, "--retry-transient"])
+    assert error.value.code == 2

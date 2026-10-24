@@ -11,7 +11,7 @@ from urllib.parse import urlsplit
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Literal
 
 from .data import Corpus
@@ -93,6 +93,13 @@ class Continuation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     plan_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     retry_transient: bool = Field(default=False, strict=True)
+    replace_critic_policy: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+
+    @model_validator(mode="after")
+    def exclusive_continuation_mode(self):
+        if self.retry_transient and self.replace_critic_policy is not None:
+            raise ValueError("Choose one explicit continuation mode.")
+        return self
 
 
 def owned(run_id):
@@ -248,6 +255,8 @@ def continue_research(run_id: str, value: Continuation, background: BackgroundTa
     try:
         if value.retry_transient:
             app.state.engine.claim_continuation(run_id, value.plan_hash, retry_transient=True)
+        elif value.replace_critic_policy is not None:
+            app.state.engine.claim_continuation(run_id, value.plan_hash, replace_critic_policy=value.replace_critic_policy)
         else:
             app.state.engine.claim_continuation(run_id, value.plan_hash)
     except ReviewError as exc:

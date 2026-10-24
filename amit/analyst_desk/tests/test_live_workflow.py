@@ -517,3 +517,117 @@ def test_failed_retry_critic_does_not_buy_unreviewable_repair_with_one_slot(fixt
     with pytest.raises(ReviewError):
         engine.claim(note["id"], {"kind": "note", "action": "approve", "payload_hash": note["pending"]["payload_hash"]})
     assert store.notes() == []
+
+
+class ReplacementCriticClient(RateLimitedCritic):
+    def __init__(self):
+        super().__init__(repeat_failure=True)
+        self.replacement_enabled = False
+        self.policy_hash = "f" * 64
+        self.budget_changes = {}
+
+    def complete(self, **request):
+        if self.replacement_enabled:
+            self.repeat_failure = False
+        return super().complete(**request)
+
+    def budget(self, run_id):
+        failures = len(self.calls) - len(self.cache)
+        cost = Decimal(len(self.cache)) * Decimal("0.001")
+        held = Decimal(failures) * Decimal("0.035768")
+        value = {"run_id": run_id, "enabled": True, "blocked": False,
+                 "authorization_id": "new-policy" if self.replacement_enabled else "old-policy",
+                 "uncertain_calls": failures, "model_calls": len(self.calls),
+                 "reported_spend_usd": str(cost), "held_usd": str(held), "committed_usd": str(cost + held),
+                 "tokens": 195257 if failures == 2 else len(self.cache) * 20 + 67536 * failures,
+                 "models": {"producer": "mistralai/mistral-medium-3.1", "critic": "mistralai/mistral-large-2407" if self.replacement_enabled else "mistralai/mistral-large-2512"},
+                 "model_profile": "live-step10-mistral-large2407-v1" if self.replacement_enabled else "live-step10-mistral-v1",
+                 "provider": "mistral/zdr", "cap_usd": "1.00", "per_run_usd": "0.50",
+                 "remaining_authorization_usd": str(Decimal(1) - cost - held),
+                 "policy_hash": self.policy_hash if self.replacement_enabled else "e" * 64,
+                 "prompt_token_ceiling": 49152 if self.replacement_enabled else 65536,
+                 "max_message_bytes": 45056 if self.replacement_enabled else 60000,
+                 "max_output_tokens": 4096, "max_calls_per_run": 12, "max_tokens_per_run": 250000}
+        if self.replacement_enabled:
+            value.update(self.budget_changes)
+        return value
+
+
+def two_rate_limits(engine, store):
+    client = engine.model_client = ReplacementCriticClient()
+    plan = begin_live(engine, store)
+    first = decide(engine, plan)
+    engine.claim_continuation(first["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    second = engine.execute(first["id"])
+    assert second["status"] == "error" and len(second["usage"]["model_reservations"]) == 2
+    client.replacement_enabled = True
+    return plan, second, client
+
+
+def test_final_replacement_policy_retains_both_holds_and_exact_approved_draft(fixture):
+    engine, store, source, _, _, _ = fixture
+    plan, stopped, client = two_rate_limits(engine, store)
+    original = deepcopy(store.get_run(stopped["id"]))
+    view = engine.view(stopped["id"])
+    assert view["continuation"] == {"available": False, "replace_critic_policy_available": True,
+                                    "plan_hash": plan["pending"]["payload_hash"], "policy_hash": client.policy_hash,
+                                    "failure_kind": "critic_policy_replacement"}
+    engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)
+    claimed = store.get_run(stopped["id"])
+    assert claimed["critic_policy_replacement"]["draft_hash"] == canonical_hash(claimed["draft"])
+    note = engine.execute(stopped["id"])
+    assert note["status"] == "awaiting_note", note.get("error")
+    assert note["request"] == original["request"] and note["plan"] == plan["plan"]
+    assert note["usage"]["model_reservations"] == original["usage"]["model_reservations"]
+    assert note["usage"]["model_calls"] == len(client.calls) == 9
+    assert len(note["usage"]["calls"]) == 7 and note["usage"]["tokens"] == 140
+    assert note["usage"]["held_usd"] == .071536 and note["usage"]["cost_usd"] == .007
+    critic_calls = [call for call in client.calls if call["role"] == "critic"]
+    assert len({call["call_id"] for call in critic_calls}) == 3
+    assert critic_calls[0]["messages"] == critic_calls[-1]["messages"]
+    assert verify_draft(note["draft"], source)["passed"] and store.notes() == []
+    assert sum(event["stage"] == "plan_approved" for event in note["events"]) == 1
+
+
+@pytest.mark.parametrize("change", ["wrong_hash", "producer", "critic", "provider", "same_policy", "cap", "run_cap", "call_cap", "token_cap", "message_bound", "tokens_exhausted", "refund", "403", "draft", "other_hold", "mixed_flags"])
+def test_final_replacement_rejects_unreviewed_policy_or_mutated_original_limits(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    plan, stopped, client = two_rate_limits(engine, store)
+    expected = client.policy_hash
+    if change == "wrong_hash": expected = "a" * 64
+    elif change == "producer": client.budget_changes["models"] = {"producer": "other", "critic": "mistralai/mistral-large-2407"}
+    elif change == "critic": client.budget_changes["models"] = {"producer": "mistralai/mistral-medium-3.1", "critic": "other"}
+    elif change == "provider": client.budget_changes["provider"] = "mistral/eu"
+    elif change == "same_policy": client.budget_changes["authorization_id"] = "old-policy"
+    elif change == "cap": client.budget_changes["cap_usd"] = "2"
+    elif change == "run_cap": client.budget_changes["per_run_usd"] = "1"
+    elif change == "call_cap": client.budget_changes["max_calls_per_run"] = 13
+    elif change == "token_cap": client.budget_changes["max_tokens_per_run"] = 300000
+    elif change == "message_bound": client.budget_changes["max_message_bytes"] = 60000
+    elif change == "tokens_exhausted": client.budget_changes["max_tokens_per_run"] = 246408
+    elif change == "refund": client.budget_changes["held_usd"] = "0"
+    elif change in {"403", "draft", "other_hold"}:
+        stored = store.get_run(stopped["id"])
+        if change == "403": stored["error"] = "ReviewError: provider_http_403: refused"
+        elif change == "draft": stored["draft"]["body"] += "Unreviewed change"
+        else: stored["usage"]["model_reservations"]["unrelated-call"] = 100
+        store.save_run(stored)
+    before = deepcopy(store.get_run(stopped["id"]))
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"],
+                                  replace_critic_policy=expected, retry_transient=change == "mixed_flags")
+    assert store.get_run(stopped["id"]) == before and len(client.calls) == 8
+
+
+def test_replacement_rechecks_live_policy_and_cannot_repeat_after_failure(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, stopped, client = two_rate_limits(engine, store)
+    engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)
+    client.budget_changes["policy_hash"] = "c" * 64
+    failed = engine.execute(stopped["id"])
+    assert failed["status"] == "error" and len(client.calls) == 8
+    assert failed["usage"]["model_reservations"] == stopped["usage"]["model_reservations"]
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)

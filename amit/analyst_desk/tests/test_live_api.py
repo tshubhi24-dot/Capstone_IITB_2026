@@ -256,3 +256,39 @@ def test_transient_retry_flag_is_strict_boolean(api_fixture, monkeypatch, value)
     assert client.post("/api/runs/" + run["id"] + "/continue",
                        json={"plan_hash": "a" * 64, "retry_transient": value}).status_code == 422
     assert calls == []
+
+
+def test_replacement_critic_policy_api_forwards_only_expected_hash(api_fixture, monkeypatch):
+    client, engine, store = api_fixture
+    engine.model_client = FakeGateway(budget_snapshot("live-step10-mistral-v1"))
+    run = store.create_run({"mode": "live", "max_tokens": 250000, "max_model_calls": 12})
+    run.update(status="error", usage={"model_calls": 11, "held_usd": .071536})
+    store.save_run(run)
+    calls = []
+    def claim(identifier, plan_hash, *, replace_critic_policy):
+        calls.append((identifier, plan_hash, replace_critic_policy))
+        raise ReviewError("Replacement policy must match the frozen checkpoint.")
+    monkeypatch.setattr(engine, "claim_continuation", claim, raising=False)
+    path = "/api/runs/" + run["id"] + "/continue"
+    body = {"plan_hash": "a" * 64, "replace_critic_policy": "b" * 64}
+    assert client.post(path, json=body, headers={"X-Analyst-Token": ""}).status_code == 401
+    assert calls == []
+    assert client.post(path, json=body).status_code == 409
+    assert calls == [(run["id"], "a" * 64, "b" * 64)]
+    assert store.get_run(run["id"])["usage"] == run["usage"] and store.notes() == []
+
+
+@pytest.mark.parametrize("body", [
+    {"replace_critic_policy": "not-a-policy"},
+    {"replace_critic_policy": "b" * 63},
+    {"replace_critic_policy": "B" * 64},
+    {"replace_critic_policy": 123},
+    {"replace_critic_policy": "b" * 64, "retry_transient": True},
+])
+def test_replacement_critic_policy_api_rejects_bad_hash_or_mode_combo(api_fixture, monkeypatch, body):
+    client, engine, store = api_fixture
+    run = store.create_run({"mode": "live"})
+    calls = []
+    monkeypatch.setattr(engine, "claim_continuation", lambda *args, **kwargs: calls.append(args), raising=False)
+    assert client.post("/api/runs/" + run["id"] + "/continue", json={"plan_hash": "a" * 64, **body}).status_code == 422
+    assert calls == []

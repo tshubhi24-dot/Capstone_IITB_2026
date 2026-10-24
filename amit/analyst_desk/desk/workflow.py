@@ -343,10 +343,12 @@ class Engine:
             if continuation:
                 try:
                     snapshot, _ = self._continuation_checkpoint(run, continuation["plan_hash"],
-                        retry_transient=continuation.get("retry_transient", False), allow_queued=True)
+                        retry_transient=continuation.get("retry_transient", False),
+                        replace_critic_policy=continuation.get("replace_critic_policy"), allow_queued=True)
                     if (snapshot.config["configurable"]["checkpoint_id"] != continuation["checkpoint_id"]
                             or self.source.fingerprint != continuation["source_fingerprint"]
-                            or continuation.get("retry_transient") and canonical_hash(snapshot.values.get("draft")) != continuation["draft_hash"]):
+                            or (continuation.get("retry_transient") or continuation.get("replace_critic_policy"))
+                            and canonical_hash(snapshot.values.get("draft")) != continuation["draft_hash"]):
                         raise ReviewError("The failed checkpoint changed before continuation.")
                 except Exception:
                     run.update(status="error", stage="error", error="ReviewError: The approved continuation checkpoint changed; no model request was sent.")
@@ -408,14 +410,25 @@ class Engine:
                     run["continuation"] = {"available": False, "retry_transient_available": True,
                                            "plan_hash": proof["payload_hash"], "failure_kind": "critic_rate_limit"}
                 except Exception:
-                    pass
+                    try:
+                        budget = self.model_client.budget(run_id)
+                        policy_hash = budget.get("policy_hash")
+                        _, proof = self._continuation_checkpoint(self.store.get_run(run_id), canonical_hash(run.get("plan")),
+                                                                replace_critic_policy=policy_hash)
+                        run["continuation"] = {"available": False, "replace_critic_policy_available": True,
+                                               "plan_hash": proof["payload_hash"], "policy_hash": policy_hash,
+                                               "failure_kind": "critic_policy_replacement"}
+                    except Exception:
+                        pass
         return run
 
-    def _continuation_checkpoint(self, run, expected_plan_hash, *, retry_transient=False, allow_queued=False):
+    def _continuation_checkpoint(self, run, expected_plan_hash, *, retry_transient=False, replace_critic_policy=None, allow_queued=False):
         """Verify durable approval and a failed content check, without requests."""
         if (not run or run.get("actor") != "local-analyst" or run.get("request", {}).get("mode") != "live" or run.get("note_id")):
             raise ReviewError("Only a failed live content check can be continued explicitly.")
-        if not retry_transient and (not str(run.get("error", "")).startswith("ReasoningError:")
+        if retry_transient and replace_critic_policy is not None:
+            raise ReviewError("Choose one explicit continuation mode.")
+        if not retry_transient and replace_critic_policy is None and (not str(run.get("error", "")).startswith("ReasoningError:")
                 or run.get("failure_kind") not in {None, "content_validation"} or run.get("usage", {}).get("model_reservations")):
             raise ReviewError("Only a failed live content check can be continued explicitly.")
         snapshot = self.graph.get_state({"configurable": {"thread_id": run["id"]}})
@@ -423,7 +436,7 @@ class Engine:
         permitted = {"research_company", "quant", "risk", "draft", "critic", "repair"}
         failures = [task.error for task in snapshot.tasks if task.error]
         if (not snapshot.next or not set(snapshot.next) <= permitted or not failures
-                or not retry_transient and any(not str(error).startswith("ReasoningError(") for error in failures)
+                or not retry_transient and replace_critic_policy is None and any(not str(error).startswith("ReasoningError(") for error in failures)
                 or state.get("run_id") != run["id"] or state.get("actor") != run["actor"]
                 or state.get("plan_action") != "approve" or state.get("capability")):
             raise ReviewError("A failed approved research checkpoint is required.")
@@ -437,6 +450,8 @@ class Engine:
         events = self.store.events(run["id"])
         if retry_transient:
             self._critic_retry_proof(run, snapshot, events, allow_queued=allow_queued)
+        if replace_critic_policy is not None:
+            self._critic_policy_replacement_proof(run, snapshot, events, replace_critic_policy, allow_queued=allow_queued)
         proof = run.get("plan_approval")
         if proof:
             accepted = any(item["id"] == proof.get("event_id") and item["agent"] == "human"
@@ -497,12 +512,104 @@ class Engine:
             raise ReviewError("The held critic request needs authoritative unchanged accounting.")
         return {"draft_hash": canonical_hash(draft), "failed_call_id": call_id, "attempt": 1}
 
-    def claim_continuation(self, run_id, expected_plan_hash, *, retry_transient=False):
+    def _critic_policy_replacement_proof(self, run, snapshot, events, expected_hash, *, allow_queued=False):
+        """One explicit reviewed critic-policy replacement; no fresh budget."""
+        from .model_profiles import model_profile
+        profile = model_profile("live-step10-mistral-large2407-v1")
+        previous = run.get("usage", {}).get("gateway_budget") or {}
+        try:
+            budget = self.model_client.budget(run["id"])
+            if not isinstance(budget, dict):
+                raise ValueError
+        except Exception:
+            raise ReviewError("The reviewed replacement gateway metadata is unavailable.") from None
+        draft = snapshot.values.get("draft")
+        transient = run.get("transient_critic_retry") or {}
+        replacement = run.get("critic_policy_replacement")
+        queued = run.get("queued_continuation") or {}
+        if replacement and not (allow_queued and queued.get("replace_critic_policy") == expected_hash
+                                and replacement.get("policy_hash") == expected_hash):
+            raise ReviewError("The one explicit critic-policy replacement has already been used.")
+        reservations = run.get("usage", {}).get("model_reservations") or {}
+        model_events = [event for event in events if event["stage"] in {"model_start", "model_result", "model_error"}]
+        last = model_events[-1] if model_events else {}
+        failed_ids = {event.get("details", {}).get("call_id") for event in events
+                      if event["agent"] == "critic" and event["stage"] == "model_error"
+                      and event.get("details", {}).get("error_code") == "provider_http_429"}
+        errors = [task.error for task in snapshot.tasks if task.error]
+        if (not isinstance(expected_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", expected_hash)
+                or not str(run.get("error", "")).startswith("ReviewError: provider_http_429:")
+                or set(snapshot.next) != {"critic"} or not errors
+                or any(not re.match(r"^ReviewError\(['\"]provider_http_429:", str(error)) for error in errors)
+                or last.get("agent") != "critic" or last.get("stage") != "model_error"
+                or last.get("details", {}).get("error_code") != "provider_http_429"
+                or len(reservations) != 2 or set(reservations) != failed_ids
+                or transient.get("failed_call_id") not in reservations
+                or last.get("details", {}).get("call_id") == transient.get("failed_call_id")
+                or any(type(value) is not int or value <= 0 for value in reservations.values())
+                or set(reservations) & {item.get("call_id") for item in run["usage"].get("calls", [])}
+                or not isinstance(draft, dict) or transient.get("draft_hash") != canonical_hash(draft)
+                or snapshot.values.get("human_edited") or (run.get("pending") or {}).get("kind") == "note"
+                or not verify_draft(draft, self.source, require_semantic=False)["passed"]
+                or "draft" in run and canonical_hash(run["draft"]) != canonical_hash(draft)):
+            raise ReviewError("A checked frozen critic checkpoint with both retained rate-limit reservations is required.")
+        expected_models = {role: policy["id"] for role, policy in profile["models"].items()}
+        if (budget.get("policy_hash") != expected_hash or budget.get("model_profile") != profile["version"]
+                or budget.get("models") != expected_models or budget.get("provider") != profile["provider"]
+                or (previous.get("models") or {}).get("producer") != expected_models["producer"]
+                or (previous.get("models") or {}).get("critic") != "mistralai/mistral-large-2512"
+                or budget.get("authorization_id") == previous.get("authorization_id")
+                or budget.get("run_id") != run["id"] or budget.get("enabled") is not True or budget.get("blocked") is not False
+                or budget.get("uncertain_calls") != 2
+                or budget.get("model_calls") != len(run["usage"].get("calls", [])) + 2):
+            raise ReviewError("The replacement must be the exact reviewed different critic policy with the same producer and holds.")
+        try:
+            for key in ("reported_spend_usd", "held_usd", "committed_usd"):
+                if Decimal(str(budget[key])) != Decimal(str(previous[key])):
+                    raise ValueError
+            for key, ceiling in (("cap_usd", "1"), ("per_run_usd", ".50")):
+                value = Decimal(str(budget[key]))
+                if not value.is_finite() or not 0 < value <= min(Decimal(ceiling), Decimal(str(previous[key]))):
+                    raise ValueError
+            if Decimal(str(budget["remaining_authorization_usd"])) > Decimal(str(previous["remaining_authorization_usd"])):
+                raise ValueError
+            limits = {"max_calls_per_run": 12, "max_tokens_per_run": 250000,
+                      "prompt_token_ceiling": 49152, "max_message_bytes": 45056, "max_output_tokens": 4096}
+            if any(type(budget[key]) is not int or not 0 < budget[key] <= ceiling for key, ceiling in limits.items()):
+                raise ValueError
+            if (budget["max_calls_per_run"] > run["request"].get("max_model_calls", 12)
+                    or budget["max_tokens_per_run"] > run["request"].get("max_tokens", 250000)):
+                raise ValueError
+            if budget["max_output_tokens"] < 2000:
+                raise ValueError
+            # Use the gateway's true reservations, not the client's smaller
+            # message-size allowance, when deciding if this final call fits.
+            reserved_tokens = budget["prompt_token_ceiling"] + 2000
+            if (type(budget["tokens"]) is not int or budget["tokens"] != previous["tokens"]
+                    or budget["model_calls"] + 1 > min(run["request"].get("max_model_calls", 12), budget["max_calls_per_run"])
+                    or budget["tokens"] + reserved_tokens > min(run["request"].get("max_tokens", 250000), budget["max_tokens_per_run"])):
+                raise ValueError
+            price = profile["models"]["critic"]
+            reservation = Decimal(price["prompt_usd_per_token"]) * budget["prompt_token_ceiling"] + Decimal(price["completion_usd_per_token"]) * 2000
+            if (Decimal(str(budget["committed_usd"])) + reservation > Decimal(str(budget["per_run_usd"]))
+                    or reservation > Decimal(str(budget["remaining_authorization_usd"]))):
+                raise ValueError
+        except (KeyError, ValueError, TypeError, ArithmeticError):
+            raise ReviewError("The replacement must retain all accounting and fit the original dollar, call and token limits.") from None
+        proof = {"policy_hash": expected_hash, "draft_hash": canonical_hash(draft),
+                 "failed_call_ids": sorted(reservations), "authorization_id": budget["authorization_id"],
+                 "model_profile": profile["version"], "critic_model": expected_models["critic"]}
+        if replacement and replacement != proof:
+            raise ReviewError("The frozen replacement policy or critic input changed.")
+        return proof
+
+    def claim_continuation(self, run_id, expected_plan_hash, *, retry_transient=False, replace_critic_policy=None):
         with self.lock(run_id):
             run = self.store.get_run(run_id)
             if not run or run.get("status") != "error":
                 raise ReviewError("Only a stopped content-check failure can be continued once.")
-            snapshot, proof = self._continuation_checkpoint(run, expected_plan_hash, retry_transient=retry_transient)
+            snapshot, proof = self._continuation_checkpoint(run, expected_plan_hash, retry_transient=retry_transient,
+                                                          replace_critic_policy=replace_critic_policy)
             run.update(status="running", stage="continuing", plan_approval=proof,
                        queued_continuation={"plan_hash": expected_plan_hash,
                                             "checkpoint_id": snapshot.config["configurable"]["checkpoint_id"],
@@ -512,10 +619,16 @@ class Engine:
                 run["transient_critic_retry"] = retry
                 run["draft"] = deepcopy(snapshot.values["draft"])
                 run["queued_continuation"].update(retry_transient=True, draft_hash=retry["draft_hash"])
+            if replace_critic_policy is not None:
+                replacement = self._critic_policy_replacement_proof(run, snapshot, self.store.events(run_id), replace_critic_policy)
+                run["critic_policy_replacement"] = replacement
+                run["draft"] = deepcopy(snapshot.values["draft"])
+                run["queued_continuation"].update(replace_critic_policy=replace_critic_policy, draft_hash=replacement["draft_hash"])
             run.pop("queued_decision", None)
             run.pop("pending", None)
             self.store.save_run(run)
-            self.event(run_id, "system", "continuation_requested", "The operator explicitly continued the stopped research under the existing approved plan and original budgets.", payload_hash=expected_plan_hash, retry_transient=retry_transient)
+            self.event(run_id, "system", "continuation_requested", "The operator explicitly continued the stopped research under the existing approved plan and original budgets.", payload_hash=expected_plan_hash,
+                       retry_transient=retry_transient, replace_critic_policy=replace_critic_policy)
 
     def claim(self, run_id, decision):
         with self.lock(run_id):
@@ -681,8 +794,12 @@ class Engine:
         critic = verify_draft(draft, self.source, require_semantic=False)
         if self.is_live(state) and critic["passed"]:
             purpose = "critic:" + semantic_input_hash(draft)
-            retry = self.store.get_run(state["run_id"]).get("transient_critic_retry")
-            if retry:
+            current_run = self.store.get_run(state["run_id"])
+            replacement = current_run.get("critic_policy_replacement")
+            retry = current_run.get("transient_critic_retry")
+            if replacement:
+                purpose += ":explicit-policy-replacement:" + replacement["policy_hash"]
+            elif retry:
                 purpose += ":explicit-429-retry:" + str(retry["attempt"])
             verdict = self.reasoner(state, purpose).critique(draft, draft["ai_evidence"])
             verdict["checked_input_hash"] = semantic_input_hash(draft)
