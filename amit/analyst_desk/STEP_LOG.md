@@ -157,3 +157,9 @@ After the temporal-reference deployment, explicitly continued the same approved 
 Current run totals are seven billed model calls, 29,862 observed tokens, twenty-two MCP calls and US$0.014604 provider-reported cost. There was one actual human plan approval and two explicit continuations. Lifetime reported spend is US$0.0152488; old uncertain holds remain US$0.1688064; US$0.8159448 remains under the original US$1 cap. Both prior notes are unchanged and all nineteen current runtime checks pass. `evidence/live_pilot_status.json` records the current checkpoint; earlier failures remain historical evidence.
 
 The checkpoint remained stopped before writer correction. The remaining live-journey work was writer validation, model criticism, exact-note approval, publication and restart verification. Learned retrieval/memory, robustness, independent E1–E4 evaluation and final team deliverables remain later capstone work.
+
+## Step 10j — Enforce the writer's prose rules at generation
+
+The writer now receives a schema pattern excluding ASCII date digits, newlines and markup in claim text, plus clear instructions to keep periods/figures in citation metadata and the code-owned table. Full local Unicode/quantity/provenance validation remains authoritative. Risk schemas, prompts and cached responses are unchanged. The earlier billed writer response is preserved; no dates are silently removed from it.
+
+Fifty-eight reasoning tests and twenty-three live graph tests passed, including eight new writer cases. No paid call or human note approval occurred in this implementation step. A separate read-only source review identified overbroad scope wording in a provisional risk observation; the writer must refine provisional interpretations against the supplied evidence before the configured critic assesses the exact final draft.

@@ -82,7 +82,14 @@ class QuoteRiskOutput(StrictOutput):
     comparisons: list[QuoteComparisonOutput] = Field(max_length=2)
 
 
+WRITER_TEXT_PATTERN = r"^[^0-9\r\n\[\]<>`%$*_#]*$"
+
+
 class QuoteWriterFinding(QuoteFinding):
+    # Also constrain the provider's generated shape; full local prose and
+    # provenance validation remains authoritative after schema validation.
+    # This override is writer-only so existing risk responses stay reusable.
+    text: str = Field(min_length=15, max_length=400, pattern=WRITER_TEXT_PATTERN)
     category: Literal["risk_observation", "comparability", "limitation"]
 
 
@@ -136,6 +143,12 @@ QUOTE_SELECTION_INSTRUCTIONS = ("For citations, choose quote_ids only from the s
     "not complete source coverage; fragment=true means it cuts a longer sentence. Preserve uncertainty and negation. "
     "A selected quotation still needs to support the complete claim. Do not force an unsupported finding; "
     "risk comparisons with inadequate support must use status insufficient_evidence.")
+
+WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative prose only. "
+    "Calendar dates and fiscal-year numbers in the question, plan, verified table and quote metadata are context for citations, not wording to copy into claim.text. "
+    "Refer to relevant observations as 'across the compared periods' or 'the earlier and later filings'; do not spell out dates or numbers to evade the rule. "
+    "A compliant form is 'Selected disclosures continue to discuss supply chain exposure.' Use that form only when the selected quotations actually support the claim. "
+    "The code-owned table and source metadata carry exact fiscal periods and financial figures; do not repeat them in narrative.")
 
 QUOTE_TERMS = frozenset("risk risks cybersecurity cyber security privacy artificial intelligence regulation competition climate demand supply operations disclosure uncertainty".split())
 
@@ -482,7 +495,7 @@ class Reasoner:
         risk_claims = _flatten_risk_claims(risks)
         validate_claims(risk_claims, known)
         menu = quote_menu(known)
-        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and cited risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
+        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and cited risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
                             {"question": question, "plan": plan, "verified_metrics": metrics,
                              "risk_observations": risk_claims, "quote_menu": menu,
                              "evidence_scope": "Code-selected quote windows within selected source evidence; full filing coverage is not established."},

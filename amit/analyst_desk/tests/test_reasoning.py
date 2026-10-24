@@ -3,6 +3,7 @@ from copy import deepcopy
 from hashlib import sha256
 
 import pytest
+from jsonschema import Draft202012Validator
 
 from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PlanOutput, QueryOutput, QuoteRiskOutput,
                             QuoteWriterOutput, Reasoner, ReasoningError, RiskOutput, WriterOutput,
@@ -338,6 +339,75 @@ def test_writer_unknown_quote_id_is_rejected_and_not_silently_replaced(evidence)
                             "category": "limitation", "quote_ids": ["invented-quote"]}]}
     with pytest.raises(ReasoningError, match="unknown or repeated"):
         Reasoner(lambda *args, **kwargs: response).write("Compare annual sources", {}, [], [], evidence)
+
+
+def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(evidence):
+    captured = []
+    def model(stage, **request):
+        captured.append(request)
+        content = {"claims": [{"text": "Selected source excerpts provide limited disclosure context.",
+            "confidence": "low", "category": "limitation",
+            "quote_ids": [request["context"]["quote_menu"][0]["quote_id"]]}]}
+        validator = Draft202012Validator(request["schema"])
+        assert validator.is_valid(content)
+        dated = deepcopy(content)
+        dated["claims"][0]["text"] = "Selected disclosures discuss operational risks in June 2025."
+        assert not validator.is_valid(dated)
+        return content
+    Reasoner(model).write("Compare annual sources", {}, [], [], evidence)
+    writer_text = captured[0]["schema"]["$defs"]["QuoteWriterFinding"]["properties"]["text"]
+    assert "pattern" in writer_text
+    assert "pattern" not in QuoteRiskOutput.model_json_schema()["$defs"]["QuoteFinding"]["properties"]["text"]
+    assert "Calendar dates and fiscal-year numbers" in captured[0]["system"]
+    assert "across the compared periods" in captured[0]["system"]
+
+
+@pytest.mark.parametrize("text", [
+    "The issuer reiterated operational exposure in June 30 2024.",
+    "The issuer reiterated operational exposure in fiscal 2025.",
+    "The issuer reiterated operational exposure.\nAnother claim follows.",
+    "The issuer reiterated **operational exposure** in its disclosures.",
+])
+def test_writer_rejects_dated_or_marked_up_output_without_rewriting_it(evidence, text):
+    content = {"claims": [{"text": text, "confidence": "low", "category": "limitation",
+                           "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
+    original = deepcopy(content)
+    with pytest.raises(ReasoningError, match="Invalid structured model output for writer"):
+        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+    assert content == original
+
+
+@pytest.mark.parametrize("text", [
+    "The issuer reported ١٢ security incidents during the period.",
+    "The issuer incurred one billion dollars in operational losses.",
+])
+def test_writer_schema_does_not_replace_full_local_quantity_validation(evidence, text):
+    content = {"claims": [{"text": text, "confidence": "low", "category": "limitation",
+                           "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
+    with pytest.raises(ReasoningError):
+        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+
+
+def test_qualitative_writer_claim_keeps_exact_provenance_through_critic(evidence):
+    seen = []
+    def model(stage, **request):
+        seen.append((stage, request))
+        if stage == "writer":
+            selected = next(item for item in request["context"]["quote_menu"]
+                            if item["source_id"] == "msft-before" and "may interrupt" in item["quote"])
+            return {"claims": [{"text": "Conditional risk language describes potential operational disruption.",
+                "confidence": "low", "category": "risk_observation", "quote_ids": [selected["quote_id"]]}]}
+        assert stage == "critic"
+        assert request["context"]["claims"][0]["citations"][0]["quote"] in evidence[0]["text"]
+        return {"issues": [], "verdicts": [{"claim_id": "writer-1", "supported": True,
+                                            "reason": "Fictional test review of the retained conditional source language."}]}
+    reasoner = Reasoner(model)
+    written = reasoner.write("Compare annual sources", {}, [], [], evidence)
+    current = draft(written["claims"])
+    verdict = reasoner.critique(current, written["evidence"])
+    assert verdict["passed"] is True and verdict["semantic_review"] == "model_assisted_not_gold"
+    assert seen[-1][1]["context"]["body"] == current["body"]
+    assert written["claims"][0]["text"] == "Conditional risk language describes potential operational disruption."
 
 
 def test_critic_keeps_full_cited_context_and_financial_facts_without_uncited_bulk(evidence):
