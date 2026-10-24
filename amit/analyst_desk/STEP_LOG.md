@@ -243,3 +243,17 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 4. **Submission and demo:** named ownership/domain review, evaluation report, working alert/CI gate, clean-machine installation, slides, backup recording and individual architecture walkthroughs.
 
 These remaining requirements come from p.3's minimum bar, pp.5–6's evaluation/submission rules and p.16's Analyst Desk build/demo. [docs/START_HERE.md](docs/START_HERE.md) is the entry point; [docs/EVALUATION_PLAN.md](docs/EVALUATION_PLAN.md) tracks the evaluation protocol.
+
+## Step 14 — Add human-reviewed development lessons
+
+**What this step does:** turns actual critic rejections or analyst edits on registered public development questions into bounded lesson proposals. A person reviews each exact proposal before it can enter an explicitly frozen playbook. Later research can opt into relevant accepted guidance while retaining current-source checks and separate plan/note approvals.
+
+| Files | Purpose |
+|---|---|
+| [docs/ADR-005-REVIEWED-LESSONS.md](docs/ADR-005-REVIEWED-LESSONS.md) | Development admission, reflection, exact-version review, frozen reuse and verification boundaries. |
+
+**Capstone connection:** p.3, L12 development-only Reflexion and reviewed/frozen playbook; pp.15–16, lessons from critic rejections and analyst edits; L9 durable storage and L14 exact-version control. Genuine accepted/rejected human decisions and independent E3 results require separate observed evidence.
+
+| Increment | Result |
+|---|---|
+| 14a — Define development learning and review | Separate registered public development cases from production research. Define immutable proposals, reasoned human decisions, explicit playbook freezing, bounded relevant guidance and revocation checks. Protected evaluation assets remain outside the application. |
