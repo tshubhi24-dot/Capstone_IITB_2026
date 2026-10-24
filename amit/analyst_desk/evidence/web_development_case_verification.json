@@ -7,7 +7,7 @@
   "case_type": "risk",
   "interface": "research_web_app",
   "independent_benchmark": false,
-  "stage": "web_research_complete_awaiting_analyst_note_review",
+  "stage": "web_corrected_note_checked_awaiting_lesson_proposal",
   "phase_checks": {
     "baseline": {
       "live_available": true,
@@ -75,27 +75,63 @@
       "private_memory_and_lessons_off": true,
       "no_critic_rejection_or_analyst_edit": true,
       "partial_evidence_limits_visible": true
+    },
+    "authorized_web_correction": {
+      "same_registered_development_case": true,
+      "original_plan_and_approval_unchanged": true,
+      "original_source_snapshot_unchanged": true,
+      "note_review_pause_restored": true,
+      "exact_new_note_hash_valid": true,
+      "only_agreed_claim_prose_changed": true,
+      "numeric_table_unchanged": true,
+      "financial_rows_unchanged": true,
+      "both_canonical_financial_rows_verify": true,
+      "all_financial_values_checked": true,
+      "all_original_citations_and_quotes_preserved": true,
+      "eight_quotes_match_original_source": true,
+      "other_claim_texts_unchanged": true,
+      "one_actual_user_authorized_note_edit_recorded": true,
+      "edit_before_hash_bound_to_original_draft": true,
+      "edit_after_hash_bound_to_corrected_body": true,
+      "fresh_critic_bound_to_corrected_body": true,
+      "all_four_claims_model_supported": true,
+      "fallible_model_review_label_preserved": true,
+      "one_fresh_critic_response_only": true,
+      "all_prior_usage_rows_preserved": true,
+      "model_call_count_increases_by_one": true,
+      "no_new_writer_or_tool_call": true,
+      "no_new_critic_rejection": true,
+      "other_runs_unchanged": true,
+      "approved_library_unchanged": true,
+      "private_memory_and_policy_unchanged": true,
+      "lesson_bank_unchanged_before_reflection": true,
+      "original_caps_and_configuration_preserved": true,
+      "global_accounting_adds_only_fresh_critic": true,
+      "development_publication_still_blocked": true
     }
   },
   "outcome": {
     "research_run_created": true,
     "human_plan_decision_observed": true,
     "research_completed": true,
-    "eligible_lesson_origins_observed": 0,
+    "eligible_lesson_origins_observed": 1,
     "lesson_proposals_created": 0,
     "human_lesson_decisions_recorded": 0,
     "development_notes_published": 0,
     "attempt_count": 2,
-    "completed_model_responses": 6,
-    "recorded_model_call_attempts": 7,
+    "completed_model_responses": 7,
+    "recorded_model_call_attempts": 8,
     "operational_failures": 1,
     "content_validation_failures": 1,
     "verified_financial_values": 6,
     "displayed_financial_values": 6,
     "model_supported_claims": 4,
     "model_reviewed_claims": 4,
-    "human_note_review_recorded": false,
-    "independent_quality_improvement_demonstrated": false
+    "human_note_review_recorded": true,
+    "independent_quality_improvement_demonstrated": false,
+    "user_authorized_correction_applied_in_web": true,
+    "operator_applied_user_selected_correction": true,
+    "independent_human_quality_label": false
   },
   "attempts": [
     {
@@ -114,10 +150,10 @@
       "plan_payload_hash": "8751de581ddd49ba62c2908618089da351011349a01c617154ad619c169adc85",
       "admission_hash": "3c2854374a06516bc69f3e232546cce7feb85594fe3149e13f73c41e3fef7771",
       "human_plan_approval_observed": true,
-      "recorded_model_call_attempts": 5,
-      "completed_model_responses": 5,
+      "recorded_model_call_attempts": 6,
+      "completed_model_responses": 6,
       "failure_code": null,
-      "eligible_lesson_origins": 0,
+      "eligible_lesson_origins": 1,
       "publication": false,
       "prior_content_validation_failure_preserved": true
     }
@@ -176,7 +212,7 @@
     "deployed": true,
     "real_model_calls_in_tests": 0
   },
-  "note_payload_hash": "10a99935496089e46362080bcd52fa94f54464f0647642a0f612282f0bd79184",
+  "note_payload_hash": "49a55b38f9ae0b9eb8a8223f6fe34b51e0f26e9dc0fc011258105a89cc362c6f",
   "resume_deployment_preservation": {
     "runs_unchanged": true,
     "notes_unchanged": true,
@@ -208,5 +244,17 @@
       "development_publication_disabled": true,
       "eligible_reflection_origins_empty": true
     }
+  },
+  "correction": {
+    "previous_note_payload_hash": "10a99935496089e46362080bcd52fa94f54464f0647642a0f612282f0bd79184",
+    "corrected_note_payload_hash": "49a55b38f9ae0b9eb8a8223f6fe34b51e0f26e9dc0fc011258105a89cc362c6f",
+    "changed_existing_claims": 1,
+    "verified_financial_values": 6,
+    "model_supported_claims": 4,
+    "fresh_critic_responses": 1,
+    "new_writer_responses": 0,
+    "lesson_origins": 1,
+    "lesson_proposals": 0,
+    "independent_improvement_demonstrated": false
   }
 }
