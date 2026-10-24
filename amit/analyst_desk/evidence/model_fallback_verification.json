@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile": "live-step16-fallbacks-v1",
-  "stage": "live_primary_planner_verified_research_plan_review_pending",
+  "stage": "primary_producers_verified_writer_content_rejected",
   "routes": {
     "producer": {
       "models": [
@@ -61,7 +61,8 @@
     "A completed live primary response verifies GPT-4.1 Mini access for this request; live backup failover is not exercised.",
     "Fixed guidance delivery is verified by persisted request identity, not semantic adherence or independently measured quality.",
     "The revised excerpt-bounded plan awaits its separate exact-version review; risk, writer and critic have not run.",
-    "Earlier stopped research and its uncertain reservation are retained; fallback does not resume it."
+    "Earlier stopped research and its uncertain reservation are retained; fallback does not resume it.",
+    "The writer returned schema-valid text containing Unicode numeric characters; the stricter narrative validator rejected it before drafting or criticism."
   ],
   "activation_checks": {
     "runs_preserved": true,
@@ -168,5 +169,44 @@
     "research_completed": false,
     "new_lesson_proposals": 0,
     "note_publications": 0
+  },
+  "content_stop_checks": {
+    "notes_preserved": true,
+    "preferences_preserved": true,
+    "note_policy_preserved": true,
+    "lessons_preserved": true,
+    "earlier_runs_preserved": true,
+    "no_new_run": true,
+    "exact_plan_approved": true,
+    "original_request_and_plan_preserved": true,
+    "four_completed_primary_responses": true,
+    "expected_role_order": true,
+    "content_validation_stop": true,
+    "no_provider_error_or_rate_limit": true,
+    "no_critic_or_draft": true,
+    "no_uncertain_reservation_added": true,
+    "three_further_calls_counted": true,
+    "all_completed_costs_counted": true,
+    "all_observed_tokens_counted": true,
+    "caps_and_routes_preserved": true,
+    "source_and_retrieval_preserved": true,
+    "frozen_guidance_and_memory_off_preserved": true
+  },
+  "content_stop_outcome": {
+    "case_id": "KDEV018",
+    "exact_plan_approved": true,
+    "completed_gateway_responses": 4,
+    "returned_models": [
+      "openai/gpt-4.1-mini"
+    ],
+    "reported_tokens": 9806,
+    "reported_cost_usd": "0.0045836",
+    "provider_errors": 0,
+    "local_writer_validation": "unicode_numeric_narrative_rejected",
+    "prior_holds_preserved": true,
+    "critic_completed": false,
+    "draft_created": false,
+    "new_lesson_proposals": 0,
+    "research_completed": false
   }
 }
