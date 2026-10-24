@@ -94,10 +94,11 @@ class Continuation(BaseModel):
     plan_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     retry_transient: bool = Field(default=False, strict=True)
     replace_critic_policy: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    critic_extension: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
 
     @model_validator(mode="after")
     def exclusive_continuation_mode(self):
-        if self.retry_transient and self.replace_critic_policy is not None:
+        if sum((self.retry_transient, self.replace_critic_policy is not None, self.critic_extension is not None)) > 1:
             raise ValueError("Choose one explicit continuation mode.")
         return self
 
@@ -255,6 +256,8 @@ def continue_research(run_id: str, value: Continuation, background: BackgroundTa
     try:
         if value.retry_transient:
             app.state.engine.claim_continuation(run_id, value.plan_hash, retry_transient=True)
+        elif value.critic_extension is not None:
+            app.state.engine.claim_continuation(run_id, value.plan_hash, critic_extension=value.critic_extension)
         elif value.replace_critic_policy is not None:
             app.state.engine.claim_continuation(run_id, value.plan_hash, replace_critic_policy=value.replace_critic_policy)
         else:

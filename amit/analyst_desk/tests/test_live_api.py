@@ -292,3 +292,38 @@ def test_replacement_critic_policy_api_rejects_bad_hash_or_mode_combo(api_fixtur
     monkeypatch.setattr(engine, "claim_continuation", lambda *args, **kwargs: calls.append(args), raising=False)
     assert client.post("/api/runs/" + run["id"] + "/continue", json={"plan_hash": "a" * 64, **body}).status_code == 422
     assert calls == []
+
+
+def test_critic_extension_api_requires_auth_and_forwards_exact_grant_only(api_fixture, monkeypatch):
+    client, engine, store = api_fixture
+    engine.model_client = FakeGateway(budget_snapshot("live-step10-google-critic-v1"))
+    run = store.create_run({"mode": "live", "max_tokens": 250000, "max_model_calls": 12})
+    run.update(status="error", usage={"model_calls": 12, "held_usd": .18})
+    store.save_run(run)
+    calls = []
+    def claim(identifier, plan_hash, *, critic_extension):
+        calls.append((identifier, plan_hash, critic_extension))
+        raise ReviewError("A separately approved exact grant is required.")
+    monkeypatch.setattr(engine, "claim_continuation", claim, raising=False)
+    path = "/api/runs/" + run["id"] + "/continue"
+    body = {"plan_hash": "a" * 64, "critic_extension": "b" * 32}
+    assert client.post(path, json=body, headers={"X-Analyst-Token": ""}).status_code == 401
+    assert calls == []
+    assert client.post(path, json=body).status_code == 409
+    assert calls == [(run["id"], "a" * 64, "b" * 32)]
+    assert store.get_run(run["id"])["usage"] == run["usage"] and store.notes() == []
+
+
+@pytest.mark.parametrize("body", [
+    {"critic_extension": "bad"}, {"critic_extension": "b" * 31}, {"critic_extension": "B" * 32},
+    {"critic_extension": 123}, {"critic_extension": "b" * 32, "retry_transient": True},
+    {"critic_extension": "b" * 32, "replace_critic_policy": "c" * 64},
+    {"critic_extension": "b" * 32, "max_model_calls": 13},
+])
+def test_critic_extension_api_rejects_invalid_grant_or_combined_modes(api_fixture, monkeypatch, body):
+    client, engine, store = api_fixture
+    run = store.create_run({"mode": "live"})
+    calls = []
+    monkeypatch.setattr(engine, "claim_continuation", lambda *args, **kwargs: calls.append(args), raising=False)
+    assert client.post("/api/runs/" + run["id"] + "/continue", json={"plan_hash": "a" * 64, **body}).status_code == 422
+    assert calls == []

@@ -237,10 +237,10 @@ class JourneyClient:
             "note_id": run.get("note_id"),
             "decision_requests": [{key: item[key] for key in ("time", "kind", "action", "payload_hash", "confirmation_sha256", "accepted_by_api")}
                                   for item in self.session.get("decision_requests", [])],
-            "continuation_requests": [{key: item[key] for key in ("time", "plan_hash", "accepted_by_api", "retry_transient", "replace_critic_policy") if key in item}
+            "continuation_requests": [{key: item[key] for key in ("time", "plan_hash", "accepted_by_api", "retry_transient", "replace_critic_policy", "critic_extension") if key in item}
                                       for item in self.session.get("continuation_requests", [])],
             "continuation": {key: value for key, value in (run.get("continuation") or {}).items()
-                             if key in {"available", "retry_transient_available", "replace_critic_policy_available", "policy_hash", "plan_hash", "failure_kind"}},
+                             if key in {"available", "retry_transient_available", "replace_critic_policy_available", "critic_extension_available", "grant_id", "policy_hash", "plan_hash", "failure_kind"}},
             "limitations": ["This is an ordinary learning run, not a protected final benchmark.",
                             "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
                             "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."],
@@ -272,11 +272,15 @@ class JourneyClient:
         if self.session.get("run_id") and self.session["run_id"] != run_id:
             raise JourneyError("The saved session belongs to a different run; use a separate --session-file to inspect another journey.")
 
-    def continue_run(self, run_id, *, expected_plan_hash, retry_transient=False, replace_critic_policy=None):
+    def continue_run(self, run_id, *, expected_plan_hash, retry_transient=False, replace_critic_policy=None, critic_extension=None):
         self._check_session(run_id)
         if (self.mode != "live" or type(retry_transient) is not bool
                 or not re.fullmatch(r"[a-f0-9]{64}", expected_plan_hash or "")):
             raise JourneyError("Explicit live continuation requires the existing approved plan hash.")
+        if sum((bool(retry_transient), replace_critic_policy is not None, critic_extension is not None)) > 1:
+            raise JourneyError("Choose one explicit continuation mode.")
+        if critic_extension is not None and (not isinstance(critic_extension, str) or not re.fullmatch(r"[a-f0-9]{32}", critic_extension)):
+            raise JourneyError("Critic extension requires the exact separately approved grant ID.")
         if replace_critic_policy is not None:
             if (retry_transient or not isinstance(replace_critic_policy, str)
                     or not re.fullmatch(r"[a-f0-9]{64}", replace_critic_policy)):
@@ -285,17 +289,22 @@ class JourneyClient:
         self._check_offline_config(config)
         run = self.request("GET", "/api/runs/" + quote(run_id, safe=""))
         continuation = run.get("continuation") or {}
-        eligibility = ("replace_critic_policy_available" if replace_critic_policy is not None
+        eligibility = ("critic_extension_available" if critic_extension is not None
+                       else "replace_critic_policy_available" if replace_critic_policy is not None
                        else "retry_transient_available" if retry_transient else "available")
         if (run.get("status") != "error" or run.get("request", {}).get("mode") != "live"
                 or continuation.get(eligibility) is not True or continuation.get("plan_hash") != expected_plan_hash
-                or replace_critic_policy is not None and continuation.get("policy_hash") != replace_critic_policy):
+                or replace_critic_policy is not None and continuation.get("policy_hash") != replace_critic_policy
+                or critic_extension is not None and continuation.get("grant_id") != critic_extension):
             raise JourneyError("This stopped operation cannot continue under the supplied approved plan and retry mode.")
         body = {"plan_hash": expected_plan_hash}
         record = {"time": now(), "plan_hash": expected_plan_hash, "accepted_by_api": True}
         if retry_transient:
             body["retry_transient"] = True
             record["retry_transient"] = True
+        elif critic_extension is not None:
+            body["critic_extension"] = critic_extension
+            record["critic_extension"] = critic_extension
         elif replace_critic_policy is not None:
             body["replace_critic_policy"] = replace_critic_policy
             record["replace_critic_policy"] = replace_critic_policy
@@ -349,6 +358,7 @@ def parser():
     continuation_mode = continuation.add_mutually_exclusive_group()
     continuation_mode.add_argument("--retry-transient", action="store_true", help="Deliberately request the single eligible critic HTTP-429 retry; retains its old reservation and original budgets.")
     continuation_mode.add_argument("--replace-critic-policy", metavar="EXPECTED_POLICY_HASH", help="Continue only under this exact eligible replacement critic policy; retains old reservations and original budgets.")
+    continuation_mode.add_argument("--critic-extension", metavar="GRANT_ID", help="Consume only this separately human-approved exact critic extension grant.")
     decision = sub.add_parser("decision", help="Submit a human's explicit decision for the exact reviewed hash.")
     decision.add_argument("run_id")
     decision.add_argument("--kind", required=True, choices=("plan", "note"))
@@ -375,7 +385,7 @@ def main(argv=None):
         elif arguments.command == "continue":
             result = client.continue_run(arguments.run_id, expected_plan_hash=arguments.expected_plan_hash,
                                          retry_transient=arguments.retry_transient,
-                                         replace_critic_policy=arguments.replace_critic_policy)
+                                         replace_critic_policy=arguments.replace_critic_policy, critic_extension=arguments.critic_extension)
         else:
             edits = json.loads(arguments.edits_file.read_text()) if arguments.edits_file else None
             result = client.decision(arguments.run_id, kind=arguments.kind, action=arguments.action,

@@ -329,3 +329,48 @@ def test_replacement_critic_policy_cli_cannot_combine_with_transient_retry():
         journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH,
                                     "--replace-critic-policy", "c" * 64, "--retry-transient"])
     assert error.value.code == 2
+
+
+def test_exact_critic_extension_client_uses_separately_approved_grant_hint(client, monkeypatch):
+    client.mode = "live"
+    grant_id = "c" * 32
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live", "max_model_calls": 12},
+                 continuation={"available": False, "critic_extension_available": True,
+                               "plan_hash": HASH, "grant_id": grant_id, "failure_kind": "approved_critic_extension"})
+    calls, posted = [], False
+    def request(method, path, body=None):
+        nonlocal posted
+        calls.append((method, path, body))
+        if path == "/api/config": return config(mode="offline", live_enabled=True)
+        if method == "POST":
+            posted = True
+            return {**failed, "status": "running", "pending": None}
+        return run("note", request=failed["request"]) if posted else failed
+    monkeypatch.setattr(client, "request", request)
+    with pytest.raises(journey.JourneyError): client.continue_run("run-1", expected_plan_hash=HASH)
+    with pytest.raises(journey.JourneyError): client.continue_run("run-1", expected_plan_hash=HASH, critic_extension="d" * 32)
+    assert all(item[0] == "GET" for item in calls)
+    receipt = client.continue_run("run-1", expected_plan_hash=HASH, critic_extension=grant_id)
+    assert [item for item in calls if item[0] == "POST"] == [
+        ("POST", "/api/runs/run-1/continue", {"plan_hash": HASH, "critic_extension": grant_id})]
+    assert receipt["decision_requests"] == []
+    assert receipt["continuation_requests"][-1]["critic_extension"] == grant_id
+    args = journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH, "--critic-extension", grant_id])
+    assert args.critic_extension == grant_id and not args.retry_transient and args.replace_critic_policy is None
+
+
+@pytest.mark.parametrize("value,retry,replacement", [("bad", False, None), (True, False, None), ("c" * 32, True, None), ("c" * 32, False, "d" * 64)])
+def test_critic_extension_client_rejects_invalid_or_combined_modes_before_request(client, monkeypatch, value, retry, replacement):
+    client.mode = "live"
+    calls = []
+    monkeypatch.setattr(client, "request", lambda *args, **kwargs: calls.append(args))
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH, critic_extension=value, retry_transient=retry, replace_critic_policy=replacement)
+    assert calls == []
+
+
+@pytest.mark.parametrize("option,value", [("--retry-transient", None), ("--replace-critic-policy", "d" * 64)])
+def test_critic_extension_cli_modes_are_exclusive(option, value):
+    args = ["continue", "run-1", "--expected-plan-hash", HASH, "--critic-extension", "c" * 32, option]
+    if value: args.append(value)
+    with pytest.raises(SystemExit): journey.parser().parse_args(args)

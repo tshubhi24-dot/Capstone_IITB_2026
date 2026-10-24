@@ -631,3 +631,162 @@ def test_replacement_rechecks_live_policy_and_cannot_repeat_after_failure(fixtur
     assert failed["usage"]["model_reservations"] == stopped["usage"]["model_reservations"]
     with pytest.raises(ReviewError):
         engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)
+
+
+class ExtensionCriticClient(ReplacementCriticClient):
+    def __init__(self):
+        super().__init__()
+        self.google_enabled = False
+        self.grant = None
+        self.extension_changes = {}
+        self.extension_failure = False
+
+    def complete(self, **request):
+        if self.google_enabled:
+            assert self.grant["call_id"] == request["call_id"] and request["role"] == "critic"
+            assert not self.grant["consumed"]
+            self.grant["consumed"] = True
+            if self.extension_failure:
+                self.calls.append(deepcopy(request))
+                raise ProviderError("provider_http_429", "Test-only final rate limit.")
+            return FakeModelClient.complete(self, **request)
+        if self.replacement_enabled and request["role"] == "critic":
+            self.calls.append(deepcopy(request))
+            raise ProviderError("provider_http_429", "Test-only replacement rate limit.")
+        return super().complete(**request)
+
+    def budget(self, run_id):
+        value = super().budget(run_id)
+        failures = len(self.calls) - len(self.cache)
+        if failures >= 3:
+            value["tokens"] = 246409 + (20 if self.grant and self.grant["consumed"] else 0)
+        if self.google_enabled:
+            value.update(authorization_id="approved-google-policy", config_version="test-google-v1", policy_hash="a" * 64,
+                model_profile="live-step10-google-critic-v1", provider="role-specific",
+                providers={"producer": "mistral/zdr", "critic": "google-ai-studio"},
+                models={"producer": "mistralai/mistral-medium-3.1", "critic": "google/gemini-2.5-flash"},
+                original_max_calls_per_run=12, original_max_tokens_per_run=250000,
+                ledger_checkpoint_hash="b" * 64, run_budget_grant=deepcopy(self.grant))
+            value.update(self.extension_changes)
+        return value
+
+
+def approved_extension_failure(engine, store):
+    from desk.workflow import critic_extension_request
+    client = engine.model_client = ExtensionCriticClient()
+    plan = begin_live(engine, store)
+    first = decide(engine, plan)
+    engine.claim_continuation(first["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    engine.execute(first["id"])
+    client.replacement_enabled = True
+    engine.claim_continuation(first["id"], plan["pending"]["payload_hash"], replace_critic_policy=client.policy_hash)
+    stopped = engine.execute(first["id"])
+    assert stopped["status"] == "error" and len(stopped["usage"]["model_reservations"]) == 3
+    # Three fictional earlier successful writer repairs reproduce the actual
+    # exhausted 12-call ledger without extra graph work or any paid transport.
+    stored = store.get_run(first["id"])
+    for index in range(3):
+        identifier = "prior-fictional-success-" + str(index)
+        result = deepcopy(next(iter(client.cache.values())))
+        result["usage"]["call_id"] = identifier
+        client.cache[identifier] = result
+        client.calls.append({"call_id": identifier, "role": "writer"})
+        stored["usage"]["calls"].append({**result["usage"], "stage": "writer", "config_version": "test-only-v1"})
+    stored["usage"].update(model_calls=12, tokens=180, gateway_budget=client.budget(first["id"]))
+    store.save_run(stored)
+    client.google_enabled = True
+    grant_id = "c" * 32
+    budget = client.budget(first["id"])
+    draft = stored["draft"]
+    request = critic_extension_request(draft, first["id"], grant_id, budget)
+    client.grant = {"grant_id": grant_id, "run_id": first["id"], "policy_hash": budget["policy_hash"],
+        "plan_hash": plan["pending"]["payload_hash"], "draft_hash": canonical_hash(draft),
+        "call_id": request["call_id"], "request_hash": canonical_hash(request), "checkpoint_hash": budget["ledger_checkpoint_hash"],
+        "approved": True, "consumed": False, "original_calls": 12, "original_tokens": 250000,
+        "max_calls": 13, "max_tokens": 300000, "checkpoint_calls": 12, "checkpoint_tokens": 246409,
+        "checkpoint_uncertain": 3, "reserved_tokens": 51152, "reservation_usd": "0.0197456",
+        "checkpoint_reported_spend_usd": budget["reported_spend_usd"], "checkpoint_held_usd": budget["held_usd"],
+        "cap_usd": "1.00", "per_run_usd": "0.50", "model_profile": budget["model_profile"],
+        "critic_model": "google/gemini-2.5-flash", "role": "critic"}
+    return plan, store.get_run(first["id"]), client
+
+
+def test_human_approved_exact_extra_critic_preserves_original_caps_three_holds_and_note_review(fixture):
+    engine, store, source, _, _, _ = fixture
+    plan, stopped, client = approved_extension_failure(engine, store)
+    original = deepcopy(stopped)
+    view = engine.view(stopped["id"])
+    assert view["continuation"]["critic_extension_available"] is True
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"])
+    engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    note = engine.execute(stopped["id"])
+    assert note["status"] == "awaiting_note", note.get("error")
+    assert note["request"] == original["request"] and note["request"]["max_model_calls"] == 12
+    assert note["request"]["max_tokens"] == 250000 and note["usage"]["model_calls"] == 13
+    assert note["usage"]["model_reservations"] == original["usage"]["model_reservations"]
+    assert note["usage"]["tokens"] == 200 and len(note["usage"]["calls"]) == 10
+    assert note["usage"]["held_usd"] == float(client.budget(note["id"])["held_usd"])
+    assert client.grant["consumed"] and client.calls[-1]["call_id"] == client.grant["call_id"]
+    assert verify_draft(note["draft"], source)["passed"] and store.notes() == []
+    assert sum(event["stage"] == "plan_approved" for event in note["events"]) == 1
+    assert not any(event["stage"] == "note_approved" for event in note["events"])
+
+
+@pytest.mark.parametrize("change", ["unapproved", "consumed", "wrong_grant", "policy", "call", "request", "plan", "draft", "checkpoint", "role", "stale", "calls", "tokens", "cap", "original", "403", "missing_hold", "producer", "provider", "mixed"])
+def test_critic_extension_rejects_unapproved_mismatched_stale_or_expanded_grant(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    plan, stopped, client = approved_extension_failure(engine, store)
+    grant_id = client.grant["grant_id"]
+    if change == "unapproved": client.grant["approved"] = False
+    elif change == "consumed": client.grant["consumed"] = True
+    elif change == "wrong_grant": grant_id = "d" * 32
+    elif change in {"policy", "call", "request", "plan", "draft", "checkpoint"}:
+        key = {"policy": "policy_hash", "call": "call_id", "request": "request_hash", "plan": "plan_hash", "draft": "draft_hash", "checkpoint": "checkpoint_hash"}[change]
+        client.grant[key] = "d" * 64
+    elif change == "role": client.grant["role"] = "writer"
+    elif change == "stale": client.extension_changes["ledger_checkpoint_hash"] = "e" * 64
+    elif change == "calls": client.grant["max_calls"] = 14
+    elif change == "tokens": client.grant["max_tokens"] = 400000
+    elif change == "cap": client.extension_changes["per_run_usd"] = "1"
+    elif change == "original": client.extension_changes["original_max_calls_per_run"] = 13
+    elif change == "producer": client.extension_changes["models"] = {"producer": "other", "critic": "google/gemini-2.5-flash"}
+    elif change == "provider": client.extension_changes["providers"] = {"producer": "mistral/zdr", "critic": "other"}
+    elif change in {"403", "missing_hold"}:
+        stored = store.get_run(stopped["id"])
+        if change == "403": stored["error"] = "ReviewError: provider_http_403: refused"
+        else: stored["usage"]["model_reservations"].pop(next(iter(stored["usage"]["model_reservations"])))
+        store.save_run(stored)
+    before = deepcopy(store.get_run(stopped["id"]))
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=grant_id,
+                                  retry_transient=change == "mixed")
+    assert store.get_run(stopped["id"]) == before and len(client.calls) == 12
+
+
+@pytest.mark.parametrize("change", ["request_hash", "draft", "policy", "role_request", "second_failure"])
+def test_exact_critic_extension_rechecked_and_never_repeated(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    plan, stopped, client = approved_extension_failure(engine, store)
+    engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    if change == "request_hash": client.grant["request_hash"] = "d" * 64
+    elif change == "policy": client.extension_changes["policy_hash"] = "d" * 64
+    elif change == "draft":
+        stored = store.get_run(stopped["id"])
+        stored["draft"]["body"] += "Changed"
+        store.save_run(stored)
+    elif change == "role_request":
+        snapshot = engine.graph.get_state({"configurable": {"thread_id": stopped["id"]}})
+        with pytest.raises(ReviewError):
+            engine.reasoner(snapshot.values, "unapproved-producer").plan("Unapproved question", ["MSFT", "AAPL"], [2023, 2024, 2025])
+        assert len(client.calls) == 12
+        return
+    else: client.extension_failure = True
+    result = engine.execute(stopped["id"])
+    assert result["status"] == "error" and len(client.calls) == (13 if change == "second_failure" else 12)
+    assert len(result["usage"]["model_reservations"]) == (4 if change == "second_failure" else 3)
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(stopped["id"], plan["pending"]["payload_hash"], critic_extension=client.grant["grant_id"])
+    assert store.notes() == []
