@@ -1,0 +1,35 @@
+{
+  "record_kind": "explicit_live_retry",
+  "recorded_at_utc": "2026-10-24T08:27:24.595969+00:00",
+  "authorization": "Existing US$1 policy; separately authorized retry with no budget reset.",
+  "new_run_id": "84a7d9a88ac046e39e3b61d7c7692803",
+  "prior_attempt_count": 2,
+  "completion_attempts_in_this_retry": 1,
+  "status": "provider_access_refused",
+  "failure_code": "provider_http_403",
+  "budget": {
+    "enabled": true,
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "reported_spend_usd": "0",
+    "held_usd": "0.0844032",
+    "committed_usd": "0.0844032",
+    "remaining_authorization_usd": "0.9155968",
+    "model_calls": 3,
+    "tokens": 200208,
+    "uncertain_calls": 3,
+    "blocked": false
+  },
+  "existing_notes_available": 2,
+  "plan_produced": false,
+  "live_plan_approved": false,
+  "live_note_published": false,
+  "receipt": "live_attempts/84a7d9a88ac046e39e3b61d7c7692803.json",
+  "limitations": [
+    "The provider access restriction remains unresolved.",
+    "No additional completion was attempted after this refusal.",
+    "Reported spend remains zero in the local ledger; actual charges for uncertain calls are unconfirmed. Full reservations remain held.",
+    "Ledger token counts include reserved allowances, not observed model usage.",
+    "No new persistence test or successful live research journey is claimed for this retry."
+  ]
+}

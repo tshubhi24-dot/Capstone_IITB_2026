@@ -69,3 +69,9 @@ After deploying the tested diagnostic update, made one deliberate new planner at
 The repeated HTTP 403 did not establish the exact provider access restriction. Further completion attempts stopped pending diagnosis. No plan approval, note approval or live publication occurred.
 
 Restarted only the idle application and model gateway. The complete safe ledger summary and existing private note library were identical before and after restart; both prior approved notes remained. Nineteen deployed runtime checks passed again. Sanitized receipts preserve both attempts, and `evidence/live_attempt_verification.json` records the access failure, holds and persistence results. Credentials remain private. Step 9 is unfinished pending access diagnosis and the actual human review journey.
+
+## Step 9c — Record an authorized retry
+
+One separately authorized planner retry, run `84a7d9a88ac046e39e3b61d7c7692803`, used the same US$1 policy and again returned `provider_http_403` before producing a plan. Models, endpoint, policy and earlier reservations were unchanged. No further completion occurred in this retry.
+
+The ledger now contains three uncertain attempts with US$0.0844032 held and US$0.9155968 remaining. Actual charges remain unconfirmed; zero reported spend is not proof of zero cost. Both existing private notes remain available. Nineteen read-only runtime checks passed and refreshed the current ledger evidence without requesting a completion. Preserved the full attempt and operator confirmation privately, and committed only sanitized technical receipts. Earlier restart proof remains labelled as a check after attempt two; this retry does not claim another restart test, successful live research or human plan/note approvals. The access restriction still needs diagnosis before the journey can continue.

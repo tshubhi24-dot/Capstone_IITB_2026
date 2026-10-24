@@ -1,6 +1,6 @@
 # ADR-002: bounded live AI reasoning
 
-**Date:** 24 October 2026 · **Status:** implementation in progress; paid activation pending
+**Date:** 24 October 2026 · **Status:** implemented and explicitly authorized; actual planner requests blocked by provider access refusal
 
 ## Context
 
