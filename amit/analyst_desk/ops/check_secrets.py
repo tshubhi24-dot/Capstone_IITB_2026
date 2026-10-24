@@ -24,15 +24,15 @@ def read_env_key(path):
     return values[0]
 
 
-def retired_provider_keys(root):
-    """Read archived known keys privately; never follow archive symlinks."""
-    directory = root / ".runtime/live/retired"
+def _archived_provider_keys(root, archive):
+    """Read a private known-key archive without following file symlinks."""
+    directory = root / ".runtime/live" / archive
     if directory.is_symlink():
-        raise ValueError("The retired credential directory must not be a symlink.")
+        raise ValueError("A private credential directory must not be a symlink.")
     if not directory.exists():
         return []
     if not directory.is_dir():
-        raise ValueError("The retired credential archive is invalid.")
+        raise ValueError("A private credential archive is invalid.")
     values = []
     for path in sorted(directory.glob("*.key")):
         if path.is_symlink() or not path.is_file():
@@ -43,9 +43,19 @@ def retired_provider_keys(root):
                 continue
             value = stream.read(4097).strip()
         if len(value) > 4096 or not re.fullmatch(r"[A-Za-z0-9_-]{24,}", value):
-            raise ValueError("A retired credential could not be checked safely.")
+            raise ValueError("An archived credential could not be checked safely.")
         values.append(value)
     return values
+
+
+def retired_provider_keys(root):
+    """Read previously active known keys; retained for existing callers."""
+    return _archived_provider_keys(root, "retired")
+
+
+def vault_provider_keys(root):
+    """Read separately stored known keys even when they have never been active."""
+    return _archived_provider_keys(root, "key_vault")
 
 
 def staged_matches(repo, credentials):
@@ -88,6 +98,7 @@ def main():
             raise ValueError("Prepare the private key or supply its local env file for the credential check.")
         credentials = [provider.encode()]
         credentials.extend(value.encode() for value in retired_provider_keys(ROOT))
+        credentials.extend(value.encode() for value in vault_provider_keys(ROOT))
         analyst = ROOT / ".runtime/journey/credentials.env"
         if analyst.is_file():
             credentials += [line.split("=", 1)[1].strip().encode() for line in analyst.read_text().splitlines() if line.startswith("ANALYST_API_TOKEN=")]
@@ -99,7 +110,7 @@ def main():
         if args.history and history_contains(ROOT, credentials):
             print("STOP: a known private credential appears in reachable Git history. Push blocked.", file=sys.stderr)
             return 1
-        print("Known current/retired provider and analyst credentials are absent from staged content" + (" and reachable Git history." if args.history else "."))
+        print("Known current, retired, vaulted provider and analyst credentials are absent from staged content" + (" and reachable Git history." if args.history else "."))
         return 0
     except Exception:
         print("Credential check could not finish safely; no secret content was printed.", file=sys.stderr)

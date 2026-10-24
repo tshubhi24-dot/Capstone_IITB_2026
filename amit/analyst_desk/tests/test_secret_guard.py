@@ -126,3 +126,90 @@ def test_unreadable_as_a_key_retired_archive_blocks_without_disclosure(repositor
     output = capsys.readouterr()
     assert "could not finish safely" in output.err
     assert malformed not in output.out + output.err
+
+
+@pytest.mark.parametrize("use_provider_env", [False, True])
+def test_never_active_vault_key_is_checked_in_staging_and_history(repository, monkeypatch, capsys, use_provider_env):
+    repo, git, current, env = repository
+    private = repo / ".runtime/live"
+    vault = private / "key_vault"
+    vault.mkdir(parents=True, mode=0o700)
+    retired = private / "retired"
+    retired.mkdir()
+    retired_key = "invented-retired-key-distinct-from-every-vault-key"
+    vault_key = "invented-new-vault-key-never-active-or-retired"
+    (private / "provider.key").write_text(current + "\n")
+    (retired / "old.key").write_text(retired_key + "\n")
+    (vault / "unused-credential.key").write_text(vault_key + "\n")
+    (repo / ".gitignore").write_text(".runtime/\n")
+    (repo / "README.md").write_text("Project content without credentials.\n")
+    git("add", ".gitignore", "README.md")
+    arguments = ["check_secrets.py"] + (["--provider-env", str(env)] if use_provider_env else [])
+    monkeypatch.setattr(sys, "argv", arguments)
+    assert guard.vault_provider_keys(repo) == [vault_key]
+    assert guard.retired_provider_keys(repo) == [retired_key]
+    assert guard.main() == 0
+
+    (repo / "accidental.txt").write_text("A separately stored setting was pasted: " + vault_key + "\n")
+    git("add", "accidental.txt")
+    assert guard.main() == 1
+    staged = capsys.readouterr()
+    assert "STOP" in staged.err
+    assert all(key not in staged.out + staged.err for key in (current, retired_key, vault_key))
+
+    git("commit", "--quiet", "-m", "Test-only never-active vault credential leak")
+    (repo / "accidental.txt").write_text("The accidental setting was removed.\n")
+    git("add", "accidental.txt")
+    git("commit", "--quiet", "-m", "Test-only vault credential cleanup")
+    assert guard.main() == 0
+    monkeypatch.setattr(sys, "argv", arguments + ["--history"])
+    assert guard.main() == 1
+    historical = capsys.readouterr()
+    assert "reachable Git history" in historical.err
+    assert all(key not in historical.out + historical.err for key in (current, retired_key, vault_key))
+
+
+def test_vault_reader_ignores_symlinks_and_non_regular_entries(repository, tmp_path, capsys):
+    repo, git, _, _ = repository
+    vault = repo / ".runtime/live/key_vault"
+    vault.mkdir(parents=True, mode=0o700)
+    outside_value = "invented-outside-key-not-held-in-the-private-vault"
+    outside = tmp_path / "outside-vault.key"
+    outside.write_text(outside_value + "\n")
+    (vault / "linked.key").symlink_to(outside)
+    (vault / "directory.key").mkdir()
+    (repo / ".gitignore").write_text(".runtime/\n")
+    (repo / "unrelated.txt").write_text(outside_value + "\n")
+    git("add", ".gitignore", "unrelated.txt")
+    assert guard.vault_provider_keys(repo) == []
+    assert guard.main() == 0
+    output = capsys.readouterr()
+    assert outside_value not in output.out + output.err
+
+
+@pytest.mark.parametrize("malformed", ["invented-private-vault-content\nnot-a-single-key", "invented-overlong-vault-value-" * 200])
+def test_invalid_vault_credential_fails_closed_without_disclosure(repository, capsys, malformed):
+    repo, _, _, _ = repository
+    vault = repo / ".runtime/live/key_vault"
+    vault.mkdir(parents=True, mode=0o700)
+    (vault / "malformed.key").write_text(malformed)
+    assert guard.main() == 2
+    output = capsys.readouterr()
+    assert "could not finish safely" in output.err
+    assert malformed not in output.out + output.err
+    assert "invented-private-vault-content" not in output.out + output.err
+
+
+def test_vault_directory_symlink_is_rejected_without_reading_target(repository, tmp_path, capsys):
+    repo, _, _, _ = repository
+    private = repo / ".runtime/live"
+    private.mkdir(parents=True)
+    outside = tmp_path / "outside-vault"
+    outside.mkdir()
+    outside_value = "invented-external-vault-credential-not-to-be-read"
+    (outside / "outside.key").write_text(outside_value + "\n")
+    (private / "key_vault").symlink_to(outside, target_is_directory=True)
+    assert guard.main() == 2
+    output = capsys.readouterr()
+    assert "could not finish safely" in output.err
+    assert outside_value not in output.out + output.err
