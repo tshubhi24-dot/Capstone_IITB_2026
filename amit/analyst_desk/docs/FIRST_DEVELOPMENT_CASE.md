@@ -28,6 +28,10 @@ The four available lesson actions are fiscal-period alignment, current-fact veri
 
 ## Evidence and capstone connection
 
+### Observed progress
+
+The genuine live planner completed one model call and produced the exact registered scope. Sixteen admission, review-boundary and preservation checks passed. The run is paused for human plan review; research, criticism and reflection have not run yet. The approved library, earlier runs, analyst preferences, note policy and empty lesson bank are unchanged. This is an actual development run, separate from the synthetic Step 14 operator fixtures.
+
 [The sanitized receipt](../evidence/development_case_verification.json) records completed checks and the current human-review boundary. It contains no note body, conversation, credentials or personal account metadata. Full runtime evidence stays in the ignored local runtime directory.
 
 This walkthrough addresses p.3 L12 and the Analyst Desk workflow on pp.15–16: development failures, reflection, exact human lesson review and frozen reuse. Independent semantic labels, a genuinely reviewed rejection, protected E3 comparisons and demonstrated quality improvement remain separate requirements until actually observed.

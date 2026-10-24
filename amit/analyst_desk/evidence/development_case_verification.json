@@ -5,7 +5,7 @@
   "source_fingerprint": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
   "learning_split": "development",
   "independent_benchmark": false,
-  "stage": "baseline_verified",
+  "stage": "awaiting_human_plan_review",
   "checks": {
     "registered_case_available": true,
     "live_research_available": true,
@@ -13,15 +13,36 @@
     "no_active_operation": true,
     "private_baseline_saved": true,
     "original_spending_limits_preserved": true,
-    "initial_lesson_bank_empty": true
+    "initial_lesson_bank_empty": true,
+    "registered_admission_valid": true,
+    "exact_registered_scope": true,
+    "pending_plan_hash_valid": true,
+    "research_paused_for_human_plan_review": true,
+    "private_memory_disabled": true,
+    "reviewed_lessons_disabled": true,
+    "unverified_risk_boundaries_disclosed": true,
+    "only_one_new_run": true,
+    "existing_runs_unchanged": true,
+    "approved_library_unchanged": true,
+    "analyst_preferences_unchanged": true,
+    "note_policy_unchanged": true,
+    "lesson_bank_unchanged": true,
+    "original_spending_caps_preserved": true,
+    "one_real_planner_call": true,
+    "no_research_or_human_decision_yet": true
   },
   "outcome": {
-    "research_run_created": false,
+    "research_run_created": true,
     "human_plan_decision_recorded": false,
     "eligible_lesson_origins_observed": 0,
     "lesson_proposals_created": 0,
     "human_lesson_decisions_recorded": 0,
     "playbooks_frozen": 0,
-    "development_notes_published": 0
-  }
+    "development_notes_published": 0,
+    "model_calls_completed": 1,
+    "research_completed": false
+  },
+  "admission_hash": "dc22591c10f216784b67e5a57cc8a6a6315692b1ca5fd4e0e9318ed6dcf0c71d",
+  "catalogue_hash": "55205757aab72cc2975a06f2ad497b38fc63aa5044aab44120d89b4f19a06b08",
+  "plan_payload_hash": "7cdad1ec72684a44a8c69d1440fab287b1f54b9e4251f813efe37ff5fb70aee1"
 }

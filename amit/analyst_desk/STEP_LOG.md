@@ -277,6 +277,7 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | Increment | Result |
 |---|---|
 | 15a — Select and prepare the first genuine case | KDEV017 compares MSFT risk disclosures for FY2024–2025 without a planted failure. The registered scope is available, hybrid retrieval is ready and live research is available under the original limits. A private preservation baseline is saved; no active operation or existing lesson is present. Research and human review are still pending. |
+| 15b — Run the live planner and present the exact plan | One real planner call succeeds. Sixteen checks validate registered admission, source/scope, exact pending hash, disabled memory/lessons, visible source limitations and preservation of existing runs/library/preferences. The complete plan is available privately for human review. Research is paused at the required plan gate; no critic outcome, lesson or publication is claimed. |
 
 ## What the team builds next
 
