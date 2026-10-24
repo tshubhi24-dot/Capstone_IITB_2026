@@ -1,6 +1,6 @@
 # ADR-003: supported replacement models within the original spending cap
 
-**Status:** accepted for implementation; actual replacement journey pending
+**Status:** implemented; actual replacement journey stopped at writer validation, final note review pending
 
 **Date:** 24 October 2026
 **Decision basis:** Bounded replacement model profiles preserve the existing spending authorization, source validation and separate human review gates.

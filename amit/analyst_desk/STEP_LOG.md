@@ -149,3 +149,11 @@ Locally revalidated the unchanged cached response successfully with zero provide
 ## Step 10h — Expand known-secret scanning
 
 The secret guard now includes every regular nonsymlink key in the private vault alongside active, retired and analyst credentials. Twelve fictional-key tests passed in 1.62 seconds, including a never-active vault key detected in staged files and removed historical blobs without disclosing its value. No key, private index or confirmation text is a Git artifact. The guard scans known real credentials locally before each push without printing them.
+
+## Step 10i — Preserve the current pilot checkpoint before the next increment
+
+After the temporal-reference deployment, explicitly continued the same approved run. It reused the successful Microsoft risk response from cache without another charge, obtained the Apple risk response, and reached writer validation. Both issuer risk outputs passed the finite-quote/provenance checks. The writer included calendar dates in qualitative prose, which this live slice disallows; the exact response was rejected. Its dates were not silently removed or accepted. The critic has not yet generated a verdict, no live note approval occurred, and no live note was published.
+
+Current run totals are seven billed model calls, 29,862 observed tokens, twenty-two MCP calls and US$0.014604 provider-reported cost. There was one actual human plan approval and two explicit continuations. Lifetime reported spend is US$0.0152488; old uncertain holds remain US$0.1688064; US$0.8159448 remains under the original US$1 cap. Both prior notes are unchanged and all nineteen current runtime checks pass. `evidence/live_pilot_status.json` records the current checkpoint; earlier failures remain historical evidence.
+
+The checkpoint remained stopped before writer correction. The remaining live-journey work was writer validation, model criticism, exact-note approval, publication and restart verification. Learned retrieval/memory, robustness, independent E1–E4 evaluation and final team deliverables remain later capstone work.

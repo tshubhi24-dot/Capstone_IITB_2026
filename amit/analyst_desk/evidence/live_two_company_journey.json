@@ -1,6 +1,6 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T09:41:25.594781+00:00",
+  "updated_at": "2026-10-24T09:46:07.796464+00:00",
   "base_url": "http://127.0.0.1:18080",
   "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
   "status": "error",
@@ -44,10 +44,10 @@
     "semantic_review": null
   },
   "usage": {
-    "tokens": 11113,
-    "tool_calls": 16,
-    "model_calls": 5,
-    "cost_usd": 0.0061524
+    "tokens": 29862,
+    "tool_calls": 22,
+    "model_calls": 7,
+    "cost_usd": 0.014604
   },
   "note_id": null,
   "decision_requests": [
@@ -62,6 +62,11 @@
   "continuation_requests": [
     {
       "time": "2026-10-24T09:41:19.490567+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true
+    },
+    {
+      "time": "2026-10-24T09:45:56.633895+00:00",
       "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
       "accepted_by_api": true
     }
