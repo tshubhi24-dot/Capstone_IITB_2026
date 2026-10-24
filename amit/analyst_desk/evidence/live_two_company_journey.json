@@ -1,10 +1,10 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T11:12:23.772090+00:00",
+  "updated_at": "2026-10-24T11:52:11.071758+00:00",
   "base_url": "http://127.0.0.1:18080",
   "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
-  "status": "error",
-  "stage": "error",
+  "status": "published",
+  "stage": "published",
   "configuration": {
     "data_source": "sec_edgar",
     "transport": "http",
@@ -37,28 +37,35 @@
   },
   "expected_human_action": null,
   "verification": {
-    "passed": null,
-    "verified_share": null,
-    "verified_numbers": null,
-    "total_numbers": null,
-    "semantic_review": null
+    "passed": true,
+    "verified_share": 1.0,
+    "verified_numbers": 18,
+    "total_numbers": 18,
+    "semantic_review": "model_assisted_not_gold"
   },
   "usage": {
-    "tokens": 60185,
-    "tool_calls": 23,
-    "model_calls": 13,
-    "cost_usd": 0.0333525,
+    "tokens": 75452,
+    "tool_calls": 24,
+    "model_calls": 14,
+    "cost_usd": 0.0365539,
     "held_usd": 0.18184,
-    "committed_usd": 0.2151925,
+    "committed_usd": 0.2183939,
     "accounting_status": "provider_reported_with_holds"
   },
-  "note_id": null,
+  "note_id": "9d25c35689414067bb219d53ef330a96",
   "decision_requests": [
     {
       "time": "2026-10-24T09:29:12.828761+00:00",
       "kind": "plan",
       "action": "approve",
       "payload_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true
+    },
+    {
+      "time": "2026-10-24T11:48:32.717135+00:00",
+      "kind": "note",
+      "action": "approve",
+      "payload_hash": "2a248617fe85e8c107a6a761baac475ef51debe9181a1676ee00a8c00f6273ac",
       "accepted_by_api": true
     }
   ],
@@ -100,6 +107,12 @@
       "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
       "accepted_by_api": true,
       "critic_extension": "54e72b92a65a41a9aa8995de34623773"
+    },
+    {
+      "time": "2026-10-24T11:47:04.267478+00:00",
+      "plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+      "accepted_by_api": true,
+      "critic_extension": "1f0ca681e7a842698503e849a4cb4a11"
     }
   ],
   "continuation": {

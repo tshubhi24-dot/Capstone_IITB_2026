@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-24T11:10:27.485948+00:00",
+  "checked_at_utc": "2026-10-24T11:50:46.882176+00:00",
   "project": "analyst-desk-journey",
   "docker_context": "desktop-linux",
   "status": "passed",
@@ -41,12 +41,12 @@
         "enabled": true,
         "cap_usd": "1.00",
         "per_run_usd": "0.50",
-        "reported_spend_usd": "0.0296596",
+        "reported_spend_usd": "0.0371987",
         "held_usd": "0.3506464",
-        "committed_usd": "0.3803060",
-        "remaining_authorization_usd": "0.6196940",
-        "model_calls": 19,
-        "tokens": 647353,
+        "committed_usd": "0.3878451",
+        "remaining_authorization_usd": "0.6121549",
+        "model_calls": 21,
+        "tokens": 662620,
         "uncertain_calls": 9,
         "blocked": false,
         "models": {
@@ -61,7 +61,7 @@
       "name": "existing_offline_approved_note_preserved",
       "passed": true,
       "observed": {
-        "note_count": 2,
+        "note_count": 3,
         "original_offline_note_present": true
       }
     },
@@ -176,12 +176,12 @@
     "enabled": true,
     "cap_usd": "1.00",
     "per_run_usd": "0.50",
-    "reported_spend_usd": "0.0296596",
+    "reported_spend_usd": "0.0371987",
     "held_usd": "0.3506464",
-    "committed_usd": "0.3803060",
-    "remaining_authorization_usd": "0.6196940",
-    "model_calls": 19,
-    "tokens": 647353,
+    "committed_usd": "0.3878451",
+    "remaining_authorization_usd": "0.6121549",
+    "model_calls": 21,
+    "tokens": 662620,
     "uncertain_calls": 9,
     "blocked": false,
     "models": {

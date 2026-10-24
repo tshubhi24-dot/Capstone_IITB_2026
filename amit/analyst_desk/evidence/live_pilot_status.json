@@ -1,33 +1,57 @@
 {
   "record_kind": "live_pilot_status",
-  "checked_at_utc": "2026-10-24T11:35:21.738161+00:00",
+  "checked_at_utc": "2026-10-24T11:51:28.999049+00:00",
   "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
-  "status": "critic_response_received_but_output_rejected",
-  "approved_plan_hash": "80d3749f49399aef7d155696cbd52ce2745f78c4695419ef99292dd8344528bd",
+  "status": "completed_human_approved_live_journey",
+  "capstone_step": 10,
+  "note_id": "9d25c35689414067bb219d53ef330a96",
+  "approved_note_hash": "2a248617fe85e8c107a6a761baac475ef51debe9181a1676ee00a8c00f6273ac",
   "human_plan_approval_recorded": true,
-  "human_plan_approval_count": 1,
-  "model_calls_this_run": 13,
-  "observed_tokens_this_run": 68022,
-  "gateway_tokens_including_reservations": 254246,
-  "provider_reported_cost_this_run_usd": "0.0333525",
-  "lifetime_reported_spend_usd": "0.0339973",
-  "uncertain_holds_usd": "0.3506464",
-  "remaining_original_authorization_usd": "0.6153563",
+  "human_note_approval_recorded": true,
   "writer_output_verified": true,
+  "critic_model": "google/gemini-2.5-flash",
+  "producer_model": "mistralai/mistral-medium-3.1",
+  "critic_passed": true,
+  "supported_claims": 7,
   "verified_numbers": 18,
   "total_numbers": 18,
-  "risk_quote_identifier_checks_passed": true,
-  "critic_attempts": 4,
-  "critic_verdict_available": false,
-  "producer_model": "mistralai/mistral-medium-3.1",
-  "critic_model_configured": "google/gemini-2.5-flash",
+  "model_calls_this_run": 14,
+  "known_provider_tokens_this_run": 75452,
+  "tool_calls_this_run": 24,
+  "provider_reported_cost_this_run_usd": "0.0365539",
+  "run_uncertain_holds_usd": "0.1818400",
+  "lifetime_reported_spend_usd": "0.0371987",
+  "uncertain_holds_usd": "0.3506464",
+  "remaining_original_authorization_usd": "0.6121549",
+  "original_dollar_caps": {
+    "desk_usd": "1.00",
+    "run_usd": "0.50"
+  },
+  "original_request_caps_preserved": {
+    "max_calls": 12,
+    "max_tokens": 250000
+  },
+  "separately_authorized_exact_call_allowances": [
+    {
+      "call": 13,
+      "token_bound": 300000
+    },
+    {
+      "call": 14,
+      "token_bound": 350000
+    }
+  ],
+  "live_note_published": true,
+  "library_note_count": 3,
   "old_note_count": 2,
   "old_notes_unchanged": true,
-  "note_approval_recorded": false,
-  "live_note_published": false,
-  "runtime_checks": "19 passed before final critic attempt",
-  "next_step": "Deploy private invalid-output retention, specific diagnostics and corrected settled-token accounting. Prepare one exact14thcall amendment within unchangedUSD1/.50 caps. Final note approval remains separate.",
-  "limits": "Learning pilot; internal model criticism is not independent capstone evaluation. Uncertain charges remain unknown.",
-  "critic_generation_http_success": true,
-  "extra_call_13_approved_and_consumed": true
+  "restart_persistence_verified": true,
+  "runtime_checks": "19 passed after final restart",
+  "local_tests": "500 passed",
+  "next_step": "Team role assignment and domain review; improve retrieval/memory and reviewed learning, run robustness and independent evaluation, then prepare the report/demo/viva.",
+  "limits": [
+    "Partial selected SEC evidence",
+    "Original risk-section boundaries and economic materiality remain unverified",
+    "No independent capstone benchmark or investment recommendation"
+  ]
 }

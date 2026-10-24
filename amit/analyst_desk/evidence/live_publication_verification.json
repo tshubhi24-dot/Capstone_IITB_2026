@@ -1,0 +1,40 @@
+{
+  "record_kind": "live_note_publication_and_restart_verification",
+  "checked_at_utc": "2026-10-24T11:50:43.123647+00:00",
+  "run_id": "2b3a7913d508441ab0e7ce0c7d5120fa",
+  "status": "published",
+  "note_id": "9d25c35689414067bb219d53ef330a96",
+  "approved_note_hash": "2a248617fe85e8c107a6a761baac475ef51debe9181a1676ee00a8c00f6273ac",
+  "human_note_approval_recorded": true,
+  "separate_human_plan_approval_recorded": true,
+  "critic_passed": true,
+  "supported_claims": 7,
+  "verified_numbers": 18,
+  "total_numbers": 18,
+  "library_note_count": 3,
+  "old_note_count": 2,
+  "old_notes_unchanged": true,
+  "app_and_gateway_restarted": true,
+  "exact_note_persisted": true,
+  "library_unchanged_across_restart": true,
+  "budget_and_usage_unchanged_across_restart": true,
+  "no_new_model_calls_during_save_or_restart": true,
+  "model_calls": 14,
+  "known_tokens": 75452,
+  "tool_calls": 24,
+  "reported_run_spend_usd": "0.0365539",
+  "run_uncertain_holds_usd": "0.1818400",
+  "lifetime_reported_spend_usd": "0.0371987",
+  "lifetime_holds_usd": "0.3506464",
+  "remaining_original_authorization_usd": "0.6121549",
+  "original_dollar_caps": {
+    "desk_usd": "1.00",
+    "run_usd": "0.50"
+  },
+  "semantic_review": "model_assisted_not_gold",
+  "limitations": [
+    "Partial selected SEC evidence",
+    "Original risk-section boundaries and economic materiality remain unverified",
+    "No independent capstone benchmark or investment recommendation"
+  ]
+}

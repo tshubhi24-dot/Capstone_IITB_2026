@@ -1,6 +1,6 @@
 # ADR-003: supported replacement models within the original spending cap
 
-**Status:** writer verified; three critic rate-limit stops retained; different-provider critic and exact extra-call approval being prepared
+**Status:** completed live pilot with Google critic, explicit final note approval and verified persistence
 
 **Date:** 24 October 2026
 **Decision basis:** Bounded replacement model profiles preserve the existing spending authorization, source validation and separate human review gates.
@@ -75,3 +75,11 @@ Large 2407 also returned HTTP 429 on the reviewed route. No AI verdict was obtai
 The next critic attempt requires a separate run-limit extension. Prepare `google/gemini-2.5-flash` as critic, pinned to `google-ai-studio`, with Medium 3.1 retained for producing roles through `mistral/zdr`. Routing must be explicit per role, with no fallback. The authenticated account catalogue lists the Google model; its [endpoint metadata](https://openrouter.ai/api/v1/models/google/gemini-2.5-flash/endpoints) advertises structured outputs and input/output rates of US$0.30/US$2.50 per million tokens. Disable optional reasoning for this bounded output; all reported completion tokens remain counted. Endpoint/account listing is a candidate check, not a guarantee of access or successful generation. Any new refusal stops the attempt.
 
 Prepare one append-only human-approved grant for the exact frozen critic request. It binds the existing run, original plan and draft, new policy, exact call ID and gateway request hash, and complete pre-call ledger checkpoint. It permits absolute bounds of thirteen calls and 300,000 tokens for that one critic call only, consumes atomically with its reservation and never raises or rewrites the original limits. A fourteenth call remains blocked. The new 51,152-token reservation would total 297,561 tokens and at most US$0.0197456, within the unchanged US$1 desk and US$0.50 run dollar caps. All previous charges and holds remain. The grant must not be applied before explicit approval of its exact proposal; generated note approval remains separate.
+
+## Observed completed pilot
+
+The explicitly approved thirteenth Google request connected and billed US$0.0043377, but failed local output validation. Its body was not retained, and provider logging was off; the precise formatting cause remains unknown. Added private rejected-output quarantine, exact diagnostic stages, settled-failure token reconciliation and brief-format instructions without weakening source or financial checks. A separately authorized append-only exact fourteenth-call amendment retained the consumed first grant and all old holds.
+
+The actual fourteenth Google call supported every one of the seven claims with no issues. Code passed all eighteen financial values. The human note gate approved the exact cited version. The note was saved as `9d25c35689414067bb219d53ef330a96`; the exact note, library and spending records survived app/gateway restart. No model call was made for saving or restart verification. There are 500 passing local tests and nineteen passing final runtime checks. See [actual critique](../evidence/live_critic_review.json) and [publication verification](../evidence/live_publication_verification.json).
+
+This demonstrates the bounded learning journey, not independent semantic accuracy or full capstone completion. The note retains partial-evidence, fiscal-comparability and original-section limitations. Historical refusals, failed outputs, uncertain reservations and the two separate extension decisions remain recorded.

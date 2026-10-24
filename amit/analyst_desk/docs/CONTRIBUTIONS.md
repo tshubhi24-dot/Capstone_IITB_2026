@@ -41,6 +41,7 @@ Record each action when it occurs, including adopted/rejected AI suggestions, so
 | Date | Member | Decision or work performed | Files or run IDs | Evidence and reviewer |
 |---|---|---|---|---|
 | 24 October 2026 | Amit | Approved the MSFT/AAPL plan and the exact checked note through separate review gates. | Run `b1fd4eab632548328f354ef2794f679a`; note `c54ab4c70fc64615a95dfc8c462ba0c3`. | Approval states and exact payload hashes in `evidence/two_company_journey.json`; independent source/domain evaluation not claimed. |
+| 24 October 2026 | Amit | Directed supported-model selection, authorized bounded critic allowances and approved the exact cited live note for local saving after reviewing its 18 checked values and seven supported claims. | Run `2b3a7913d508441ab0e7ce0c7d5120fa`; note `9d25c35689414067bb219d53ef330a96`. | `evidence/live_critic_review.json` and `evidence/live_publication_verification.json`. Implementation and diagnostic fixes were AI-assisted; this is not independent evaluation. |
 | 24 October 2026 | Amit | Authorized the bounded live policy, retaining separate plan and note review gates. | Policy `eed8a14ef850032984ce4ea14d49c164d7c5926c8ede046e1fdf5a2c484ad3e0`. | Policy limits and activation state in `evidence/live_activation.json`; stopped-run receipt under `evidence/live_attempts/`. |
 | Pending | Pending | Pending | Pending | Pending |
 
