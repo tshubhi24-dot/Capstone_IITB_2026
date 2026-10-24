@@ -228,3 +228,53 @@ def test_continuation_cli_requires_existing_plan_hash():
     with pytest.raises(SystemExit) as error:
         journey.parser().parse_args(["continue", "run-1"])
     assert error.value.code == 2
+
+
+def test_critic_rate_limit_retry_requires_explicit_client_flag_and_retains_receipt(client, monkeypatch):
+    client.mode = "live"
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live", "max_model_calls": 12},
+                 continuation={"available": False, "retry_transient_available": True,
+                               "plan_hash": HASH, "failure_kind": "critic_rate_limit"},
+                 usage={"model_calls": 10, "held_usd": .035768})
+    calls = []
+    posted = False
+    def request(method, path, body=None):
+        nonlocal posted
+        calls.append((method, path, body))
+        if path == "/api/config":
+            return config(mode="offline", live_enabled=True)
+        if method == "POST":
+            posted = True
+            return {**failed, "status": "running", "pending": None}
+        if posted:
+            return run("note", request=failed["request"], usage={"model_calls": 11, "held_usd": .035768})
+        return failed
+    monkeypatch.setattr(client, "request", request)
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH)
+    assert all(item[0] == "GET" for item in calls)
+    receipt = client.continue_run("run-1", expected_plan_hash=HASH, retry_transient=True)
+    assert [item for item in calls if item[0] == "POST"] == [
+        ("POST", "/api/runs/run-1/continue", {"plan_hash": HASH, "retry_transient": True})]
+    assert receipt["usage"]["held_usd"] == .035768
+    assert receipt["continuation_requests"][-1]["retry_transient"] is True
+    assert receipt["decision_requests"] == []
+    args = journey.parser().parse_args(["continue", "run-1", "--expected-plan-hash", HASH, "--retry-transient"])
+    assert args.retry_transient is True
+
+
+@pytest.mark.parametrize("case", ["content_only", "provider_refusal", "exhausted", "invalid_flag"])
+def test_explicit_transient_retry_does_not_post_when_hint_is_ineligible(client, monkeypatch, case):
+    client.mode = "live"
+    hint = {"available": case == "content_only", "retry_transient_available": False,
+            "plan_hash": HASH, "failure_kind": "provider_http_403" if case == "provider_refusal" else "not_eligible"}
+    failed = run(status="error", request={**journey.REQUEST, "mode": "live"}, continuation=hint)
+    calls = []
+    def request(method, path, body=None):
+        calls.append((method, path, body))
+        return config(mode="offline", live_enabled=True) if path == "/api/config" else failed
+    monkeypatch.setattr(client, "request", request)
+    with pytest.raises(journey.JourneyError):
+        client.continue_run("run-1", expected_plan_hash=HASH, retry_transient="true" if case == "invalid_flag" else True)
+    assert all(item[0] == "GET" for item in calls)
+    assert not client.session_path.exists()

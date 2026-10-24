@@ -1,6 +1,6 @@
 # Analyst Desk — Amit's step-by-step contribution
 
-This folder contains the current capstone work prepared from the beginning. It does not import the earlier generated reference application, old reports or old benchmark results. Other team members' folders remain unchanged.
+This folder contains the current capstone work prepared from the beginning. It does not import the earlier generated reference application, old reports or old benchmark results. This branch's current tree is scoped to Amit's contribution; other contributors' work remains in `main`. See [branch scope](docs/BRANCH_SCOPE.md).
 
 **Working branch:** `Amit/analyst_desk`. Push work to this branch for team review. Do not push or merge these changes directly into `main`; integration is a separate team decision.
 

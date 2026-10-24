@@ -1,5 +1,6 @@
 """Live graph integration with real schemas/ledger boundaries and fake paid transport."""
 from copy import deepcopy
+from decimal import Decimal
 import json
 
 import pytest
@@ -363,3 +364,156 @@ def test_unrecognized_gateway_code_is_not_copied_into_run_trace(fixture):
     assert run["status"] == "error" and private_code not in json.dumps(run)
     event = next(item for item in run["events"] if item["stage"] == "model_error")
     assert event["details"]["error_code"] == "gateway_request_failed"
+
+
+class RateLimitedCritic(FakeModelClient):
+    """Fictional held critic attempt, not a real provider response."""
+    def __init__(self, *, code="provider_http_429", fail_accounting_after_retry=False, reject=False, repeat_failure=False):
+        super().__init__()
+        self.failed_id = None
+        self.code = code
+        self.fail_accounting_after_retry = fail_accounting_after_retry
+        self.reject = reject
+        self.repeat_failure = repeat_failure
+
+    def complete(self, **request):
+        if request["role"] == "critic" and (self.failed_id is None or self.repeat_failure):
+            self.failed_id = self.failed_id or request["call_id"]
+            self.calls.append(deepcopy(request))
+            raise ProviderError(self.code, "Test-only temporary provider failure.")
+        result = super().complete(**request)
+        if request["role"] == "critic" and self.reject:
+            result["content"]["issues"] = ["Test-only source support concern."]
+            result["content"]["verdicts"][0]["supported"] = False
+            self.cache[request["call_id"]] = deepcopy(result)
+        return result
+
+    def budget(self, run_id):
+        if self.fail_accounting_after_retry and len(self.cache) >= 7:
+            raise RuntimeError("test-only unavailable accounting")
+        cost = Decimal(len(self.cache)) * Decimal("0.001")
+        held = Decimal("0.035768")
+        return {"run_id": run_id, "blocked": False, "uncertain_calls": 1,
+                "model_calls": len(self.calls), "reported_spend_usd": str(cost),
+                "held_usd": str(held), "committed_usd": str(cost + held),
+                "tokens": len(self.cache) * 20 + 67536}
+
+
+def critic_rate_failure(engine, store, *, max_model_calls=12, **options):
+    engine.model_client = RateLimitedCritic(**options)
+    plan = begin_live(engine, store, max_model_calls=max_model_calls)
+    failed = decide(engine, plan)
+    assert failed["status"] == "error" and len(engine.model_client.calls) == 7
+    return plan, failed
+
+
+@pytest.mark.parametrize("legacy", [False, True])
+def test_one_explicit_critic_429_retry_preserves_frozen_draft_holds_and_approval(fixture, legacy):
+    engine, store, source, _, _, _ = fixture
+    plan, failed = critic_rate_failure(engine, store)
+    original_request = deepcopy(failed["request"])
+    original_calls = deepcopy(failed["usage"]["calls"])
+    original_reservations = deepcopy(failed["usage"]["model_reservations"])
+    if legacy:
+        stored = store.get_run(failed["id"])
+        for field in ("draft", "source_fingerprint", "plan_approval", "failure_kind"):
+            stored.pop(field, None)
+        store.save_run(stored)
+    view = engine.view(failed["id"])
+    assert view["continuation"]["available"] is False
+    assert view["continuation"]["retry_transient_available"] is True
+    assert engine.execute(failed["id"])["status"] == "error" and len(engine.model_client.calls) == 7
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"])
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    claimed = store.get_run(failed["id"])
+    assert claimed["usage"]["model_reservations"] == original_reservations
+    assert claimed["transient_critic_retry"]["draft_hash"] == canonical_hash(claimed["draft"])
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    note = engine.execute(failed["id"])
+    assert note["status"] == "awaiting_note", note.get("error")
+    assert note["request"] == original_request and note["plan"] == plan["plan"]
+    assert note["usage"]["calls"][:6] == original_calls
+    assert note["usage"]["model_reservations"] == original_reservations
+    assert note["usage"]["model_calls"] == len(engine.model_client.calls) == 8
+    assert len(note["usage"]["calls"]) == 7 and note["usage"]["tokens"] == 140
+    assert note["usage"]["held_usd"] == .035768 and note["usage"]["cost_usd"] == .007
+    assert note["usage"]["gateway_budget"]["tokens"] > note["usage"]["tokens"]
+    critic_calls = [request for request in engine.model_client.calls if request["role"] == "critic"]
+    assert critic_calls[0]["call_id"] != critic_calls[1]["call_id"]
+    assert critic_calls[0]["messages"] == critic_calls[1]["messages"]
+    assert sum(event["stage"] == "plan_approved" for event in note["events"]) == 1
+    assert verify_draft(note["draft"], source)["passed"] and store.notes() == []
+
+
+@pytest.mark.parametrize("change", ["403", "timeout", "other_reservation", "draft", "plan", "accounting", "exhausted"])
+def test_explicit_429_retry_rejects_other_failures_or_changed_original_bounds(fixture, change):
+    engine, store, _, _, _, _ = fixture
+    code = {"403": "provider_http_403", "timeout": "provider_read_timeout"}.get(change, "provider_http_429")
+    plan, failed = critic_rate_failure(engine, store, code=code)
+    stored = store.get_run(failed["id"])
+    if change == "other_reservation":
+        stored["usage"]["model_reservations"]["another-ambiguous-call"] = 100
+    elif change == "draft":
+        snapshot = engine.graph.get_state({"configurable": {"thread_id": failed["id"]}})
+        stored["draft"] = {**snapshot.values["draft"], "body": "Unreviewed changed body"}
+    elif change == "plan":
+        stored["plan"]["outline"].append("Unapproved scope")
+    elif change == "accounting":
+        stored["usage"]["gateway_budget"]["uncertain_calls"] = 0
+    elif change == "exhausted":
+        stored["usage"]["model_calls"] = stored["request"]["max_model_calls"]
+    store.save_run(stored)
+    before = deepcopy(stored)
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    assert store.get_run(failed["id"]) == before and len(engine.model_client.calls) == 7
+
+
+def test_frozen_critic_checkpoint_rechecked_before_explicit_retry(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = critic_rate_failure(engine, store)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    stored = store.get_run(failed["id"])
+    stored["draft"]["body"] += "Unreviewed change"
+    store.save_run(stored)
+    stopped = engine.execute(failed["id"])
+    assert stopped["status"] == "error" and len(engine.model_client.calls) == 7
+    assert stopped["usage"]["held_usd"] == .035768 and store.notes() == []
+
+
+def test_second_rate_limit_cannot_get_another_explicit_retry(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = critic_rate_failure(engine, store, repeat_failure=True)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    stopped = engine.execute(failed["id"])
+    assert stopped["status"] == "error" and len(engine.model_client.calls) == 8
+    assert stopped["continuation"] == {"available": False}
+    assert len(stopped["usage"]["model_reservations"]) == 2
+    with pytest.raises(ReviewError):
+        engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+
+
+def test_retry_success_with_unavailable_accounting_never_refunds_old_hold(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = critic_rate_failure(engine, store, fail_accounting_after_retry=True)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    note = engine.execute(failed["id"])
+    assert note["status"] == "awaiting_note"
+    assert note["usage"]["model_calls"] == 8 and note["usage"]["tokens"] == 140
+    assert note["usage"]["held_usd"] == .035768
+    assert note["usage"]["cost_usd"] is None and note["usage"]["accounting_status"] == "unknown_after_retry"
+
+
+def test_failed_retry_critic_does_not_buy_unreviewable_repair_with_one_slot(fixture):
+    engine, store, _, _, _, _ = fixture
+    plan, failed = critic_rate_failure(engine, store, max_model_calls=9, reject=True)
+    engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"], retry_transient=True)
+    note = engine.execute(failed["id"])
+    assert note["status"] == "awaiting_note" and note["critic"]["passed"] is False
+    assert note["usage"]["model_calls"] == 8 and len(engine.model_client.calls) == 8
+    assert sum(request["role"] == "writer" for request in engine.model_client.calls) == 1
+    with pytest.raises(ReviewError):
+        engine.claim(note["id"], {"kind": "note", "action": "approve", "payload_hash": note["pending"]["payload_hash"]})
+    assert store.notes() == []

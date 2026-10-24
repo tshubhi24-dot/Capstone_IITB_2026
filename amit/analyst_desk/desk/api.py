@@ -92,6 +92,7 @@ class Decision(BaseModel):
 class Continuation(BaseModel):
     model_config = ConfigDict(extra="forbid")
     plan_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+    retry_transient: bool = Field(default=False, strict=True)
 
 
 def owned(run_id):
@@ -245,7 +246,10 @@ def continue_research(run_id: str, value: Continuation, background: BackgroundTa
     if not enabled:
         raise HTTPException(409, "Live AI is unavailable or its original spending authorization is disabled, blocked or exhausted.")
     try:
-        app.state.engine.claim_continuation(run_id, value.plan_hash)
+        if value.retry_transient:
+            app.state.engine.claim_continuation(run_id, value.plan_hash, retry_transient=True)
+        else:
+            app.state.engine.claim_continuation(run_id, value.plan_hash)
     except ReviewError as exc:
         raise HTTPException(409, str(exc)) from exc
     background.add_task(app.state.engine.execute, run_id)
