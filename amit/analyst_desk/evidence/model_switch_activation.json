@@ -1,0 +1,27 @@
+{
+  "record_kind": "supported_model_switch_activation",
+  "checked_at_utc": "2026-10-24T09:22:40.148402+00:00",
+  "status": "enabled_no_replacement_generation_yet",
+  "proposal_hash": "a6602461f47ee912cdd7c7bbfc57cdbedd1549a6a69277267b74736580ba006e",
+  "profile": "live-step10-mistral-v1",
+  "models": {
+    "producer": "mistralai/mistral-medium-3.1",
+    "critic": "mistralai/mistral-large-2512"
+  },
+  "provider": "mistral/zdr",
+  "authorization_basis": "Supported-model selection within unchanged spending authorization; exact model IDs selected by the operator.",
+  "new_spending_allowance_granted": false,
+  "cap_usd": "1.00",
+  "per_run_usd": "0.50",
+  "model_calls_before_replacement": 6,
+  "held_usd": "0.1688064",
+  "remaining_usd": "0.8311936",
+  "previous_note_count": 2,
+  "prior_notes_unchanged": true,
+  "prior_ledger_totals_unchanged": true,
+  "original_policy_privately_archived": true,
+  "runtime_checks_passed": 19,
+  "replacement_generation_requests": 0,
+  "plan_approval": false,
+  "note_approval": false
+}

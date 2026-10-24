@@ -1,16 +1,16 @@
 {
   "record_kind": "manual_two_company_learning_journey",
-  "updated_at": "2026-10-24T08:47:32.488095+00:00",
+  "updated_at": "2026-10-24T09:22:44.300618+00:00",
   "base_url": "http://127.0.0.1:18080",
-  "run_id": "e71ebfd9308e4ade87b85609e814cb49",
-  "status": "error",
-  "stage": "error",
+  "run_id": "67904e6d14b34fc5a8397fa344bf897b",
+  "status": "awaiting_plan",
+  "stage": "awaiting_plan",
   "configuration": {
     "data_source": "sec_edgar",
     "transport": "http",
     "semantic_retrieval": false,
     "mode": "live",
-    "model_config_version": "live-step6-openrouter-v1"
+    "model_config_version": "live-step10-mistral-v1"
   },
   "request": {
     "tickers": [
@@ -30,12 +30,37 @@
     "learning_split": "production"
   },
   "pending_review": {
-    "kind": null,
-    "payload_hash": null,
-    "plan": null,
+    "kind": "plan",
+    "payload_hash": "ea2c1d8415394925b573bb6744ec2259d51ff51661c6b706d22e79f7d63b3a25",
+    "plan": {
+      "tickers": [
+        "MSFT",
+        "AAPL"
+      ],
+      "years": [
+        2023,
+        2024,
+        2025
+      ],
+      "outline": [
+        "Extract operating margin for Microsoft (MSFT) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
+        "Extract operating margin for Apple (AAPL) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
+        "Identify and compare disclosed risk factors affecting operating margins in each company's fiscal 2023-2025 filings",
+        "Note fiscal calendar differences (MSFT: July-June; AAPL: October-September) and partial-year data limitations",
+        "State uncertainty in forward-looking 2025 data and comparability constraints"
+      ],
+      "caveats": [
+        "Fiscal years for MSFT and AAPL do not align (MSFT ends June 30; AAPL ends last Saturday of September)",
+        "2025 data may be partial or estimated; rely only on filed 10-K/10-Q disclosures",
+        "Operating margin definitions may vary (e.g., inclusion/exclusion of certain costs); verify calculation basis in filings",
+        "Risk factor disclosures are qualitative; changes may not directly correlate with margin movements",
+        "Model-assisted reasoning needs human source review.",
+        "Fiscal calendars differ; selected excerpts do not establish complete original filing coverage."
+      ]
+    },
     "note_title": null
   },
-  "expected_human_action": null,
+  "expected_human_action": "Review the exact plan and explicitly approve, edit or reject it.",
   "verification": {
     "passed": null,
     "verified_share": null,
@@ -44,13 +69,10 @@
     "semantic_review": null
   },
   "usage": {
-    "tokens": 0,
+    "tokens": 528,
     "tool_calls": 0,
     "model_calls": 1,
-    "cost_usd": 0.0,
-    "held_usd": 0.0281344,
-    "committed_usd": 0.0281344,
-    "accounting_status": "provider_reported_with_holds"
+    "cost_usd": 0.0006448
   },
   "note_id": null,
   "decision_requests": [],

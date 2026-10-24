@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-24T09:01:34.114239+00:00",
+  "checked_at_utc": "2026-10-24T09:22:40.038847+00:00",
   "project": "analyst-desk-journey",
   "docker_context": "desktop-linux",
   "status": "passed",
@@ -48,7 +48,13 @@
         "model_calls": 6,
         "tokens": 400416,
         "uncertain_calls": 6,
-        "blocked": false
+        "blocked": false,
+        "models": {
+          "producer": "mistralai/mistral-medium-3.1",
+          "critic": "mistralai/mistral-large-2512"
+        },
+        "model_profile": "live-step10-mistral-v1",
+        "provider": "mistral/zdr"
       }
     },
     {
@@ -177,12 +183,20 @@
     "model_calls": 6,
     "tokens": 400416,
     "uncertain_calls": 6,
-    "blocked": false
+    "blocked": false,
+    "models": {
+      "producer": "mistralai/mistral-medium-3.1",
+      "critic": "mistralai/mistral-large-2512"
+    },
+    "model_profile": "live-step10-mistral-v1",
+    "provider": "mistral/zdr"
   },
   "models": {
-    "producer": "openai/gpt-4.1-mini",
-    "critic": "openai/gpt-4.1"
+    "producer": "mistralai/mistral-medium-3.1",
+    "critic": "mistralai/mistral-large-2512"
   },
+  "model_profile": "live-step10-mistral-v1",
+  "provider": "mistral/zdr",
   "run_creation_probes_sent": 0,
   "research_runs_created_by_verifier": 0,
   "human_decisions_performed": false,

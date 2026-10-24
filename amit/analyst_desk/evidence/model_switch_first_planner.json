@@ -1,0 +1,18 @@
+{
+  "checked_at_utc": "2026-10-24T09:24:13.068352+00:00",
+  "status": "provider_succeeded_plan_needs_correction",
+  "run_id": "67904e6d14b34fc5a8397fa344bf897b",
+  "model": "mistralai/mistral-medium-3.1",
+  "calls_in_this_run": 1,
+  "provider_reported_cost_usd": "0.0006448",
+  "observed_tokens": 528,
+  "lifetime_model_calls": 7,
+  "lifetime_reported_spend_usd": "0.0006448",
+  "earlier_uncertain_holds_usd": "0.1688064",
+  "remaining_original_authorization_usd": "0.8305488",
+  "both_prior_notes_unchanged": true,
+  "plan_approved": false,
+  "note_approved": false,
+  "published": false,
+  "scope": "Actual supported-route planner success; semantic scope error found before human approval. Not a completed research journey."
+}

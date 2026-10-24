@@ -1,0 +1,94 @@
+{
+  "record_kind": "manual_two_company_learning_journey",
+  "updated_at": "2026-10-24T09:22:44.300618+00:00",
+  "base_url": "http://127.0.0.1:18080",
+  "run_id": "67904e6d14b34fc5a8397fa344bf897b",
+  "status": "awaiting_plan",
+  "stage": "awaiting_plan",
+  "configuration": {
+    "data_source": "sec_edgar",
+    "transport": "http",
+    "semantic_retrieval": false,
+    "mode": "live",
+    "model_config_version": "live-step10-mistral-v1"
+  },
+  "request": {
+    "tickers": [
+      "MSFT",
+      "AAPL"
+    ],
+    "years": [
+      2023,
+      2024,
+      2025
+    ],
+    "strategy": "multi",
+    "mode": "live",
+    "max_tokens": 250000,
+    "max_model_calls": 12,
+    "max_tool_calls": 60,
+    "learning_split": "production"
+  },
+  "pending_review": {
+    "kind": "plan",
+    "payload_hash": "ea2c1d8415394925b573bb6744ec2259d51ff51661c6b706d22e79f7d63b3a25",
+    "plan": {
+      "tickers": [
+        "MSFT",
+        "AAPL"
+      ],
+      "years": [
+        2023,
+        2024,
+        2025
+      ],
+      "outline": [
+        "Extract operating margin for Microsoft (MSFT) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
+        "Extract operating margin for Apple (AAPL) for fiscal years 2023, 2024, and 2025 from 10-K/10-Q filings",
+        "Identify and compare disclosed risk factors affecting operating margins in each company's fiscal 2023-2025 filings",
+        "Note fiscal calendar differences (MSFT: July-June; AAPL: October-September) and partial-year data limitations",
+        "State uncertainty in forward-looking 2025 data and comparability constraints"
+      ],
+      "caveats": [
+        "Fiscal years for MSFT and AAPL do not align (MSFT ends June 30; AAPL ends last Saturday of September)",
+        "2025 data may be partial or estimated; rely only on filed 10-K/10-Q disclosures",
+        "Operating margin definitions may vary (e.g., inclusion/exclusion of certain costs); verify calculation basis in filings",
+        "Risk factor disclosures are qualitative; changes may not directly correlate with margin movements",
+        "Model-assisted reasoning needs human source review.",
+        "Fiscal calendars differ; selected excerpts do not establish complete original filing coverage."
+      ]
+    },
+    "note_title": null
+  },
+  "expected_human_action": "Review the exact plan and explicitly approve, edit or reject it.",
+  "verification": {
+    "passed": null,
+    "verified_share": null,
+    "verified_numbers": null,
+    "total_numbers": null,
+    "semantic_review": null
+  },
+  "usage": {
+    "tokens": 528,
+    "tool_calls": 0,
+    "model_calls": 1,
+    "cost_usd": 0.0006448
+  },
+  "note_id": null,
+  "decision_requests": [],
+  "limitations": [
+    "This is an ordinary learning run, not a protected final benchmark.",
+    "An operator-supplied confirmation records the cited decision; the helper does not independently verify human identity.",
+    "Full outputs, errors and confirmation text are retained privately, not copied into this public receipt."
+  ],
+  "operator_review": {
+    "status": "correction_required_before_human_approval",
+    "findings": [
+      "The outline mixes annual and quarterly filings despite the fixed annual source scope.",
+      "The plan describes fiscal 2025 as forward-looking or potentially partial; verified annual source pairs exist for every requested issuer/year."
+    ],
+    "human_plan_decision_recorded": false,
+    "stored_plan_modified": false,
+    "next_action": "Add trusted annual-coverage context to the planner; preserve this unapproved version and deliberately request a new plan under the original cap."
+  }
+}
