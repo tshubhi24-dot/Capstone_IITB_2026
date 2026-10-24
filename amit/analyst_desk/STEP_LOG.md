@@ -215,12 +215,15 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | Files | Purpose |
 |---|---|
 | [docs/ADR-004-ANALYST-MEMORY.md](docs/ADR-004-ANALYST-MEMORY.md) | Storage decision, permitted memory, review boundaries and verification contract. |
+| [desk/memory.py](desk/memory.py), [tests/test_memory.py](tests/test_memory.py) | Actual namespaced LangGraph SQLite storage, expiring preferences, revision checks, coverage records and note exclusion controls. |
+| [desk/history.py](desk/history.py), [desk/store.py](desk/store.py), [tests/test_memory_history.py](tests/test_memory_history.py) | Scoped approved-note selection, frozen references and transactional publication checks against current memory versions. |
 
 **Capstone connection:** p.3, L9 persistent memory and memory policy; pp.15–16, coverage, analyst preferences, prior research and follow-up questions; p.3, L8/L14 checkpoint and exact-version review. Reviewed lessons and independent memory evaluation remain separate work.
 
 | Increment | Result |
 |---|---|
 | 13a — Define memory storage and controls | Choose actor-namespaced LangGraph SQLite memory alongside publication records so final publication can atomically check memory versions. Define allowlisted preferences, source coverage, bounded approved history and deletion semantics before implementation. |
+| 13b — Build durable memory and approved-history selection | Save typed preferences with thirty-day expiry and revision-based correction/deletion. Persist source coverage under its fingerprint. Select up to three approved references after actor/company/year filtering, within a fifty-candidate window; excluded notes remain in the approved library. Memory versions and selected note hashes are checked inside the publication transaction. Core storage/history tests cover isolation, rollback, expiry, restart and concurrent changes. |
 
 ## What the team builds next
 

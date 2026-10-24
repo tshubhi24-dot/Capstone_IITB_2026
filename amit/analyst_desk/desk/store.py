@@ -6,6 +6,7 @@ import hmac
 import json
 import os
 from pathlib import Path
+import re
 import sqlite3
 import time
 import uuid
@@ -98,6 +99,8 @@ class Store:
         if not critic.get("passed"):
             raise ValueError("A failed note cannot be approved")
         with self.connection() as db:
+            if "memory_context" in payload:
+                self._validate_payload_memory(payload, actor, db)
             db.execute("INSERT INTO approvals VALUES(?,?,?,?,0) ON CONFLICT(run_id) DO UPDATE SET actor=excluded.actor,payload_hash=excluded.payload_hash,expires=excluded.expires,consumed=0", (run_id, actor, payload_hash, time.time() + ttl))
 
     def make_capability(self, run_id, actor, payload_hash):
@@ -131,6 +134,8 @@ class Store:
                 if previous["payload_hash"] != digest:
                     raise ValueError("Idempotency key already has different content")
                 return {"note_id": previous["id"], "run_id": payload["run_id"], "payload_hash": digest, "idempotent": True}
+            if "memory_context" in payload:
+                self._validate_payload_memory(payload, payload["actor"], db)
             row = db.execute("SELECT * FROM approvals WHERE run_id=?", (payload["run_id"],)).fetchone()
             if not row or row["actor"] != payload["actor"] or row["payload_hash"] != digest or row["consumed"] or row["expires"] < time.time() or grant["expires"] < time.time():
                 raise ValueError("Stored human approval is missing, stale or consumed")
@@ -143,3 +148,97 @@ class Store:
         with self.connection() as db:
             rows = db.execute("SELECT * FROM notes WHERE actor=? ORDER BY created DESC", (actor,)).fetchall()
         return [{"id": v["id"], "run_id": v["run_id"], "payload_hash": v["payload_hash"], "created_at": v["created"], "payload": json.loads(v["payload"])} for v in rows]
+
+    def approved_note_candidates(self, actor, tickers, years, limit=50, *, excluded_note_ids=None):
+        """Scope and approval are filtered in SQL before the bounded recent window."""
+        from .history import validate_scope
+        validate_scope(actor, tickers, years, limit, maximum=50)
+        excluded = excluded_note_ids or []
+        if (not isinstance(excluded, list) or len(excluded) > 256
+                or any(not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{32}", value) for value in excluded)):
+            raise ValueError("Approved-history exclusions are invalid")
+        parameters = [actor, *tickers, *years]
+        sql = """SELECT n.* FROM notes n JOIN approvals a ON a.run_id=n.run_id
+                 AND a.actor=n.actor AND a.payload_hash=n.payload_hash AND a.consumed=1
+                 WHERE n.actor=? AND EXISTS (
+                   SELECT 1 FROM json_each(CASE WHEN json_valid(n.payload) THEN n.payload ELSE '{}' END,'$.metrics') m
+                   WHERE json_extract(CASE WHEN m.type='object' THEN m.value ELSE '{}' END,'$.ticker') IN (""" + ",".join("?" for _ in tickers) + ") AND json_extract(CASE WHEN m.type='object' THEN m.value ELSE '{}' END,'$.year') IN (" + ",".join("?" for _ in years) + "))"
+        if excluded:
+            sql += " AND n.id NOT IN (" + ",".join("?" for _ in excluded) + ")"
+            parameters.extend(excluded)
+        sql += " ORDER BY n.created DESC,n.id ASC LIMIT ?"
+        parameters.append(limit)
+        with self.connection() as db:
+            rows = db.execute(sql, parameters).fetchall()
+        candidates = []
+        for row in rows:
+            try:
+                candidates.append(self._approved_note_row(row))
+            except (ValueError, KeyError, TypeError):
+                continue
+        return candidates
+
+    def approved_note(self, note_id, actor, db=None):
+        """Read one actor-owned immutable approved payload, without applying reuse policy."""
+        if (not isinstance(note_id, str) or not re.fullmatch(r"[0-9a-f]{32}", note_id)
+                or not isinstance(actor, str) or not 1 <= len(actor) <= 80):
+            return None
+        if db is None:
+            with self.connection() as connection:
+                return self.approved_note(note_id, actor, connection)
+        row = db.execute("""SELECT n.* FROM notes n JOIN approvals a ON a.run_id=n.run_id
+                          AND a.actor=n.actor AND a.payload_hash=n.payload_hash AND a.consumed=1
+                          WHERE n.id=? AND n.actor=?""", (note_id, actor)).fetchone()
+        if row is None:
+            return None
+        try:
+            return self._approved_note_row(row)
+        except (ValueError, KeyError, TypeError):
+            return None
+
+    @staticmethod
+    def _approved_note_row(row):
+        import math
+        from .history import note_scope
+        payload = json.loads(row["payload"])
+        if (not isinstance(payload, dict) or canonical_hash(payload) != row["payload_hash"]
+                or payload.get("actor") != row["actor"] or payload.get("run_id") != row["run_id"]
+                or not isinstance(row["created"], (int, float)) or not math.isfinite(row["created"])):
+            raise ValueError("Approved note payload differs from its publication receipt")
+        note_scope(payload)
+        return {"id": row["id"], "run_id": row["run_id"], "payload_hash": row["payload_hash"],
+                "created_at": row["created"], "payload": payload}
+
+    def validate_memory_snapshot(self, snapshot, source_fingerprint=None, db=None, *, actor=None):
+        """Recheck current same-database memory eligibility, including at publication."""
+        from .history import note_reference, validate_snapshot_structure
+        from .memory import validate_memory_versions
+        validate_snapshot_structure(snapshot, actor=actor, source_fingerprint=source_fingerprint)
+        if db is None:
+            with self.connection() as connection:
+                # Acquire a coherent view of revision records and selected notes.
+                connection.execute("BEGIN")
+                return self.validate_memory_snapshot(snapshot, source_fingerprint, connection, actor=actor)
+        validate_memory_versions(db, snapshot["actor"], snapshot)
+        for reference in snapshot["note_refs"]:
+            note = self.approved_note(reference["note_id"], snapshot["actor"], db)
+            if note is None:
+                raise ValueError("A selected approved note is no longer available to this analyst")
+            scope = snapshot["selection_scope"]
+            if not any(row["ticker"] in scope["tickers"] and row["year"] in scope["years"] for row in note["payload"]["metrics"]):
+                raise ValueError("A selected historical note is outside the frozen research scope")
+            expected = note_reference(note, snapshot["source_fingerprint"])
+            if expected != reference:
+                raise ValueError("A selected approved note version or provenance changed")
+        return True
+
+    def _validate_payload_memory(self, payload, actor, db):
+        context = payload["memory_context"]
+        if "plan" in payload:
+            plan = payload["plan"]
+            if (not isinstance(plan, dict) or not isinstance(plan.get("tickers"), list)
+                    or not isinstance(plan.get("years"), list)
+                    or context.get("selection_scope") != {"tickers": sorted(plan["tickers"]),
+                                                          "years": sorted(plan["years"])}):
+                raise ValueError("The frozen memory scope differs from the approved research plan")
+        return self.validate_memory_snapshot(context, payload.get("source_fingerprint"), db, actor=actor)
