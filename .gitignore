@@ -16,16 +16,6 @@ __pycache__/
 outputs/
 logs/
 
-# Large generated data. Passages and XBRL/submissions JSON are committed so the
-# team shares identical inputs; raw 10-K HTML and the Chroma index are rebuilt locally.
-analyst_desk/data/edgar_cache/
-analyst_desk/data/passages/
-analyst_desk/data/index/
-analyst_desk/data/10k/
-jayshree/analyst_desk/data/edgar_cache/filings/
-jayshree/analyst_desk/data/index/
-jayshree/analyst_desk/data/10k/
-
 # Notebook checkpoints
 .ipynb_checkpoints/
 

@@ -1,8 +1,0 @@
-beautifulsoup4
-chromadb
-gradio
-openai
-plotly
-python-dotenv
-rank-bm25
-sentence-transformers
