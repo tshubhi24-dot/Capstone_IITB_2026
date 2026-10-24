@@ -157,12 +157,16 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 | [ops/prepare_sources.py](ops/prepare_sources.py) | Validate the complete financial/section matrix and install a reproducible snapshot. |
 | [tests/test_prepare_sources.py](tests/test_prepare_sources.py) | Missing/duplicate coverage, source identity, annual-period, synthetic-data and failed-installation checks. |
 | [data/README.md](data/README.md) | Source schema, import commands and safe snapshot replacement. |
+| [data/source_manifest.json](data/source_manifest.json), [data/sec_cache_manifest.json](data/sec_cache_manifest.json) | Installed financial/section inventory and pinned original SEC response identities. |
+| [ops/verify_source_coverage.py](ops/verify_source_coverage.py), [tests/test_source_provenance.py](tests/test_source_provenance.py) | Match normalized data to original cached XBRL/submissions and detect changed or missing source bodies. |
+| [evidence/source_coverage_verification.json](evidence/source_coverage_verification.json) | Observed coverage and cached-source verification results. |
 
 **Capstone connection:** p.16, Retrieval requires 10–15 companies in two sectors over three years; Tools and Signature A require cached original facts with source IDs and comparable periods. This increment expands coverage; hybrid retrieval, reranking and full Item/table validation remain later work.
 
 | Increment | Result |
 |---|---|
 | 11a — Declare and validate scope | Importer supports the twelve-company target and explicit subsets. Fifty-two importer/data tests pass; real-cache validation confirms the target matrix. Installing and deploying the expanded snapshot follows. |
+| 11b — Load and verify SEC coverage | Installed 36 company-years, 72 financial facts, 4,073 passages and 72 section groups. All 72 numeric memberships and 36 annual filing identities match 61 cached SEC responses, including one historical submissions index. No network/model calls were needed. |
 
 ## What the team builds next
 

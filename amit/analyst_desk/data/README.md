@@ -9,6 +9,8 @@ The declared scope is [coverage_scope.json](coverage_scope.json): FY2023–2025 
 
 The complete scope requires **36 company-years, 72 canonical financial facts and 72 section groups**: revenue, operating income, Item 1A and Item 7 for each company/year. Passage counts depend on the supplied cache; the importer retains every selected section chunk.
 
+The current snapshot contains **72 financial inputs and 4,073 filing passages**. Its cached-source checks are recorded in [source_coverage_verification.json](../evidence/source_coverage_verification.json).
+
 ## Prepare the source snapshot
 
 Supply a public SEC corpus with `metadata`, `companies`, `facts` and `passages`:
@@ -38,3 +40,17 @@ The importer rejects missing or duplicate financial cells, incompatible annual p
 The manifest records scope/source hashes, canonical fact identities and section chunk counts. Raw filings, source-cache bodies and runtime databases remain outside Git. Automated structural checks do not establish correct original Item boundaries, complete table extraction or the economic interpretation of risks; those need source/domain review. A fresh clone needs a supplied source cache before Docker startup.
 
 SEC provides submissions and XBRL JSON through its [official data APIs](https://www.sec.gov/search-filings/edgar-application-programming-interfaces). Source collection should follow the [SEC access guidance](https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data) and reuse cached responses.
+
+## Check the original cached SEC responses
+
+[sec_cache_manifest.json](sec_cache_manifest.json) pins the public URL and response-body hash of each required SEC response. It includes the historical submissions index needed for the older Salesforce accession. Supply the matching cached response wrappers locally:
+
+```sh
+python ops/verify_source_coverage.py \
+  --corpus .runtime/journey/sources/corpus.json \
+  --source-manifest data/sec_cache_manifest.json \
+  --cache-dir /path/to/sec-cache \
+  --output evidence/source_coverage_verification.json
+```
+
+This read-only check matches every financial input to its original cached XBRL concept, amount, currency, period, accession, form and filing date. It verifies annual filing identities through recent or issuer-declared historical submissions and hashes all 61 required response bodies. It makes no network or model requests. Passage checks establish source identity; they do not independently reconstruct the original HTML sections or validate economic risk interpretations.

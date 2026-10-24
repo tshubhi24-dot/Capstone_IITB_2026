@@ -1,0 +1,884 @@
+{
+  "cached_source_count": 61,
+  "cells": [
+    {
+      "accession": "0000320193-23-000106",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "810777d016445f1b0a80eef9c4b419eea0306620dc74b8292120beb1e004f0ad",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 48,
+      "item_7_chunk_count": 16,
+      "period_end": "2023-09-30",
+      "period_start": "2022-09-25",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000320193.json",
+      "ticker": "AAPL"
+    },
+    {
+      "accession": "0000320193-24-000123",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "f46716d136a9b5b0fad87c506fa5804ab3668a5d0f193e3ef6d9f0cf49e690b7",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 47,
+      "item_7_chunk_count": 18,
+      "period_end": "2024-09-28",
+      "period_start": "2023-10-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000320193.json",
+      "ticker": "AAPL"
+    },
+    {
+      "accession": "0000320193-25-000079",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "3a69f79bffa38444798279ec82fa1e76ce0460b8a20463580026248282d0f37e",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 49,
+      "item_7_chunk_count": 20,
+      "period_end": "2025-09-27",
+      "period_start": "2024-09-29",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000320193.json",
+      "ticker": "AAPL"
+    },
+    {
+      "accession": "0001551152-24-000011",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "87b9ff1b5cd07c89ddffc6b2ab766d029fe330be1c99815eacf89549ebaa915c",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 56,
+      "item_7_chunk_count": 74,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115224000011/abbv-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001551152.json",
+      "ticker": "ABBV"
+    },
+    {
+      "accession": "0001551152-25-000020",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "3470d460764a421b06c938d075889495cf4907b3ac4cf12ed05d96b6461f583e",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 57,
+      "item_7_chunk_count": 73,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115225000020/abbv-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001551152.json",
+      "ticker": "ABBV"
+    },
+    {
+      "accession": "0001551152-26-000008",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "283913ef8542a2057528263eb9da9a8380c6baed54aed2f04754feb048004e09",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 63,
+      "item_7_chunk_count": 75,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000008/abbv-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001551152.json",
+      "ticker": "ABBV"
+    },
+    {
+      "accession": "0001628280-24-005348",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "5fc6c875a5927a151a2667c705e4f971753caaa387ab951b646a5a01d87e2f50",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 23,
+      "item_7_chunk_count": 57,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1800/000162828024005348/abt-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000001800.json",
+      "ticker": "ABT"
+    },
+    {
+      "accession": "0001628280-25-007110",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "2e0146fc7b9d8441e0c997ff6b66094dccb8bb818eb98b80d269f5e111e9e13f",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 23,
+      "item_7_chunk_count": 53,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1800/000162828025007110/abt-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000001800.json",
+      "ticker": "ABT"
+    },
+    {
+      "accession": "0001628280-26-010185",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "4821be0cfb97c2ed94c15b182ecb71d37d8f4ba07cc6e6c19b84790520cd84bb",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 23,
+      "item_7_chunk_count": 53,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1800/000162828026010185/abt-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000001800.json",
+      "ticker": "ABT"
+    },
+    {
+      "accession": "0000796343-24-000006",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "b948efcdb713ef168809cdc7ace9f4b49f25473fcab972e57042f6dbd797a922",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 47,
+      "item_7_chunk_count": 56,
+      "period_end": "2023-12-01",
+      "period_start": "2022-12-03",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/796343/000079634324000006/adbe-20231201.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000796343.json",
+      "ticker": "ADBE"
+    },
+    {
+      "accession": "0000796343-25-000004",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "ff68779f3a099ef8263bdacd02cb584af818d9f6a88f7bb063d759ad3ab95a33",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 46,
+      "item_7_chunk_count": 55,
+      "period_end": "2024-11-29",
+      "period_start": "2023-12-02",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/796343/000079634325000004/adbe-20241129.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000796343.json",
+      "ticker": "ADBE"
+    },
+    {
+      "accession": "0000796343-26-000003",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "d12c25dd990d25c94346cec48f2c1607cf7eaa012945eef013ca409bfb8423dd",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 51,
+      "item_7_chunk_count": 49,
+      "period_end": "2025-11-28",
+      "period_start": "2024-11-30",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/796343/000079634326000003/adbe-20251128.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000796343.json",
+      "ticker": "ADBE"
+    },
+    {
+      "accession": "0000318154-24-000011",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "2ef4a1f659f40693cb5dc6a5cf2915b26f4e73c3bca8b95f421d1576cd4148f4",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 110,
+      "item_7_chunk_count": 80,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/318154/000031815424000011/amgn-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000318154.json",
+      "ticker": "AMGN"
+    },
+    {
+      "accession": "0000318154-25-000010",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "22c86e96f7d3d19534a30f3cfd36c4b6ba322824c79c8ec494a817ea7b36d5f4",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 116,
+      "item_7_chunk_count": 84,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/318154/000031815425000010/amgn-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000318154.json",
+      "ticker": "AMGN"
+    },
+    {
+      "accession": "0000318154-26-000010",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "ea8e09ea27e2422731aa47ceea3c946be6ae165831038a3c6527e85234429c0d",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 113,
+      "item_7_chunk_count": 85,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/318154/000031815426000010/amgn-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000318154.json",
+      "ticker": "AMGN"
+    },
+    {
+      "accession": "0001108524-23-000011",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "76e8c09800b9fffa93e073c0cbb8e030e7da5c03db5c8a1bd3f7d9dbcfc54915",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 89,
+      "item_7_chunk_count": 52,
+      "period_end": "2023-01-31",
+      "period_start": "2022-02-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852423000011/crm-20230131.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001108524-submissions-001.json",
+      "ticker": "CRM"
+    },
+    {
+      "accession": "0001108524-24-000005",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "d2e8d4b457f38bec746bcde49658d9eee3da28f5a0cc6072c706a3c6e013c834",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 87,
+      "item_7_chunk_count": 50,
+      "period_end": "2024-01-31",
+      "period_start": "2023-02-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852424000005/crm-20240131.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001108524.json",
+      "ticker": "CRM"
+    },
+    {
+      "accession": "0001108524-25-000006",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "aeb2562796503a7d144ad068f28028b78b2ae9afa4d13251d2bb6e62d2c9f371",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 84,
+      "item_7_chunk_count": 53,
+      "period_end": "2025-01-31",
+      "period_start": "2024-02-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852425000006/crm-20250131.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001108524.json",
+      "ticker": "CRM"
+    },
+    {
+      "accession": "0000882095-24-000007",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "97cb660c42898cee10ec44b2ac5c5a3fd1b681a8e386dee6d649125fac5562fb",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 58,
+      "item_7_chunk_count": 36,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/882095/000088209524000007/gild-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000882095.json",
+      "ticker": "GILD"
+    },
+    {
+      "accession": "0000882095-25-000006",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "774b7967471c9512c375e0914ef7568937f4d8adf19fc1c40d0c80ea50e65e54",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 58,
+      "item_7_chunk_count": 38,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/882095/000088209525000006/gild-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000882095.json",
+      "ticker": "GILD"
+    },
+    {
+      "accession": "0000882095-26-000006",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "5408f3df47263c2a6a4fd83643f0a9d6413b6c49e263568c89c357794e1b8d0e",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 59,
+      "item_7_chunk_count": 42,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/882095/000088209526000006/gild-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000882095.json",
+      "ticker": "GILD"
+    },
+    {
+      "accession": "0001652044-24-000022",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "ccea68b9169d2e9f2b0dba8437b76762fa0f92abc14670686e980bdfe0f55472",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 70,
+      "item_7_chunk_count": 82,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/goog-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001652044.json",
+      "ticker": "GOOGL"
+    },
+    {
+      "accession": "0001652044-25-000014",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "e8496c117699475b41b92c37eca94682f9973fea79b50878d13c9aa8f7b3f05b",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 79,
+      "item_7_chunk_count": 77,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000014/goog-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001652044.json",
+      "ticker": "GOOGL"
+    },
+    {
+      "accession": "0001652044-26-000018",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "714c2d112459730da00c109dd10157db1e7e869b26ba71cb52f78793ffee02ef",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 80,
+      "item_7_chunk_count": 69,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/goog-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001652044.json",
+      "ticker": "GOOGL"
+    },
+    {
+      "accession": "0000950170-23-035122",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "3256515699de86fc48d8832d72e50ca426a08f6386f0f72a2e945b7743b2c16f",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 51,
+      "item_7_chunk_count": 53,
+      "period_end": "2023-06-30",
+      "period_start": "2022-07-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000789019.json",
+      "ticker": "MSFT"
+    },
+    {
+      "accession": "0000950170-24-087843",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "0271783fab4769285644d9d483478b273a4fd32df26c03dbbd6291f8eb76a814",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 54,
+      "item_7_chunk_count": 51,
+      "period_end": "2024-06-30",
+      "period_start": "2023-07-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000789019.json",
+      "ticker": "MSFT"
+    },
+    {
+      "accession": "0000950170-25-100235",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "efc15e3614f8cbd0880a6b048954ae55856eca5226b1d2281f5f877256f7790a",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 52,
+      "item_7_chunk_count": 49,
+      "period_end": "2025-06-30",
+      "period_start": "2024-07-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/msft-20250630.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000789019.json",
+      "ticker": "MSFT"
+    },
+    {
+      "accession": "0000950170-23-028914",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "65f0d117473ccaf6b9addd9c97d8ef82442136a8759da5eca516bc7cb5ef0ef2",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 54,
+      "item_7_chunk_count": 81,
+      "period_end": "2023-05-31",
+      "period_start": "2022-06-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017023028914/orcl-20230531.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001341439.json",
+      "ticker": "ORCL"
+    },
+    {
+      "accession": "0000950170-24-075605",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "915db98e836ee467c037ad8025dc1d8bee490785401bcbd4e9f318479255f308",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 55,
+      "item_7_chunk_count": 74,
+      "period_end": "2024-05-31",
+      "period_start": "2023-06-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017024075605/orcl-20240531.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001341439.json",
+      "ticker": "ORCL"
+    },
+    {
+      "accession": "0000950170-25-087926",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "4e866195d24aae8b6eeeef8fd73f3d3081d88930e0476e997cc0449c1d57da37",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 56,
+      "item_7_chunk_count": 76,
+      "period_end": "2025-05-31",
+      "period_start": "2024-06-01",
+      "sector": "Technology",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017025087926/orcl-20250531.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0001341439.json",
+      "ticker": "ORCL"
+    },
+    {
+      "accession": "0000097745-24-000007",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "ba58d551cd320a99f085bf561941e2655c397943af855423e24dd14daaf1ac8d",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 33,
+      "item_7_chunk_count": 43,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/97745/000009774524000007/tmo-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000097745.json",
+      "ticker": "TMO"
+    },
+    {
+      "accession": "0000097745-25-000010",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "6f042828f8f7994e29aa13cd88c6e59159f0aece9e9d850b95ce5e6f41d866fa",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 35,
+      "item_7_chunk_count": 41,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/97745/000009774525000010/tmo-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000097745.json",
+      "ticker": "TMO"
+    },
+    {
+      "accession": "0000097745-26-000018",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "aada91a174e240155c239808a7b6885c0e88440bcf08bb0fda9403c1babf5637",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 37,
+      "item_7_chunk_count": 41,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/97745/000009774526000018/tmo-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000097745.json",
+      "ticker": "TMO"
+    },
+    {
+      "accession": "0000731766-24-000081",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "1d23c2c6938b8f82bc481cd56dfcf67ac0f3bd0dbb4ae315e84dff4971d99c02",
+      "fiscal_year": 2023,
+      "item_1a_chunk_count": 46,
+      "item_7_chunk_count": 36,
+      "period_end": "2023-12-31",
+      "period_start": "2023-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000081/unh-20231231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000731766.json",
+      "ticker": "UNH"
+    },
+    {
+      "accession": "0000731766-25-000063",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "41708cd03e28d21212a2949b116ac7ca0fd842741377a3f6bed7cf38ce6f8575",
+      "fiscal_year": 2024,
+      "item_1a_chunk_count": 47,
+      "item_7_chunk_count": 38,
+      "period_end": "2024-12-31",
+      "period_start": "2024-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000063/unh-20241231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000731766.json",
+      "ticker": "UNH"
+    },
+    {
+      "accession": "0000731766-26-000062",
+      "companyfacts_memberships_checked": 2,
+      "fact_count": 2,
+      "filing_body_sha256": "d368ff776b1218dbeda06347f19a7747f3a195536c7745cd51b7fbb0bce57374",
+      "fiscal_year": 2025,
+      "item_1a_chunk_count": 47,
+      "item_7_chunk_count": 40,
+      "period_end": "2025-12-31",
+      "period_start": "2025-01-01",
+      "sector": "Healthcare",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm",
+      "submissions_index_url": "https://data.sec.gov/submissions/CIK0000731766.json",
+      "ticker": "UNH"
+    }
+  ],
+  "company_count": 12,
+  "company_year_count": 36,
+  "companyfacts_memberships_checked": 72,
+  "coverage_scope_id": "sec-twelve-company-fy2023-2025-v1",
+  "fact_count": 72,
+  "fiscal_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "historical_submissions_accessions_checked": 1,
+  "historical_submissions_source_count": 1,
+  "model_calls": 0,
+  "network_requests": 0,
+  "origin_corpus_sha256": "8d057f1aa3fe8c058a96459d435d6b526c1e571b4034f849fb0cee307c1a1e4c",
+  "passage_count": 4073,
+  "review_limits": {
+    "financial_comparability": "independent_domain_review_pending",
+    "freshness": "checks_supplied_cached_responses_only",
+    "original_item_boundaries": "independent_domain_review_pending",
+    "section_text_extraction": "cached_chunk_source_identity_checked; original_HTML_extraction_not_reconstructed"
+  },
+  "section_group_count": 72,
+  "sector_counts": {
+    "Healthcare": 6,
+    "Technology": 6
+  },
+  "snapshot_sha256": "14dd61761199082124b65c5600cd0a0629e636c6e36eec53b110a83ea4a80897",
+  "source_manifest_sha256": "34cee0af266f2073ba55e040627d7ce8d6c8f659a48e3ffea44e0bcc1666a34c",
+  "sources": [
+    {
+      "body_sha256": "5d751f73769f5c0a1f9bee0de16cb39d8961cf3f1ebb5558d555bb2678afb4ff",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000001800.json"
+    },
+    {
+      "body_sha256": "4d98ebd4c91521f5d90f032834b8dec04f78b30758a214be33e6cbba68fa766a",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000097745.json"
+    },
+    {
+      "body_sha256": "fdf5906752dbed7151b14f5e765db25e75393cedef4a2582d976623b49e2e4c7",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000318154.json"
+    },
+    {
+      "body_sha256": "73a86c6aedc31f77cac2ea4df5f80f0b3bd7e6eb58bb4e01444fbedf3afb9c43",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json"
+    },
+    {
+      "body_sha256": "6c9dff59732b7c597542b2d5eadaae0313ca0de03defdba2c00203e693632d76",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000731766.json"
+    },
+    {
+      "body_sha256": "f8aae2965b20ad0df44bdf7ccbedf797d275b6b8dc030154a7a311361bb7246f",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000789019.json"
+    },
+    {
+      "body_sha256": "86a5689aa9aa7b0f9e95be21b48b0305376e014c8dbf3b8bb3b4b131f1b6a0c4",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000796343.json"
+    },
+    {
+      "body_sha256": "5703fd84d6e3d00697ac60bc3d7ded9306be2a9f36170a342858b8e6417506f0",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000882095.json"
+    },
+    {
+      "body_sha256": "c36bddafd22061dfe573fa22199074d882196f6667cf641eb30c8cec5a340ae5",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001108524.json"
+    },
+    {
+      "body_sha256": "65523545f040abaea1dfcf321da2a5aec85e7f34387244b0ffcb26e4c8707f7d",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001341439.json"
+    },
+    {
+      "body_sha256": "1fa00a2de3a0434fb2ebba8b1678cc379b16dc435a4f3e5c696efb7f9029698a",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001551152.json"
+    },
+    {
+      "body_sha256": "a017f26ee88cb4a639d1c1ddb06d53b4afe22f0ac89cabec7cd67c88919fe1c5",
+      "kind": "companyfacts",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001652044.json"
+    },
+    {
+      "body_sha256": "8da48bc65e54f44663c363a738a9ba4d07029b95067cd9cd7ba84dc64a9dbe0f",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000001800.json"
+    },
+    {
+      "body_sha256": "016c598138e04dd2fadacb910ac35df7fa5a91b1d4dc366ed5eb23e0e97d561f",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000097745.json"
+    },
+    {
+      "body_sha256": "d5fdc99c6d7c7fbe409f15e837164367159ed34bb5d76b31b36b8a79ccdc7dd6",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000318154.json"
+    },
+    {
+      "body_sha256": "aad00f6aa75ba1405e0a34c788bdba9042281b2724fe1db3ff26f434b9a92e44",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000320193.json"
+    },
+    {
+      "body_sha256": "2e2d1c6568c68189db5b3d38cb47eb733acfffc9d666406f8652f5c79401a481",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000731766.json"
+    },
+    {
+      "body_sha256": "a5848ba348a3d3ae08c3c40bf4599379014be077911e6550ed3a8182a34a6a7b",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000789019.json"
+    },
+    {
+      "body_sha256": "804c48e9b37ef34cccb3592d47e9cf6fa0c656c2339df9c4fbc33372b18e4b97",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000796343.json"
+    },
+    {
+      "body_sha256": "1710326c731e4bbc1f872334a686857a3fc7401d39ebfb8dce936e4ae98f3c01",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0000882095.json"
+    },
+    {
+      "body_sha256": "f71caf4521bd2c2bc134b0aab2d1bbe9a6fb314a7ec14f74c038ae87227eebfd",
+      "kind": "historical_submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001108524-submissions-001.json"
+    },
+    {
+      "body_sha256": "a17395341045ab4f90af3c9a631da7a393704f21c22074ffc5d64b6d1c73f719",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001108524.json"
+    },
+    {
+      "body_sha256": "bed0ec89b0d273799517d3e332b3a4ba3612168f0e4e9b963759b507f857adec",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001341439.json"
+    },
+    {
+      "body_sha256": "b81e195b84d44aa6aef709b6a69f3a4bad91491287b0292c91f4c28c8039af87",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001551152.json"
+    },
+    {
+      "body_sha256": "648cea84d824309b518807fd7e7fdb72d6855e12e8afa221d2caa047d5c9f2ca",
+      "kind": "submissions",
+      "url": "https://data.sec.gov/submissions/CIK0001652044.json"
+    },
+    {
+      "body_sha256": "76e8c09800b9fffa93e073c0cbb8e030e7da5c03db5c8a1bd3f7d9dbcfc54915",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852423000011/crm-20230131.htm"
+    },
+    {
+      "body_sha256": "d2e8d4b457f38bec746bcde49658d9eee3da28f5a0cc6072c706a3c6e013c834",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852424000005/crm-20240131.htm"
+    },
+    {
+      "body_sha256": "aeb2562796503a7d144ad068f28028b78b2ae9afa4d13251d2bb6e62d2c9f371",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1108524/000110852425000006/crm-20250131.htm"
+    },
+    {
+      "body_sha256": "65f0d117473ccaf6b9addd9c97d8ef82442136a8759da5eca516bc7cb5ef0ef2",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017023028914/orcl-20230531.htm"
+    },
+    {
+      "body_sha256": "915db98e836ee467c037ad8025dc1d8bee490785401bcbd4e9f318479255f308",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017024075605/orcl-20240531.htm"
+    },
+    {
+      "body_sha256": "4e866195d24aae8b6eeeef8fd73f3d3081d88930e0476e997cc0449c1d57da37",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1341439/000095017025087926/orcl-20250531.htm"
+    },
+    {
+      "body_sha256": "87b9ff1b5cd07c89ddffc6b2ab766d029fe330be1c99815eacf89549ebaa915c",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115224000011/abbv-20231231.htm"
+    },
+    {
+      "body_sha256": "3470d460764a421b06c938d075889495cf4907b3ac4cf12ed05d96b6461f583e",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115225000020/abbv-20241231.htm"
+    },
+    {
+      "body_sha256": "283913ef8542a2057528263eb9da9a8380c6baed54aed2f04754feb048004e09",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1551152/000155115226000008/abbv-20251231.htm"
+    },
+    {
+      "body_sha256": "ccea68b9169d2e9f2b0dba8437b76762fa0f92abc14670686e980bdfe0f55472",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/goog-20231231.htm"
+    },
+    {
+      "body_sha256": "e8496c117699475b41b92c37eca94682f9973fea79b50878d13c9aa8f7b3f05b",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000014/goog-20241231.htm"
+    },
+    {
+      "body_sha256": "714c2d112459730da00c109dd10157db1e7e869b26ba71cb52f78793ffee02ef",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000018/goog-20251231.htm"
+    },
+    {
+      "body_sha256": "5fc6c875a5927a151a2667c705e4f971753caaa387ab951b646a5a01d87e2f50",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1800/000162828024005348/abt-20231231.htm"
+    },
+    {
+      "body_sha256": "2e0146fc7b9d8441e0c997ff6b66094dccb8bb818eb98b80d269f5e111e9e13f",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1800/000162828025007110/abt-20241231.htm"
+    },
+    {
+      "body_sha256": "4821be0cfb97c2ed94c15b182ecb71d37d8f4ba07cc6e6c19b84790520cd84bb",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/1800/000162828026010185/abt-20251231.htm"
+    },
+    {
+      "body_sha256": "2ef4a1f659f40693cb5dc6a5cf2915b26f4e73c3bca8b95f421d1576cd4148f4",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/318154/000031815424000011/amgn-20231231.htm"
+    },
+    {
+      "body_sha256": "22c86e96f7d3d19534a30f3cfd36c4b6ba322824c79c8ec494a817ea7b36d5f4",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/318154/000031815425000010/amgn-20241231.htm"
+    },
+    {
+      "body_sha256": "ea8e09ea27e2422731aa47ceea3c946be6ae165831038a3c6527e85234429c0d",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/318154/000031815426000010/amgn-20251231.htm"
+    },
+    {
+      "body_sha256": "810777d016445f1b0a80eef9c4b419eea0306620dc74b8292120beb1e004f0ad",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000106/aapl-20230930.htm"
+    },
+    {
+      "body_sha256": "f46716d136a9b5b0fad87c506fa5804ab3668a5d0f193e3ef6d9f0cf49e690b7",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019324000123/aapl-20240928.htm"
+    },
+    {
+      "body_sha256": "3a69f79bffa38444798279ec82fa1e76ce0460b8a20463580026248282d0f37e",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019325000079/aapl-20250927.htm"
+    },
+    {
+      "body_sha256": "1d23c2c6938b8f82bc481cd56dfcf67ac0f3bd0dbb4ae315e84dff4971d99c02",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000081/unh-20231231.htm"
+    },
+    {
+      "body_sha256": "41708cd03e28d21212a2949b116ac7ca0fd842741377a3f6bed7cf38ce6f8575",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176625000063/unh-20241231.htm"
+    },
+    {
+      "body_sha256": "d368ff776b1218dbeda06347f19a7747f3a195536c7745cd51b7fbb0bce57374",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/731766/000073176626000062/unh-20251231.htm"
+    },
+    {
+      "body_sha256": "3256515699de86fc48d8832d72e50ca426a08f6386f0f72a2e945b7743b2c16f",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm"
+    },
+    {
+      "body_sha256": "0271783fab4769285644d9d483478b273a4fd32df26c03dbbd6291f8eb76a814",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm"
+    },
+    {
+      "body_sha256": "efc15e3614f8cbd0880a6b048954ae55856eca5226b1d2281f5f877256f7790a",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/789019/000095017025100235/msft-20250630.htm"
+    },
+    {
+      "body_sha256": "b948efcdb713ef168809cdc7ace9f4b49f25473fcab972e57042f6dbd797a922",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/796343/000079634324000006/adbe-20231201.htm"
+    },
+    {
+      "body_sha256": "ff68779f3a099ef8263bdacd02cb584af818d9f6a88f7bb063d759ad3ab95a33",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/796343/000079634325000004/adbe-20241129.htm"
+    },
+    {
+      "body_sha256": "d12c25dd990d25c94346cec48f2c1607cf7eaa012945eef013ca409bfb8423dd",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/796343/000079634326000003/adbe-20251128.htm"
+    },
+    {
+      "body_sha256": "97cb660c42898cee10ec44b2ac5c5a3fd1b681a8e386dee6d649125fac5562fb",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/882095/000088209524000007/gild-20231231.htm"
+    },
+    {
+      "body_sha256": "774b7967471c9512c375e0914ef7568937f4d8adf19fc1c40d0c80ea50e65e54",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/882095/000088209525000006/gild-20241231.htm"
+    },
+    {
+      "body_sha256": "5408f3df47263c2a6a4fd83643f0a9d6413b6c49e263568c89c357794e1b8d0e",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/882095/000088209526000006/gild-20251231.htm"
+    },
+    {
+      "body_sha256": "ba58d551cd320a99f085bf561941e2655c397943af855423e24dd14daaf1ac8d",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/97745/000009774524000007/tmo-20231231.htm"
+    },
+    {
+      "body_sha256": "6f042828f8f7994e29aa13cd88c6e59159f0aece9e9d850b95ce5e6f41d866fa",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/97745/000009774525000010/tmo-20241231.htm"
+    },
+    {
+      "body_sha256": "aada91a174e240155c239808a7b6885c0e88440bcf08bb0fda9403c1babf5637",
+      "kind": "annual_filing",
+      "url": "https://www.sec.gov/Archives/edgar/data/97745/000009774526000018/tmo-20251231.htm"
+    }
+  ],
+  "status": "passed",
+  "submissions_accessions_checked": 36,
+  "verification_kind": "read_only_cached_sec_provenance"
+}
