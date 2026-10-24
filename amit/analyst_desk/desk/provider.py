@@ -26,6 +26,48 @@ MODEL_RATES = {
     "openai/gpt-4.1": (Decimal("0.000002"), Decimal("0.000008")),
 }
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
+HTTP_DIAGNOSTIC_STATUSES = frozenset({301, 302, 303, 307, 308, 400, 401, 402, 403, 404, 408, 409, 413, 415, 422, 429, 500, 502, 503, 504})
+SAFE_ERROR_CODES = frozenset({
+    "invalid_configuration", "authorization_changed", "call_id_conflict", "call_not_retriable", "accounting_blocked",
+    "budget_exhausted", "run_limit_exhausted", "call_state_conflict", "accounting_anomaly", "live_not_authorized",
+    "provider_key_missing", "invalid_request", "provider_request_failed", "provider_response_invalid", "provider_usage_uncertain",
+    "model_output_invalid", "gateway_configuration_invalid", "gateway_request_failed", "gateway_unavailable", "unauthorized",
+    "provider_http_3xx", "provider_http_4xx", "provider_http_5xx", "provider_http_unexpected_status",
+    "provider_connect_timeout", "provider_read_timeout", "provider_write_timeout", "provider_pool_timeout",
+    "provider_timeout", "provider_connect_error", "provider_network_error", "provider_protocol_error",
+    "provider_response_too_large", "provider_response_json_invalid", "provider_response_shape_invalid", "provider_error_envelope",
+    "provider_usage_missing", "provider_usage_invalid", "provider_usage_tokens_missing", "provider_usage_tokens_invalid",
+    "provider_usage_inconsistent", "provider_usage_cost_missing", "provider_usage_cost_invalid",
+}) | frozenset(f"provider_http_{status}" for status in HTTP_DIAGNOSTIC_STATUSES)
+
+
+def safe_error_code(value):
+    """Allowlisted public diagnosis only; never echo an arbitrary upstream code."""
+    return value if isinstance(value, str) and value in SAFE_ERROR_CODES else "gateway_request_failed"
+
+
+def http_error_code(status):
+    if status in HTTP_DIAGNOSTIC_STATUSES:
+        return f"provider_http_{status}"
+    if 300 <= status < 400:
+        return "provider_http_3xx"
+    if 400 <= status < 500:
+        return "provider_http_4xx"
+    if 500 <= status < 600:
+        return "provider_http_5xx"
+    return "provider_http_unexpected_status"
+
+
+def diagnostic_code(error):
+    if isinstance(error, ProviderError):
+        return safe_error_code(error.code)
+    for kind, code in ((httpx.ConnectTimeout, "provider_connect_timeout"), (httpx.ReadTimeout, "provider_read_timeout"),
+                       (httpx.WriteTimeout, "provider_write_timeout"), (httpx.PoolTimeout, "provider_pool_timeout"),
+                       (httpx.TimeoutException, "provider_timeout"), (httpx.ConnectError, "provider_connect_error"),
+                       (httpx.NetworkError, "provider_network_error"), (httpx.ProtocolError, "provider_protocol_error")):
+        if isinstance(error, kind):
+            return code
+    return "provider_usage_uncertain"
 
 
 class ProviderError(RuntimeError):
@@ -149,7 +191,7 @@ class BudgetLedger:
 
     def uncertain(self, call_id, code):
         with self.connection() as db:
-            db.execute("UPDATE model_calls SET status='uncertain',error_code=? WHERE call_id=? AND status='reserved'", (code, call_id))
+            db.execute("UPDATE model_calls SET status='uncertain',error_code=? WHERE call_id=? AND status='reserved'", (safe_error_code(code), call_id))
 
     def settle(self, call_id, usage, result, error_code=None):
         with self.connection() as db:
@@ -241,29 +283,47 @@ class ReasoningGateway:
             with httpx.Client(transport=self.transport, timeout=120, trust_env=False, follow_redirects=False) as client:
                 with client.stream("POST", PROVIDER_URL, headers={"Authorization": "Bearer " + self.api_key}, json=payload) as response:
                     if response.status_code != 200:
-                        raise ProviderError("provider_request_failed", "The model provider refused the request; it will not be retried automatically.")
+                        raise ProviderError(http_error_code(response.status_code), "The model provider refused the request; it will not be retried automatically.")
                     chunks, size = [], 0
                     for chunk in response.iter_bytes():
                         size += len(chunk)
                         if size > 2000000:
-                            raise ProviderError("provider_response_invalid", "The model provider response exceeded its limit.")
+                            raise ProviderError("provider_response_too_large", "The model provider response exceeded its limit.")
                         chunks.append(chunk)
-            data = json.loads(b"".join(chunks))
+            try:
+                data = json.loads(b"".join(chunks))
+            except (ValueError, UnicodeError):
+                raise ProviderError("provider_response_json_invalid", "The provider response is not valid JSON.") from None
+            if not isinstance(data, dict):
+                raise ProviderError("provider_response_shape_invalid", "The provider response has an invalid shape.")
+            if "error" in data:
+                raise ProviderError("provider_error_envelope", "The provider returned an error envelope.")
+            if "usage" not in data:
+                raise ProviderError("provider_usage_missing", "The provider did not report usage.")
             raw_usage = data["usage"]
+            if not isinstance(raw_usage, dict):
+                raise ProviderError("provider_usage_invalid", "The provider usage has an invalid shape.")
             for key in ("prompt_tokens", "completion_tokens", "total_tokens"):
+                if key not in raw_usage:
+                    raise ProviderError("provider_usage_tokens_missing", "The provider did not report all token counts.")
                 if type(raw_usage[key]) is not int or raw_usage[key] < 0:
-                    raise ValueError("Invalid provider usage")
+                    raise ProviderError("provider_usage_tokens_invalid", "The provider token counts are invalid.")
             if raw_usage["total_tokens"] != raw_usage["prompt_tokens"] + raw_usage["completion_tokens"] or raw_usage["total_tokens"] == 0:
-                raise ValueError("Inconsistent provider usage")
-            cost = decimal(raw_usage["cost"])
+                raise ProviderError("provider_usage_inconsistent", "The provider token totals are inconsistent.")
+            if "cost" not in raw_usage:
+                raise ProviderError("provider_usage_cost_missing", "The provider did not report the call charge.")
+            try:
+                cost = decimal(raw_usage["cost"])
+            except ProviderError:
+                raise ProviderError("provider_usage_cost_invalid", "The provider charge is invalid.") from None
             returned_model = data.get("model")
             safe_model = returned_model if isinstance(returned_model, str) and returned_model in MODEL_RATES else "unapproved"
             usage = {"model_calls": 1, **{key: raw_usage[key] for key in ("prompt_tokens", "completion_tokens", "total_tokens")},
                      "cost_usd": str(cost), "model": policy["id"], "requested_model": policy["id"],
                      "returned_model": safe_model, "call_id": call_id}
         except Exception as exc:
-            self.ledger.uncertain(call_id, "provider_usage_uncertain")
-            network_error = "provider_request_failed" if isinstance(exc, ProviderError) and exc.code == "provider_request_failed" else "provider_usage_uncertain"
+            network_error = diagnostic_code(exc)
+            self.ledger.uncertain(call_id, network_error)
         # Raise outside the exception handler: a transport/JSON exception can
         # retain private headers or response text in its context or cause.
         if network_error is not None:
@@ -317,7 +377,7 @@ class ModelGatewayClient:
                     code = response.json().get("error", {}).get("code", "gateway_request_failed")
                 except Exception:
                     code = "gateway_request_failed"
-                raise ProviderError(code if isinstance(code, str) and IDENTIFIER.fullmatch(code) else "gateway_request_failed", "The model gateway blocked or failed the operation.")
+                raise ProviderError(safe_error_code(code), "The model gateway blocked or failed the operation.")
             result = response.json()
             if not isinstance(result, dict):
                 raise ValueError("Invalid gateway output")

@@ -1,0 +1,44 @@
+{
+  "record_kind": "authorized_live_activation_and_stopped_first_attempt",
+  "recorded_at_utc": "2026-10-24T08:09:15.339590+00:00",
+  "authorization": {
+    "time_utc": "2026-10-24T07:59:36.840743+00:00",
+    "authorization_id": "2d569d4aa859483dbab4ad8203a47b37",
+    "proposal_hash": "eed8a14ef850032984ce4ea14d49c164d7c5926c8ede046e1fdf5a2c484ad3e0"
+  },
+  "policy": {
+    "version": "live-step6-openrouter-v1",
+    "cap_usd": "1.00",
+    "per_run_usd": "0.50",
+    "max_calls_per_run": 12,
+    "max_tokens_per_run": 250000
+  },
+  "models": {
+    "producer": "openai/gpt-4.1-mini",
+    "critic": "openai/gpt-4.1"
+  },
+  "first_attempt": {
+    "run_id": "58d5439f6eb9467eababb5179a9c0375",
+    "status": "error",
+    "plan_produced": false,
+    "published": false,
+    "held_usd": "0.0281344",
+    "accounting": "Original adapter discarded the cause; outcome remains uncertain and full reservation is retained.",
+    "receipt": "live_attempts/58d5439f6eb9467eababb5179a9c0375.json"
+  },
+  "read_only_probes": {
+    "provider_models_http": 200,
+    "completion_requested": false
+  },
+  "diagnostics_validation": {
+    "local_tests_passed": 189,
+    "local_elapsed_seconds": 7.78,
+    "provider_responses": "fictional fixtures and mocked HTTP only"
+  },
+  "limitations": [
+    "No live plan or note approval is claimed.",
+    "No completed live research journey or semantic benchmark result is claimed.",
+    "Authorization remains cumulative across runs and restarts; earlier holds are not cleared.",
+    "Provider key and full private records are excluded from Git."
+  ]
+}

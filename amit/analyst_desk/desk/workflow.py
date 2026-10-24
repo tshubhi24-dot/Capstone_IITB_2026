@@ -244,10 +244,11 @@ class Engine:
                     else:
                         usage.update(cost_usd=None, held_usd=None, committed_usd=None, accounting_status="unknown_after_failure")
                     self.store.save_run(run)
-                self.event(state["run_id"], role, "model_error", "Model reasoning stopped; no automatic paid retry or offline substitute.", call_id=identifier)
-                from .provider import ProviderError
+                from .provider import ProviderError, safe_error_code
+                code = safe_error_code(exc.code) if isinstance(exc, ProviderError) else "gateway_request_failed"
+                self.event(state["run_id"], role, "model_error", "Model reasoning stopped; no automatic paid retry or offline substitute.", call_id=identifier, error_code=code)
                 message = str(exc) if isinstance(exc, ProviderError) else "The live model operation failed."
-                raise ReviewError(message) from None
+                raise ReviewError(f"{code}: {message}") from None
             with self.usage_lock:
                 run = self.store.get_run(state["run_id"])
                 usage = run["usage"]

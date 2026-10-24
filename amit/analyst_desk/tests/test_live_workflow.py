@@ -130,6 +130,9 @@ def test_provider_failure_holds_request_reservation_and_never_publishes(fixture)
     engine.model_client = FailingClient()
     failed = begin_live(engine, store)
     assert failed["status"] == "error" and failed["usage"]["model_reservations"]
+    assert "provider_request_failed" in failed["error"]
+    event = next(item for item in failed["events"] if item["stage"] == "model_error")
+    assert event["details"]["error_code"] == "provider_request_failed"
     assert failed["usage"]["cost_usd"] is None and failed["usage"]["accounting_status"] == "unknown_after_failure"
     assert store.notes() == []
 
@@ -146,3 +149,16 @@ def test_billed_failure_reports_authoritative_gateway_cost_instead_of_zero(fixtu
     assert run["status"] == "error" and run["usage"]["model_calls"] == 1
     assert run["usage"]["cost_usd"] == .002 and run["usage"]["committed_usd"] == .002
     assert store.notes() == []
+
+
+def test_unrecognized_gateway_code_is_not_copied_into_run_trace(fixture):
+    engine, store, _, _, _, _ = fixture
+    private_code = "invented-private-response-value"
+    class FailingClient:
+        def complete(self, **request):
+            raise ProviderError(private_code, "The model gateway blocked or failed the operation.")
+    engine.model_client = FailingClient()
+    run = begin_live(engine, store)
+    assert run["status"] == "error" and private_code not in json.dumps(run)
+    event = next(item for item in run["events"] if item["stage"] == "model_error")
+    assert event["details"]["error_code"] == "gateway_request_failed"

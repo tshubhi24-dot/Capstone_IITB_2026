@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-24T07:46:58.592642+00:00",
+  "checked_at_utc": "2026-10-24T08:09:30.911433+00:00",
   "project": "analyst-desk-journey",
   "docker_context": "desktop-linux",
   "status": "passed",
@@ -38,16 +38,16 @@
       "name": "model_ledger_available_and_ui_state_matches",
       "passed": true,
       "observed": {
-        "enabled": false,
+        "enabled": true,
         "cap_usd": "1.00",
         "per_run_usd": "0.50",
         "reported_spend_usd": "0",
-        "held_usd": "0",
-        "committed_usd": "0",
-        "remaining_authorization_usd": "1.00",
-        "model_calls": 0,
-        "tokens": 0,
-        "uncertain_calls": 0,
+        "held_usd": "0.0281344",
+        "committed_usd": "0.0281344",
+        "remaining_authorization_usd": "0.9718656",
+        "model_calls": 1,
+        "tokens": 66736,
+        "uncertain_calls": 1,
         "blocked": false
       }
     },
@@ -63,12 +63,9 @@
       "name": "disabled_live_request_gate",
       "passed": true,
       "observed": {
-        "applicable": true,
-        "request_sent": true,
-        "http_status": 409,
-        "run_count_unchanged": true,
-        "model_accounting_unchanged": true,
-        "newly_created_runs": 0
+        "applicable": false,
+        "request_sent": false,
+        "reason": "Enabled gateway: verifier performs no run-creation requests."
       }
     },
     {
@@ -170,23 +167,23 @@
     }
   ],
   "budget": {
-    "enabled": false,
+    "enabled": true,
     "cap_usd": "1.00",
     "per_run_usd": "0.50",
     "reported_spend_usd": "0",
-    "held_usd": "0",
-    "committed_usd": "0",
-    "remaining_authorization_usd": "1.00",
-    "model_calls": 0,
-    "tokens": 0,
-    "uncertain_calls": 0,
+    "held_usd": "0.0281344",
+    "committed_usd": "0.0281344",
+    "remaining_authorization_usd": "0.9718656",
+    "model_calls": 1,
+    "tokens": 66736,
+    "uncertain_calls": 1,
     "blocked": false
   },
   "models": {
     "producer": "openai/gpt-4.1-mini",
     "critic": "openai/gpt-4.1"
   },
-  "run_creation_probes_sent": 1,
+  "run_creation_probes_sent": 0,
   "research_runs_created_by_verifier": 0,
   "human_decisions_performed": false,
   "provider_completion_requests_sent_by_verifier": 0,

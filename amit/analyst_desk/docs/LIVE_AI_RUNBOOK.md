@@ -46,6 +46,8 @@ The finished note pauses for a separate decision. Edit only the claim bullet tex
 
 The UI shows actual model requests, tokens, provider-reported costs and held reservations. The gateway's dedicated SQLite volume retains the ledger across restarts. A timeout or uncertain charge keeps its reservation; an unreachable accounting service is shown as unknown, not zero. No automatic paid HTTP retries or offline substitution occur.
 
+Failure traces include fixed diagnostic codes for HTTP status categories, connection failures, malformed responses and missing or inconsistent accounting. Only allowlisted codes enter the ledger and run events; provider response text, headers and arbitrary upstream codes are excluded. An uncertain call keeps its complete reservation even when a diagnostic code is available. Preserve stopped-run receipts before deliberately creating a new learning run; a new run shares the original cumulative authorization and does not clear earlier holds.
+
 Typical requests use seven model calls before repairs or edits: planner, company query selectors, disclosure interpreters, writer and critic. Two bounded automatic draft repairs remain subject to all original limits. Successful duplicate call IDs return their recorded response without another provider charge. A failed or ambiguous call cannot silently retry under the same ID.
 
 Run `python3 ops/check_secrets.py --history` before each commit/push. It checks the real local provider and analyst credentials against staged content and reachable history without printing their values. It supplements `.gitignore`; it is not a general-purpose secret detector for unknown credentials.

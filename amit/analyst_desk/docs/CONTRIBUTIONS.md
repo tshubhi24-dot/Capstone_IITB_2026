@@ -15,6 +15,7 @@ The course guide permits AI coding assistance and assigns problem framing, desig
 | 24 October 2026 | Fresh Docker research journey implementation | AI-assisted current code, UI, source extraction helpers and boundary tests; offline processing, zero model calls. Actual human decisions and final evaluation are not claimed. |
 | 24 October 2026 | Actual Docker learning journey and two human review gates | The exact research plan and note were approved through separate review gates. One note was saved; measured receipts, persistence/authentication checks and limitations appear in the step log. This is not independent final evaluation. |
 | 24 October 2026 | Live AI increment, steps 6–8 | AI-assisted provider/ledger, bounded cited reasoning, graph/API/UI, private deployment controls and tests. The live-capable stack runs with paid activation disabled; mocked results are not claimed as a paid run or independent evaluation. |
+| 24 October 2026 | Authorized live activation and first stopped attempt | The authorized US$1 policy bounded the first planner attempt, which stopped before the plan gate and retained its US$0.0281344 reservation. AI-assisted diagnostics were added; this attempt produced no live plan/note approval or publication. |
 
 ## Team role assignments
 
@@ -36,6 +37,7 @@ Record each action when it occurs, including adopted/rejected AI suggestions, so
 | Date | Member | Decision or work performed | Files or run IDs | Evidence and reviewer |
 |---|---|---|---|---|
 | 24 October 2026 | Amit | Approved the MSFT/AAPL plan and the exact checked note through separate review gates. | Run `b1fd4eab632548328f354ef2794f679a`; note `c54ab4c70fc64615a95dfc8c462ba0c3`. | Approval states and exact payload hashes in `evidence/two_company_journey.json`; independent source/domain evaluation not claimed. |
+| 24 October 2026 | Amit | Authorized the bounded live policy, retaining separate plan and note review gates. | Policy `eed8a14ef850032984ce4ea14d49c164d7c5926c8ede046e1fdf5a2c484ad3e0`. | Policy limits and activation state in `evidence/live_activation.json`; stopped-run receipt under `evidence/live_attempts/`. |
 | Pending | Pending | Pending | Pending | Pending |
 
 ## Human reviews still to record

@@ -10,7 +10,7 @@ import httpx
 import pytest
 
 from desk.model_gateway import build_app
-from desk.provider import BudgetLedger, GATEWAY_URL, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway
+from desk.provider import BudgetLedger, GATEWAY_URL, ModelGatewayClient, PROVIDER_URL, ProviderError, ReasoningGateway, SAFE_ERROR_CODES, safe_error_code
 
 KEY = "invented-provider-credential-" * 3
 TOKEN = "invented-private-gateway-token-" * 3
@@ -128,6 +128,11 @@ def test_uncertain_provider_outcomes_hold_budget_and_never_retry(tmp_path, confi
         engine.complete(**arguments())
     assert KEY not in str(error.value)
     assert error.value.__cause__ is None and error.value.__context__ is None
+    expected = {"timeout": "provider_read_timeout", "missing_usage": "provider_usage_missing", "missing_cost": "provider_usage_cost_missing",
+                "bad_token_total": "provider_usage_inconsistent", "redirect": "provider_http_302", "http_error": "provider_http_500"}[failure]
+    assert error.value.code == expected
+    with engine.ledger.connection() as db:
+        assert db.execute("SELECT error_code FROM model_calls").fetchone()[0] == expected
     summary = engine.budget()
     assert summary["reported_spend_usd"] == "0" and Decimal(summary["held_usd"]) > 0 and summary["uncertain_calls"] == 1
     with pytest.raises(ProviderError) as repeated:
@@ -252,3 +257,87 @@ def test_client_address_proxy_redirect_and_error_boundaries(monkeypatch):
     assert seen[0].headers["X-Model-Token"] == TOKEN and "Authorization" not in seen[0].headers
     with pytest.raises(ProviderError):
         ModelGatewayClient(TOKEN, base_url="https://untrusted.invalid")
+
+
+@pytest.mark.parametrize("status,expected", [(400, "provider_http_400"), (401, "provider_http_401"), (402, "provider_http_402"),
+                                           (403, "provider_http_403"), (404, "provider_http_404"), (422, "provider_http_422"),
+                                           (429, "provider_http_429"), (502, "provider_http_502"), (503, "provider_http_503"),
+                                           (399, "provider_http_3xx"), (499, "provider_http_4xx"), (599, "provider_http_5xx"),
+                                           (201, "provider_http_unexpected_status")])
+def test_http_diagnostics_retain_only_allowed_status_codes(tmp_path, config, status, expected):
+    engine, calls = gateway(tmp_path, config, lambda _: httpx.Response(status, headers={"X-Private-Detail": KEY}, json={"error": {"message": KEY}}))
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and expected in SAFE_ERROR_CODES and KEY not in str(error.value)
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT status,error_code,result,reserved_usd,charged_usd FROM model_calls").fetchone()
+    assert row["status"] == "uncertain" and row["error_code"] == expected and row["result"] is None
+    assert row["charged_usd"] is None and Decimal(row["reserved_usd"]) > 0
+    assert KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    with pytest.raises(ProviderError):
+        engine.complete(**arguments())
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize("kind,expected", [(httpx.ConnectTimeout, "provider_connect_timeout"), (httpx.ReadTimeout, "provider_read_timeout"),
+                                         (httpx.WriteTimeout, "provider_write_timeout"), (httpx.PoolTimeout, "provider_pool_timeout"),
+                                         (httpx.ConnectError, "provider_connect_error"), (httpx.ReadError, "provider_network_error"),
+                                         (httpx.RemoteProtocolError, "provider_protocol_error")])
+def test_network_diagnostics_never_retain_exception_details(tmp_path, config, kind, expected):
+    def fail(request):
+        raise kind(KEY, request=request)
+    engine, calls = gateway(tmp_path, config, fail)
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and KEY not in str(error.value)
+    assert error.value.__context__ is None and error.value.__cause__ is None
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT error_code FROM model_calls").fetchone()
+    assert row[0] == expected and KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    assert len(calls) == 1 and Decimal(engine.budget()["held_usd"]) > 0
+
+
+@pytest.mark.parametrize("failure,expected", [("bad_json", "provider_response_json_invalid"), ("shape", "provider_response_shape_invalid"),
+                                             ("error_envelope", "provider_error_envelope"), ("usage_shape", "provider_usage_invalid"),
+                                             ("tokens_missing", "provider_usage_tokens_missing"), ("tokens_invalid", "provider_usage_tokens_invalid"),
+                                             ("cost_missing", "provider_usage_cost_missing"), ("cost_invalid", "provider_usage_cost_invalid"),
+                                             ("cost_null", "provider_usage_cost_invalid"), ("cost_nan", "provider_usage_cost_invalid")])
+def test_json_usage_diagnostics_are_specific_safe_and_conservative(tmp_path, config, failure, expected):
+    def malformed(request):
+        if failure == "bad_json":
+            return httpx.Response(200, content=KEY)
+        if failure == "shape":
+            return httpx.Response(200, json=[KEY])
+        if failure == "error_envelope":
+            return httpx.Response(200, json={"error": {"message": KEY, "code": KEY}})
+        data = response()
+        if failure == "usage_shape":
+            data["usage"] = KEY
+        elif failure == "tokens_missing":
+            del data["usage"]["completion_tokens"]
+        elif failure == "tokens_invalid":
+            data["usage"]["completion_tokens"] = True
+        elif failure == "cost_missing":
+            del data["usage"]["cost"]
+        else:
+            data["usage"]["cost"] = {"cost_invalid": KEY, "cost_null": None, "cost_nan": "NaN"}[failure]
+        return httpx.Response(200, json=data)
+    engine, calls = gateway(tmp_path, config, malformed)
+    with pytest.raises(ProviderError) as error:
+        engine.complete(**arguments())
+    assert error.value.code == expected and KEY not in str(error.value)
+    assert error.value.__context__ is None and error.value.__cause__ is None
+    with engine.ledger.connection() as db:
+        row = db.execute("SELECT error_code,status,charged_usd FROM model_calls").fetchone()
+    assert tuple(row) == (expected, "uncertain", None)
+    assert KEY.encode() not in (tmp_path / "ledger.sqlite").read_bytes()
+    assert Decimal(engine.budget()["held_usd"]) > 0 and len(calls) == 1
+
+
+@pytest.mark.parametrize("code", [KEY, "invented-private-response-value", "provider_http_499", None, ["provider_http_400"]])
+def test_unrecognized_error_codes_never_cross_gateway_client_boundary(code):
+    assert safe_error_code(code) == "gateway_request_failed"
+    transport = httpx.MockTransport(lambda _: httpx.Response(502, json={"error": {"code": code, "message": KEY}}))
+    with pytest.raises(ProviderError) as error:
+        ModelGatewayClient(TOKEN, transport=transport).complete(**arguments())
+    assert error.value.code == "gateway_request_failed" and KEY not in str(error.value)
