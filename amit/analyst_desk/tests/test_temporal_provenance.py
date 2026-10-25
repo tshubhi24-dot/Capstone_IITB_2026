@@ -147,10 +147,13 @@ def test_fixed_local_guard_reuses_cached_writer_without_changing_paid_request(fi
         return fixed_validator(claims, known)
 
     monkeypatch.setattr(reasoning, "validate_claims", previous_guard)
-    plan = begin_live(engine, store)
+    # Isolate exact-response cache reuse. The original seven-call ceiling
+    # leaves room for a critic but not a new writer-plus-critic correction.
+    plan = begin_live(engine, store, max_model_calls=7)
     failed = decide(engine, plan)
     assert failed["status"] == "error" and failed["failure_kind"] == "content_validation"
     assert failed["usage"]["model_calls"] == 6 and not failed["usage"]["model_reservations"]
+    assert not any(event["stage"] == "content_correction" for event in failed["events"])
     original_calls = deepcopy(failed["usage"]["calls"])
     monkeypatch.setattr(reasoning, "validate_claims", fixed_validator)
     engine.claim_continuation(failed["id"], plan["pending"]["payload_hash"])
@@ -162,3 +165,4 @@ def test_fixed_local_guard_reuses_cached_writer_without_changing_paid_request(fi
     assert len([call for call in engine.model_client.calls if call["role"] == "writer"]) == 1
     assert len([call for call in engine.model_client.calls if call["role"] == "critic"]) == 1
     assert note["plan"] == plan["plan"] and store.notes() == []
+    assert note["request"]["max_model_calls"] == failed["request"]["max_model_calls"] == 7

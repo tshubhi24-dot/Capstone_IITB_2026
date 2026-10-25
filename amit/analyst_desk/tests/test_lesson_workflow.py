@@ -105,9 +105,18 @@ def test_only_fixed_scoped_hints_reach_producers_and_critic_stays_independent(fi
         has_hint = ACTION_HINTS[proposal["action"]] in messages
         assert has_hint is (call["role"] in {"planner", "writer"})
         if call["role"] == "writer":
-            assert "lesson_context" not in json.loads(call["messages"][-1]["content"])["plan"]
+            context = json.loads(call["messages"][-1]["content"])
+            # The qualitative writer receives approved scope and selected risk
+            # sources, while the fixed applicable hint stays in trusted system
+            # instructions. Full plans and private lesson metadata are omitted.
+            assert not {"plan", "question", "metrics", "verified_metrics", "lesson_context"} & context.keys()
+            assert context["approved_scope"] == {
+                "tickers": plan["plan"]["tickers"], "years": plan["plan"]["years"]}
+            assert "lesson_refs" not in json.dumps(context)
+            assert not {row["source_id"] for row in context["quote_menu"]} & source._facts.keys()
         if call["role"] == "critic":
             assert "Reviewed development checklist" not in messages and "lesson_refs" not in messages
+            assert "lesson_context" not in messages
     assert verify_draft(note["draft"], source)["passed"]
     assert not any(row["stage"] == "lesson_accepted" for row in note["events"])
 

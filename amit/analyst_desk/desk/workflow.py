@@ -1352,15 +1352,48 @@ class Engine:
         return {"draft": draft, "human_edited": False}
 
     def _live_draft(self, state, table):
-        from .reasoning import normalize_evidence
+        from .reasoning import ReasoningError, normalize_evidence
         evidence = [item for analysis in state.get("risk_ai", []) for item in analysis["selected_evidence"]]
         facts = [fact for company in state["findings"] for fact in company["facts"]]
         known = normalize_evidence(evidence + facts)
         question = self.store.get_run(state["run_id"])["request"]["question"]
-        if state.get("repairs"):
-            question += "\nRevision feedback from the previous checks: " + json.dumps(state.get("critic", {}).get("issues", []))
+        critic_feedback = []
+        previous = state.get("draft")
+        if state.get("repairs") and previous and verify_draft(previous, self.source, require_semantic=False)["passed"]:
+            rejected = {verdict["claim_id"] for verdict in previous.get("semantic_verdict", {}).get("verdicts", [])
+                        if verdict.get("supported") is False}
+            critic_feedback = [deepcopy(claim) for claim in previous.get("narrative_claims", [])
+                               if not rejected or claim["claim_id"] in rejected]
         model_plan = {key: value for key, value in state["plan"].items() if key not in {"memory_context", "lesson_context"}}
-        written = self.reasoner(state, "writer:" + str(state.get("repairs", 0))).write(question, model_plan, state["metrics"], state.get("risk_ai", []), known)
+        # The writer interprets selected disclosure text. Code owns the financial
+        # table; the complete canonical fact package is retained below for checks.
+        writer_evidence = normalize_evidence(evidence)
+        purpose = "writer:" + str(state.get("repairs", 0))
+        prior_calls = {call["call_id"] for call in self.store.get_run(state["run_id"])["usage"].get("calls", [])}
+        try:
+            written = self.reasoner(state, purpose).write(question, model_plan, state["metrics"], state.get("risk_ai", []), writer_evidence,
+                                                        critic_feedback=critic_feedback)
+        except ReasoningError as error:
+            from .reasoning_diagnostics import validation_diagnostic
+            diagnostic = validation_diagnostic(error, "writer")
+            current = self.store.get_run(state["run_id"])
+            usage = current["usage"]
+            new_writer = any(call["stage"] == "writer" and call["call_id"] not in prior_calls
+                             for call in usage.get("calls", []))
+            correction_codes = {"narrative_quantity", "narrative_number", "unsupported_risk_absence", "output_schema"}
+            call_limit = current["request"].get("max_model_calls", 12)
+            if (diagnostic is None or diagnostic["code"] not in correction_codes or not new_writer
+                    or usage.get("model_reservations")
+                    or call_limit is not None and usage.get("model_calls", 0) + 2 > call_limit):
+                raise
+            self.event(state["run_id"], "writer", "content_correction",
+                       "One bounded writer correction requested after a content check; original limits and earlier charges remain counted.",
+                       validation_code=diagnostic["code"], correction_attempt=1)
+            # A changed purpose and fixed feedback create a distinct, audited
+            # request. No provider error is retried and a second rejection stops.
+            written = self.reasoner(state, purpose + ":content-correction:1").write(
+                question, model_plan, state["metrics"], state.get("risk_ai", []), writer_evidence,
+                validation_feedback=[diagnostic["code"]], critic_feedback=critic_feedback)
         provisional_risk_claims = [claim for analysis in state.get("risk_ai", []) for comparison in analysis["comparisons"] for claim in comparison["claims"]]
         risk_claims = written["risk_claims"]
         memory_context = self._validate_memory(state)

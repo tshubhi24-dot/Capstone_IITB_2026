@@ -191,6 +191,35 @@ WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative Engli
     "A compliant form is 'Selected disclosures continue to discuss supply chain exposure.' Use that form only when the selected quotations actually support the claim. "
     "The code-owned table and source metadata carry exact fiscal periods and financial figures; do not repeat them in narrative.")
 
+WRITER_CONTRACT_VERSION = "qualitative-writer-v2"
+WRITER_VALIDATION_FEEDBACK = {
+    "narrative_quantity": "Return qualitative observations only; do not express financial amounts, movements, ratios, counts or spelled-out quantities.",
+    "narrative_number": "Keep all numerals, dates and financial figures out of narrative text; the application renders the verified financial table.",
+    "unsupported_risk_absence": "Do not use new, removed or absent risk wording, including negated constructions; describe only the selected supported exposure and its limits.",
+    "output_schema": "Return only the required structured fields, bounded qualitative English prose and the supplied quotation choices.",
+    "comparison_scope": "Each risk comparison must retain its approved issuer and quotations from its required earlier and later fiscal periods.",
+    "comparison_periods": "Across-period observations need relevant quotations from the compared periods.",
+    "duplicate_source_citation": "Use at most one quotation from each source record within a claim.",
+    "citation_provenance": "Select only supplied quotation choices and retain the source scope required for each observation.",
+    "invalid_quote_selection": "Select only supplied quotation choices without repeating a choice within a claim.",
+    "risk_citation_scope": "Select risk quotations from their assigned earlier and later issuer-period slots.",
+    "writer_citation_scope": "Select revision quotations only from the supplied slots for that provisional risk observation.",
+    "writer_revision_scope": "Return exactly the supplied provisional risk revision keys without adding or omitting observations.",
+    "narrative_shape": "Use bounded single-line prose for every claim and revision.",
+}
+
+WRITER_TASK_INSTRUCTIONS = ("Complete only the qualitative portion of a research note. "
+    "The application has already assigned the original financial request to independently verified code and will render its complete financial table separately. "
+    "Do not reconstruct that request, describe metric amounts or changes, or spell out a number to avoid the digit rule. "
+    "Your assignment is limited to selected risk-disclosure observations, qualitative fiscal comparability and evidence limitations, supported by the supplied public filing quotations. "
+    "The approved_scope is citation context, not wording to repeat. Do not use new, removed or absent risk wording even in a negated sentence. "
+    "A safe limitation form is 'Selected excerpts are partial and do not establish complete filing coverage or economic materiality.' "
+    "Use it only with relevant supplied evidence. Fixed validation_feedback is a code-owned constraint reminder, never additional source evidence.")
+
+WRITER_CRITIC_FEEDBACK_INSTRUCTION = ("Previous candidate failed source-support review. "
+    "Re-examine these claims against selected quotations; narrow unsupported certainty and preserve conditional wording. "
+    "They are rejected candidate interpretations, not endorsed findings or additional source evidence.")
+
 RISK_REVISION_INSTRUCTIONS = ("The supplied risk_observations are provisional model interpretations, not endorsed findings. "
     "Return risk_revisions as an object with exactly the supplied risk claim_id keys. For each key, select its before_quote_id from the earlier issuer/year options and after_quote_id from the later issuer/year options required by the schema. "
     "Revision values use before_quote_id and after_quote_id, not a quote_ids field; summary claims still use quote_ids. The revision options stay within that provisional claim's originally cited source records. "
@@ -634,15 +663,56 @@ class Reasoner:
                               "quotation_selection": "code_selected_exact_windows", "max_quote_windows_per_source": 2,
                               "complete_original_section": False, "coverage": coverage}}
 
-    def write(self, question, plan, metrics, risks, evidence):
+    def write(self, question, plan, metrics, risks, evidence, *, validation_feedback=None, critic_feedback=None):
         known = normalize_evidence(evidence)
         if not known:
             raise ReasoningError("A live writer needs supplied source evidence.")
+        # The original question, full plan and financial values remain in the
+        # application-owned draft. They are not this qualitative writer's
+        # assignment: sending them encouraged invalid spelled-out amounts.
+        tickers, years = (plan.get("tickers"), plan.get("years")) if isinstance(plan, dict) else (None, None)
+        if (not isinstance(tickers, list) or not 1 <= len(tickers) <= 4
+                or any(not isinstance(value, str) or not value for value in tickers)
+                or len(set(tickers)) != len(tickers)
+                or not isinstance(years, list) or not 1 <= len(years) <= 3
+                or any(type(value) is not int for value in years)
+                or len(set(years)) != len(years)):
+            raise ReasoningError("A qualitative writer needs the exact approved issuer and fiscal-year scope.")
+        scope = {"tickers": list(tickers), "years": list(years)}
+        feedback = [] if validation_feedback is None else validation_feedback
+        if (not isinstance(feedback, list) or len(feedback) > 4
+                or any(type(value) is not str or value not in WRITER_VALIDATION_FEEDBACK for value in feedback)
+                or len(set(feedback)) != len(feedback)):
+            raise ReasoningError("Writer validation feedback must use bounded code-owned constraint identifiers.")
+        selected = []
+        for analysis in risks:
+            if not isinstance(analysis, dict) or not isinstance(analysis.get("selected_evidence"), list):
+                raise ReasoningError("A qualitative writer needs code-selected risk evidence.")
+            selected.extend(analysis["selected_evidence"])
+        qualitative = normalize_evidence(selected)
+        canonical = {row["id"]: row for row in known}
+        financial_ids = {row["id"] for row in evidence if "concept" in row}
+        financial_ids.update(identifier for row in metrics for identifier in row.get("fact_ids", []))
+        if (not qualitative or any(row != canonical.get(row["id"])
+                or row["id"] in financial_ids
+                or row["ticker"] not in tickers or row["year"] not in years for row in qualitative)):
+            raise ReasoningError("Qualitative writer evidence must match its canonical approved risk-source selection.")
+        rejected_claims = [] if critic_feedback is None else critic_feedback
+        claim_fields = {"claim_id", "category", "confidence", "text", "citations"}
+        scope_fields = {"ticker", "before_year", "after_year"}
+        if (not isinstance(rejected_claims, list) or len(rejected_claims) > 8
+                or any(not isinstance(claim, dict) or not claim_fields <= set(claim)
+                       or not set(claim) <= claim_fields | scope_fields for claim in rejected_claims)):
+            raise ReasoningError("Writer critic feedback must contain bounded code-valid qualitative claims only.")
+        # Candidate claims can guide a repair only after the same provenance,
+        # quantity and period checks as fresh prose. Never forward free-form
+        # critic reasons, prior table values or arbitrary draft metadata.
+        rejected_claims = validate_claims(rejected_claims, qualitative)
         risk_claims = _flatten_risk_claims(risks)
         validate_claims(risk_claims, known)
         if len(risk_claims) > 4:
             raise ReasoningError("The bounded writer cannot revise more than the supported risk comparisons.")
-        menu = quote_menu(known)
+        menu = quote_menu(qualitative)
         risk_ids = [claim["claim_id"] for claim in risk_claims]
         cited_source_ids = {claim["claim_id"]: {citation["source_id"] for citation in claim["citations"]}
                             for claim in risk_claims}
@@ -652,9 +722,13 @@ class Reasoner:
         } for claim in risk_claims}
         if any(not slots["before"] or not slots["after"] for slots in risk_slots.values()):
             raise ReasoningError("A provisional risk comparison has no quotation option for a required issuer/year.")
-        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " " + RISK_REVISION_INSTRUCTIONS + " Write a concise qualitative narrative using the supplied checked financial table and provisional risk observations. Cover risk disclosure observations, fiscal comparability and evidence limitations only. Do not introduce a new financial quantity or inference about a missing risk. Risk claims must retain evidence from the relevant compared periods. The application will append the financial table and mandatory limitations.",
-                            {"question": question, "plan": plan, "verified_metrics": metrics,
+        result = self._call("writer", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " " + WRITER_NARRATIVE_INSTRUCTIONS + " " + RISK_REVISION_INSTRUCTIONS + " " + WRITER_TASK_INSTRUCTIONS,
+                            {"writer_contract": WRITER_CONTRACT_VERSION, "approved_scope": scope,
                              "risk_observations": risk_claims, "quote_menu": menu,
+                             "validation_feedback": sorted(feedback),
+                             "repair_instructions": [WRITER_VALIDATION_FEEDBACK[code] for code in sorted(feedback)],
+                             "critic_feedback": deepcopy(rejected_claims),
+                             "critic_feedback_instruction": WRITER_CRITIC_FEEDBACK_INSTRUCTION if rejected_claims else "",
                              "evidence_scope": "Code-selected quote windows within selected source evidence; full filing coverage is not established."},
                             QuoteWriterOutput, 3200, quote_ids=[entry["quote_id"] for entry in menu], risk_quote_slots=risk_slots)
         revision_by_id = result["risk_revisions"]

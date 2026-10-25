@@ -367,6 +367,21 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Capstone connection:** p.3, grounded tool use, self-correction and human control; pp.15–16, source-supported risk comparisons, independent criticism and exact-note review. Better request constraints prevent a known invalid citation shape without weakening the checks that reject it.
 
+### Step 16m — Separate qualitative writing from verified financial calculations
+
+**What this step does:** gives the writer selected risk evidence and the approved issuer/year scope, while code supplies the financial table. The writer no longer receives a conflicting assignment to repeat financial quantities in prose. One newly returned invalid writer response can receive a bounded content correction; a second rejection stops. Provider failures do not enter this correction path.
+
+| Files | Purpose |
+|---|---|
+| [desk/reasoning.py](desk/reasoning.py) | Define the qualitative writer contract, canonical risk-only quotation menu and fixed validation feedback. Preserve quantity, source and period checks. |
+| [desk/workflow.py](desk/workflow.py) | Keep financial facts in the final draft and independent critic; retain prior charges and pass only code-valid rejected claims into a writer repair. |
+| [tests/test_writer_contract.py](tests/test_writer_contract.py), [tests/test_writer_contract_workflow.py](tests/test_writer_contract_workflow.py) | Exercise assignment separation, one bounded correction, repeated rejection, provider failure, exact-draft criticism and accounting. |
+| [tests/test_reasoning.py](tests/test_reasoning.py), [tests/test_temporal_provenance.py](tests/test_temporal_provenance.py), [tests/test_lesson_workflow.py](tests/test_lesson_workflow.py) | Preserve provenance, cache identity, reviewed guidance and critic independence with the narrower request. |
+
+**Verification:** the complete suite passes 1,263 tests at this checkpoint. Seventeen read-only checks against an actual stopped checkpoint preserve the approved scope, canonical risk selection, four financial rows and all twelve checked financial values. The original spelled-out quantities remain rejected; the saved response is not edited into a pass. Thirteen deployment checks preserve every stored run, approved note, source and budget record without a model call. Continuing the existing checkpoint produces a valid writer output and reaches note review, where body-wide critic objections remain blocking. Writer validation success alone does not establish a passing or complete research note.
+
+**Capstone connection:** p.3, grounded tool use, code execution, self-correction and cost controls; pp.15–16, code-verified financial analysis, cited interpretation and independent review. Generation and verification have distinct responsibilities without replacing the final human review.
+
 ## What the team builds next
 
 1. **Continue genuine development learning:** preserve the accepted lesson, review further evidence-backed proposals, record a genuine rejection with its reason, and freeze selected accepted versions before protected evaluation.

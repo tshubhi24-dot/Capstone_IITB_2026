@@ -11,6 +11,15 @@ from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PairedRiskOutput,
                             validate_prose)
 
 
+def writer_scope(evidence):
+    records = normalize_evidence(evidence)
+    return {"tickers": sorted({row["ticker"] for row in records}), "years": sorted({row["year"] for row in records})}
+
+
+def writer_risks(evidence, claims=()):
+    return [{"selected_evidence": [row for row in evidence if "concept" not in row], "claims": list(claims)}]
+
+
 @pytest.fixture
 def evidence():
     return [
@@ -340,6 +349,80 @@ def test_invalid_quote_choices_or_freeform_citations_cannot_be_repaired(evidence
         Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
 
 
+def test_risk_same_source_distinct_windows_fail_paired_wire_and_canonical_guard(evidence):
+    """Reproduce same-source windows without retaining any private run output."""
+    def model(stage, **request):
+        options = [row for row in request["context"]["quote_menu"] if row["source_id"] == "msft-after"]
+        assert len(options) == 2 and options[0]["quote_id"] != options[1]["quote_id"]
+        result = {"comparisons": {"comparison-2023-2024": {"status": "evidence_available", "findings": [{
+            "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+            "before_quote_id": options[0]["quote_id"], "after_quote_id": options[1]["quote_id"],
+        }]}}}
+        assert not Draft202012Validator(request["schema"]).is_valid(result)
+        old_wire = {"comparisons": [{"before_year": 2023, "after_year": 2024,
+            "status": "evidence_available", "findings": [{
+                "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+                "quote_ids": [row["quote_id"] for row in options]}]}]}
+        assert Draft202012Validator(QuoteRiskOutput.model_json_schema()).is_valid(old_wire)
+        assert not Draft202012Validator(request["schema"]).is_valid(old_wire)
+        # Historical canonical verification retains the independent guard.
+        historical = claim()
+        historical["citations"] = [{"source_id": row["source_id"], "quote": row["quote"]} for row in options]
+        with pytest.raises(ReasoningError, match="Repeat citations"):
+            validate_claims([historical], evidence)
+        return result
+    with pytest.raises(ReasoningError, match="required issuer/year slot"):
+        Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
+
+
+@pytest.mark.parametrize("years", [[2023, 2024], [2023, 2024, 2025], [2023, 2025]])
+def test_paired_risk_preserves_each_code_owned_comparison_and_citation_period(years):
+    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
+                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
+                                  "text": "Cybersecurity may disrupt operations and compromise privacy."}]}
+                for year in years}
+    def model(stage, **request):
+        menu = request["context"]["quote_menu"]
+        result = {"comparisons": {}}
+        for key, pair in reversed(list(request["context"]["comparison_keys"].items())):
+            result["comparisons"][key] = {"status": "evidence_available", "findings": [{
+                "text": "Selected disclosures describe potential cybersecurity disruption.", "confidence": "low",
+                "before_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["before_year"]),
+                "after_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["after_year"]),
+            }]}
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        return result
+    result = Reasoner(model).compare_risks("MSFT", years, sections)
+    assert [(row["before_year"], row["after_year"]) for row in result["comparisons"]] == list(zip(years, years[1:]))
+    for row in result["comparisons"]:
+        current = row["claims"][0]
+        assert current["claim_id"] == f"risk-MSFT-{row['before_year']}-{row['after_year']}-1"
+        assert {citation["source_id"] for citation in current["citations"]} == {
+            f"period-{row['before_year']}", f"period-{row['after_year']}"}
+
+
+def test_paired_risk_requires_insufficient_evidence_if_period_has_no_quote_window():
+    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
+                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
+                                  "text": "Short." if year == 2023 else "Cybersecurity may disrupt business operations."}]}
+                for year in (2023, 2024)}
+    def model(stage, **request):
+        result = {"comparisons": {"comparison-2023-2024": {"status": "insufficient_evidence", "findings": []}}}
+        schema = request["schema"]["properties"]["comparisons"]["properties"]["comparison-2023-2024"]
+        assert schema["properties"]["findings"]["maxItems"] == 0
+        assert schema["properties"]["status"]["enum"] == ["insufficient_evidence"]
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        invalid = deepcopy(result)
+        invalid["comparisons"]["comparison-2023-2024"]["status"] = "evidence_available"
+        assert not Draft202012Validator(request["schema"]).is_valid(invalid)
+        return result
+    result = Reasoner(model).compare_risks("MSFT", [2023, 2024], sections)
+    assert result["comparisons"] == [{"before_year": 2023, "after_year": 2024,
+                                      "status": "insufficient_evidence", "claims": []}]
+
+
 def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
     seen = []
     def model(stage, **request):
@@ -347,7 +430,7 @@ def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
         menu = request["context"]["quote_menu"]
         return {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": [menu[0]["quote_id"]]}]}
-    result = Reasoner(model).write("Compare annual sources", {}, [], [], evidence)
+    result = Reasoner(model).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
     claim = result["claims"][0]
     assert claim["citations"] == [{"source_id": seen[0]["context"]["quote_menu"][0]["source_id"],
                                    "quote": seen[0]["context"]["quote_menu"][0]["quote"]}]
@@ -359,14 +442,14 @@ def test_writer_uses_finite_quotes_but_cannot_repeat_a_source(evidence):
         return {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": choices}]}
     with pytest.raises(ReasoningError, match="Repeat citations"):
-        Reasoner(duplicate_source).write("Compare annual sources", {}, [], [], evidence)
+        Reasoner(duplicate_source).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
 
 
 def test_writer_unknown_quote_id_is_rejected_and_not_silently_replaced(evidence):
     response = {"risk_revisions": {}, "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": ["invented-quote"]}]}
     with pytest.raises(ReasoningError, match="unknown or repeated"):
-        Reasoner(lambda *args, **kwargs: response).write("Compare annual sources", {}, [], [], evidence)
+        Reasoner(lambda *args, **kwargs: response).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
 
 
 def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(evidence):
@@ -382,7 +465,7 @@ def test_writer_wire_schema_excludes_date_digits_without_changing_risk_schema(ev
         dated["claims"][0]["text"] = "Selected disclosures discuss operational risks in June 2025."
         assert not validator.is_valid(dated)
         return content
-    Reasoner(model).write("Compare annual sources", {}, [], [], evidence)
+    Reasoner(model).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
     writer_text = captured[0]["schema"]["$defs"]["QuoteWriterFinding"]["properties"]["text"]
     assert "pattern" in writer_text
     assert "pattern" not in QuoteRiskOutput.model_json_schema()["$defs"]["QuoteFinding"]["properties"]["text"]
@@ -403,7 +486,7 @@ def test_writer_rejects_dated_or_marked_up_output_without_rewriting_it(evidence,
                            "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
     original = deepcopy(content)
     with pytest.raises(ReasoningError, match="Invalid structured model output for writer"):
-        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
     assert content == original
 
 
@@ -415,7 +498,7 @@ def test_writer_schema_does_not_replace_full_local_quantity_validation(evidence,
     content = {"risk_revisions": {}, "claims": [{"text": text, "confidence": "low", "category": "limitation",
                            "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
     with pytest.raises(ReasoningError):
-        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
 
 
 def test_qualitative_writer_claim_keeps_exact_provenance_through_critic(evidence):
@@ -432,7 +515,7 @@ def test_qualitative_writer_claim_keeps_exact_provenance_through_critic(evidence
         return {"issues": [], "verdicts": [{"claim_id": "writer-1", "supported": True,
                                             "reason": "Fictional test review of the retained conditional source language."}]}
     reasoner = Reasoner(model)
-    written = reasoner.write("Compare annual sources", {}, [], [], evidence)
+    written = reasoner.write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
     current = draft(written["claims"])
     verdict = reasoner.critique(current, written["evidence"])
     assert verdict["passed"] is True and verdict["semantic_review"] == "model_assisted_not_gold"
@@ -475,7 +558,7 @@ def test_writer_refines_provisional_risk_in_new_output_and_preserves_code_owned_
         wrong_slot["risk_revisions"][original["claim_id"]]["after_quote_id"] = content["risk_revisions"][original["claim_id"]]["before_quote_id"]
         assert not validator.is_valid(wrong_slot)
         return content
-    written = Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [original]}], evidence)
+    written = Reasoner(model).write("Compare annual disclosures", writer_scope(evidence), [], writer_risks(evidence, [original]), evidence)
     revised = written["risk_claims"][0]
     assert original == unchanged
     assert revised["text"] == "Selected disclosures describe potential operational disruption from cyber threats."
@@ -510,7 +593,7 @@ def test_writer_cannot_omit_expand_duplicate_or_reassign_provisional_risks(evide
             revision["text"] = "Selected disclosures described operational exposure in fiscal 2024."
         return response
     with pytest.raises(ReasoningError):
-        Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [original]}], evidence)
+        Reasoner(model).write("Compare annual disclosures", writer_scope(evidence), [], writer_risks(evidence, [original]), evidence)
 
 
 def test_writer_without_provisional_risks_cannot_introduce_a_risk_revision(evidence):
@@ -519,7 +602,7 @@ def test_writer_without_provisional_risks_cannot_introduce_a_risk_revision(evide
                 "claims": [{"text": "Selected source excerpts provide limited disclosure context.", "confidence": "low",
                             "category": "limitation", "quote_ids": [quote_menu(evidence)[0]["quote_id"]]}]}
     with pytest.raises(ReasoningError, match="omitted or invented"):
-        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", {}, [], [], evidence)
+        Reasoner(lambda *args, **kwargs: content).write("Compare annual sources", writer_scope(evidence), [], writer_risks(evidence), evidence)
 
 
 def test_later_comparison_cannot_reuse_globally_valid_earlier_period_quotes(evidence):
@@ -535,7 +618,7 @@ def test_later_comparison_cannot_reuse_globally_valid_earlier_period_quotes(evid
         assert not Draft202012Validator(request["schema"]).is_valid(response)
         return response
     with pytest.raises(ReasoningError, match="required issuer/year slot"):
-        Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [provisional]}], sources)
+        Reasoner(model).write("Compare annual disclosures", writer_scope(sources), [], writer_risks(sources, [provisional]), sources)
 
 
 def test_revision_slots_exclude_financial_facts_and_uncited_same_year_passages(evidence):
@@ -551,14 +634,15 @@ def test_revision_slots_exclude_financial_facts_and_uncited_same_year_passages(e
         scoped = request["schema"]["properties"]["risk_revisions"]["properties"][original["claim_id"]]["properties"]
         menu = request["context"]["quote_menu"]
         allowed = set(scoped["before_quote_id"]["enum"]) | set(scoped["after_quote_id"]["enum"])
-        excluded = [item["quote_id"] for item in menu if item["source_id"] in {"uncited-msft", "annual-revenue"}]
+        assert "annual-revenue" not in {item["source_id"] for item in menu}
+        excluded = [item["quote_id"] for item in menu if item["source_id"] == "uncited-msft"]
         assert excluded and not allowed.intersection(excluded)
         for identifier in excluded:
             bad = deepcopy(content)
             bad["risk_revisions"][original["claim_id"]]["before_quote_id"] = identifier
             assert not Draft202012Validator(request["schema"]).is_valid(bad)
         return content
-    revised = Reasoner(model).write("Compare annual disclosures", {}, [], [{"claims": [original]}], sources)
+    revised = Reasoner(model).write("Compare annual disclosures", writer_scope(sources), [], writer_risks(sources, [original]), sources)
     assert {citation["source_id"] for citation in revised["risk_claims"][0]["citations"]} == {"msft-before", "msft-after"}
 
 
@@ -638,77 +722,3 @@ def test_critic_prompt_requests_brief_reasons_and_exact_json_without_relaxing_sc
     assert schema["additionalProperties"] is False
     assert schema["$defs"]["Verdict"]["additionalProperties"] is False
     assert verdict["passed"] is True
-
-
-def test_risk_same_source_distinct_windows_fail_paired_wire_and_canonical_guard(evidence):
-    """Reproduce same-source windows without retaining any private run output."""
-    def model(stage, **request):
-        options = [row for row in request["context"]["quote_menu"] if row["source_id"] == "msft-after"]
-        assert len(options) == 2 and options[0]["quote_id"] != options[1]["quote_id"]
-        result = {"comparisons": {"comparison-2023-2024": {"status": "evidence_available", "findings": [{
-            "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
-            "before_quote_id": options[0]["quote_id"], "after_quote_id": options[1]["quote_id"],
-        }]}}}
-        assert not Draft202012Validator(request["schema"]).is_valid(result)
-        old_wire = {"comparisons": [{"before_year": 2023, "after_year": 2024,
-            "status": "evidence_available", "findings": [{
-                "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
-                "quote_ids": [row["quote_id"] for row in options]}]}]}
-        assert Draft202012Validator(QuoteRiskOutput.model_json_schema()).is_valid(old_wire)
-        assert not Draft202012Validator(request["schema"]).is_valid(old_wire)
-        # Historical canonical verification retains the independent guard.
-        historical = claim()
-        historical["citations"] = [{"source_id": row["source_id"], "quote": row["quote"]} for row in options]
-        with pytest.raises(ReasoningError, match="Repeat citations"):
-            validate_claims([historical], evidence)
-        return result
-    with pytest.raises(ReasoningError, match="required issuer/year slot"):
-        Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
-
-
-@pytest.mark.parametrize("years", [[2023, 2024], [2023, 2024, 2025], [2023, 2025]])
-def test_paired_risk_preserves_each_code_owned_comparison_and_citation_period(years):
-    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
-                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
-                                  "text": "Cybersecurity may disrupt operations and compromise privacy."}]}
-                for year in years}
-    def model(stage, **request):
-        menu = request["context"]["quote_menu"]
-        result = {"comparisons": {}}
-        for key, pair in reversed(list(request["context"]["comparison_keys"].items())):
-            result["comparisons"][key] = {"status": "evidence_available", "findings": [{
-                "text": "Selected disclosures describe potential cybersecurity disruption.", "confidence": "low",
-                "before_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["before_year"]),
-                "after_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["after_year"]),
-            }]}
-        Draft202012Validator.check_schema(request["schema"])
-        assert Draft202012Validator(request["schema"]).is_valid(result)
-        return result
-    result = Reasoner(model).compare_risks("MSFT", years, sections)
-    assert [(row["before_year"], row["after_year"]) for row in result["comparisons"]] == list(zip(years, years[1:]))
-    for row in result["comparisons"]:
-        current = row["claims"][0]
-        assert current["claim_id"] == f"risk-MSFT-{row['before_year']}-{row['after_year']}-1"
-        assert {citation["source_id"] for citation in current["citations"]} == {
-            f"period-{row['before_year']}", f"period-{row['after_year']}"}
-
-
-def test_paired_risk_requires_insufficient_evidence_if_period_has_no_quote_window():
-    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
-                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
-                                  "text": "Short." if year == 2023 else "Cybersecurity may disrupt business operations."}]}
-                for year in (2023, 2024)}
-    def model(stage, **request):
-        result = {"comparisons": {"comparison-2023-2024": {"status": "insufficient_evidence", "findings": []}}}
-        schema = request["schema"]["properties"]["comparisons"]["properties"]["comparison-2023-2024"]
-        assert schema["properties"]["findings"]["maxItems"] == 0
-        assert schema["properties"]["status"]["enum"] == ["insufficient_evidence"]
-        Draft202012Validator.check_schema(request["schema"])
-        assert Draft202012Validator(request["schema"]).is_valid(result)
-        invalid = deepcopy(result)
-        invalid["comparisons"]["comparison-2023-2024"]["status"] = "evidence_available"
-        assert not Draft202012Validator(request["schema"]).is_valid(invalid)
-        return result
-    result = Reasoner(model).compare_risks("MSFT", [2023, 2024], sections)
-    assert result["comparisons"] == [{"before_year": 2023, "after_year": 2024,
-                                      "status": "insufficient_evidence", "claims": []}]
