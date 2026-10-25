@@ -3,6 +3,12 @@ from copy import deepcopy
 from decimal import Decimal
 
 
+# Reviewed prices for models used only as backups, never as a primary role.
+ROUTE_ONLY_MODEL_POLICIES = {
+    "openai/gpt-4.1-nano": {"id": "openai/gpt-4.1-nano", "prompt_usd_per_token": "0.0000001", "completion_usd_per_token": "0.0000004"},
+}
+
+
 MODEL_PROFILES = {
     "live-step6-openrouter-v1": {
         "models": {
@@ -49,6 +55,21 @@ MODEL_PROFILES = {
         },
         "limits": {"prompt_token_ceiling": 49152, "max_message_bytes": 45056},
         "critic_reasoning": {"enabled": False},
+    },
+    "live-program-models-v1": {
+        "models": {
+            "producer": {"id": "openai/gpt-4.1-mini", "prompt_usd_per_token": "0.0000004", "completion_usd_per_token": "0.0000016"},
+            "critic": {"id": "google/gemini-3.1-flash-lite", "prompt_usd_per_token": "0.00000025", "completion_usd_per_token": "0.0000015"},
+        },
+        "provider": "role-specific",
+        "providers": {"producer": "openai", "critic": "google-ai-studio"},
+        "routes": {
+            "producer": {"models": ["openai/gpt-4.1-mini", "openai/gpt-4.1-nano"],
+                         "providers": ["openai", "azure"], "allow_fallbacks": True},
+        },
+        "limits": {"prompt_token_ceiling": 49152, "max_message_bytes": 45056},
+        # Gemini 3 uses thinking levels; its reasoning tokens share the output cap.
+        "critic_reasoning": {"effort": "minimal", "exclude": True},
     },
 }
 
@@ -103,6 +124,7 @@ def model_route(value, role):
         "allow_fallbacks": False,
     }))
     policies = {policy["id"]: policy for entry in MODEL_PROFILES.values() for policy in entry["models"].values()}
+    policies.update(ROUTE_ONLY_MODEL_POLICIES)
     for field in ("prompt_usd_per_token", "completion_usd_per_token"):
         route[field] = str(max(Decimal(policies[model][field]) for model in route["models"]))
     return route

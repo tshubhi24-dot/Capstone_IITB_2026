@@ -82,7 +82,7 @@ def test_unconfigured_api_remains_explicitly_offline_and_blocks_live(api_fixture
     assert store.get_run(response.json()["id"])["request"]["mode"] == "offline"
 
 
-@pytest.mark.parametrize("profile_name", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step16-fallbacks-v1"])
+@pytest.mark.parametrize("profile_name", ["live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step16-fallbacks-v1", "live-program-models-v1"])
 def test_budget_and_configuration_are_safe_reads_and_live_request_stays_live(api_fixture, profile_name):
     client, engine, store = api_fixture
     snapshot = budget_snapshot(profile_name)
@@ -104,10 +104,11 @@ def test_budget_and_configuration_are_safe_reads_and_live_request_stays_live(api
     assert engine.model_client.reads == 3
 
 
+@pytest.mark.parametrize("profile_name", ["live-step16-fallbacks-v1", "live-program-models-v1"])
 @pytest.mark.parametrize("tamper", ["unknown_model", "missing_routes", "wrong_provider", "higher_price"])
-def test_fallback_metadata_must_match_fixed_reviewed_routes(api_fixture, tamper):
+def test_fallback_metadata_must_match_fixed_reviewed_routes(api_fixture, tamper, profile_name):
     client, engine, store = api_fixture
-    snapshot = budget_snapshot("live-step16-fallbacks-v1")
+    snapshot = budget_snapshot(profile_name)
     if tamper == "missing_routes":
         snapshot.pop("model_routes")
     elif tamper == "unknown_model":

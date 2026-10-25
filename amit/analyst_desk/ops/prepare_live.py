@@ -37,7 +37,8 @@ DEFAULTS = {
 }
 SWITCH_PROFILES = {"mistral": "live-step10-mistral-v1", "mistral-large2407": "live-step10-mistral-large2407-v1",
                    "google-critic": "live-step10-google-critic-v1",
-                   "fallbacks": "live-step16-fallbacks-v1"}
+                   "fallbacks": "live-step16-fallbacks-v1",
+                   "program-office": "live-program-models-v1"}
 
 
 def now():

@@ -295,27 +295,30 @@ python ops/start_live.py --start
 
 Keep the printed `proposal_hash` for the next command. The initial default is the original OpenAI profile. Starting it while disabled initializes the local cumulative ledger without making model calls. All Python services use the live overlay's shared image.
 
-To prepare the opt-in bounded fallback profile, replace the quoted placeholder with that actual initial hash. An existing installation uses its current prepared hash instead:
+To prepare the restricted model profile, replace the quoted placeholder with that actual initial hash. An existing installation uses its current prepared hash instead. The disabled initial profile is only a bootstrap step; review and authorize the replacement when your credential is restricted to these models:
 
 ```sh
-python ops/prepare_live.py --switch-profile fallbacks \
+python ops/prepare_live.py --switch-profile program-office \
   --expected-hash 'PASTE_INITIAL_64_CHARACTER_PROPOSAL_HASH'
 ```
 
-The replacement is **disabled** and prints a **new** proposal hash. Review its exact configuration. The [reviewed profile](desk/model_profiles.py) is `live-step16-fallbacks-v1`; it becomes active only after your exact-version authorization and gateway reload. Preparing the profile does not change the running gateway or prove provider availability.
+The replacement is **disabled** and prints a **new** proposal hash. Review its exact configuration. The [reviewed profile](desk/model_profiles.py) is `live-program-models-v1`; it becomes active only after your exact-version authorization and gateway reload. `program-office` selects a public model preset; it does not supply or select a private API key. Preparing the profile does not change the running gateway or prove provider availability.
 
 | Setting | Value |
 |---|---|
-| Producer model priority | `openai/gpt-4.1-mini`, then `mistralai/mistral-medium-3.1`. |
-| Allowed producer providers | Only `openai`, `azure` and `mistral/zdr`; provider fallback is enabled within this list. |
-| Separate critic | `google/gemini-2.5-flash` through `google-ai-studio`; no producer-model fallback for criticism. |
-| Producer price ceiling | US$0.40 per million prompt tokens / US$2.00 per million completion tokens. |
-| Critic price ceiling | US$0.30 per million prompt tokens / US$2.50 per million completion tokens. |
+| Producer model priority | `openai/gpt-4.1-mini`, then `openai/gpt-4.1-nano`. |
+| Allowed producer providers | Only `openai` and `azure`; provider fallback is enabled within this list. |
+| Separate critic | `google/gemini-3.1-flash-lite` through `google-ai-studio`; no producer-model fallback for criticism. |
+| Producer price ceiling | US$0.40 per million prompt tokens / US$1.60 per million completion tokens. |
+| Critic price ceiling | US$0.25 per million prompt tokens / US$1.50 per million completion tokens. |
+| Critic reasoning | Minimum reasoning effort; reasoning tokens remain inside the completion-token limit and accounting. |
 | Context bounds | Up to 49,152 reserved prompt tokens; message/schema payload up to 45,056 bytes. Existing tighter bounds stay tighter. |
 | Response/privacy requirements | Strict structured output, supported parameters required and provider data collection denied. |
 | Total local desk cap | US$1.00. |
 | Per-run cap | US$0.50. |
 | Per-run limits | At most 12 model calls and 250,000 tokens. |
+
+The producer and critic use different model families. The older `fallbacks` preset, including its Mistral backup and Gemini 2.5 Flash critic, remains available for historical compatibility; it is not part of this restricted profile. Check the models allowed by your own credential before selecting any preset. Public metadata for the [Nano backup](https://openrouter.ai/api/v1/models/openai/gpt-4.1-nano/endpoints) and [Flash Lite critic](https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite/endpoints) describes their routing and structured-output support; it does not establish your account's access or future availability.
 
 These are the code's proposed limits for **your installation**, not a provider-account credit balance or permission to spend without your decision. If you agree to the exact proposal, replace the hash below with the **new** hash and record your own genuine authorization:
 
@@ -333,7 +336,7 @@ Reconnect the browser. Confirm live AI is available, the expected producer/criti
 
 ### How bounded fallback works
 
-The gateway sends **one OpenRouter completion request** with the ordered producer model list. Routing can move to the backup model or another allowlisted provider within that request. Mistral is a backup option rather than the only production route. The separate critic, price ceilings, context bounds and privacy requirements remain fixed; an unavailable compliant route still fails closed.
+The gateway sends **one OpenRouter completion request** with the ordered producer model list. Routing can move from GPT-4.1 Mini to GPT-4.1 Nano, or to another allowlisted provider, within that request. The separate critic, price ceilings, context bounds and privacy requirements remain fixed; an unavailable compliant route still fails closed.
 
 Before sending, the gateway reserves enough for the most expensive allowed route, even when the primary model is cheaper. Successful calls record the requested and returned model; reported usage determines the charge. Check the run's actual-model usage display and reported cost/held budget, rather than assuming the configured primary handled every call. Authenticated run data exposes `requested_model` / `returned_model`; budget metadata exposes the fixed `model_routes` for this profile. If all routes fail or the outcome is uncertain, its reservation remains counted; fallback does not clear previous holds.
 

@@ -177,7 +177,7 @@ def test_model_profiles_return_independent_copies_and_preserve_legacy_versions(c
     assert profile["version"] == "live-step6-openrouter-v1" and profile["provider"] == "openai"
     profile["models"]["producer"]["id"] = "unapproved"
     assert model_profile(config)["models"]["producer"]["id"] == "openai/gpt-4.1-mini"
-    assert set(MODEL_PROFILES) == {"live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1", "live-step10-google-critic-v1", "live-step16-fallbacks-v1"}
+    assert set(MODEL_PROFILES) == {"live-step6-openrouter-v1", "live-step10-mistral-v1", "live-step10-mistral-large2407-v1", "live-step10-google-critic-v1", "live-step16-fallbacks-v1", "live-program-models-v1"}
     with pytest.raises(ValueError):
         model_profile("unapproved")
 

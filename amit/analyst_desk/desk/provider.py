@@ -18,13 +18,15 @@ import time
 import httpx
 from jsonschema import Draft202012Validator
 
-from desk.model_profiles import MODEL_PROFILES, model_profile, model_route
+from desk.model_profiles import MODEL_PROFILES, ROUTE_ONLY_MODEL_POLICIES, model_profile, model_route
 
 PROVIDER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GATEWAY_URL = "http://model-gateway:8020"
 ROLES = {"planner", "researcher", "risk", "writer", "critic"}
 MODEL_RATES = {policy["id"]: (Decimal(policy["prompt_usd_per_token"]), Decimal(policy["completion_usd_per_token"]))
                for profile in MODEL_PROFILES.values() for policy in profile["models"].values()}
+MODEL_RATES.update({policy["id"]: (Decimal(policy["prompt_usd_per_token"]), Decimal(policy["completion_usd_per_token"]))
+                    for policy in ROUTE_ONLY_MODEL_POLICIES.values()})
 IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,180}$")
 OUTPUT_AUDIT_STAGES = frozenset({"passed", "finish_reason", "content_shape", "json_parse", "schema_validation",
                                 "credential_echo", "returned_model", "token_ceiling", "price_ceiling"})
