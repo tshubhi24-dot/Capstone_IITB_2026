@@ -3,6 +3,11 @@ from copy import deepcopy
 from decimal import Decimal
 
 
+# A null call-count ceiling is an explicit policy choice for this profile only;
+# calls remain counted and all monetary and token limits remain authoritative.
+UNLIMITED_CALL_PROFILE = "live-program-models-v1"
+
+
 # Reviewed prices for models used only as backups, never as a primary role.
 ROUTE_ONLY_MODEL_POLICIES = {
     "openai/gpt-4.1-nano": {"id": "openai/gpt-4.1-nano", "prompt_usd_per_token": "0.0000001", "completion_usd_per_token": "0.0000004"},

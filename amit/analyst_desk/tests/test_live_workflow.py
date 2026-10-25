@@ -51,6 +51,10 @@ class FakeModelClient:
             bad = "certain disaster" in context["body"]
             content = {"issues": ["The edited claim overstates the evidence."] if bad else [],
                 "verdicts": [{"claim_id": claim["claim_id"], "supported": not bad, "reason": "Test-only model support judgment."} for claim in context["claims"]]}
+            if "review_context" in context:
+                content.pop("issues")
+                content.update(blockers=[{"kind": "unsupported_conclusion", "body_quote": context["body"][:80],
+                    "reason": "The edited claim overstates the evidence."}] if bad else [], limitations=[])
         else:
             raise AssertionError(stage)
         result = {"content": content, "cached": False, "config_version": "test-only-v1", "usage": {"call_id": identifier,

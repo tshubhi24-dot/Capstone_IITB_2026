@@ -382,6 +382,22 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Capstone connection:** p.3, grounded tool use, code execution, self-correction and cost controls; pp.15–16, code-verified financial analysis, cited interpretation and independent review. Generation and verification have distinct responsibilities without replacing the final human review.
 
+### Step 16n — Count program-model calls without a call ceiling and improve critic review
+
+**What this step does:** allows the restricted program-model preset to count calls without enforcing a call-count ceiling. Token and dollar budgets still apply, including earlier charges and uncertain reservations. It also gives the critic the frozen research date, canonical filing periods/dates and completed code checks, and provides an explicit fresh-check action for a blocked exact note.
+
+| Files | Purpose |
+|---|---|
+| [desk/provider.py](desk/provider.py), [desk/model_profiles.py](desk/model_profiles.py), [ops/prepare_live.py](ops/prepare_live.py) | Support an explicit null call ceiling only for the restricted program preset; archive and activate changed policies without resetting the ledger. Preserve historical request/limit rows and limited-profile behaviour. |
+| [desk/reasoning.py](desk/reasoning.py), [desk/workflow.py](desk/workflow.py) | Validate critic reporting context, distinguish defects from acknowledged limitations, stop ineffective writer loops after body-only objections, and bind fresh criticism to the unchanged note. |
+| [desk/api.py](desk/api.py), [web/app.js](web/app.js), [web/index.html](web/index.html) | Expose actual counts and the active call policy; allow fresh critic checks without inventing a wording edit or approving publication. |
+| [tests/test_program_call_policy.py](tests/test_program_call_policy.py), [tests/test_unlimited_call_api.py](tests/test_unlimited_call_api.py), [tests/test_call_policy_workflow.py](tests/test_call_policy_workflow.py), [tests/test_critic_context.py](tests/test_critic_context.py) | Test calls beyond twelve, cache/accounting preservation, legacy and token limits, exact-note rechecks, reporting-date checks and genuine critic rejection. |
+| [README.md](README.md), [docs/LIVE_AI_RUNBOOK.md](docs/LIVE_AI_RUNBOOK.md) | Explain the preset's counted-call policy, retained budgets and note-review controls for teammates. |
+
+**Verification:** all 1,352 tests pass. Fifteen call-policy deployment checks and seven typed-contract deployment checks preserve saved research, the exact blocked note, approved library, source, model routes, dollar caps, charges, holds and token totals without a model request. Fresh criticism of the same note supports all four cited claims, returns no blocking defect and retains three explicit limitations. Twenty-three final checks confirm twelve verified financial values, unchanged plan/request/body, exact current verdict hashes, fourteen unique counted calls, 65,335 tokens, US$0.022999 total run cost and preserved earlier charges/holds. Other runs and the approved library remain unchanged; the note pauses for human review. The summary still repeats risk observations, evidence is partial and original filing boundaries remain unverified, so a model pass does not establish complete task coverage or publication quality.
+
+**Capstone connection:** p.3, independent criticism, human control and observable model/cost accounting; pp.15–16, source-aware review and reliable research journeys. Counting calls separately from enforcing a ceiling supports the selected deployment policy. Neither configuration nor a model pass establishes independent judge calibration or complete source coverage.
+
 ## What the team builds next
 
 1. **Continue genuine development learning:** preserve the accepted lesson, review further evidence-backed proposals, record a genuine rejection with its reason, and freeze selected accepted versions before protected evaluation.

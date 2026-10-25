@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 from copy import deepcopy
 from decimal import Decimal
+from datetime import datetime, timezone
 import hashlib
 import json
 import operator
@@ -492,14 +493,42 @@ class Engine:
     def is_live(self, state):
         return self.store.get_run(state["run_id"])["request"].get("mode", "offline") == "live"
 
+    def model_call_limit(self, run):
+        """Only an active reviewed program policy can remove the call ceiling.
+
+        The original request remains immutable. Legacy profiles and unavailable
+        gateway metadata never acquire unlimited calls through a null field.
+        Dollar, token and reservation checks are independent of this ceiling.
+        """
+        requested = run["request"].get("max_model_calls", 12)
+        if self.model_client:
+            try:
+                budget = self.model_client.budget(run["id"])
+                if (budget.get("model_profile") == "live-program-models-v1"
+                        and budget.get("enabled") is True and budget.get("blocked") is False
+                        and "max_calls_per_run" in budget and budget["max_calls_per_run"] is None):
+                    return None
+            except Exception:
+                pass
+        if type(requested) is not int or not 1 <= requested <= 12:
+            raise ReviewError("A request without a call ceiling requires the active program model policy.")
+        return requested
+
     def _after_critic(self, state):
         if state["critic"]["passed"] or state.get("human_edited") or state.get("repairs", 0) >= 2:
             return "review_note"
         if self.is_live(state):
+            verdict = state.get("draft", {}).get("semantic_verdict", {})
+            if (verdict.get("issues") and verdict.get("verdicts")
+                    and all(item.get("supported") is True for item in verdict["verdicts"])):
+                # A writer cannot fix a source-coverage or review-context
+                # objection by paraphrasing already supported claims.
+                return "review_note"
             run = self.store.get_run(state["run_id"])
             # A draft repair requires both another writer and another critic.
             # Do not spend the last allowance on a draft that cannot be checked.
-            if run["usage"].get("model_calls", 0) + 2 > run["request"].get("max_model_calls", 12):
+            limit = self.model_call_limit(run)
+            if limit is not None and run["usage"].get("model_calls", 0) + 2 > limit:
                 return "review_note"
         return "repair"
 
@@ -524,7 +553,7 @@ class Engine:
                 recorded = {item["call_id"] for item in usage.get("calls", [])}
                 if identifier not in recorded and identifier not in reservations:
                     token_limit = run["request"].get("max_tokens", 100000)
-                    call_limit = run["request"].get("max_model_calls", 12)
+                    call_limit = self.model_call_limit(run)
                     extension = run.get("approved_critic_extension")
                     if extension:
                         actual_request = {"run_id": state["run_id"], "call_id": identifier, "role": role,
@@ -549,7 +578,7 @@ class Engine:
                         call_limit, token_limit = extension["max_calls"], extension["max_tokens"]
                     if usage.get("tokens", 0) + sum(reservations.values()) + reserved_tokens > token_limit:
                         raise ReviewError("The original request token budget cannot cover this model call.")
-                    if len(recorded) + len(reservations) >= call_limit:
+                    if call_limit is not None and len(recorded) + len(reservations) >= call_limit:
                         raise ReviewError("The original request model-call budget is exhausted.")
                     reservations[identifier] = reserved_tokens
                     self.store.save_run(run)
@@ -869,7 +898,8 @@ class Engine:
                      "source_fingerprint": self.source.fingerprint, "event_id": approvals[-1]["id"],
                      "evidence_origin": "retained_accepted_plan_decision_and_checkpoint"}
         usage, request = run.get("usage", {}), run["request"]
-        if ((critic_extension is None and (usage.get("model_calls", 0) >= request.get("max_model_calls", 12)
+        call_limit = self.model_call_limit(run)
+        if ((critic_extension is None and ((call_limit is not None and usage.get("model_calls", 0) >= call_limit)
                 or usage.get("tokens", 0) >= request.get("max_tokens", 100000)))
                 or usage.get("tool_calls", 0) >= request.get("max_tool_calls", 60)):
             raise ReviewError("The original run budget is exhausted.")
@@ -1173,6 +1203,9 @@ class Engine:
             pending = run.get("pending", {})
             if run["status"] != "awaiting_" + decision["kind"] or pending.get("payload_hash") != decision["payload_hash"] or pending.get("kind") != decision["kind"]:
                 raise ReviewError("Stale review or another decision is already running.")
+            if decision["action"] == "recheck" and (decision["kind"] != "note" or not self.is_live({"run_id": run_id})
+                    or run.get("critic", {}).get("passed") is not False or decision.get("edits") is not None):
+                raise ReviewError("A fresh critic review requires the exact blocked live note without edits.")
             if decision["action"] != "reject" and run.get("source_fingerprint") not in (None, self.source.fingerprint):
                 raise ReviewError("The source snapshot changed. Create a new research plan before approving or editing.")
             if decision["action"] != "reject":
@@ -1381,7 +1414,7 @@ class Engine:
             new_writer = any(call["stage"] == "writer" and call["call_id"] not in prior_calls
                              for call in usage.get("calls", []))
             correction_codes = {"narrative_quantity", "narrative_number", "unsupported_risk_absence", "output_schema"}
-            call_limit = current["request"].get("max_model_calls", 12)
+            call_limit = self.model_call_limit(current)
             if (diagnostic is None or diagnostic["code"] not in correction_codes or not new_writer
                     or usage.get("model_reservations")
                     or call_limit is not None and usage.get("model_calls", 0) + 2 > call_limit):
@@ -1412,6 +1445,24 @@ class Engine:
         self.event(state["run_id"], "writer", "draft", "Cited AI narrative and code-verified table prepared for source-support checks.")
         return {"draft": draft, "human_edited": False}
 
+    def _critic_review_context(self, state, draft, checks):
+        periods = []
+        for row in draft["metrics"]:
+            facts = [self.source.fact(identifier) for identifier in row["fact_ids"]]
+            # Historical synthetic/source fixtures may have no filing date.
+            # Never invent one or silently label a future filing historical.
+            if any("filed" not in fact for fact in facts):
+                return None
+            periods.append({"ticker": row["ticker"], "fiscal_year": row["year"],
+                "start": row["period_start"], "end": row["period_end"],
+                "filed": max(fact["filed"] for fact in facts), "source_ids": list(row["fact_ids"])})
+        run = self.store.get_run(state["run_id"])
+        return {"as_of": datetime.fromtimestamp(run["created_at"], timezone.utc).date().isoformat(),
+            "source_fingerprint": self.source.fingerprint,
+            "financial_checks": {key: checks[key] for key in ("passed", "verified_numbers", "total_numbers")},
+            "source_periods": periods,
+            "evidence_scope": {"selection": "partial", "original_item_boundaries_verified": False}}
+
     def _critic(self, state):
         draft = deepcopy(state["draft"])
         draft.pop("semantic_verdict", None)
@@ -1428,7 +1479,11 @@ class Engine:
                 purpose += ":explicit-policy-replacement:" + replacement["policy_hash"]
             elif retry:
                 purpose += ":explicit-429-retry:" + str(retry["attempt"])
-            verdict = self.reasoner(state, purpose).critique(draft, draft["ai_evidence"])
+            recheck = current_run.get("critic_recheck")
+            if recheck and not (extension or replacement or retry):
+                purpose += ":explicit-note-recheck:" + str(recheck["attempt"])
+            review_context = None if extension else self._critic_review_context(state, draft, critic)
+            verdict = self.reasoner(state, purpose).critique(draft, draft["ai_evidence"], review_context=review_context)
             verdict["checked_input_hash"] = semantic_input_hash(draft)
             draft["semantic_verdict"] = verdict
             critic = verify_draft(draft, self.source)
@@ -1454,6 +1509,20 @@ class Engine:
             self.event(state["run_id"], "human", "note_rejected", "The analyst rejected the note; nothing was published.")
             return Command(update={"status": "rejected"}, goto=END)
         self._validate_context(state)
+        if decision["action"] == "recheck":
+            if not self.is_live(state) or state["critic"]["passed"] or decision.get("edits") is not None:
+                raise ReviewError("Only an unchanged blocked live note can request a fresh critic review.")
+            run = self.store.get_run(state["run_id"])
+            run["critic_recheck"] = {"attempt": run.get("critic_recheck", {}).get("attempt", 0) + 1,
+                                    "draft_hash": canonical_hash(draft)}
+            self.store.invalidate_approval(state["run_id"])
+            self.store.save_run(run)
+            updated = deepcopy(draft)
+            updated.pop("semantic_verdict", None)
+            self.event(state["run_id"], "human", "note_recheck",
+                       "Fresh criticism requested for the exact blocked note; no wording edit or publication approval was recorded.",
+                       payload_hash=canonical_hash(draft), attempt=run["critic_recheck"]["attempt"])
+            return Command(update={"draft": updated, "human_edited": True}, goto="critic")
         if decision["action"] == "edit":
             edits = decision.get("edits") or {}
             if (not isinstance(edits, dict) or set(edits) not in ({"body"}, {"body", "citation_selections"})

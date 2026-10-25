@@ -236,7 +236,7 @@ This accepts an empty library, but writes `evidence/runtime_checks.json`. Treat 
 4. Read the full note. Saving edits invalidates the earlier version and repeats checks. Approve the exact note only if you want it saved to **your local library**.
 5. Reload the browser and check the saved note remains. To check process persistence, use the restart instructions below and inspect the library again.
 
-For developer tests, run `python -m pytest -q`. These use mocks/fixtures and make no paid completions. The current recorded build passed 1,005 tests; optional Node availability can affect helper-test skips. Tests do not create genuine analyst approvals or independent evaluation evidence.
+For developer tests, run `python -m pytest -q`. These use mocks/fixtures and make no paid completions. The developer suite includes workflow, provider, retrieval and browser-helper checks; optional Node availability can affect helper-test skips. Tests do not create genuine analyst approvals or independent evaluation evidence.
 
 ## 8. Optional live AI: put your own OpenRouter key in the correct place
 
@@ -316,7 +316,10 @@ The replacement is **disabled** and prints a **new** proposal hash. Review its e
 | Response/privacy requirements | Strict structured output, supported parameters required and provider data collection denied. |
 | Total local desk cap | US$1.00. |
 | Per-run cap | US$0.50. |
-| Per-run limits | At most 12 model calls and 250,000 tokens. |
+| Call accounting | Every model call is counted; this preset has no call-count ceiling (`max_calls_per_run: null`). |
+| Per-run token limit | 250,000 tokens. |
+
+The call-count setting applies only after the prepared policy is authorized and the gateway is reloaded. An older installation can stage the same `program-office` preset again to replace its previous twelve-call policy. Existing runs retain their original request and accounting records; the active program policy removes only their call-count ceiling. Token and dollar limits, old charges and uncertain reservations remain enforced. Other profiles retain their reviewed call limits.
 
 The producer and critic use different model families. The older `fallbacks` preset, including its Mistral backup and Gemini 2.5 Flash critic, remains available for historical compatibility; it is not part of this restricted profile. Check the models allowed by your own credential before selecting any preset. Public metadata for the [Nano backup](https://openrouter.ai/api/v1/models/openai/gpt-4.1-nano/endpoints) and [Flash Lite critic](https://openrouter.ai/api/v1/models/google/gemini-3.1-flash-lite/endpoints) describes their routing and structured-output support; it does not establish your account's access or future availability.
 

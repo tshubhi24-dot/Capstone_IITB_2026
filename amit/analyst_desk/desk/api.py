@@ -71,7 +71,7 @@ class ResearchRequest(BaseModel):
     mode: Literal["offline", "live"] = "offline"
     max_tool_calls: int = Field(default=60, ge=1, le=200)
     max_tokens: int = Field(default=100000, ge=100, le=500000)
-    max_model_calls: int = Field(default=12, ge=1, le=12)
+    max_model_calls: int | None = Field(default=12, ge=1, le=12)
     memory_enabled: bool = Field(default=True, strict=True)
     lessons_enabled: bool = Field(default=False, strict=True)
     playbook_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
@@ -95,7 +95,7 @@ class ResearchRequest(BaseModel):
 class Decision(BaseModel):
     model_config = ConfigDict(extra="forbid")
     kind: Literal["plan", "note"]
-    action: Literal["approve", "edit", "reject"]
+    action: Literal["approve", "edit", "reject", "recheck"]
     payload_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
     edits: dict | None = None
 
@@ -361,6 +361,13 @@ def gateway_budget():
         if value.get("models") != models or value.get("provider") != profile["provider"]:
             raise ValueError
         safe.update(models=models, model_profile=profile["version"], provider=profile["provider"])
+        call_limit = value.get("max_calls_per_run", 12)
+        if call_limit is None:
+            if profile["version"] != "live-program-models-v1":
+                raise ValueError
+        elif type(call_limit) is not int or not 1 <= call_limit <= 12:
+            raise ValueError
+        safe["max_calls_per_run"] = call_limit
         if profile.get("routes"):
             routes = {role: model_route(profile["version"], role) for role in ("producer", "critic")}
             if value.get("model_routes") != routes:
@@ -440,9 +447,13 @@ def create(value: ResearchRequest, background: BackgroundTasks):
     if retrieval_configuration().get("ready") is not True:
         raise HTTPException(409, "The configured retrieval index is unavailable or stale. Prepare and verify it before starting research.")
     if value.mode == "live":
-        _, enabled = gateway_budget()
+        live_budget, enabled = gateway_budget()
         if not enabled:
             raise HTTPException(409, "Live AI is unavailable or its approved budget is disabled, blocked or exhausted. No offline run was substituted.")
+        if live_budget["max_calls_per_run"] is None:
+            request["max_model_calls"] = None
+        elif value.max_model_calls is None:
+            raise HTTPException(400, "This model policy requires a call-count limit.")
     if any(run["status"] in {"queued", "running"} for run in app.state.store.list_runs("local-analyst")):
         raise HTTPException(409, "Wait for the current research operation to pause.")
     run = app.state.store.create_run(request)

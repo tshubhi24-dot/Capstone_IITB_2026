@@ -52,7 +52,7 @@ function renderScopeOptions(config){
 function modeDescription(){
  const live=$('mode').value==='live',budget=state.config?.live_budget;
  $('mode-notice').textContent=live?'Live AI pilot: models plan, select queries and draft cited interpretations. A separate model reviews support; its judgment is not ground truth. Figures stay code-checked and publication needs your approval.':'Offline workflow: no model calls or model charges. Code checks figures; risk interpretation needs your review.';
- $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · up to 12 model calls and 250,000 tokens per request. ${modelRouteDescription(state.config)}`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
+ $('mode-budget').textContent=live?`Approved model budget remaining: $${budget?.remaining_authorization_usd||'0'} · ${budget?.max_calls_per_run===null?'Model calls counted with no call-count limit':`Up to ${budget?.max_calls_per_run||12} model calls`} · 250,000 tokens per request. ${modelRouteDescription(state.config)}`:(state.config?.live_enabled?'Live AI is available within its approved budget when selected.':'Live AI is disabled until its gateway, provider credential and spending authorization are ready. Offline requests remain explicit.');
  if(state.connected)updateScope();
 }
 async function api(path,options={}){
@@ -83,6 +83,8 @@ function reviewControls(){
  const blocked=state.loading||state.deciding||run?.id!==state.selectedRunId,unavailable=blocked||!pending;
  ['approve','edit','reject'].forEach(id=>$(id).disabled=unavailable);$('editor').disabled=unavailable;
  $('resume-research').disabled=blocked||!canResume(run);
+ $('recheck-note').hidden=!(pending?.kind==='note'&&(run.mode||run.request?.mode)==='live'&&run.critic?.passed===false);
+ $('recheck-note').disabled=unavailable;
  $('load-citation-options').disabled=blocked||!citationReviewKey(run)||Boolean(state.citationReview?.loading);
  (state.citationReview?.controls||[]).forEach(control=>control.disabled=unavailable);
  if(!unavailable)$('approve').disabled=pending.kind==='note'&&(!run.critic?.passed||run.request?.learning_split==='development');
@@ -122,6 +124,7 @@ function render(run){
  const actualModels=completedModels(run.usage);if(actualModels.length)$('usage').textContent+=` · completed responses: ${actualModels.join(', ')}`;
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
  $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
+ const reviewLimits=run.draft?.semantic_verdict?.limitations;if(Array.isArray(reviewLimits)&&reviewLimits.length)$('checks').textContent+='\nReviewer limitations:\n'+reviewLimits.map(value=>'• '+value).join('\n');
  if(run.error)message(runErrorMessage(run.error,run.validation_error));else if(state.runMessage)message('');state.runMessage=Boolean(run.error);
  const resumable=canResume(run);$('continuation').hidden=!resumable;$('continuation-plan').textContent=resumable?`Original approved plan: ${run.continuation.plan_hash}`:'';
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
@@ -220,7 +223,7 @@ async function loadCitationOptions(){
 async function decide(action){
  const run=state.run,pending=run?.pending,version=state.selectionVersion;if(state.loading||state.deciding||run?.id!==state.selectedRunId||!pending||!run.status.startsWith('awaiting_'))return;
  const plan=pending.kind==='plan',original=plan?pending.payload.outline.join('\n'):pending.payload.body,current=$('editor').value;
- if(action==='approve'&&(current!==original||hasCitationChanges()))return message('Save your edits first, then review the new version before approving.');
+ if(['approve','recheck'].includes(action)&&(current!==original||hasCitationChanges()))return message('Save your edits first, then review the new version before approving.');
  let edits=null;
  try{if(action==='edit')edits=plan?{outline:current.split('\n').map(text=>text.trim()).filter(Boolean)}:citationEdits(current);}
  catch(error){return message(error.message);}
@@ -248,9 +251,10 @@ window.AnalystMemory.initialize({api,getSelection:()=>({question:$('question').v
 $('connect').onclick=connect;$('runs').onchange=()=>selectRun($('runs').value);
 $('mode').onchange=modeDescription;
 $('companies').onchange=updateScope;$('years').onchange=updateScope;
-$('research-form').onsubmit=async event=>{event.preventDefault();if(state.creating)return;state.creating=true;try{$('start').disabled=true;const mode=$('mode').value,learning=window.AnalystLessons.requestOptions(),scope=researchScope(state.config,learning.tickers||selectedValues('companies'),learning.years||selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,...learning})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{state.creating=false;updateScope();}};
+$('research-form').onsubmit=async event=>{event.preventDefault();if(state.creating)return;state.creating=true;try{$('start').disabled=true;const mode=$('mode').value,learning=window.AnalystLessons.requestOptions(),scope=researchScope(state.config,learning.tickers||selectedValues('companies'),learning.years||selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:mode==='live'&&state.config?.live_budget?.max_calls_per_run===null?null:12,...learning})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{state.creating=false;updateScope();}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('resume-research').onclick=resumeResearch;
+$('recheck-note').onclick=()=>decide('recheck');
 $('load-citation-options').onclick=loadCitationOptions;
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }

@@ -17,7 +17,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from desk.model_profiles import model_profile
+from desk.model_profiles import UNLIMITED_CALL_PROFILE, model_profile
 
 PRIVATE = ROOT / ".runtime/live"
 CONFIG_FILE = PRIVATE / "model_config.json"
@@ -88,6 +88,8 @@ def validate_config(value):
     if not all(cap.is_finite() and cap > 0 for cap in caps) or caps[1] > caps[0]:
         raise ValueError("Live caps must be finite, positive and consistent.")
     for key in ("max_calls_per_run", "max_tokens_per_run", "prompt_token_ceiling", "max_message_bytes", "max_output_tokens"):
+        if key == "max_calls_per_run" and value[key] is None and profile["version"] == UNLIMITED_CALL_PROFILE:
+            continue
         if type(value[key]) is not int or value[key] <= 0:
             raise ValueError("Live call and token limits must be positive integers.")
     if any(value[key] > ceiling for key, ceiling in profile.get("limits", {}).items()):
@@ -196,10 +198,12 @@ def switch_profile(name, expected_hash):
     if not re.fullmatch(r"[a-f0-9]{64}", expected_hash or "") or proposal_hash(previous) != expected_hash:
         raise ValueError("The model profile switch refers to a stale proposal hash.")
     profile = model_profile(SWITCH_PROFILES[name])
-    if previous["version"] == profile["version"] and previous["models"] == profile["models"]:
+    call_limit = None if profile["version"] == UNLIMITED_CALL_PROFILE else (previous["max_calls_per_run"] or DEFAULTS["max_calls_per_run"])
+    if (previous["version"] == profile["version"] and previous["models"] == profile["models"]
+            and previous["max_calls_per_run"] == call_limit):
         raise ValueError("This model profile is already prepared; its authorization was not changed.")
     replacement = {**deepcopy(previous), "enabled": False, "authorization_id": uuid.uuid4().hex,
-                   "version": profile["version"], "models": profile["models"]}
+                   "version": profile["version"], "models": profile["models"], "max_calls_per_run": call_limit}
     for key, ceiling in profile.get("limits", {}).items():
         replacement[key] = min(previous[key], ceiling)
     validate_config(replacement)

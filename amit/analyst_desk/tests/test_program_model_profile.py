@@ -119,8 +119,9 @@ def test_switch_keeps_old_history_credentials_and_limits_but_requires_exact_acti
     assert current["version"] == PROFILE and current["models"] == model_profile(PROFILE)["models"]
     assert current["authorization_id"] != previous["authorization_id"]
     assert not current["enabled"] and not prep.APPROVAL_FILE.exists()
-    for field in ("cap_usd", "per_run_usd", "max_calls_per_run", "max_tokens_per_run", "max_output_tokens"):
+    for field in ("cap_usd", "per_run_usd", "max_tokens_per_run", "max_output_tokens"):
         assert current[field] == previous[field]
+    assert current["max_calls_per_run"] is None
     assert prep.KEY_FILE.read_bytes() == key_bytes
     assert sentinel.read_bytes() == b"all previous charges and uncertain holds"
     assert result["paid_calls_performed"] == 0 and result["ledger_changed"] is False

@@ -18,7 +18,7 @@ import time
 import httpx
 from jsonschema import Draft202012Validator
 
-from desk.model_profiles import MODEL_PROFILES, ROUTE_ONLY_MODEL_POLICIES, model_profile, model_route
+from desk.model_profiles import MODEL_PROFILES, ROUTE_ONLY_MODEL_POLICIES, UNLIMITED_CALL_PROFILE, model_profile, model_route
 
 PROVIDER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GATEWAY_URL = "http://model-gateway:8020"
@@ -69,6 +69,8 @@ SAFE_ERROR_CODES = frozenset({
 def safe_error_code(value):
     """Allowlisted public diagnosis only; never echo an arbitrary upstream code."""
     return value if isinstance(value, str) and value in SAFE_ERROR_CODES else "gateway_request_failed"
+
+
 
 
 def http_error_code(status):
@@ -235,6 +237,8 @@ def validate_config(value):
     bounds = {"max_calls_per_run": (1, 20), "max_tokens_per_run": (1, 500000),
               "prompt_token_ceiling": (8192, 65536), "max_message_bytes": (1, 60000), "max_output_tokens": (1, 4096)}
     for key, (low, high) in bounds.items():
+        if key == "max_calls_per_run" and value[key] is None and value["version"] == UNLIMITED_CALL_PROFILE:
+            continue
         if type(value[key]) is not int or not low <= value[key] <= high:
             raise ProviderError("invalid_configuration", "A model call or context limit is invalid.")
     if value["max_message_bytes"] + 4096 > value["prompt_token_ceiling"]:
@@ -261,6 +265,8 @@ def validate_config(value):
 
 class BudgetLedger:
     def __init__(self, path, config):
+        if config.get("max_calls_per_run") is None and model_profile(config)["version"] != UNLIMITED_CALL_PROFILE:
+            raise ProviderError("invalid_configuration", "Only the program profile may omit its call-count ceiling.")
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.config = config
@@ -309,7 +315,7 @@ class BudgetLedger:
             # Old rows did not store separate run-limit metadata. The reviewed
             # limits are unchanged during this migration; retain every row.
             db.execute("INSERT OR IGNORE INTO run_limits SELECT DISTINCT run_id,?,?,? FROM model_calls",
-                       (str(config["per_run_usd"]), config["max_calls_per_run"], config["max_tokens_per_run"]))
+                       (str(config["per_run_usd"]), config["max_calls_per_run"] or 0, config["max_tokens_per_run"]))
 
     @contextmanager
     def connection(self):
@@ -435,16 +441,20 @@ class BudgetLedger:
             rows = db.execute("SELECT * FROM model_calls").fetchall()
             run_rows = [row for row in rows if row["run_id"] == run_id]
             db.execute("INSERT OR IGNORE INTO run_limits VALUES(?,?,?,?)",
-                       (run_id, str(config["per_run_usd"]), config["max_calls_per_run"], config["max_tokens_per_run"]))
+                       (run_id, str(config["per_run_usd"]), config["max_calls_per_run"] or 0, config["max_tokens_per_run"]))
             previous_limits = db.execute("SELECT * FROM run_limits WHERE run_id=?", (run_id,)).fetchone()
             run_cap = min(decimal(previous_limits["cap_usd"]), decimal(config["per_run_usd"]))
-            call_cap = min(previous_limits["max_calls"], config["max_calls_per_run"])
+            # Zero is only the SQLite representation of a newly unlimited
+            # run. Existing rows retain their historical count ceiling when an
+            # explicitly authorized program policy removes its enforcement.
+            call_cap = (None if config["max_calls_per_run"] is None else
+                        min(previous_limits["max_calls"] or config["max_calls_per_run"], config["max_calls_per_run"]))
             token_cap = min(previous_limits["max_tokens"], config["max_tokens_per_run"])
             charge, held, _ = self.totals(rows)
             run_charge, run_held, run_tokens = self.totals(run_rows)
             if charge + held + usd > min(self.desk_cap, decimal(config["cap_usd"])) or run_charge + run_held + usd > run_cap:
                 raise ProviderError("budget_exhausted", "The remaining authorized model budget cannot cover this call.")
-            if len(run_rows) >= call_cap or run_tokens + tokens > token_cap:
+            if (call_cap is not None and len(run_rows) >= call_cap) or run_tokens + tokens > token_cap:
                 row = db.execute("SELECT * FROM run_budget_grant_amendments WHERE run_id=?", (run_id,)).fetchone()
                 if row is None:
                     row = db.execute("SELECT * FROM run_budget_grants WHERE run_id=?", (run_id,)).fetchone()
@@ -456,7 +466,8 @@ class BudgetLedger:
                         or len(run_rows) + 1 > grant["max_calls"] or run_tokens + tokens > grant["max_tokens"]):
                     raise ProviderError("run_limit_exhausted", "The original run limit is exhausted; no matching unused exact-call grant applies.")
                 db.execute("INSERT INTO grant_consumptions VALUES(?,?,?,?)", (grant["grant_id"], call_id, request_hash, time.time()))
-            db.execute("UPDATE run_limits SET cap_usd=?,max_calls=?,max_tokens=? WHERE run_id=?", (str(run_cap), call_cap, token_cap, run_id))
+            retained_call_cap = previous_limits["max_calls"] if call_cap is None else call_cap
+            db.execute("UPDATE run_limits SET cap_usd=?,max_calls=?,max_tokens=? WHERE run_id=?", (str(run_cap), retained_call_cap, token_cap, run_id))
             db.execute("INSERT INTO model_calls(call_id,authorization_id,run_id,request_hash,status,reserved_usd,reserved_tokens,created) VALUES(?,?,?,?,?,?,?,?)",
                        (call_id, config["authorization_id"], run_id, request_hash, "reserved", str(usd), tokens, time.time()))
         return None
@@ -555,7 +566,7 @@ class BudgetLedger:
                 "model_calls": len(selected), "tokens": tokens, "uncertain_calls": sum(row["status"] == "uncertain" for row in selected),
                 "observed_tokens": observed_tokens, "settled_calls": settled_calls,
                 "blocked": blocked, "run_id": run_id, "ledger_checkpoint_hash": self.checkpoint_hash(selected),
-                "original_max_calls_per_run": run_limit["max_calls"] if run_limit else self.config["max_calls_per_run"],
+                "original_max_calls_per_run": (run_limit["max_calls"] or None) if run_limit else self.config["max_calls_per_run"],
                 "original_max_tokens_per_run": run_limit["max_tokens"] if run_limit else self.config["max_tokens_per_run"],
                 "run_budget_grant": grant, "parent_run_budget_grant": parent_grant}
 
