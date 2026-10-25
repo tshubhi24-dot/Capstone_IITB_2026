@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "profile": "live-step16-fallbacks-v1",
-  "stage": "awaiting_human_development_note_review_with_task_coverage_gap",
+  "stage": "live_controls_verified_and_comparison_corrected",
   "routes": {
     "producer": {
       "models": [
@@ -58,11 +58,11 @@
     "original_total_and_per_run_caps_preserved": true
   },
   "limitations": [
-    "Live primary and critic access completed; live backup failover was not exercised.",
-    "Request identity proves fixed guidance delivery and critic exclusion, not semantic adherence, improved answer quality or held-out evaluation success.",
-    "The final critic supports both claims, but operator review finds incomplete comparison coverage and a qualifier needing narrower wording.",
-    "Selected source excerpts are partial and original section boundaries remain unverified.",
-    "All earlier uncertain holds and the rejected paid writer response remain counted; the development note is not published."
+    "Live primary/critic access and fixed guidance boundaries are verified; live backup failover was not exercised.",
+    "The pre-correction coverage gap is preserved as a historical finding; the separate correction receipt records its supported, bounded resolution.",
+    "Selected source excerpts remain partial and original section boundaries remain unverified.",
+    "An authorized operator correction is not independent evidence of autonomous playbook improvement or held-out evaluation success.",
+    "Earlier charges and uncertain holds remain counted; development publication stays blocked."
   ],
   "activation_checks": {
     "runs_preserved": true,
@@ -432,6 +432,10 @@
     "near_duplicate_shared_privacy_claims": 2,
     "available_wording_differences_not_described": true,
     "material_scope_or_emphasis_qualifier_needs_narrowing": true,
-    "human_correction_decision_pending": true
-  }
+    "human_correction_decision_pending": false,
+    "applies_to_note_hash": "08c2730ac709711c863f853f2a3a2cbd78db4a2026920f54494e5789949bdaa1",
+    "resolved_by_corrected_note_hash": "f269279a9127157b56dd02491b07ed4edce75ed736c459e92bd4d37fa7ace8ed"
+  },
+  "final_outcome_checkpoint": "before_authorized_citation_correction",
+  "current_correction_receipt": "review_citation_edit_verification.json"
 }

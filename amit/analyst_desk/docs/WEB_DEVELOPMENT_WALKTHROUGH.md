@@ -103,6 +103,14 @@ All **31 final runtime/source checks** pass, including two canonical financial r
 
 **The final model pass is not enough to accept the answer.** Operator review finds two near-duplicate shared-privacy observations, no reported wording differences despite available changes, and a material-scope/emphasis qualifier supported only by a short common phrase. Human review should assess coverage and narrow unsupported interpretation. The application remains at note review with publication blocked; no new lesson proposal or acceptance is created. The genuine critic-rejection event is retained for separate development reflection. The [fallback receipt](../evidence/model_fallback_verification.json) distinguishes the passing technical checks from this unresolved content review.
 
+## Correct the comparison with bounded evidence choices
+
+The next edit addresses the observed task-coverage gap. In the exact live note review, click **Review evidence choices**. Each citation slot offers only code-owned quotation windows from evidence already selected for this run, with the original company and fiscal year fixed. Choose the matching natural-disaster quotations for the risk claim: the earlier quotation lists operations and facilities, while the later one explicitly includes retail stores. Edit the prose to identify that wording difference while declining an inference about material economic change. Narrow the privacy summary to its supported shared wording. Keep the financial table, headings, claim count and mandatory limits unchanged; the editor updates selected references when saved.
+
+Saving invalidates the prior verdict and creates an actual note-edit event. Exactly one fresh Gemini critic call supports both revised claims; **6/6 financial values** remain verified. All **34 actual correction checks** pass, including four canonical quotation instances, exact note/body/source/input bindings, preserved original plan and selected evidence, unchanged earlier records/charges/holds and no tool or writer rerun. The new critic costs **US$0.0012071**; the run now has nine completed responses, 30,828 reported tokens and **US$0.01352316**. The corrected note is version `f269279a…`, awaiting development review with publication blocked.
+
+This is a source-backed correction applied after an actual review decision. It demonstrates controlled editing and fresh checks, not autonomous learning, exhaustive filing comparison or a proven economic-risk change. The [citation-edit receipt](../evidence/review_citation_edit_verification.json) records the exact correction separately from the earlier model pass and coverage gap. No lesson proposal or decision is created automatically.
+
 ## Files and responsibilities
 
 | Files | Purpose |

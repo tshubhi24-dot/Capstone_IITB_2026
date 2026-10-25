@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "stage": "bounded_citation_editor_tested_before_application",
+  "stage": "authorized_comparison_correction_applied_and_rechecked",
   "case_id": "KDEV018",
   "verification": {
     "selected_tests_passed": 305,
@@ -25,10 +25,76 @@
     "wording_difference": "later selected natural-disaster quotation explicitly includes retail stores",
     "economic_materiality": "not established by the selected quotations",
     "local_source_check_passed": true,
-    "applied_at_checkpoint": false
+    "applied_at_checkpoint": true
   },
   "limitations": [
-    "Passing code/source checks do not establish semantic correctness.",
-    "The corrected note still requires a fresh critic and human development review."
-  ]
+    "The correction reports a supported wording difference within selected quotations, not exhaustive filing coverage or a proven change in economic risk.",
+    "Fresh model criticism remains fallible and does not replace human source review.",
+    "This is an authorized operator-applied correction, not evidence of autonomous learning or independently measured playbook improvement."
+  ],
+  "deployment_checks": {
+    "runs_preserved": true,
+    "notes_preserved": true,
+    "preferences_preserved": true,
+    "note_policy_preserved": true,
+    "lessons_preserved": true,
+    "budget_preserved": true,
+    "exact_note_preserved": true
+  },
+  "correction_checks": {
+    "notes_preserved": true,
+    "preferences_preserved": true,
+    "note_policy_preserved": true,
+    "lessons_preserved": true,
+    "earlier_runs_preserved": true,
+    "same_run_registry": true,
+    "original_plan_request_and_approval_preserved": true,
+    "source_memory_and_frozen_playbook_preserved": true,
+    "exact_prepared_correction_applied": true,
+    "new_exact_note_review_pause": true,
+    "canonical_body_rendering_preserved": true,
+    "financial_rows_and_table_unchanged": true,
+    "selected_evidence_not_expanded": true,
+    "claim_count_identifiers_and_categories_preserved": true,
+    "natural_disaster_citation_pair_applied": true,
+    "regulatory_citations_preserved": true,
+    "two_primary_citation_slots_preserved": true,
+    "one_actual_note_edit": true,
+    "note_edit_binds_parent_and_new_body": true,
+    "exactly_one_new_critic_response": true,
+    "no_tool_or_writer_rerun": true,
+    "new_spend_matches_new_critic": true,
+    "new_tokens_match_new_critic": true,
+    "original_caps_routes_and_config_preserved": true,
+    "all_old_uncertain_holds_preserved": true,
+    "canonical_financial_rows_verified": true,
+    "canonical_risk_quotes_verified": true,
+    "all_draft_checks_pass": true,
+    "six_financial_values_pass": true,
+    "two_current_supported_model_claims": true,
+    "fresh_verdict_binds_exact_body_source_and_inputs": true,
+    "explicit_wording_difference_and_materiality_limit": true,
+    "development_note_not_published": true,
+    "no_provider_error_added": true
+  },
+  "outcome": {
+    "before_note_hash": "08c2730ac709711c863f853f2a3a2cbd78db4a2026920f54494e5789949bdaa1",
+    "after_note_hash": "f269279a9127157b56dd02491b07ed4edce75ed736c459e92bd4d37fa7ace8ed",
+    "actual_note_edits": 1,
+    "changed_primary_citation_slots": 2,
+    "selected_evidence_expanded": false,
+    "canonical_quote_instances_verified": 4,
+    "financial_values_verified": 6,
+    "fresh_model_supported_claims": 2,
+    "additional_critic_calls": 1,
+    "additional_critic_cost_usd": "0.0012071",
+    "total_run_model_calls": 9,
+    "total_run_reported_tokens": 30828,
+    "total_run_reported_cost_usd": "0.01352316",
+    "tool_or_writer_reruns": 0,
+    "earlier_charges_and_uncertain_holds_preserved": true,
+    "new_lesson_proposals": 0,
+    "note_publications": 0,
+    "development_review_status": "awaiting_note"
+  }
 }
