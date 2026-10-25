@@ -339,6 +339,19 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Capstone connection:** p.3, L13 different-family judge and L14 model/cost controls; L16 versioned configuration and reproducible operation. Using a separate model family supports the evaluation design; calibration against independent human labels remains required.
 
+### Step 16k — Protect shared retrieval models during parallel company searches
+
+**What this step does:** prevents simultaneous company searches from entering shared tokenizer preprocessing while another request is using the local encoder or reranker. The existing model lock now covers tokenization, windowing, decoding and inference. Search ranking, evidence checks, model choices and fail-closed behaviour remain unchanged.
+
+| Files | Purpose |
+|---|---|
+| [desk/retrieval.py](desk/retrieval.py) | Protect the complete local tokenization/inference sequence for both encoding and reranking. |
+| [tests/test_retrieval_concurrency.py](tests/test_retrieval_concurrency.py) | Exercise six controlled overlap scenarios, lock release after failures and empty-input shapes without downloading models or contacting a provider. |
+
+**Verification:** 106 focused retrieval/tool/runtime checks pass. Restoring the previous lock boundary in memory makes all six overlap regression cases fail. Before deployment, the cached ABT/AMGN queries produce one failed parallel tool call while both sequential calls succeed. After reloading only the search service, six authenticated searches in three parallel pairs pass across cold/warm use and two-/three-year scopes. All results retain canonical evidence and issuer/year boundaries. Saved runs, approved notes, source identity, configured models, charges and reserved budgets remain unchanged. The verification uses local retrieval only; it does not retry a research run or establish that a complete new research note passes.
+
+**Capstone connection:** p.3, retrieval, typed MCP tools, multi-agent orchestration and deployment requirements; pp.15–16, parallel company research over cached evidence. Parallel orchestration must remain reliable when specialists share local retrieval resources.
+
 ## What the team builds next
 
 1. **Continue genuine development learning:** preserve the accepted lesson, review further evidence-backed proposals, record a genuine rejection with its reason, and freeze selected accepted versions before protected evaluation.

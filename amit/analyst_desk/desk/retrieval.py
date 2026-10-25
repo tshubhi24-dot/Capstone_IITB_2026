@@ -121,12 +121,14 @@ class LocalModels:
 
     def encode(self, texts):
         windows, owners = [], []
-        for index, text in enumerate(texts):
-            parts = _token_windows(text, self.encoder.tokenizer,
-                                   self.config["encoder"]["max_length"] - 2, 32)
-            windows.extend(parts)
-            owners.extend([index] * len(parts))
+        # Fast tokenizers mutate padding/truncation state even during preprocessing.
+        # Keep windowing and model tokenization in the same critical section.
         with self.lock:
+            for index, text in enumerate(texts):
+                parts = _token_windows(text, self.encoder.tokenizer,
+                                       self.config["encoder"]["max_length"] - 2, 32)
+                windows.extend(parts)
+                owners.extend([index] * len(parts))
             encoded = self.encoder.encode(windows, batch_size=32, show_progress_bar=False,
                                           normalize_embeddings=True, convert_to_numpy=True)
         pooled = np.zeros((len(texts), self.config["dimension"]), dtype=np.float32)
@@ -141,16 +143,16 @@ class LocalModels:
         return np.asarray(pooled / norms, dtype=np.float32)
 
     def score(self, query, documents):
-        tokens = self.reranker.tokenizer(query, add_special_tokens=False,
-                                         truncation=True, max_length=96, verbose=False)["input_ids"]
-        bounded_query = self.reranker.tokenizer.decode(tokens, skip_special_tokens=True)
-        budget = self.config["reranker"]["max_length"] - len(tokens) - 3
         pairs, owners = [], []
-        for index, document in enumerate(documents):
-            windows = _token_windows(document, self.reranker.tokenizer, budget, 32)
-            pairs.extend((bounded_query, text) for text in windows)
-            owners.extend([index] * len(windows))
         with self.lock:
+            tokens = self.reranker.tokenizer(query, add_special_tokens=False,
+                                             truncation=True, max_length=96, verbose=False)["input_ids"]
+            bounded_query = self.reranker.tokenizer.decode(tokens, skip_special_tokens=True)
+            budget = self.config["reranker"]["max_length"] - len(tokens) - 3
+            for index, document in enumerate(documents):
+                windows = _token_windows(document, self.reranker.tokenizer, budget, 32)
+                pairs.extend((bounded_query, text) for text in windows)
+                owners.extend([index] * len(windows))
             values = self.reranker.predict(pairs, batch_size=16, show_progress_bar=False,
                                            convert_to_numpy=True)
         result = np.full(len(documents), -np.inf)
