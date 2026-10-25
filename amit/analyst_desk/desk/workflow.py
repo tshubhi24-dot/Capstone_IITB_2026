@@ -746,6 +746,7 @@ class Engine:
                 run.pop("queued_continuation", None)
                 run.pop("error", None)
                 run.pop("failure_kind", None)
+                run.pop("validation_error", None)
                 self.store.save_run(run)
             except Exception as exc:
                 # MCP credentials and exception bodies never enter public traces.
@@ -754,6 +755,17 @@ class Engine:
                 run.update(status="error", stage="error", error=f"{type(exc).__name__}: {detail}")
                 from .reasoning import ReasoningError
                 run["failure_kind"] = "content_validation" if isinstance(exc, ReasoningError) else "not_continuable"
+                run.pop("validation_error", None)
+                if isinstance(exc, ReasoningError):
+                    from .reasoning_diagnostics import checkpoint_diagnostic, validation_diagnostic
+                    diagnostic = validation_diagnostic(exc)
+                    try:
+                        diagnostic = checkpoint_diagnostic(self.graph.get_state(config).tasks) or diagnostic
+                    except Exception:
+                        pass
+                    if diagnostic is not None:
+                        run["validation_error"] = diagnostic
+                        run["error"] = "ReasoningError: " + diagnostic["message"]
                 run.pop("queued_continuation", None)
                 self.store.save_run(run)
                 self.event(run_id, "system", "error", run["error"])
@@ -769,8 +781,14 @@ class Engine:
         run["continuation"] = {"available": False}
         if run.get("status") == "error":
             try:
-                _, proof = self._continuation_checkpoint(self.store.get_run(run_id), canonical_hash(run.get("plan")))
+                snapshot, proof = self._continuation_checkpoint(self.store.get_run(run_id), canonical_hash(run.get("plan")))
                 run["continuation"] = {"available": True, "plan_hash": proof["payload_hash"], "failure_kind": "content_validation"}
+                if not run.get("validation_error"):
+                    from .reasoning_diagnostics import checkpoint_diagnostic
+                    diagnostic = checkpoint_diagnostic(snapshot.tasks)
+                    if diagnostic is not None:
+                        run["validation_error"] = diagnostic
+                        run["error"] = "ReasoningError: " + diagnostic["message"]
             except Exception:
                 try:
                     _, proof = self._continuation_checkpoint(self.store.get_run(run_id), canonical_hash(run.get("plan")), retry_transient=True)

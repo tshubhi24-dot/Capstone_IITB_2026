@@ -31,8 +31,10 @@ class FakeModelClient:
         elif stage == "risk":
             def quote_id(year):
                 return next(row["quote_id"] for row in context["quote_menu"] if row["year"] == year)
-            content = {"comparisons": [{"before_year": before, "after_year": after, "status": "evidence_available",
-                "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low", "quote_ids": [quote_id(before), quote_id(after)]}]} for before, after in context["comparison_pairs"]]}
+            content = {"comparisons": {key: {"status": "evidence_available",
+                "findings": [{"text": "Selected disclosures discuss operational uncertainty.", "confidence": "low",
+                              "before_quote_id": quote_id(pair["before_year"]), "after_quote_id": quote_id(pair["after_year"])}]}
+                                      for key, pair in context["comparison_keys"].items()}}
         elif stage == "writer":
             row = next(row for row in context["quote_menu"] if "item1A" in row["source_id"])
             revisions = {claim["claim_id"]: {"text": claim["text"], "confidence": claim["confidence"],
@@ -71,7 +73,7 @@ class ContentFailureClient(FakeModelClient):
     def complete(self, **request):
         result = super().complete(**request)
         if request["role"] == "risk" and self.invalid_risk:
-            result["content"]["comparisons"][0]["findings"][0]["quote_ids"] = ["quote-not-in-supplied-menu"]
+            next(iter(result["content"]["comparisons"].values()))["findings"][0]["after_quote_id"] = "quote-not-in-supplied-menu"
             self.cache[request["call_id"]] = deepcopy(result)
         return result
 
@@ -93,7 +95,7 @@ def test_writer_refines_provisional_risk_and_critic_checks_exact_revision(fixtur
         def complete(self, **request):
             result = super().complete(**request)
             if request["role"] == "risk":
-                result["content"]["comparisons"][0]["findings"][0]["text"] = provisional
+                next(iter(result["content"]["comparisons"].values()))["findings"][0]["text"] = provisional
             if request["role"] == "writer":
                 for revision in result["content"]["risk_revisions"].values():
                     if revision["text"] == provisional:

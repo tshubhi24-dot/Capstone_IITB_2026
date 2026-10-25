@@ -3,9 +3,10 @@ const $ = id => document.getElementById(id);
 const state = {run:null,selectedRunId:null,selectionVersion:0,refreshVersion:0,renderedVersion:null,renderedSnapshot:null,loading:false,deciding:false,creating:false,runMessage:false,reviewKey:null,citationReview:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
-function runErrorMessage(error){
+function runErrorMessage(error,validation){
  const text=String(error||'');
  if(text.includes('provider_http_429'))return 'The AI provider rate-limited this request (HTTP 429). This run has stopped; it will not retry automatically. Wait before starting a new live request, or explicitly choose Offline. Any reserved model budget remains visible below. Diagnostic: '+text;
+ if(validation?.code==='duplicate_source_citation')return 'The AI output selected multiple quotations from the same source record as separate evidence. The citation check stopped this run. The revised request format requires a separate quotation for each compared year. Resuming is explicit and may use the remaining approved model budget. Diagnostic: duplicate_source_citation.';
  return text;
 }
 function modelRouteDescription(config){
@@ -121,7 +122,7 @@ function render(run){
  const actualModels=completedModels(run.usage);if(actualModels.length)$('usage').textContent+=` · completed responses: ${actualModels.join(', ')}`;
  $('events').replaceChildren();(run.events||[]).forEach(event=>$('events').append(element('li',`${event.agent}: ${event.message}`)));
  $('checks').textContent=run.critic?`Financial values checked: ${run.critic.verified_numbers} / ${run.critic.total_numbers}\nOverall checks: ${run.critic.passed?'passed':'blocked'}\nNarrative model review: ${run.critic.semantic_review==='not_run_offline'?'not run in offline mode':run.critic.semantic_review==='model_assisted_not_gold'?'completed · fallible model judgment':run.critic.semantic_review||'pending'}${run.critic.issues?.length?'\nIssues:\n'+run.critic.issues.map(value=>'• '+value).join('\n'):''}`:'Checks have not run.';
- if(run.error)message(runErrorMessage(run.error));else if(state.runMessage)message('');state.runMessage=Boolean(run.error);
+ if(run.error)message(runErrorMessage(run.error,run.validation_error));else if(state.runMessage)message('');state.runMessage=Boolean(run.error);
  const resumable=canResume(run);$('continuation').hidden=!resumable;$('continuation-plan').textContent=resumable?`Original approved plan: ${run.continuation.plan_hash}`:'';
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
  if(pending){const key=`${run.id}:${pending.kind}:${pending.payload_hash}`;

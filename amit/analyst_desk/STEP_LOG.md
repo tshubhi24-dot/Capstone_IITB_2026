@@ -352,6 +352,21 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Capstone connection:** p.3, retrieval, typed MCP tools, multi-agent orchestration and deployment requirements; pp.15–16, parallel company research over cached evidence. Parallel orchestration must remain reliable when specialists share local retrieval resources.
 
+### Step 16l — Require distinct period citations and explain rejected outputs
+
+**What this step does:** constrains fresh risk responses to code-owned comparison keys and separate earlier/later quotation slots. Each slot is restricted to its issuer and fiscal year before a response is accepted. Existing canonical citation, quantity and selected-excerpt checks remain authoritative. Rejected historical output is not edited into a passing result.
+
+| Files | Purpose |
+|---|---|
+| [desk/reasoning.py](desk/reasoning.py) | Define paired risk-response schemas and exact quotation menus; preserve the internal comparison/claim shape and insufficient-evidence results. |
+| [desk/reasoning_diagnostics.py](desk/reasoning_diagnostics.py), [desk/workflow.py](desk/workflow.py) | Expose only fixed validation reasons and stages, including read-only interpretation of eligible historical checkpoint errors. Preserve exact-plan continuation and original accounting. |
+| [web/app.js](web/app.js) | Explain duplicate-source citation failures and the explicit, budgeted continuation path. |
+| [tests/test_reasoning.py](tests/test_reasoning.py), [tests/test_live_workflow.py](tests/test_live_workflow.py), [tests/test_reasoning_diagnostics.py](tests/test_reasoning_diagnostics.py), [tests/test_provider_error_ui.py](tests/test_provider_error_ui.py) | Reject same-source quotation pairs, wrong periods, malformed wire outputs and unsafe diagnostic text; test valid paired outputs, legacy inspection and continuation controls. |
+
+**Verification:** 321 selected reasoning, workflow, citation-review, memory, lesson and browser-helper checks pass. A synthetic reproduction demonstrates that distinct quotation windows from one source cannot replace evidence from both compared periods. Nine deployed read-only checks confirm that the existing stopped run shows the fixed duplicate-source diagnostic while its original plan/continuation, all saved runs, approved notes, source and spending records are unchanged. Deployment performs no paid call or research continuation. Live generation with the revised schema still requires an explicit run or continuation; a successful complete note is not claimed by these checks.
+
+**Capstone connection:** p.3, grounded tool use, self-correction and human control; pp.15–16, source-supported risk comparisons, independent criticism and exact-note review. Better request constraints prevent a known invalid citation shape without weakening the checks that reject it.
+
 ## What the team builds next
 
 1. **Continue genuine development learning:** preserve the accepted lesson, review further evidence-backed proposals, record a genuine rejection with its reason, and freeze selected accepted versions before protected evaluation.

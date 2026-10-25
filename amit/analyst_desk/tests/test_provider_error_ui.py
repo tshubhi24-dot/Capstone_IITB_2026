@@ -28,3 +28,20 @@ def test_error_formatter_explains_rate_limit_without_changing_other_errors(error
         assert "quota exhausted" not in message and "refunded" not in message
     else:
         assert message == error
+
+
+def test_duplicate_citation_diagnostic_is_actionable_without_echoing_raw_fields():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node.js required to execute browser helper")
+    script = """
+const {runErrorMessage}=require(process.argv[1]);
+console.log(JSON.stringify(runErrorMessage('ReasoningError: research stopped; inspect service diagnostics',
+ {code:'duplicate_source_citation',stage:'risk',message:'private-value-not-for-display'})));
+"""
+    result = subprocess.run([node, "-e", script, str(ROOT / "web/app.js")],
+                            check=True, capture_output=True, text=True, timeout=10)
+    message = json.loads(result.stdout)
+    assert "same source record" in message and "each compared year" in message
+    assert "Resuming is explicit" in message and "duplicate_source_citation" in message
+    assert "private-value" not in message and "inspect service diagnostics" not in message

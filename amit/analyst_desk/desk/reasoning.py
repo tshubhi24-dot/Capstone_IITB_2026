@@ -83,6 +83,24 @@ class QuoteRiskOutput(StrictOutput):
     comparisons: list[QuoteComparisonOutput] = Field(max_length=2)
 
 
+class PairedRiskFinding(StrictOutput):
+    text: str = Field(min_length=15, max_length=400)
+    before_quote_id: str = Field(min_length=1, max_length=120)
+    after_quote_id: str = Field(min_length=1, max_length=120)
+    confidence: Literal["low", "medium", "high"]
+
+class PairedRiskComparison(StrictOutput):
+    status: Literal["evidence_available", "insufficient_evidence"]
+    findings: list[PairedRiskFinding] = Field(max_length=1)
+
+class PairedRiskOutput(StrictOutput):
+    # Code supplies the exact comparison keys and period-specific quote enums
+    # for each request. Earlier list-shaped outputs remain historical records;
+    # fresh risk generation cannot present same-period windows as a pair.
+    comparisons: dict[str, PairedRiskComparison] = Field(max_length=2,
+        json_schema_extra={"properties": {}, "required": [], "additionalProperties": False})
+
+
 # A positive English-prose alphabet rejects numeric characters from every
 # Unicode script in both the provider schema and local Pydantic validation.
 # The authoritative validator still enforces additional prose and quantity rules.
@@ -424,7 +442,7 @@ class Reasoner:
     def __init__(self, model_call):
         self.model_call = model_call
 
-    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_quote_slots=None, lesson_actions=None):
+    def _call(self, stage, instructions, context, schema, max_output_tokens, *, quote_ids=None, risk_quote_slots=None, comparison_quote_slots=None, lesson_actions=None):
         if len(json.dumps(context, ensure_ascii=False).encode()) > self.MAX_CONTEXT_BYTES:
             raise ReasoningError("The bounded reasoning context is too large.")
         response_schema = schema.model_json_schema()
@@ -453,6 +471,26 @@ class Reasoner:
                 revision["properties"]["after_quote_id"]["enum"] = list(slots["after"])
                 properties[identifier] = revision
             response_schema["properties"]["risk_revisions"] = {
+                "type": "object", "properties": properties,
+                "required": list(properties), "additionalProperties": False,
+            }
+        if comparison_quote_slots is not None:
+            properties = {}
+            for identifier, slots in comparison_quote_slots.items():
+                comparison = PairedRiskComparison.model_json_schema()
+                comparison.pop("$defs", None)
+                finding = PairedRiskFinding.model_json_schema()
+                if slots["before"] and slots["after"]:
+                    finding["properties"]["before_quote_id"]["enum"] = list(slots["before"])
+                    finding["properties"]["after_quote_id"]["enum"] = list(slots["after"])
+                else:
+                    # A missing period menu permits an honest empty result,
+                    # never an invented quote or a stand-in from another year.
+                    comparison["properties"]["status"]["enum"] = ["insufficient_evidence"]
+                    comparison["properties"]["findings"]["maxItems"] = 0
+                comparison["properties"]["findings"]["items"] = finding
+                properties[identifier] = comparison
+            response_schema["properties"]["comparisons"] = {
                 "type": "object", "properties": properties,
                 "required": list(properties), "additionalProperties": False,
             }
@@ -561,21 +599,34 @@ class Reasoner:
             return {"ticker": ticker, "years": list(years), "comparisons": [], "selected_evidence": evidence,
                     "selection": {"method": "bounded_lexical_excerpts", "complete_original_section": False, "coverage": coverage}}
         menu = quote_menu(evidence)
-        result = self._call("risk", PROSE_INSTRUCTIONS + QUOTE_SELECTION_INSTRUCTIONS + " Compare each exact adjacent-year pair listed in the context. Cite evidence from BOTH years of that issuer for each finding. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
+        comparison_slots = {f"comparison-{before}-{after}": {
+            "before": [entry["quote_id"] for entry in menu if entry["ticker"] == ticker and entry["year"] == before],
+            "after": [entry["quote_id"] for entry in menu if entry["ticker"] == ticker and entry["year"] == after],
+        } for before, after in expected}
+        result = self._call("risk", PROSE_INSTRUCTIONS + " Return comparisons as an object with exactly the supplied comparison_keys. Each finding must select before_quote_id from that comparison's earlier-year enum and after_quote_id from its later-year enum. Do not return quote_ids, source IDs, quotations or year fields. Code resolves the exact quotations and fixes issuer and periods. Two windows from the same source or period cannot substitute for evidence from both periods. Each menu entry is a code-selected quote window, not complete source coverage; fragment=true means it cuts a longer sentence. Preserve uncertainty and negation, and ensure the selected quotations support the complete finding. Compare each exact adjacent-year pair listed in the context. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
                             {"ticker": ticker, "years": years, "comparison_pairs": expected, "quote_menu": menu,
+                             "comparison_keys": {key: {"before_year": before, "after_year": after}
+                                                 for key, (before, after) in zip(comparison_slots, expected)},
                              "evidence_scope": "Code-selected quote windows within selected bounded excerpts only; original section boundaries unverified."},
-                            QuoteRiskOutput, 2600, quote_ids=[entry["quote_id"] for entry in menu])
-        actual = [(value["before_year"], value["after_year"]) for value in result["comparisons"]]
-        if actual != expected:
+                            PairedRiskOutput, 2600, comparison_quote_slots=comparison_slots)
+        if set(result["comparisons"]) != set(comparison_slots):
             raise ReasoningError("The model changed, omitted or repeated a comparison period.")
         comparisons = []
-        for value in result["comparisons"]:
+        for identifier, (before, after) in zip(comparison_slots, expected):
+            value = result["comparisons"][identifier]
             if bool(value["findings"]) != (value["status"] == "evidence_available"):
                 raise ReasoningError("The comparison status does not match its cited findings.")
-            claims = [{"claim_id": f"risk-{ticker}-{value['before_year']}-{value['after_year']}-{index + 1}",
-                       "ticker": ticker, "before_year": value["before_year"], "after_year": value["after_year"],
-                       "category": "risk_observation", **expand_quote_selection(finding, menu)} for index, finding in enumerate(value["findings"])]
-            comparisons.append({"before_year": value["before_year"], "after_year": value["after_year"],
+            claims = []
+            for index, finding in enumerate(value["findings"]):
+                if (finding["before_quote_id"] not in comparison_slots[identifier]["before"]
+                        or finding["after_quote_id"] not in comparison_slots[identifier]["after"]):
+                    raise ReasoningError("A risk finding selected a quotation outside its required issuer/year slot.")
+                selection = {"text": finding["text"], "confidence": finding["confidence"],
+                             "quote_ids": [finding["before_quote_id"], finding["after_quote_id"]]}
+                claims.append({"claim_id": f"risk-{ticker}-{before}-{after}-{index + 1}",
+                               "ticker": ticker, "before_year": before, "after_year": after,
+                               "category": "risk_observation", **expand_quote_selection(selection, menu)})
+            comparisons.append({"before_year": before, "after_year": after,
                                 "status": value["status"], "claims": validate_claims(claims, evidence)})
         return {"ticker": ticker, "years": list(years), "comparisons": comparisons, "selected_evidence": evidence,
                 "selection": {"method": "bounded_lexical_excerpts", "max_chunks_per_year": self.RISK_CHUNKS_PER_YEAR,

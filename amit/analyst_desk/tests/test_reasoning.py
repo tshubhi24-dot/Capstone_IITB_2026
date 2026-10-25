@@ -5,7 +5,7 @@ from hashlib import sha256
 import pytest
 from jsonschema import Draft202012Validator
 
-from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PlanOutput, QueryOutput, QuoteRiskOutput,
+from desk.reasoning import (ANNUAL_SCOPE_NOTICE, CriticOutput, PairedRiskOutput, PlanOutput, QueryOutput, QuoteRiskOutput,
                             QuoteWriterOutput, Reasoner, ReasoningError, RiskOutput, WriterOutput,
                             normalize_evidence, quote_menu, render_claims, validate_claims,
                             validate_prose)
@@ -200,8 +200,11 @@ def test_risk_selection_is_bounded_and_cannot_claim_full_coverage():
     calls = []
     def model(stage, **request):
         calls.append(request)
-        return {"comparisons": [{"before_year": before, "after_year": after, "status": "insufficient_evidence", "findings": []}
-                                for before, after in ((2023, 2024), (2024, 2025))]}
+        result = {"comparisons": {key: {"status": "insufficient_evidence", "findings": []}
+                                  for key in request["context"]["comparison_keys"]}}
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        return result
     result = Reasoner(model).compare_risks("MSFT", [2023, 2024, 2025], sections)
     assert len(calls) == 1 and calls[0]["max_output_tokens"] == 2600
     assert len(result["selected_evidence"]) == 12
@@ -213,12 +216,12 @@ def test_risk_selection_is_bounded_and_cannot_claim_full_coverage():
 def test_risk_model_must_preserve_exact_adjacent_periods(evidence):
     sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
                        "chunks": [row for row in evidence if row["ticker"] == "MSFT" and row["year"] == year]} for year in (2023, 2024)}
-    response = {"comparisons": [{"before_year": 2023, "after_year": 2025, "status": "insufficient_evidence", "findings": []}]}
+    response = {"comparisons": {"comparison-2023-2025": {"status": "insufficient_evidence", "findings": []}}}
     with pytest.raises(ReasoningError, match="changed, omitted or repeated"):
         Reasoner(lambda *args, **kwargs: response).compare_risks("MSFT", [2023, 2024], sections)
 
 
-@pytest.mark.parametrize("response_model", [PlanOutput, QueryOutput, RiskOutput, WriterOutput, QuoteRiskOutput, QuoteWriterOutput, CriticOutput])
+@pytest.mark.parametrize("response_model", [PlanOutput, QueryOutput, RiskOutput, WriterOutput, QuoteRiskOutput, PairedRiskOutput, QuoteWriterOutput, CriticOutput])
 def test_live_schemas_forbid_extra_fields_and_require_all_properties(response_model):
     def check(schema):
         if schema.get("type") == "object":
@@ -279,12 +282,18 @@ def test_risk_model_selects_finite_quotes_and_code_expands_exact_citations(evide
     def model(stage, **request):
         seen.append(request)
         menu = request["context"]["quote_menu"]
-        selected = [next(item["quote_id"] for item in menu if item["year"] == year) for year in (2023, 2024)]
-        enum = request["schema"]["$defs"]["QuoteFinding"]["properties"]["quote_ids"]["items"]["enum"]
-        assert enum == [item["quote_id"] for item in menu]
-        assert "citations" not in request["schema"]["$defs"]["QuoteFinding"]["properties"]
-        return {"comparisons": [{"before_year": 2023, "after_year": 2024, "status": "evidence_available",
-            "findings": [{"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low", "quote_ids": selected}]}]}
+        properties = request["schema"]["properties"]["comparisons"]["properties"]
+        finding_schema = properties["comparison-2023-2024"]["properties"]["findings"]["items"]
+        for field, year in (("before_quote_id", 2023), ("after_quote_id", 2024)):
+            assert finding_schema["properties"][field]["enum"] == [item["quote_id"] for item in menu if item["year"] == year]
+        assert "citations" not in finding_schema["properties"] and "quote_ids" not in finding_schema["properties"]
+        result = {"comparisons": {"comparison-2023-2024": {"status": "evidence_available",
+            "findings": [{"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+                          "before_quote_id": next(item["quote_id"] for item in menu if item["year"] == 2023),
+                          "after_quote_id": next(item["quote_id"] for item in menu if item["year"] == 2024)}]}}}
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        return result
     result = Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
     finding = result["comparisons"][0]["claims"][0]
     assert "quote_ids" not in finding and len(finding["citations"]) == 2
@@ -294,20 +303,39 @@ def test_risk_model_selects_finite_quotes_and_code_expands_exact_citations(evide
     assert result["selection"]["quotation_selection"] == "code_selected_exact_windows"
 
 
-@pytest.mark.parametrize("selection", ["invented", "duplicate", "wrong-period", "freeform"])
+@pytest.mark.parametrize("selection", ["invented", "duplicate", "wrong-period", "freeform", "wrong-key", "missing-key", "extra-key", "wrong-status", "old-wire"])
 def test_invalid_quote_choices_or_freeform_citations_cannot_be_repaired(evidence, selection):
     def model(stage, **request):
         menu = request["context"]["quote_menu"]
         before = next(item for item in menu if item["year"] == 2023)
         after = next(item for item in menu if item["year"] == 2024)
-        choices = {"invented": [before["quote_id"], "fabricated-quote"],
-                   "duplicate": [before["quote_id"], before["quote_id"]],
-                   "wrong-period": [before["quote_id"]],
-                   "freeform": [before["quote_id"], after["quote_id"]]}[selection]
-        finding = {"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low", "quote_ids": choices}
+        finding = {"text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+                   "before_quote_id": before["quote_id"], "after_quote_id": after["quote_id"]}
+        result = {"comparisons": {"comparison-2023-2024": {"status": "evidence_available", "findings": [finding]}}}
+        if selection == "invented":
+            finding["after_quote_id"] = "fabricated-quote"
+        elif selection == "duplicate":
+            finding["after_quote_id"] = before["quote_id"]
+        elif selection == "wrong-period":
+            finding["before_quote_id"], finding["after_quote_id"] = after["quote_id"], before["quote_id"]
         if selection == "freeform":
             finding["citations"] = [{"source_id": "invented-source", "quote": "An invented model quotation."}]
-        return {"comparisons": [{"before_year": 2023, "after_year": 2024, "status": "evidence_available", "findings": [finding]}]}
+        elif selection == "wrong-key":
+            result["comparisons"]["comparison-2023-2025"] = result["comparisons"].pop("comparison-2023-2024")
+        elif selection == "missing-key":
+            result["comparisons"].clear()
+        elif selection == "extra-key":
+            result["comparisons"]["injected-claim"] = deepcopy(result["comparisons"]["comparison-2023-2024"])
+        elif selection == "wrong-status":
+            result["comparisons"]["comparison-2023-2024"]["status"] = "insufficient_evidence"
+        elif selection == "old-wire":
+            finding.pop("before_quote_id")
+            finding.pop("after_quote_id")
+            finding["quote_ids"] = [before["quote_id"], after["quote_id"]]
+            result = {"comparisons": [{"before_year": 2023, "after_year": 2024, "status": "evidence_available", "findings": [finding]}]}
+        if selection != "wrong-status":
+            assert not Draft202012Validator(request["schema"]).is_valid(result)
+        return result
     with pytest.raises(ReasoningError):
         Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
 
@@ -610,3 +638,77 @@ def test_critic_prompt_requests_brief_reasons_and_exact_json_without_relaxing_sc
     assert schema["additionalProperties"] is False
     assert schema["$defs"]["Verdict"]["additionalProperties"] is False
     assert verdict["passed"] is True
+
+
+def test_risk_same_source_distinct_windows_fail_paired_wire_and_canonical_guard(evidence):
+    """Reproduce same-source windows without retaining any private run output."""
+    def model(stage, **request):
+        options = [row for row in request["context"]["quote_menu"] if row["source_id"] == "msft-after"]
+        assert len(options) == 2 and options[0]["quote_id"] != options[1]["quote_id"]
+        result = {"comparisons": {"comparison-2023-2024": {"status": "evidence_available", "findings": [{
+            "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+            "before_quote_id": options[0]["quote_id"], "after_quote_id": options[1]["quote_id"],
+        }]}}}
+        assert not Draft202012Validator(request["schema"]).is_valid(result)
+        old_wire = {"comparisons": [{"before_year": 2023, "after_year": 2024,
+            "status": "evidence_available", "findings": [{
+                "text": "Cybersecurity remains a disclosed operational exposure.", "confidence": "low",
+                "quote_ids": [row["quote_id"] for row in options]}]}]}
+        assert Draft202012Validator(QuoteRiskOutput.model_json_schema()).is_valid(old_wire)
+        assert not Draft202012Validator(request["schema"]).is_valid(old_wire)
+        # Historical canonical verification retains the independent guard.
+        historical = claim()
+        historical["citations"] = [{"source_id": row["source_id"], "quote": row["quote"]} for row in options]
+        with pytest.raises(ReasoningError, match="Repeat citations"):
+            validate_claims([historical], evidence)
+        return result
+    with pytest.raises(ReasoningError, match="required issuer/year slot"):
+        Reasoner(model).compare_risks("MSFT", [2023, 2024], risk_sections(evidence))
+
+
+@pytest.mark.parametrize("years", [[2023, 2024], [2023, 2024, 2025], [2023, 2025]])
+def test_paired_risk_preserves_each_code_owned_comparison_and_citation_period(years):
+    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
+                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
+                                  "text": "Cybersecurity may disrupt operations and compromise privacy."}]}
+                for year in years}
+    def model(stage, **request):
+        menu = request["context"]["quote_menu"]
+        result = {"comparisons": {}}
+        for key, pair in reversed(list(request["context"]["comparison_keys"].items())):
+            result["comparisons"][key] = {"status": "evidence_available", "findings": [{
+                "text": "Selected disclosures describe potential cybersecurity disruption.", "confidence": "low",
+                "before_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["before_year"]),
+                "after_quote_id": next(row["quote_id"] for row in menu if row["year"] == pair["after_year"]),
+            }]}
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        return result
+    result = Reasoner(model).compare_risks("MSFT", years, sections)
+    assert [(row["before_year"], row["after_year"]) for row in result["comparisons"]] == list(zip(years, years[1:]))
+    for row in result["comparisons"]:
+        current = row["claims"][0]
+        assert current["claim_id"] == f"risk-MSFT-{row['before_year']}-{row['after_year']}-1"
+        assert {citation["source_id"] for citation in current["citations"]} == {
+            f"period-{row['before_year']}", f"period-{row['after_year']}"}
+
+
+def test_paired_risk_requires_insufficient_evidence_if_period_has_no_quote_window():
+    sections = {year: {"ticker": "MSFT", "year": year, "snapshot_complete": True,
+                      "chunks": [{"id": f"period-{year}", "ticker": "MSFT", "year": year,
+                                  "text": "Short." if year == 2023 else "Cybersecurity may disrupt business operations."}]}
+                for year in (2023, 2024)}
+    def model(stage, **request):
+        result = {"comparisons": {"comparison-2023-2024": {"status": "insufficient_evidence", "findings": []}}}
+        schema = request["schema"]["properties"]["comparisons"]["properties"]["comparison-2023-2024"]
+        assert schema["properties"]["findings"]["maxItems"] == 0
+        assert schema["properties"]["status"]["enum"] == ["insufficient_evidence"]
+        Draft202012Validator.check_schema(request["schema"])
+        assert Draft202012Validator(request["schema"]).is_valid(result)
+        invalid = deepcopy(result)
+        invalid["comparisons"]["comparison-2023-2024"]["status"] = "evidence_available"
+        assert not Draft202012Validator(request["schema"]).is_valid(invalid)
+        return result
+    result = Reasoner(model).compare_risks("MSFT", [2023, 2024], sections)
+    assert result["comparisons"] == [{"before_year": 2023, "after_year": 2024,
+                                      "status": "insufficient_evidence", "claims": []}]
