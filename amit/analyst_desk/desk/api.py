@@ -8,15 +8,15 @@ import os
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing import Literal
 
 from .data import Corpus
-from .store import Store
-from .workflow import Engine, ReviewError, validate_scope
+from .store import Store, canonical_hash
+from .workflow import Engine, ReviewError, validate_scope, citation_review_options
 from .provider import ModelGatewayClient, ProviderError
 from .model_profiles import model_profile, model_route
 
@@ -460,6 +460,22 @@ def run(run_id: str):
     return owned(run_id)
 
 
+@app.get("/api/runs/{run_id}/citation-options")
+def citation_options(run_id: str, draft_hash: str = Query(pattern=r"^[a-f0-9]{64}$")):
+    current = owned(run_id)
+    pending = current.get("pending") or {}
+    draft = pending.get("payload") or {}
+    if (current.get("status") != "awaiting_note" or pending.get("kind") != "note"
+            or pending.get("payload_hash") != draft_hash or canonical_hash(draft) != draft_hash
+            or draft.get("model_mode") != "live"
+            or draft.get("source_fingerprint") != app.state.source.fingerprint):
+        raise HTTPException(409, "The exact live note review changed; reopen it before choosing evidence.")
+    try:
+        return citation_review_options(draft)
+    except (ValueError, KeyError, TypeError) as exc:
+        raise HTTPException(409, "The note's selected evidence cannot support citation editing.") from exc
+
+
 @app.post("/api/runs/{run_id}/decision", status_code=202)
 def decision(run_id: str, value: Decision, background: BackgroundTasks):
     current = owned(run_id)
@@ -472,8 +488,11 @@ def decision(run_id: str, value: Decision, background: BackgroundTasks):
                     raise ReviewError("Unsupported plan edit fields.")
                 validate_scope({**(current.get("pending") or {}).get("payload", {}), **value.edits,
                                 "mode": current["request"].get("mode", "offline")}, app.state.source)
-            elif set(value.edits) != {"body"} or not isinstance(value.edits["body"], str) or len(value.edits["body"]) > 100000:
-                raise ReviewError("A note edit needs only a body string within the size limit.")
+            elif ("body" not in value.edits or set(value.edits) - {"body", "citation_selections"}
+                  or not isinstance(value.edits["body"], str) or len(value.edits["body"]) > 100000):
+                raise ReviewError("A note edit needs a bounded body and optional selected evidence choices.")
+            elif "citation_selections" in value.edits and current.get("request", {}).get("mode") != "live":
+                raise ReviewError("Selected evidence choices apply only to live note review.")
         except (ReviewError, TypeError) as exc:
             raise HTTPException(400, str(exc)) from exc
     try:

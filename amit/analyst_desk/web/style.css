@@ -3,3 +3,5 @@
 #risks button{display:block;max-width:100%;white-space:normal;overflow-wrap:anywhere;margin:6px 0;text-align:left}
 #claims button{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left}blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid #b5c5ce;color:#405866}#mode-budget,#edit-policy{font-size:14px;color:#405866}
 #analyst-memory .row{margin:12px 0}input[type=checkbox]{width:auto;margin-right:8px}#memory-coverage{max-height:320px;overflow:auto}#memory-comparison td button{display:block;margin:4px 0}
+
+#citation-review{border-top:1px solid #dbe3e8;margin-top:18px;padding-top:14px}.citation-claim{border:1px solid #dbe3e8;border-radius:8px;margin:14px 0;padding:16px}.citation-claim select{max-width:100%}.citation-claim blockquote{white-space:pre-wrap;overflow-wrap:anywhere;max-height:300px;overflow:auto}#citation-options-status{color:#405866}

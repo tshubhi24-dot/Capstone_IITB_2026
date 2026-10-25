@@ -1,6 +1,6 @@
 'use strict';
 const $ = id => document.getElementById(id);
-const state = {run:null,selectedRunId:null,selectionVersion:0,refreshVersion:0,renderedVersion:null,renderedSnapshot:null,loading:false,deciding:false,creating:false,runMessage:false,reviewKey:null,timer:null,connected:false,config:null};
+const state = {run:null,selectedRunId:null,selectionVersion:0,refreshVersion:0,renderedVersion:null,renderedSnapshot:null,loading:false,deciding:false,creating:false,runMessage:false,reviewKey:null,citationReview:null,timer:null,connected:false,config:null};
 const element = (tag,text) => {const value=document.createElement(tag);if(text!==undefined)value.textContent=String(text);return value;};
 function message(text){$('message').textContent=text;}
 function runErrorMessage(error){
@@ -75,15 +75,20 @@ async function loadRuns(){
 }
 function selectedRun(id,version){return state.selectedRunId===id&&state.selectionVersion===version;}
 function canResume(run){return run?.status==='error'&&run.continuation?.available===true&&run.continuation.failure_kind==='content_validation'&&typeof run.continuation.plan_hash==='string'&&/^[a-f0-9]{64}$/.test(run.continuation.plan_hash);}
+function citationReviewKey(run){return run?.status==='awaiting_note'&&run.pending?.kind==='note'&&(run.mode||run.request?.mode)==='live'?`${run.id}:note:${run.pending.payload_hash}`:null;}
+function clearCitationReview(){state.citationReview=null;$('citation-options').replaceChildren();$('citation-options-status').textContent='';}
 function reviewControls(){
  const run=state.run,pending=run?.status.startsWith('awaiting_')?run.pending:null;
  const blocked=state.loading||state.deciding||run?.id!==state.selectedRunId,unavailable=blocked||!pending;
  ['approve','edit','reject'].forEach(id=>$(id).disabled=unavailable);$('editor').disabled=unavailable;
  $('resume-research').disabled=blocked||!canResume(run);
+ $('load-citation-options').disabled=blocked||!citationReviewKey(run)||Boolean(state.citationReview?.loading);
+ (state.citationReview?.controls||[]).forEach(control=>control.disabled=unavailable);
  if(!unavailable)$('approve').disabled=pending.kind==='note'&&(!run.critic?.passed||run.request?.learning_split==='development');
 }
 async function selectRun(id){
  clearTimeout(state.timer);state.timer=null;state.selectionVersion++;
+ clearCitationReview();
  if(state.selectedRunId!==id){state.run=null;state.reviewKey=null;}
  state.selectedRunId=id||null;$('runs').value=id||'';state.loading=Boolean(id);state.runMessage=Boolean(id);message(id?'Loading selected research…':'');
  ['current','review','continuation','figures','risk-panel','reasoning-panel','run-memory','run-lessons','reflect-development','evidence-panel'].forEach(id=>$(id).hidden=true);
@@ -121,13 +126,15 @@ function render(run){
  const pending=run.status.startsWith('awaiting_')?run.pending:null;$('review').hidden=!pending;
  if(pending){const key=`${run.id}:${pending.kind}:${pending.payload_hash}`;
   if(key!==state.reviewKey){state.reviewKey=key;const plan=pending.kind==='plan';
+   clearCitationReview();
    $('review-title').textContent=plan?'Review the research plan':'Review this exact note';$('editor-label').textContent=plan?'Outline · one task per line':'Note body · edits trigger fresh checks';
    $('editor').value=plan?pending.payload.outline.join('\n'):pending.payload.body;
    $('scope').textContent=plan?`${pending.payload.tickers.join(' / ')} · fiscal ${pending.payload.years.join(', ')} · ${pending.payload.caveats.join(' ')}`:'Inspect the financial sources, narrative citations, model review and limitations before deciding.';
-   $('edit-policy').textContent=!plan&&live?'For live notes, edit only the wording of existing claim bullets. Keep the table, headings, citations and limitations unchanged. Edits invalidate the previous model review and require fresh checks; unsupported changes block approval.':'';
+   $('edit-policy').textContent=!plan&&live?'Edit the wording of existing claim bullets. Keep the table, headings and limitations unchanged. To change quotations, review the evidence choices below. Saving wording or evidence changes invalidates the previous review and requires fresh checks.':'';
    $('fingerprint').textContent=`Exact version: ${pending.payload_hash}`;$('approve').textContent=plan?'Approve plan and continue':run.request?.learning_split==='development'?'Development review only · publication blocked':'Approve and publish this exact note';
   }
  }
+ $('citation-review').hidden=!citationReviewKey(run);
  reviewControls();
  const rows=run.draft?.metrics||run.metrics||[];$('figures').hidden=!rows.length;$('rows').replaceChildren();
  rows.forEach(row=>{const tr=element('tr');[`${row.ticker} / ${row.year}`,`${row.period_start} to ${row.period_end}`,row.revenue,row.operating_income,`${row.margin_pct}%`].forEach(text=>tr.append(element('td',text)));
@@ -140,11 +147,82 @@ function render(run){
   claim.citations.forEach(citation=>{detail.append(element('blockquote',citation.quote));const button=element('button',citation.source_id);button.className='secondary';button.onclick=()=>showEvidence(citation.source_id);detail.append(button);});$('claims').append(detail);});
  state.renderedVersion=state.selectionVersion;state.renderedSnapshot=snapshot;
 }
+function currentCitationReview(){
+ const review=state.citationReview;
+ return review&&selectedRun(review.runId,review.version)&&review.key===citationReviewKey(state.run)?review:null;
+}
+function hasCitationChanges(){
+ const review=currentCitationReview();return Boolean(review?.claims.some(claim=>claim.slots.some((slot,index)=>review.selections[claim.claim_id][index]!== (slot.current.quote_id||''))));
+}
+function citationEdits(body){
+ const review=currentCitationReview();if(!review||!hasCitationChanges())return {body};
+ const draft=state.run.pending.payload,ordered=[...draft.live_sections.risk_ids,...draft.live_sections.writer_ids];
+ const lines=body.split('\n'),indices=[];lines.forEach((line,index)=>{if(line.startsWith('- '))indices.push(index);});
+ if(indices.length!==ordered.length)throw new Error('Keep the existing claim bullets when changing evidence.');
+ const selections={};
+ review.claims.forEach(claim=>{
+  const selected=review.selections[claim.claim_id];
+  if(!claim.slots.some((slot,index)=>selected[index]!== (slot.current.quote_id||'')))return;
+  const options=claim.slots.map((slot,index)=>slot.options.find(option=>option.quote_id===selected[index]));
+  if(options.some(option=>!option))throw new Error('Choose a listed quotation for every evidence slot in the changed claim. You can leave the whole claim unchanged.');
+  const claimIndex=ordered.indexOf(claim.claim_id),lineIndex=indices[claimIndex];
+  if(claimIndex<0)throw new Error('The note version changed. Load its evidence choices again.');
+  const oldSuffix=' '+claim.slots.map(slot=>`[${slot.current.source_id}]`).join(' ');
+  if(!lines[lineIndex].endsWith(oldSuffix))throw new Error('Keep the existing evidence references in the editor; your evidence choices will update them when saved.');
+  lines[lineIndex]=lines[lineIndex].slice(0,-oldSuffix.length)+' '+options.map(option=>`[${option.source_id}]`).join(' ');
+  selections[claim.claim_id]=[...selected];
+ });
+ return {body:lines.join('\n'),citation_selections:selections};
+}
+function renderCitationOptions(review){
+ $('citation-options').replaceChildren();review.controls=[];
+ review.claims.forEach((claim,claimIndex)=>{
+  const section=element('div');section.className='citation-claim';section.append(element('h3',`Evidence for this edit · claim ${claimIndex+1}`),element('p',claim.text));
+  claim.slots.forEach((slot,slotIndex)=>{
+   const id=`citation-choice-${claimIndex}-${slotIndex}`,label=element('label',`${slot.ticker} · fiscal ${slot.year} · quotation ${slotIndex+1}`),select=element('select'),preview=element('blockquote');label.htmlFor=id;select.id=id;
+   if(!slot.current.quote_id){const preserve=element('option','Keep current quotation · choose a listed quotation to change this claim');preserve.value='';select.append(preserve);}
+   const group=element('optgroup');group.label=`${slot.ticker} · fiscal ${slot.year}`;
+   slot.options.forEach(option=>{const item=element('option',option.quote.replaceAll('\n',' ').slice(0,150));item.value=option.quote_id;group.append(item);});select.append(group);select.value=review.selections[claim.claim_id][slotIndex];
+   const show=()=>{const selected=slot.options.find(option=>option.quote_id===select.value);preview.textContent=(selected||slot.current).quote;};show();
+   select.onchange=()=>{if(currentCitationReview()!==review||state.loading||state.deciding)return;review.selections[claim.claim_id][slotIndex]=select.value;show();$('citation-options-status').textContent=hasCitationChanges()?'Evidence changes are unsaved. Saving will update the references and require fresh checks.':'Current quotations retained.';};
+   review.controls.push(select);section.append(label,select,preview);
+  });$('citation-options').append(section);
+ });
+}
+async function loadCitationOptions(){
+ const run=state.run,key=citationReviewKey(run),version=state.selectionVersion;
+ if(!key||state.loading||state.deciding||run.id!==state.selectedRunId||state.citationReview?.loading)return;
+ if(hasCitationChanges())return message('Save or restore your evidence choices before loading them again.');
+ const review={key,runId:run.id,version,loading:true,claims:[],selections:{},controls:[]};state.citationReview=review;
+ $('citation-options-status').textContent='Loading evidence choices for this exact note…';reviewControls();
+ try{
+  const options=await api(`/api/runs/${encodeURIComponent(run.id)}/citation-options?draft_hash=${encodeURIComponent(run.pending.payload_hash)}`);
+  if(currentCitationReview()!==review)return;
+  if(options.draft_hash!==run.pending.payload_hash||!Array.isArray(options.claims))throw new Error('The note version changed. Load its evidence choices again.');
+  const draft=run.pending.payload,ordered=[...draft.live_sections.risk_ids,...draft.live_sections.writer_ids],known=new Map(draft.narrative_claims.map(claim=>[claim.claim_id,claim]));
+  if(options.claims.length!==ordered.length||new Set(options.claims.map(claim=>claim.claim_id)).size!==ordered.length)throw new Error('Evidence choices do not match this note.');
+  const byId=new Map(options.claims.map(claim=>[claim.claim_id,claim]));
+  review.claims=ordered.map(identifier=>{
+   const claim=byId.get(identifier),original=known.get(identifier);
+   if(!claim||!original||claim.text!==original.text||!Array.isArray(claim.slots)||claim.slots.length!==original.citations.length)throw new Error('Evidence choices do not match this note.');
+   claim.slots.forEach((slot,index)=>{
+    const citation=original.citations[index];
+    if(!slot.current||slot.current.source_id!==citation.source_id||slot.current.quote!==citation.quote||!Array.isArray(slot.options)||slot.options.some(option=>typeof option.quote_id!=='string'||!option.quote_id||typeof option.quote!=='string'||typeof option.source_id!=='string'||option.ticker!==slot.ticker||option.year!==slot.year)||new Set(slot.options.map(option=>option.quote_id)).size!==slot.options.length)throw new Error('Evidence choices do not match their company and fiscal year.');
+    if(slot.current.quote_id!==null&&!slot.options.some(option=>option.quote_id===slot.current.quote_id&&option.source_id===citation.source_id&&option.quote===citation.quote))throw new Error('The current quotation cannot be matched safely.');
+   });
+   review.selections[identifier]=claim.slots.map(slot=>slot.current.quote_id||'');return claim;
+  });
+  review.loading=false;renderCitationOptions(review);$('citation-options-status').textContent='Current quotations retained. Choose evidence only if this edit needs a different quotation.';
+ }catch(error){if(currentCitationReview()===review){clearCitationReview();$('citation-options-status').textContent=error.message;}}
+ finally{if(currentCitationReview()===review)review.loading=false;reviewControls();}
+}
 async function decide(action){
  const run=state.run,pending=run?.pending,version=state.selectionVersion;if(state.loading||state.deciding||run?.id!==state.selectedRunId||!pending||!run.status.startsWith('awaiting_'))return;
  const plan=pending.kind==='plan',original=plan?pending.payload.outline.join('\n'):pending.payload.body,current=$('editor').value;
- if(action==='approve'&&current!==original)return message('Save your edits first, then review the new version before approving.');
- const edits=action==='edit'?(plan?{outline:current.split('\n').map(text=>text.trim()).filter(Boolean)}:{body:current}):null;
+ if(action==='approve'&&(current!==original||hasCitationChanges()))return message('Save your edits first, then review the new version before approving.');
+ let edits=null;
+ try{if(action==='edit')edits=plan?{outline:current.split('\n').map(text=>text.trim()).filter(Boolean)}:citationEdits(current);}
+ catch(error){return message(error.message);}
  state.deciding=true;reviewControls();
  try{message('');
   await api(`/api/runs/${encodeURIComponent(run.id)}/decision`,{method:'POST',body:JSON.stringify({kind:pending.kind,action,payload_hash:pending.payload_hash,edits})});
@@ -172,6 +250,7 @@ $('companies').onchange=updateScope;$('years').onchange=updateScope;
 $('research-form').onsubmit=async event=>{event.preventDefault();if(state.creating)return;state.creating=true;try{$('start').disabled=true;const mode=$('mode').value,learning=window.AnalystLessons.requestOptions(),scope=researchScope(state.config,learning.tickers||selectedValues('companies'),learning.years||selectedValues('years').map(Number),mode);const run=await api('/api/runs',{method:'POST',body:JSON.stringify({question:$('question').value,...scope,strategy:'multi',mode,memory_enabled:$('use-memory').checked,max_tool_calls:60,max_tokens:mode==='live'?250000:100000,max_model_calls:12,...learning})});await loadRuns();await selectRun(run.id);}catch(error){message(error.message);}finally{state.creating=false;updateScope();}};
 $('approve').onclick=()=>decide('approve');$('edit').onclick=()=>decide('edit');$('reject').onclick=()=>decide('reject');$('close-evidence').onclick=()=>{$('evidence-panel').hidden=true;};
 $('resume-research').onclick=resumeResearch;
+$('load-citation-options').onclick=loadCitationOptions;
 $('token').value=sessionStorage.getItem('analyst-token')||'';if($('token').value)connect();
 }
 if(typeof module!=='undefined'&&module.exports)module.exports={sourceCatalogue,researchScope,runErrorMessage,modelRouteDescription,completedModels};

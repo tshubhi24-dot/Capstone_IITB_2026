@@ -169,14 +169,76 @@ def live_body(draft):
             + "\n\n## Limits and history\n" + LIVE_LIMITS + "\n" + draft["history_sentence"])
 
 
-def edited_live_claims(draft, body):
-    """Allow edits to claim sentences while retaining their code-owned evidence."""
-    from .reasoning import validate_prose
+def citation_review_options(draft):
+    """Offer exact selected-evidence quotes within each existing citation slot.
+
+    Slot issuer and year are immutable. This read-only menu neither adds
+    evidence nor asserts that a quotation supports an edited interpretation.
+    """
+    from .reasoning import Citation, normalize_evidence, quote_menu
+    evidence = normalize_evidence(draft["ai_evidence"])
+    known = {row["id"]: row for row in evidence}
+    scope = draft["plan"]
+    if any(row["ticker"] not in scope["tickers"] or row["year"] not in scope["years"] for row in evidence):
+        raise ValueError("Citation options must stay within the approved evidence scope")
+    menu = quote_menu(evidence)
+    claims = []
+    seen = set()
+    for claim in draft["narrative_claims"]:
+        identifier = claim["claim_id"]
+        if not isinstance(identifier, str) or identifier in seen:
+            raise ValueError("Citation review requires unique existing claims")
+        seen.add(identifier)
+        citations = claim["citations"]
+        if not isinstance(citations, list) or not 1 <= len(citations) <= 4:
+            raise ValueError("Citation review requires bounded existing citation slots")
+        slots = []
+        for citation in citations:
+            parsed = Citation.model_validate(citation).model_dump()
+            source = known.get(parsed["source_id"])
+            if source is None or parsed["quote"] not in source["text"]:
+                raise ValueError("A current citation differs from the selected evidence")
+            options = [deepcopy(item) for item in menu
+                       if (item["ticker"], item["year"]) == (source["ticker"], source["year"])]
+            current = next((item["quote_id"] for item in options
+                            if item["source_id"] == parsed["source_id"] and item["quote"] == parsed["quote"]), None)
+            slots.append({"ticker": source["ticker"], "year": source["year"],
+                          "current": {"quote_id": current, **parsed}, "options": options})
+        claims.append({"claim_id": identifier, "text": claim["text"], "slots": slots})
+    return {"draft_hash": canonical_hash(draft), "claims": claims}
+
+
+def edited_live_claims(draft, body, citation_selections=None):
+    """Edit existing sentences and optionally choose bounded canonical quotes."""
+    from .reasoning import validate_claims, validate_prose
+    if not isinstance(body, str):
+        raise ValueError("A note edit needs a body string")
     lines = [line for line in body.splitlines() if line.startswith("- ")]
     ordered = draft["live_sections"]["risk_ids"] + draft["live_sections"]["writer_ids"]
     if len(lines) != len(ordered):
         raise ValueError("Keep the existing claim bullets and evidence references")
     claims = {claim["claim_id"]: deepcopy(claim) for claim in draft["narrative_claims"]}
+    if len(claims) != len(draft["narrative_claims"]) or set(ordered) != set(claims) or len(ordered) != len(claims):
+        raise ValueError("Keep the exact existing claims and narrative sections")
+    if citation_selections is not None:
+        if not isinstance(citation_selections, dict) or set(citation_selections) - set(claims):
+            raise ValueError("Citation selections must name existing claims only")
+        options = {item["claim_id"]: item for item in citation_review_options(draft)["claims"]}
+        for identifier, selected in citation_selections.items():
+            slots = options[identifier]["slots"]
+            if (not isinstance(selected, list) or len(selected) != len(slots)
+                    or not 1 <= len(selected) <= 4 or any(not isinstance(item, str) for item in selected)
+                    or len(set(selected)) != len(selected)):
+                raise ValueError("Choose one canonical quotation for every existing citation slot")
+            citations = []
+            for quote_id, slot in zip(selected, slots):
+                matches = [item for item in slot["options"] if item["quote_id"] == quote_id]
+                if len(matches) != 1:
+                    raise ValueError("A quotation is unknown or outside its existing issuer and fiscal-year slot")
+                citations.append({"source_id": matches[0]["source_id"], "quote": matches[0]["quote"]})
+            if len({item["source_id"] for item in citations}) != len(citations):
+                raise ValueError("Repeat citations cannot stand in for separate evidence")
+            claims[identifier]["citations"] = citations
     for identifier, line in zip(ordered, lines):
         claim = claims[identifier]
         suffix = " " + " ".join(f"[{citation['source_id']}]" for citation in claim["citations"])
@@ -187,6 +249,8 @@ def edited_live_claims(draft, body):
     updated = [claims[identifier] for identifier in ordered]
     if live_body({**draft, "narrative_claims": updated}) != body:
         raise ValueError("Keep the verified table, headings, evidence and mandatory limitations")
+    if citation_selections is not None:
+        validate_claims(updated, draft["ai_evidence"])
     return updated
 
 
@@ -1104,6 +1168,22 @@ class Engine:
                         raise ReviewError("A registered development case has a fixed company and fiscal-year scope.")
             if decision["action"] == "approve" and decision["kind"] == "note" and not run.get("critic", {}).get("passed"):
                 raise ReviewError("Unresolved checks prevent publication.")
+            if decision["kind"] == "note" and decision["action"] == "edit":
+                edits = decision.get("edits")
+                if isinstance(edits, dict) and "citation_selections" in edits:
+                    try:
+                        if (set(edits) != {"body", "citation_selections"} or run["request"].get("mode", "offline") != "live"
+                                or not isinstance(edits["body"], str) or len(edits["body"]) > 100000
+                                or not isinstance(edits["citation_selections"], dict)):
+                            raise ValueError
+                        draft = pending["payload"]
+                        candidate = {**draft, "body": edits["body"], "narrative_claims": edited_live_claims(
+                            draft, edits["body"], edits["citation_selections"])}
+                        candidate.pop("semantic_verdict", None)
+                        if not verify_draft(candidate, self.source, require_semantic=False)["passed"]:
+                            raise ValueError
+                    except (ValueError, KeyError, TypeError):
+                        raise ReviewError("Citation edits must retain the exact note structure and choose only valid selected-evidence quotations within existing issuer and fiscal-year slots.") from None
             run.update(status="running", stage="resuming", queued_decision=decision)
             self.store.save_run(run)
 
@@ -1325,17 +1405,28 @@ class Engine:
         self._validate_context(state)
         if decision["action"] == "edit":
             edits = decision.get("edits") or {}
-            if set(edits) != {"body"} or not isinstance(edits["body"], str) or len(edits["body"]) > 100000:
-                raise ReviewError("A note edit must contain only a body string within the size limit.")
+            if (not isinstance(edits, dict) or set(edits) not in ({"body"}, {"body", "citation_selections"})
+                    or not isinstance(edits["body"], str) or len(edits["body"]) > 100000
+                    or "citation_selections" in edits and not isinstance(edits["citation_selections"], dict)):
+                raise ReviewError("A note edit needs a bounded body string and optional canonical citation selections.")
+            updated = {**draft, "body": edits["body"]}
+            updated.pop("semantic_verdict", None)
+            if "citation_selections" in edits:
+                if not self.is_live(state):
+                    raise ReviewError("Canonical citation edits require a live research note.")
+                try:
+                    updated["narrative_claims"] = edited_live_claims(draft, edits["body"], edits["citation_selections"])
+                    if not verify_draft(updated, self.source, require_semantic=False)["passed"]:
+                        raise ValueError
+                except (ValueError, KeyError, TypeError):
+                    raise ReviewError("The canonical citation edit is invalid; the current note was not changed.") from None
             self.store.invalidate_approval(state["run_id"])
             proof = {}
             if self._validate_development(state) is not None:
                 proof = {"before_draft_hash": canonical_hash(draft), "before_body_hash": hashlib.sha256(draft["body"].encode()).hexdigest(),
                          "after_body_hash": hashlib.sha256(edits["body"].encode()).hexdigest(), "source_fingerprint": self.source.fingerprint}
             self.event(state["run_id"], "human", "note_edit", "Note edited; the previous version cannot be approved and checks will repeat.", **proof)
-            updated = {**draft, **edits}
-            updated.pop("semantic_verdict", None)
-            if self.is_live(state):
+            if self.is_live(state) and "citation_selections" not in edits:
                 try:
                     updated["narrative_claims"] = edited_live_claims(draft, edits["body"])
                 except ValueError:

@@ -347,6 +347,8 @@ For live research, select the scope and question, click **Create a plan**, revie
 
 - **Analyst memory:** save local defaults, inspect coverage, search approved notes and compare earlier figures against current cached facts. Follow [the memory guide](docs/ANALYST_MEMORY.md). Your fresh installation starts empty.
 - **Reviewed lessons:** use registered public development rehearsals; private memory is off and publication is blocked. Actual failures or analyst edits can support proposals. You accept/edit/reject them with reasons, then explicitly freeze and select accepted guidance. Follow [the lesson guide](docs/REVIEWED_LESSONS.md). No pre-approved playbook or genuine acceptance/rejection is imported.
+When correcting a live note, keep its table, headings, claim bullets and mandatory limitations. Wording-only edits preserve their existing citations. To change evidence, click **Review evidence choices** in the note review panel: each slot shows full quotations from this run's already selected evidence, restricted to the same company and fiscal year. Choose the supporting quotations, edit the claim wording, and click **Save edits for review**. The editor updates those references; the old verdict is discarded and a fresh critic uses the original remaining budget. This does not approve or publish the note.
+
 - Optional AI reflection, note edits needing a fresh critic and deliberate continuations consume the original live budget. Provider failures do not automatically retry or release uncertain reservations.
 
 To disable future live requests, disable the proposal and reload the gateway:

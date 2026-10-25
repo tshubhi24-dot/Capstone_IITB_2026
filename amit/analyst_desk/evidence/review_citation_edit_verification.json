@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "stage": "bounded_citation_editor_tested_before_application",
+  "case_id": "KDEV018",
+  "verification": {
+    "selected_tests_passed": 305,
+    "workflow_citation_tests_added": 30,
+    "api_citation_tests_added": 13,
+    "browser_citation_tests_added": 13,
+    "provider_requests_during_verification": 0
+  },
+  "controls": {
+    "exact_pending_draft_binding": true,
+    "selected_evidence_only": true,
+    "immutable_citation_slot_issuer_and_year": true,
+    "existing_claim_count_and_metadata_preserved": true,
+    "financial_table_headings_and_limits_preserved": true,
+    "stale_and_invalid_edits_rejected_before_queuing": true,
+    "old_model_verdict_invalidated": true,
+    "fresh_critic_required": true,
+    "legacy_body_only_edits_preserved": true,
+    "automatic_publication": false
+  },
+  "prepared_correction": {
+    "wording_difference": "later selected natural-disaster quotation explicitly includes retail stores",
+    "economic_materiality": "not established by the selected quotations",
+    "local_source_check_passed": true,
+    "applied_at_checkpoint": false
+  },
+  "limitations": [
+    "Passing code/source checks do not establish semantic correctness.",
+    "The corrected note still requires a fresh critic and human development review."
+  ]
+}
