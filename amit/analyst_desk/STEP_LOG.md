@@ -398,6 +398,23 @@ The lettered increments preserve the build sequence; detailed receipts remain in
 
 **Capstone connection:** p.3, independent criticism, human control and observable model/cost accounting; pp.15–16, source-aware review and reliable research journeys. Counting calls separately from enforcing a ceiling supports the selected deployment policy. Neither configuration nor a model pass establishes independent judge calibration or complete source coverage.
 
+### Step 16o — Align risk wording with validation and add one bounded correction
+
+**What this step does:** applies the qualitative prose constraint to the risk response schema before generation. Risk observations refer to earlier/later filings; exact fiscal years and unchanged source quotations remain in code-owned comparison and citation fields. A newly settled risk-format/content failure can request one correction per company with the same evidence and fixed feedback. A second rejection stops.
+
+| Files | Purpose |
+|---|---|
+| [desk/reasoning.py](desk/reasoning.py) | Share the risk/writer prose pattern, version the risk contract and validate bounded correction feedback. Preserve issuer/year quotation slots, source checks and quantity/absence guards. |
+| [desk/provider.py](desk/provider.py) | Identify only credential-free paired-risk prose-pattern failures with a fixed diagnosis after their cost has settled. Mixed citation/schema failures, incomplete output, privacy failures and provider errors keep their existing failure handling. |
+| [desk/workflow.py](desk/workflow.py) | Permit one distinct correction only after a newly recorded, accounted risk response; retain the failed charge and require capacity for the remaining risk analyses, writer and critic under finite call policies. Cached invalid output and uncertain accounting cannot trigger another paid correction. |
+| [web/app.js](web/app.js), [tests/test_provider_error_ui.py](tests/test_provider_error_ui.py) | Explain the historical risk-number stop and manual same-plan continuation without exposing raw diagnostic fields. |
+| [tests/test_risk_contract.py](tests/test_risk_contract.py), [tests/test_risk_contract_workflow.py](tests/test_risk_contract_workflow.py), [tests/test_risk_gateway_format.py](tests/test_risk_gateway_format.py) | Verify schema/validator alignment, fixed feedback, single-correction accounting, finite/unlimited call policies, full graph review gates and the real gateway validation path with simulated transport. |
+| [docs/LIVE_AI_RUNBOOK.md](docs/LIVE_AI_RUNBOOK.md) | Document correction eligibility, retained spending and explicit continuation after deployment. |
+
+**Verification:** all 1,410 tests pass. Fourteen read-only checks against an actual stopped three-year, two-company checkpoint verify eighteen financial values, unchanged scope, canonical quotations and separate earlier/later quotation slots. Both original year-bearing observations fail the new schema; the saved response is preserved unchanged. Capture-only correction requests contain the same scope/evidence and fixed feedback, with no failed prose. Seventeen deployed read-only checks confirm that all saved runs, the approved library, source identity, model routes, the active credential/policy and complete budget accounting are unchanged. The original approved plan is still resumable at the same stopped risk checkpoint with its four recorded calls. Deployment verification makes no model completion or research continuation. A subsequent manual web test covers two companies over three years, passes eighteen financial checks and current model review in seven model calls, and reaches the approved library through the normal human approval gate. This verifies a complete live path, not independent judge calibration or complete source coverage.
+
+**Capstone connection:** p.3, structured tool use, grounded interpretation, bounded self-correction, cost accounting and human control; pp.15–16, source-supported risk comparisons and reliable research journeys. Preventing a known output-contract mismatch does not waive independent criticism or final note review.
+
 ## What the team builds next
 
 1. **Continue genuine development learning:** preserve the accepted lesson, review further evidence-backed proposals, record a genuine rejection with its reason, and freeze selected accepted versions before protected evaluation.

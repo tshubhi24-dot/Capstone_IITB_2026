@@ -588,6 +588,7 @@ class Engine:
                     messages=messages, response_schema=schema, max_output_tokens=max_output_tokens)
             except Exception as exc:
                 accounting = None
+                reconciled = False
                 try:
                     accounting = self.model_client.budget(state["run_id"])
                 except Exception:
@@ -621,7 +622,21 @@ class Engine:
                     self.store.save_run(run)
                 from .provider import ProviderError, safe_error_code
                 code = safe_error_code(exc.code) if isinstance(exc, ProviderError) else "gateway_request_failed"
-                self.event(state["run_id"], role, "model_error", "Model reasoning stopped; no automatic paid retry or offline substitute.", call_id=identifier, error_code=code)
+                failure_message = ("Risk wording failed its response-format check; accounting must be verified before a bounded correction."
+                                   if code == "risk_narrative_format" and role == "risk"
+                                   else "Model reasoning stopped; no automatic paid retry or offline substitute.")
+                self.event(state["run_id"], role, "model_error", failure_message, call_id=identifier, error_code=code)
+                if code == "risk_narrative_format" and role == "risk" and reconciled:
+                    # The gateway reports this fixed code only for an audited
+                    # risk-prose pattern failure after billing has settled.
+                    # An uncertain/provider/privacy/provenance failure cannot
+                    # enter the bounded content-correction path.
+                    current = self.store.get_run(state["run_id"])
+                    settled = next((call for call in current["usage"].get("calls", [])
+                                    if call["call_id"] == identifier), None)
+                    if settled and settled.get("accepted_output") is False and not current["usage"].get("model_reservations"):
+                        from .reasoning import ReasoningError
+                        raise ReasoningError("Invalid structured model output for risk.") from None
                 message = str(exc) if isinstance(exc, ProviderError) else "The live model operation failed."
                 raise ReviewError(f"{code}: {message}") from None
             with self.usage_lock:
@@ -1339,9 +1354,11 @@ class Engine:
         return {"metrics": rows}
 
     def _risk(self, state):
+        from .reasoning import ReasoningError
         risks = []
         analyses = []
-        for ticker in state["plan"]["tickers"]:
+        tickers = state["plan"]["tickers"]
+        for ticker_index, ticker in enumerate(tickers):
             sections = {}
             for year in state["plan"]["years"]:
                 section = self.call(state, "risk", "edgar", "get_section", ticker=ticker, year=year, item="1A")
@@ -1349,7 +1366,34 @@ class Engine:
                     raise ReviewError("Risk comparison requires all cached section chunks.")
                 sections[year] = section
             if self.is_live(state):
-                analyses.append(self.reasoner(state, "risk:" + ticker).compare_risks(ticker, state["plan"]["years"], sections))
+                purpose = "risk:" + ticker
+                prior_calls = {call["call_id"] for call in self.store.get_run(state["run_id"])["usage"].get("calls", [])}
+                try:
+                    analysis = self.reasoner(state, purpose).compare_risks(ticker, state["plan"]["years"], sections)
+                except ReasoningError as error:
+                    from .reasoning_diagnostics import validation_diagnostic
+                    diagnostic = validation_diagnostic(error, "risk")
+                    run = self.store.get_run(state["run_id"])
+                    usage = run["usage"]
+                    newly_settled = any(call["stage"] == "risk" and call["call_id"] not in prior_calls
+                                        for call in usage.get("calls", []))
+                    # Reserve the finite-profile call allowance for this one
+                    # correction, the remaining companies, writer and critic.
+                    needed_calls = 1 + (len(tickers) - ticker_index - 1) + 2
+                    call_limit = self.model_call_limit(run)
+                    if (diagnostic is None or diagnostic["code"] not in {
+                            "narrative_number", "narrative_quantity", "output_schema", "unsupported_risk_absence"}
+                            or not newly_settled or usage.get("model_reservations")
+                            or call_limit is not None and usage.get("model_calls", 0) + needed_calls > call_limit):
+                        raise
+                    self.event(state["run_id"], "risk", "content_correction",
+                               "One bounded risk-wording correction requested after a content check; original scope, budgets and earlier charges remain counted.",
+                               ticker=ticker, validation_code=diagnostic["code"], correction_attempt=1)
+                    # Only fixed feedback and the same canonical evidence are
+                    # sent. A second failure propagates without another retry.
+                    analysis = self.reasoner(state, purpose + ":content-correction:1").compare_risks(
+                        ticker, state["plan"]["years"], sections, validation_feedback=[diagnostic["code"]])
+                analyses.append(analysis)
             for before, after in zip(state["plan"]["years"], state["plan"]["years"][1:]):
                 texts = ["\n".join(chunk["text"] for chunk in sections[year]["chunks"]) for year in (before, after)]
                 digests = [hashlib.sha256(text.encode()).hexdigest() for text in texts]

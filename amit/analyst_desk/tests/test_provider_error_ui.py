@@ -45,3 +45,20 @@ console.log(JSON.stringify(runErrorMessage('ReasoningError: research stopped; in
     assert "same source record" in message and "each compared year" in message
     assert "Resuming is explicit" in message and "duplicate_source_citation" in message
     assert "private-value" not in message and "inspect service diagnostics" not in message
+
+
+def test_risk_number_diagnostic_preserves_year_metadata_and_manual_resume():
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("Node.js required to execute browser helper")
+    script = """
+const {runErrorMessage}=require(process.argv[1]);
+console.log(JSON.stringify(runErrorMessage('ReasoningError: private raw failure',
+ {code:'narrative_number',stage:'risk',message:'private untrusted diagnostic'})));
+"""
+    result = subprocess.run([node, "-e", script, str(ROOT / "web/app.js")],
+                            check=True, capture_output=True, text=True, timeout=10)
+    message = json.loads(result.stdout)
+    assert "Exact years remain" in message and "comparison details and citations" in message
+    assert "one bounded correction" in message and "Resume this same approved research" in message
+    assert "charges remain counted" in message and "private" not in message

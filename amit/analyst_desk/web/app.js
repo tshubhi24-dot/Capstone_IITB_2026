@@ -6,6 +6,7 @@ function message(text){$('message').textContent=text;}
 function runErrorMessage(error,validation){
  const text=String(error||'');
  if(text.includes('provider_http_429'))return 'The AI provider rate-limited this request (HTTP 429). This run has stopped; it will not retry automatically. Wait before starting a new live request, or explicitly choose Offline. Any reserved model budget remains visible below. Diagnostic: '+text;
+ if(validation?.stage==='risk'&&validation?.code==='narrative_number')return 'The risk response included numeric labels or markup where qualitative wording is required. Exact years remain in the comparison details and citations. The updated risk format requires earlier/later wording and permits one bounded correction for a new formatting failure. Resume this same approved research when ready; model calls and charges remain counted. Diagnostic: narrative_number.';
  if(validation?.code==='duplicate_source_citation')return 'The AI output selected multiple quotations from the same source record as separate evidence. The citation check stopped this run. The revised request format requires a separate quotation for each compared year. Resuming is explicit and may use the remaining approved model budget. Diagnostic: duplicate_source_citation.';
  return text;
 }

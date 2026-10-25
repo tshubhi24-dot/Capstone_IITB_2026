@@ -84,8 +84,13 @@ class QuoteRiskOutput(StrictOutput):
     comparisons: list[QuoteComparisonOutput] = Field(max_length=2)
 
 
+# Fresh qualitative risk and writer generation share the same positive prose
+# alphabet. Historical wire classes above retain their original shape.
+QUALITATIVE_TEXT_PATTERN = r"""^[A-Za-z .,;:!?'"()/&‘’“”–—…-]*$"""
+
+
 class PairedRiskFinding(StrictOutput):
-    text: str = Field(min_length=15, max_length=400)
+    text: str = Field(min_length=15, max_length=400, pattern=QUALITATIVE_TEXT_PATTERN)
     before_quote_id: str = Field(min_length=1, max_length=120)
     after_quote_id: str = Field(min_length=1, max_length=120)
     confidence: Literal["low", "medium", "high"]
@@ -107,7 +112,7 @@ class PairedRiskOutput(StrictOutput):
 # A positive English-prose alphabet rejects numeric characters from every
 # Unicode script in both the provider schema and local Pydantic validation.
 # The authoritative validator still enforces additional prose and quantity rules.
-WRITER_TEXT_PATTERN = r"""^[A-Za-z .,;:!?'"()/&‘’“”–—…-]*$"""
+WRITER_TEXT_PATTERN = QUALITATIVE_TEXT_PATTERN
 
 
 class QuoteWriterFinding(QuoteFinding):
@@ -205,6 +210,21 @@ WRITER_NARRATIVE_INSTRUCTIONS = ("Each claim.text must contain qualitative Engli
     "Refer to relevant observations as 'across the compared periods' or 'the earlier and later filings'; do not spell out dates or numbers to evade the rule. "
     "A compliant form is 'Selected disclosures continue to discuss supply chain exposure.' Use that form only when the selected quotations actually support the claim. "
     "The code-owned table and source metadata carry exact fiscal periods and financial figures; do not repeat them in narrative.")
+
+RISK_CONTRACT_VERSION = "qualitative-risk-v2"
+RISK_VALIDATION_FEEDBACK = {
+    "narrative_number": "Use qualitative prose only; exact fiscal years, historical dates, filing labels and numeric references belong in source metadata, never finding.text.",
+    "narrative_quantity": "Do not state amounts, counts, durations, ratios or spelled-out quantities; describe only the supported qualitative exposure.",
+    "output_schema": "Return only the required comparison objects, bounded qualitative English prose and the supplied period-specific quotation choices.",
+    "unsupported_risk_absence": "Selected excerpts cannot establish new, removed or absent risks; describe a supported exposure or return insufficient_evidence with no findings.",
+}
+RISK_NARRATIVE_INSTRUCTIONS = (" Each finding.text must use qualitative English letters and ordinary punctuation only. "
+    "Refer to 'the earlier and later filings' or 'the compared filings'; exact fiscal years already appear in code-owned comparison labels and citation metadata. "
+    "Do not copy years, historical incident dates, numerical filing labels or numeric characters from any script into finding.text. "
+    "Do not replace numerals with spelled-out numbers or other numerical substitutions. "
+    "A historical incident date and a filing's fiscal year have different meanings; describe only what the selected quotations support without inventing either. "
+    "Source quotation choices and their metadata retain exact numeric text unchanged. "
+    "Fixed validation_feedback is a code-owned constraint reminder, not additional evidence.")
 
 WRITER_CONTRACT_VERSION = "qualitative-writer-v2"
 WRITER_VALIDATION_FEEDBACK = {
@@ -719,7 +739,12 @@ class Reasoner:
             coverage.append({"year": year, "cached_chunk_count": len(rows), "selected_chunk_count": len(chosen), "selected_ids": [row["id"] for row in chosen]})
         return normalize_evidence(selected), coverage
 
-    def compare_risks(self, ticker, years, sections):
+    def compare_risks(self, ticker, years, sections, *, validation_feedback=None):
+        feedback = [] if validation_feedback is None else validation_feedback
+        if (not isinstance(feedback, list) or len(feedback) > 4
+                or any(type(value) is not str or value not in RISK_VALIDATION_FEEDBACK for value in feedback)
+                or len(set(feedback)) != len(feedback)):
+            raise ReasoningError("Risk validation feedback must use bounded code-owned constraint identifiers.")
         evidence, coverage = self._select_risk_evidence(ticker, years, sections)
         expected = list(zip(years, years[1:]))
         if not expected:
@@ -730,8 +755,11 @@ class Reasoner:
             "before": [entry["quote_id"] for entry in menu if entry["ticker"] == ticker and entry["year"] == before],
             "after": [entry["quote_id"] for entry in menu if entry["ticker"] == ticker and entry["year"] == after],
         } for before, after in expected}
-        result = self._call("risk", PROSE_INSTRUCTIONS + " Return comparisons as an object with exactly the supplied comparison_keys. Each finding must select before_quote_id from that comparison's earlier-year enum and after_quote_id from its later-year enum. Do not return quote_ids, source IDs, quotations or year fields. Code resolves the exact quotations and fixes issuer and periods. Two windows from the same source or period cannot substitute for evidence from both periods. Each menu entry is a code-selected quote window, not complete source coverage; fragment=true means it cuts a longer sentence. Preserve uncertainty and negation, and ensure the selected quotations support the complete finding. Compare each exact adjacent-year pair listed in the context. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
-                            {"ticker": ticker, "years": years, "comparison_pairs": expected, "quote_menu": menu,
+        result = self._call("risk", PROSE_INSTRUCTIONS + RISK_NARRATIVE_INSTRUCTIONS + " Return comparisons as an object with exactly the supplied comparison_keys. Each finding must select before_quote_id from that comparison's earlier-year enum and after_quote_id from its later-year enum. Do not return quote_ids, source IDs, quotations or year fields. Code resolves the exact quotations and fixes issuer and periods. Two windows from the same source or period cannot substitute for evidence from both periods. Each menu entry is a code-selected quote window, not complete source coverage; fragment=true means it cuts a longer sentence. Preserve uncertainty and negation, and ensure the selected quotations support the complete finding. Compare each exact adjacent-year pair listed in the context. Return at most a small number of cautious disclosure observations per pair. An empty findings list must have status insufficient_evidence. Do not infer new/removed risks or economic materiality from selection or absence.",
+                            {"risk_contract": RISK_CONTRACT_VERSION,
+                             "ticker": ticker, "years": years, "comparison_pairs": expected, "quote_menu": menu,
+                             "validation_feedback": sorted(feedback),
+                             "repair_instructions": [RISK_VALIDATION_FEEDBACK[code] for code in sorted(feedback)],
                              "comparison_keys": {key: {"before_year": before, "after_year": after}
                                                  for key, (before, after) in zip(comparison_slots, expected)},
                              "evidence_scope": "Code-selected quote windows within selected bounded excerpts only; original section boundaries unverified."},

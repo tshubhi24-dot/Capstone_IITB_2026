@@ -56,7 +56,7 @@ SAFE_ERROR_CODES = frozenset({
     "invalid_configuration", "authorization_changed", "call_id_conflict", "call_not_retriable", "accounting_blocked",
     "budget_exhausted", "run_limit_exhausted", "call_state_conflict", "accounting_anomaly", "live_not_authorized",
     "provider_key_missing", "invalid_request", "desk_budget_increase_forbidden", "provider_request_failed", "provider_response_invalid", "provider_usage_uncertain",
-    "model_output_invalid", "gateway_configuration_invalid", "gateway_request_failed", "gateway_unavailable", "unauthorized",
+    "model_output_invalid", "risk_narrative_format", "gateway_configuration_invalid", "gateway_request_failed", "gateway_unavailable", "unauthorized",
     "provider_http_3xx", "provider_http_4xx", "provider_http_5xx", "provider_http_unexpected_status",
     "provider_connect_timeout", "provider_read_timeout", "provider_write_timeout", "provider_pool_timeout",
     "provider_timeout", "provider_connect_error", "provider_network_error", "provider_protocol_error",
@@ -71,6 +71,30 @@ def safe_error_code(value):
     return value if isinstance(value, str) and value in SAFE_ERROR_CODES else "gateway_request_failed"
 
 
+def risk_narrative_format_error(role, error, response_schema):
+    """Recognize only the code-owned paired-risk prose alphabet constraint.
+
+    This fixed diagnosis never exposes candidate prose and grants no retry.
+    Other schema, source-selection and completion failures retain their normal
+    non-retriable classification, even when a prose failure occurs alongside.
+    """
+    if role != "risk" or error.validator != "pattern":
+        return False
+    path = list(error.absolute_schema_path)
+    if (len(path) != 10 or path[:3] != ["properties", "comparisons", "properties"]
+            or type(path[3]) is not str or not re.fullmatch(r"comparison-[0-9]{4}-[0-9]{4}", path[3])
+            or path[4:] != ["properties", "findings", "items", "properties", "text", "pattern"]):
+        return False
+    from .reasoning import QUALITATIVE_TEXT_PATTERN
+    if not isinstance(error.schema, dict) or error.schema.get("pattern") != QUALITATIVE_TEXT_PATTERN:
+        return False
+    try:
+        node = response_schema
+        for field in path:
+            node = node[field]
+    except (KeyError, TypeError, IndexError):
+        return False
+    return node == QUALITATIVE_TEXT_PATTERN
 
 
 def http_error_code(status):
@@ -717,6 +741,7 @@ class ReasoningGateway:
         if network_error is not None:
             raise ProviderError(network_error, "The provider outcome or charge is uncertain; its full reservation is retained and no automatic retry is allowed.")
         result, output_error = None, None
+        risk_format_only = False
         audit = private_output_audit(data, self.api_key)
         validation_stage = "returned_model"
         try:
@@ -747,8 +772,12 @@ class ReasoningGateway:
             if self.api_key.encode() in encoded(content):
                 raise ValueError("A provider credential cannot enter a model result")
             validation_stage = "schema_validation"
-            schema_error = next(validator.iter_errors(content), None)
+            schema_errors = validator.iter_errors(content)
+            schema_error = next(schema_errors, None)
             if schema_error is not None:
+                risk_format_only = (audit.get("candidate") is not None
+                                    and risk_narrative_format_error(role, schema_error, response_schema)
+                                    and all(risk_narrative_format_error(role, error, response_schema) for error in schema_errors))
                 audit["schema_keyword"] = schema_error.validator if schema_error.validator in OUTPUT_SCHEMA_KEYWORDS else None
                 audit["schema_path"] = [item if isinstance(item, int) and 0 <= item <= 1000000 else item if isinstance(item, str)
                                         and re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_$-]{0,63}", item)
@@ -762,7 +791,7 @@ class ReasoningGateway:
             audit["validation_stage"] = "passed"
             audit["candidate"] = None
         except Exception:
-            output_error = "model_output_invalid"
+            output_error = "risk_narrative_format" if validation_stage == "schema_validation" and risk_format_only else "model_output_invalid"
             audit["validation_stage"] = validation_stage if validation_stage in OUTPUT_AUDIT_STAGES else "content_shape"
             if validation_stage == "credential_echo":
                 audit["candidate"] = None
