@@ -1,0 +1,38 @@
+rule_files:
+  - alerts.yml
+
+evaluation_interval: 1m
+
+tests:
+  - name: verified share below 98 percent fires and then recovers
+    interval: 15m
+    input_series:
+      - series: 'ad_numbers_total{status="verified"}'
+        values: '0 24 48 72 97 197 297 397 497'
+      - series: 'ad_numbers_total{status="unverified"}'
+        values: '0 1 2 3 3 3 3 3 3'
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: VerifiedShareBelow98
+        exp_alerts:
+          - exp_labels:
+              alertname: VerifiedShareBelow98
+              severity: warning
+            exp_annotations:
+              summary: Verified share of numbers in drafts fell below 98% over the last hour
+              description: 97.32% of numbers at the note gate were verified.
+      - eval_time: 2h
+        alertname: VerifiedShareBelow98
+        exp_alerts: []
+
+  - name: verified share at 99 percent does not fire
+    interval: 15m
+    input_series:
+      - series: 'ad_numbers_total{status="verified"}'
+        values: '0 25 50 75 99'
+      - series: 'ad_numbers_total{status="unverified"}'
+        values: '0 0 0 0 1'
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: VerifiedShareBelow98
+        exp_alerts: []

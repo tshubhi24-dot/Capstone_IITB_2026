@@ -98,6 +98,12 @@ services:
     <<: *image
     command: ["python", "app.py"]
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7861/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     env_file: [.env]
     environment:
       APP_HOST: 0.0.0.0
@@ -113,8 +119,12 @@ services:
     volumes:
       - ./data/passages:/app/data/passages:ro
       - ./data/edgar_cache:/app/data/edgar_cache:ro
+      - ./data/evaluation:/app/data/evaluation
       - index:/app/data/index
-      - approval:/app/data/approval   # signs approvals; no access to the portal DB
+      - runs:/app/data/runs
+      - memory:/app/data/memory
+      - portal:/app/data/portal
+      - approval:/app/data/approval   # shared approval tokens with the portal
     ports:
       - "127.0.0.1:7861:7861"   # this machine only
     networks: [tools, outside]
@@ -161,5 +171,7 @@ networks:
 
 volumes:
   index:
+  runs:
+  memory:
   portal:
   approval:

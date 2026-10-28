@@ -1,0 +1,60 @@
+name: Analyst Desk CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: analyst-desk-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: jayshree/analyst_desk
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: jayshree/analyst_desk/requirements.txt
+
+      - name: Install CPU-only PyTorch and project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+          python -m pip install -r requirements.txt
+
+      - name: Run unit and data-integrity tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Validate Docker Compose configuration
+        run: |
+          cp .env.example .env
+          docker compose config --quiet
+
+      - name: Run development evaluation and enforce quality gate
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "::error::Set the OPENROUTER_API_KEY Actions secret to enable the evaluation gate."
+            exit 1
+          fi
+          python scripts/run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
+
+      - name: Explain fork pull request evaluation skip
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: echo "Live model evaluation is skipped for fork pull requests because repository secrets are unavailable."

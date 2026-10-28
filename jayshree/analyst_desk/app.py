@@ -29,6 +29,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from analystdesk.baseline import run_baseline
+from analystdesk.api import create_app
 from analystdesk.edgar import get_quarterly_financials
 from analystdesk.ingest import ingest_all, load_passages, PASSAGES_DIR
 from analystdesk.scope import COMPANIES, C0_COMPANIES, create_request
@@ -498,15 +499,18 @@ with gr.Blocks(title="Analyst Desk") as demo:
     )
     raw_btn.click(fn=load_raw, outputs=raw_json)
 
+api = create_app(demo)
+
 
 if __name__ == "__main__":
     # /metrics for Prometheus; traces to Jaeger when OTEL_EXPORTER_OTLP_ENDPOINT is set
     from analystdesk.observability import init_tracing, start_metrics_server
     start_metrics_server()
     init_tracing()
-    demo.launch(
-        # Docker sets APP_HOST=0.0.0.0 so the published port reaches the app
-        server_name=os.getenv("APP_HOST", "127.0.0.1"),
-        server_port=int(os.getenv("APP_PORT", "7861")),
-        theme=gr.themes.Soft(),
+    import uvicorn
+
+    uvicorn.run(
+        api,
+        host=os.getenv("APP_HOST", "127.0.0.1"),
+        port=int(os.getenv("APP_PORT", "7861")),
     )

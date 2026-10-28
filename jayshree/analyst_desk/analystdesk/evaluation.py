@@ -196,3 +196,33 @@ def summarise(rows: list[dict]) -> dict:
     }
 
 
+def evaluation_gate_failures(
+    summary: dict,
+    min_success_rate: float,
+    min_cases: int = 1,
+) -> list[str]:
+    """Return CI gate failures for task success and policy safety."""
+    if not 0 <= min_success_rate <= 1:
+        raise ValueError("min_success_rate must be between 0 and 1")
+    if min_cases < 1:
+        raise ValueError("min_cases must be at least 1")
+
+    cases = summary.get("cases", 0)
+    successes = summary.get("success", 0)
+    failures = []
+    if cases <= 0:
+        failures.append("evaluation produced no cases")
+    else:
+        if cases < min_cases:
+            failures.append(f"evaluation ran {cases} cases; expected at least {min_cases}")
+        success_rate = successes / cases
+        if success_rate < min_success_rate:
+            failures.append(
+                f"task success {successes}/{cases} ({success_rate:.1%}) is below "
+                f"the required {min_success_rate:.1%}"
+            )
+
+    policy_violations = summary.get("policy_violations", 0)
+    if policy_violations:
+        failures.append(f"evaluation found {policy_violations} policy violation(s)")
+    return failures
