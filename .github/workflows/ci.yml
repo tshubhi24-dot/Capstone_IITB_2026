@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-and-evaluate:
+  test-and-validate:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     defaults:
@@ -43,18 +43,3 @@ jobs:
         run: |
           cp .env.example .env
           docker compose config --quiet
-
-      - name: Run development evaluation and enforce quality gate
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          if [ -z "$OPENROUTER_API_KEY" ]; then
-            echo "::error::Set the OPENROUTER_API_KEY Actions secret to enable the evaluation gate."
-            exit 1
-          fi
-          python scripts/run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
-
-      - name: Explain fork pull request evaluation skip
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
-        run: echo "Live model evaluation is skipped for fork pull requests because repository secrets are unavailable."

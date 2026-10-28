@@ -74,12 +74,17 @@ To run the tests, open another PowerShell window in the project folder:
 ## 4. Continuous integration
 
 GitHub Actions runs the unit/data-integrity tests and validates the Docker
-Compose configuration on pushes and pull requests. It also runs the 20-case
-C1 development evaluation and fails if task success drops below **95%**
-(19/20), fewer than 20 cases are evaluated, or any policy violation is
-detected. Held-out cases are not used by CI. Configure the repository Actions
-secret `OPENROUTER_API_KEY` for the live evaluation; fork pull requests skip
-that API-backed step because they cannot access repository secrets.
+Compose configuration on pushes and pull requests; these CI checks do not
+require an API key. The live C1 development evaluation is API-backed, so run
+it locally when you have configured `OPENROUTER_API_KEY` in `.env`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
+```
+
+The local evaluation gate requires at least 20 cases, at least **95%** task
+success, and zero policy violations. Use the development set for tuning; do
+not use held-out cases in routine CI.
 
 ## 5. Run with Docker
 
