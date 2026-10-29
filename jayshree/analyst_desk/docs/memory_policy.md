@@ -21,7 +21,7 @@ Not remembered at all: the research conversation, tool results, rejected or unap
 | Planner | Preferences; which tickers have a previous note | Plans around standing instructions and a "what changed" comparison |
 | Writer | Preferences; the "what changed" lines | Follows instructions; comments on the comparison |
 | Code (not the model) | Previous note's figures | Computes the "what changed" lines: previous → current value, margin moves in pp |
-| Analyst | Everything | 🧠 Memory panel in the Research Agent tab |
+| Analyst | Everything | 🧠 Memory panel in the Research tab (C1/C2 modes) |
 
 Memory is read-only to the agent: no tool lets the model write, edit or delete memory. Only two code paths write it: the analyst's own "Add preference", and the publish step after an approved publication.
 

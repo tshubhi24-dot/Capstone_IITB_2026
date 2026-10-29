@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 EventCallback = Callable[[dict[str, Any]], Awaitable[None]]
 ResearchRunner = Callable[[str, dict[str, Any], EventCallback], Awaitable[dict[str, Any]]]
+ReadinessCheck = Callable[[], str | None]
 
 
 class ResearchRequest(BaseModel):
@@ -83,11 +84,13 @@ def create_app(
     ui: Any | None = None,
     runner: ResearchRunner | None = None,
     run_loader: Callable[[str], Awaitable[dict[str, Any]]] | None = None,
+    readiness_check: ReadinessCheck | None = None,
 ) -> FastAPI:
     """Create the API service and optionally mount the existing Gradio Blocks UI."""
     app = FastAPI(title="Analyst Desk API", version="1.0.0")
     run_research = runner or _run_until_gate
     load_run = run_loader or _load_run
+    check_readiness = readiness_check or (lambda: None)
 
     @app.get("/healthz", tags=["health"])
     async def health() -> dict[str, str]:
@@ -95,6 +98,12 @@ def create_app(
 
     @app.get("/readyz", tags=["health"])
     async def readiness() -> dict[str, str]:
+        reason = check_readiness()
+        if reason is not None:
+            raise HTTPException(
+                status_code=503,
+                detail={"status": "not_ready", "reason": reason},
+            )
         return {"status": "ready"}
 
     @app.post("/api/research", tags=["research"])

@@ -37,7 +37,7 @@ services:
   # waits for it, so two processes never build it at the same time.
   index:
     <<: *image
-    command: ["python", "-c", "from analystdesk.retrieve import get_retriever; get_retriever()"]
+    command: ["python", "-c", "from analystdesk.retrieve import get_retriever; get_retriever(); print('Index initialization completed successfully')"]
     volumes: *data
     networks: [tools]
 
@@ -99,11 +99,11 @@ services:
     command: ["python", "app.py"]
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7861/healthz', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7861/readyz', timeout=3)"]
       interval: 10s
       timeout: 5s
-      retries: 6
-      start_period: 30s
+      retries: 30
+      start_period: 120s
     env_file: [.env]
     environment:
       APP_HOST: 0.0.0.0

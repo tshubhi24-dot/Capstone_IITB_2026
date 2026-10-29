@@ -4,7 +4,7 @@ Lifecycle of a lesson:
     pending   written by the reflection step (scripts/reflect.py) from a
               failure on a DEVELOPMENT case: a critic rejection, an unverified
               number, a missing citation, a wrong refusal...
-    approved  a person accepted it in the app (Research Agent tab → Playbook)
+    approved  a person accepted it in the app (Research tab, C1/C2 → Playbook)
     rejected  a person rejected it, with a reason (kept as evidence)
 
 Rules (brief, L12):

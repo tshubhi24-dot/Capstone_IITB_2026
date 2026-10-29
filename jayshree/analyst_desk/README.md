@@ -1,154 +1,146 @@
-# Analyst Desk
+## 1. About the project
 
-Analyst Desk is an AI-powered financial research application for exploring
-company filings, asking research questions, and evaluating research workflows.
+Analyst Desk helps analysts research covered companies using SEC filing data and searchable passages from 10-K filings. Its research agents create evidence-backed drafts, check figures and citations, and pause for analyst approval before publishing a note. The project includes a FastAPI service, a Gradio research interface, and a Docker Compose deployment with monitoring.
 
-## 1. Setup and installation
+## 2. Run with Docker Compose (recommended)
 
-1. Install **Git** and **Python 3.12 or newer**. Make sure the Python launcher
-   (`py`) is enabled during Python installation.
-2. Open PowerShell, clone the repository, and enter the project folder:
+Docker Compose starts the app, its supporting services, and the monitoring stack. Python is not required on the host.
 
-   ```powershell
-   git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
-   Set-Location Capstone_IITB_2026\jayshree\analyst_desk
-   ```
-
-3. Install the project dependencies:
+1. Download and install **Docker Desktop for Windows** from
+   [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+2. Start Docker Desktop and wait until its engine is running.
+3. Open PowerShell and change the current folder to `analyst_desk`, where
+   `compose.yaml` is located. Replace the example path with your extracted project path.
 
    ```powershell
-   .\setup.bat
+   Set-Location "$HOME\Downloads\Capstone_IITB_2026\jayshree\analyst_desk"
    ```
 
-   The script creates a project-local `.venv` and installs the packages from
-   `requirements.txt`; it does not install packages into your global Python
-   environment. Run it again if the project dependencies change.
-4. Create a local `.env` file and open it to add your OpenRouter API key:
+4. Create `.env` and add your own OpenRouter API key:
 
    ```powershell
    Copy-Item .env.example .env
    notepad .env
    ```
 
-   Replace the `OPENROUTER_API_KEY` placeholder with your key and save. An API
-   key is needed for AI research features. Keep `.env` private; it is excluded
-   from Git and must not be committed or shared.
+   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private;never include it in a shared ZIP or send it to anyone.
 
-## 2. Start the GUI locally
+5. Build and start the full stack:
 
-From the `jayshree\analyst_desk` folder in PowerShell, start the app:
+   ```powershell
+   docker compose up --build
+   ```
 
-```powershell
-.\.venv\Scripts\python.exe app.py
-```
+On a clean machine, the first build downloads dependencies and CPU embedding/reranker models, then builds the vector index from 12,586 passages. It can take 20 minutes or more depending on network speed and CPU; no GPU is required. Later starts reuse the image and persistent index, run-checkpoint, long-term-memory, portal-note, and approval volumes.
 
-When the server is ready, open <http://127.0.0.1:7861> in your browser. The
-first search may take several minutes while the local search index is built.
-Keep the PowerShell window open while using the app; press **Ctrl+C** there to
-stop it.
+Keep this PowerShell window open; `docker compose up` stays attached while the
+services run. Wait for the initial build and index setup to finish.
 
-The app is served by FastAPI, with the existing Gradio research interface
-mounted at `/`. The API provides `/healthz` and `/readyz` health checks,
-interactive documentation at <http://127.0.0.1:7861/docs>, and a streaming
-research endpoint:
-
-```powershell
-curl.exe --no-buffer -X POST `
-  http://127.0.0.1:7861/api/research `
-  -H "Content-Type: application/json" `
-  -d '{"request":"Compare Microsoft and Alphabet operating margins over 2022-2024","mode":"c1"}'
-```
-
-The endpoint streams progress events and stops at the plan-approval gate. Send
-`POST /api/research/{run_id}/decision` with `{"action":"approve"}` to continue
-streaming through the draft to the note-approval gate. Approving that exact note
-with `{"action":"approve","approver":"analyst"}` publishes it; editing requires
-a fresh approval.
-
-To run the tests, open another PowerShell window in the project folder:
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
-
-## 4. Continuous integration
-
-GitHub Actions runs the unit/data-integrity tests and validates the Docker
-Compose configuration on pushes and pull requests; these CI checks do not
-require an API key. The live C1 development evaluation is API-backed, so run
-it locally when you have configured `OPENROUTER_API_KEY` in `.env`:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
-```
-
-The local evaluation gate requires at least 20 cases, at least **95%** task
-success, and zero policy violations. Use the development set for tuning; do
-not use held-out cases in routine CI.
-
-## 5. Run with Docker
-
-Alternatively, Docker runs the app with its supporting services and monitoring
-stack. This option needs **Git** and **Docker Desktop**; Python does not need
-to be installed on the host. Start Docker Desktop and wait for its engine to
-show as running. In PowerShell, clone the repository and enter the project
-folder:
-
-```powershell
-git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
-Set-Location Capstone_IITB_2026\jayshree\analyst_desk
-Copy-Item .env.example .env
-notepad .env
-```
-
-Add your OpenRouter API key to `.env`, save the file, and start the services:
-
-```powershell
-docker compose up --build
-```
-
-On a clean machine, the first build downloads Python dependencies and CPU
-embedding/reranker models, then builds the vector index from 12,586 passages.
-This initial setup can take 20 minutes or more depending on network speed and
-CPU; no GPU is required. Later starts reuse the built image and persistent
-index, run-checkpoint, long-term-memory, portal-note, and approval volumes.
-These named volumes survive app-container recreation and `docker compose down`.
-Do not use `docker compose down --volumes` unless you intend to delete persisted
-project data.
-
-In another PowerShell window, wait for the app healthcheck to pass and verify
-the app endpoints:
+6. To verify startup/readiness, open another PowerShell window and run:
 
 ```powershell
 docker compose ps
 curl.exe --fail http://127.0.0.1:7861/healthz
-curl.exe --fail --output NUL --write-out "UI HTTP %{http_code}`n" http://127.0.0.1:7861/
 ```
 
-The app should show `healthy`, the health endpoint should return
-`{"status":"ok"}`, and the UI should return HTTP 200. Then open
-<http://127.0.0.1:7861>. AI research requests require a valid
-`OPENROUTER_API_KEY` in `.env`; a placeholder key is sufficient only for
-checking that installation and the UI start.
+The app should show `healthy`, and `/healthz` should return
+`{"status":"ok"}`. These commands verify that the app is ready; they do not verify shutdown.
 
-Stop the services with **Ctrl+C** or, from another PowerShell window in the
-project folder, run:
+7. To stop the docker command, press **Ctrl+C** in its PowerShell window. Alternatively, from another PowerShell window in the project folder, run:
 
 ```powershell
 docker compose down
 ```
 
-To test the Prometheus alert rule with synthetic below-threshold and recovery
-samples, run these commands from the project folder:
+Named volumes survive `docker compose down` and app-container recreation. Do
+not use `docker compose down --volumes` unless you intend to delete persisted
+project data.
+
+## 3. Run the local Python GUI (alternative)
+
+Use this option if you want to run the app directly in Python instead of
+Docker. Install **Python 3.12 or newer** from
+[python.org/downloads](https://www.python.org/downloads/). During installation,
+enable **Add python.exe to PATH** and install the Python launcher (`py`).
+Verify it in PowerShell:
 
 ```powershell
+py --version
+```
+
+1. Open PowerShell and change the current folder to `analyst_desk`, run `setup.bat` to install the dependencies:
+
+```powershell
+Set-Location "$HOME\Downloads\Capstone_IITB_2026\jayshree\analyst_desk"
+.\setup.bat
+```
+
+The setup script creates a project-local `.venv` and installs packages from
+`requirements.txt`; it does not install them globally.
+
+2. Create `.env` and add your OpenRouter API key:
+
+```powershell
+Copy-Item .env.example .env
+notepad .env
+```
+Do not share your OpenRouter API key.
+3. Start the app:
+
+```powershell
+.\.venv\Scripts\python.exe app.py
+```
+
+4. Open <http://127.0.0.1:7861>. The first search may take several minutes while
+the local search index is built. Keep the PowerShell window open.
+
+5. Press **Ctrl+C** to stop the server. Do not run this local GUI and the Docker app at
+the same time; both use port `7861`.
+
+The local app is served by FastAPI with the Gradio research UI mounted at `/`.
+It provides `/healthz`, `/readyz`, and interactive API documentation at
+<http://127.0.0.1:7861/docs>.
+
+In the **Research** tab, choose **C0 · No-Agent (Baseline)**, **C1 · Single
+agent**, or **C2 · Team**. C1 and C2 include plan and draft approval steps.
+
+## 4. Unit tests and evaluation (contributors)
+
+Run the checks below locally from the project folder when you want to verify a change.
+
+1. To run the automated unit and data-integrity tests (no API key required):
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+2. The live C1 development evaluation uses the API, so run it only when `.env`
+contains a valid `OPENROUTER_API_KEY`:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
+```
+
+The evaluation gate requires at least 20 cases, at least **95%** task success,
+and zero policy violations. Use the development set for tuning; keep held-out
+cases for final evaluation.
+
+3. To test the Prometheus alert rule against synthetic below-threshold and
+recovery samples, start Docker Compose and run these commands from the analyst project
+folder:
+
+```powershell
+docker compose up -d prometheus
 docker compose cp .\docker\prometheus\alerts.yml prometheus:/tmp/alerts.yml
 docker compose cp .\docker\prometheus\alerts.test.yml prometheus:/tmp/alerts.test.yml
 docker compose exec -T prometheus sh -c "cd /tmp && promtool test rules alerts.test.yml"
 docker compose exec -u 0 -T prometheus rm -f /tmp/alerts.yml /tmp/alerts.test.yml
 ```
 
-## Project structure
+The `promtool` command should print `SUCCESS` and return exit code `0`. The
+cleanup command removes the temporary test files from the Prometheus container.
+
+## 5. Project structure
 
 - `analystdesk/`: application logic, data retrieval, agents, and tools.
 - `app.py`: main web application.
@@ -156,4 +148,4 @@ docker compose exec -u 0 -T prometheus rm -f /tmp/alerts.yml /tmp/alerts.test.ym
 - `data/`: committed filing passages and financial data used by the app.
 - `tests/`: automated tests.
 - `docs/architecture.md`: architecture and data flow.
-- `HANDOVER.md`: additional setup and project details.
+- `del_handover.md`: additional technical handoff details.

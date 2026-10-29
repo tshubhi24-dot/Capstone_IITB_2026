@@ -6,7 +6,7 @@ left at the note gate, critic rejections that forced revisions — and asks
 the model to write ONE short lesson per distinct problem:
     "When <situation>, <what to do instead>", with tags saying when it applies.
 Lessons are stored as PENDING: a person must approve each one in the app
-(Research Agent tab → 📘 Playbook) before any run can use it.
+(Research tab → select C1 or C2 → 📘 Playbook) before any run can use it.
 
     python scripts/reflect.py data/evaluation/results/eval_dev_<tag>.json
 """
@@ -95,7 +95,7 @@ async def main(path: Path) -> None:
                 if key:
                     added += 1
                     print(f"pending {key}  [{row['id']}/{config}]  When {les.when}: {les.do}  {les.applies_to}")
-    print(f"\n{added} pending lessons. Review them in the app: Research Agent tab → 📘 Playbook.")
+    print(f"\n{added} pending lessons. Review them in the app: Research tab (C1/C2) → 📘 Playbook.")
 
 
 if __name__ == "__main__":

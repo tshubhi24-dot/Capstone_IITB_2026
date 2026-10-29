@@ -3,7 +3,7 @@
 Each command runs the graph until the next human gate (or the end), saves
 the state in the SQLite checkpointer and exits. The next command can come
 from a new process — that is the stop-and-resume demo (L8). The app's
-Research Agent tab does the same through runtime.py.
+Research tab's C1/C2 modes do the same through runtime.py.
 
     python -m analystdesk.agent start "Compare Microsoft and Alphabet operating margins 2022-2024"
     python -m analystdesk.agent start "..." --team          # C2 team instead of C1

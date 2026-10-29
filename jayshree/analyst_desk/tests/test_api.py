@@ -60,6 +60,19 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(self.client.get("/healthz").json(), {"status": "ok"})
         self.assertEqual(self.client.get("/readyz").json(), {"status": "ready"})
 
+    def test_readiness_waits_for_dependencies(self):
+        state = {"reason": "retriever_loading"}
+        app = create_app(readiness_check=lambda: state["reason"])
+
+        with TestClient(app) as client:
+            self.assertEqual(client.get("/healthz").status_code, 200)
+            response = client.get("/readyz")
+            self.assertEqual(response.status_code, 503)
+            self.assertEqual(response.json()["detail"]["reason"], "retriever_loading")
+
+            state["reason"] = None
+            self.assertEqual(client.get("/readyz").json(), {"status": "ready"})
+
     def test_research_streams_plan_draft_and_publication_gates(self):
         response = self.client.post(
             "/api/research",

@@ -1,4 +1,4 @@
-"""Research Agent tab — run the C1 agent from the app, with both human gates.
+"""Research-agent panel — run C1 or C2 with both human approval gates.
 
 Flow in the UI:
   1. Analyst enters a request -> Start. The agent checks scope and drafts a plan.
@@ -325,22 +325,20 @@ def _log_from_trace(values: dict) -> list[str]:
     return lines
 
 
-# ── the tab ───────────────────────────────────────────────────────────────────
+# ── the panel ─────────────────────────────────────────────────────────────────
 
-def build_agent_tab():
-    with gr.Tab("🤖 Research Agent"):
+def build_agent_panel(workflow_mode):
+    with gr.Column():
         gr.Markdown(
-            "Research agents over the MCP tools. They plan, wait for your approval, research with "
-            "tools (every call is shown live), write a note whose numbers are inserted and checked "
-            "by code, and publish **only after you approve the exact note**. **C1** is one agent "
-            "with all tools; **C2** is a team: parallel researchers, a quant, risk-diff agents and "
-            "a compliance critic. Memory is used automatically for your own coverage."
+            "The selected agent workflow plans, waits for your approval, researches with "
+            "tools (every call is shown live), writes a note whose numbers are inserted and checked "
+            "by code, and publishes **only after you approve the exact note**. **C1** is one agent "
+            "with all tools; **C2** is a team of parallel researchers, a quant, risk-diff agents, "
+            "and a compliance critic. Memory is used automatically for your own coverage."
         )
         with gr.Row():
             request = gr.Textbox(label="Research request", scale=5,
                                  placeholder="e.g. Compare Microsoft and Alphabet operating margins 2022-2024")
-            mode = gr.Radio([("C1 · single agent", "c1"), ("C2 · team", "c2")], value="c2",
-                            label="Agents", scale=2)
             start_btn = gr.Button("▶ Start", variant="primary", scale=1)
         gr.Examples([[e] for e in EXAMPLES], inputs=request)
         with gr.Row():
@@ -488,8 +486,12 @@ def build_agent_tab():
             if not req.strip():
                 yield (gr.update(), "### Please enter a request", *[gr.update() for _ in range(10)])
                 return
+            if agents not in ("c1", "c2"):
+                yield (gr.update(), "### Choose C1 or C2 to start agent research",
+                       *[gr.update() for _ in range(10)])
+                return
             payload = {"request": req, "analyst": (name or "analyst").strip(), "memory_on": memory_on,
-                       "mode": agents or "c2"}
+                       "mode": agents}
             async for out in run_step(uuid.uuid4().hex[:8], payload, [], [], payload["mode"]):
                 yield out
 
@@ -555,8 +557,8 @@ def build_agent_tab():
 
         # every action refreshes the runs list afterwards
         for trigger, fn, inputs in (
-                (start_btn.click, on_start, [request, approver, mode]),
-                (request.submit, on_start, [request, approver, mode]),
+                (start_btn.click, on_start, [request, approver, workflow_mode]),
+                (request.submit, on_start, [request, approver, workflow_mode]),
                 (rerun_btn.click, on_rerun_without_memory, [run_id, approver]),
                 (approve_plan_btn.click, on_approve_plan, [run_id]),
                 (edit_plan_btn.click, on_edit_plan, [run_id, plan_json]),
