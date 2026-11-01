@@ -1,16 +1,19 @@
+import asyncio
 import json
 import unittest
 
 from fastapi.testclient import TestClient
 
-from analystdesk.api import create_app
+from analystdesk.api import ResearchRequest, create_app
 
 
 class ApiTests(unittest.TestCase):
     def setUp(self):
         self.saved_runs = {}
+        self.runner_calls = []
 
         async def runner(run_id, payload, on_event):
+            self.runner_calls.append((run_id, payload))
             gate = self.saved_runs.get(run_id, {}).get("interrupts", [{}])[0].get("gate")
             if "resume" not in payload:
                 plan = {"companies": ["MSFT"]}
@@ -30,6 +33,9 @@ class ApiTests(unittest.TestCase):
                     "interrupts": [{"gate": "note", "note": draft, "check": {"verified_share": 100}}],
                 }
                 await on_event({"node": "write", "draft": draft})
+            elif gate == "note" and payload["resume"]["action"] == "reject":
+                result = {"values": {"outcome": "rejected"}, "interrupts": []}
+                await on_event({"node": "reject", "reason": payload["resume"]["reason"]})
             else:
                 result = {"values": {"outcome": "published"}, "interrupts": []}
                 await on_event({"node": "publish", "ok": True})
@@ -73,6 +79,16 @@ class ApiTests(unittest.TestCase):
             state["reason"] = None
             self.assertEqual(client.get("/readyz").json(), {"status": "ready"})
 
+    def test_readiness_check_exception_returns_server_error(self):
+        def failing_readiness_check():
+            raise RuntimeError("readiness dependency failed")
+
+        with TestClient(create_app(readiness_check=failing_readiness_check),
+                        raise_server_exceptions=False) as client:
+            response = client.get("/readyz")
+
+        self.assertEqual(response.status_code, 500)
+
     def test_research_streams_plan_draft_and_publication_gates(self):
         response = self.client.post(
             "/api/research",
@@ -115,11 +131,30 @@ class ApiTests(unittest.TestCase):
         self.assertIn("Analyst Desk test", response.text)
         self.assertEqual(health.json(), {"status": "ok"})
 
+    def test_api_can_run_without_gradio_ui(self):
+        with TestClient(create_app()) as client:
+            health = client.get("/healthz")
+            docs = client.get("/docs")
+            root = client.get("/")
+
+        self.assertEqual(health.status_code, 200)
+        self.assertEqual(docs.status_code, 200)
+        self.assertEqual(root.status_code, 404)
+
     def test_blank_request_is_rejected(self):
         response = self.client.post("/api/research", json={"request": "   "})
 
         self.assertEqual(response.status_code, 422)
         self.assertEqual(response.json()["detail"], "request must not be blank")
+
+    def test_blank_analyst_is_rejected(self):
+        response = self.client.post(
+            "/api/research",
+            json={"request": "Compare Microsoft margins", "analyst": "   "},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"], "analyst must not be blank")
 
     def test_invalid_mode_is_rejected(self):
         response = self.client.post(
@@ -128,6 +163,133 @@ class ApiTests(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 422)
+
+    def test_decision_for_unknown_run_returns_not_found(self):
+        response = self.client.post(
+            "/api/research/missing-run/decision",
+            json={"action": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["detail"], "research run not found")
+
+    def test_run_loader_exception_returns_server_error(self):
+        async def failing_loader(run_id):
+            raise RuntimeError("checkpoint database unavailable")
+
+        with TestClient(create_app(run_loader=failing_loader),
+                        raise_server_exceptions=False) as client:
+            response = client.post(
+                "/api/research/failed-load/decision",
+                json={"action": "approve"},
+            )
+
+        self.assertEqual(response.status_code, 500)
+
+    def test_decision_for_run_not_waiting_for_approval_conflicts(self):
+        self.saved_runs["completed-run"] = {
+            "values": {"outcome": "published"},
+            "interrupts": [],
+        }
+
+        response = self.client.post(
+            "/api/research/completed-run/decision",
+            json={"action": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["detail"], "research run is not waiting for approval")
+
+    def test_unknown_approval_gate_conflicts(self):
+        self.saved_runs["unknown-gate-run"] = {
+            "values": {"plan": {}},
+            "interrupts": [{"gate": "other"}],
+        }
+
+        response = self.client.post(
+            "/api/research/unknown-gate-run/decision",
+            json={"action": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["detail"], "research run has an unknown approval gate")
+
+    def test_plan_rejection_is_not_supported(self):
+        self.saved_runs["plan-run"] = {
+            "values": {"plan": {}},
+            "interrupts": [{"gate": "plan"}],
+        }
+
+        response = self.client.post(
+            "/api/research/plan-run/decision",
+            json={"action": "reject"},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"], "the plan gate supports approve or edit")
+
+    def test_plan_edit_requires_edited_plan(self):
+        self.saved_runs["plan-run"] = {
+            "values": {"plan": {}},
+            "interrupts": [{"gate": "plan"}],
+        }
+
+        response = self.client.post(
+            "/api/research/plan-run/decision",
+            json={"action": "edit"},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"], "an edited plan is required")
+
+    def test_note_edit_requires_a_string_body(self):
+        self.saved_runs["note-run"] = {
+            "values": {"draft": {}},
+            "interrupts": [{"gate": "note"}],
+        }
+
+        response = self.client.post(
+            "/api/research/note-run/decision",
+            json={"action": "edit", "note": {"title": "Missing body"}},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"], "an edited note body is required")
+
+    def test_note_approval_requires_nonblank_approver(self):
+        self.saved_runs["note-run"] = {
+            "values": {"draft": {}},
+            "interrupts": [{"gate": "note"}],
+        }
+
+        response = self.client.post(
+            "/api/research/note-run/decision",
+            json={"action": "approve", "approver": "   "},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.json()["detail"], "approver must not be blank")
+
+    def test_note_rejection_is_forwarded_to_runner(self):
+        self.saved_runs["note-run"] = {
+            "values": {"draft": {}},
+            "interrupts": [{"gate": "note"}],
+        }
+
+        response = self.client.post(
+            "/api/research/note-run/decision",
+            json={"action": "reject", "reason": "Needs stronger citations"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            self.runner_calls[-1],
+            (
+                "note-run",
+                {"resume": {"action": "reject", "reason": "Needs stronger citations"}},
+            ),
+        )
+        self.assertEqual(self._events(response)[-1][1]["status"], "rejected")
 
     def test_runner_failure_is_reported_as_stream_error(self):
         async def failing_runner(run_id, payload, on_event):
@@ -143,6 +305,33 @@ class ApiTests(unittest.TestCase):
         events = self._events(response)
         self.assertEqual(events[-1][0], "error")
         self.assertEqual(events[-1][1]["error"], "research_run_failed")
+
+    def test_client_disconnect_cancels_runner_task(self):
+        async def exercise_disconnect():
+            runner_started = asyncio.Event()
+            runner_cancelled = asyncio.Event()
+
+            async def waiting_runner(run_id, payload, on_event):
+                runner_started.set()
+                try:
+                    await asyncio.Event().wait()
+                finally:
+                    runner_cancelled.set()
+
+            app = create_app(runner=waiting_runner)
+            endpoint = next(
+                route.endpoint for route in app.routes
+                if getattr(route, "path", None) == "/api/research"
+            )
+            response = await endpoint(ResearchRequest(request="Compare Microsoft margins"))
+
+            first_chunk = await response.body_iterator.__anext__()
+            self.assertIn("event: started", first_chunk)
+            await asyncio.wait_for(runner_started.wait(), timeout=1)
+            await response.body_iterator.aclose()
+            await asyncio.wait_for(runner_cancelled.wait(), timeout=1)
+
+        asyncio.run(exercise_disconnect())
 
 
 if __name__ == "__main__":

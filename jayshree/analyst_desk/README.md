@@ -41,10 +41,10 @@ services run. Wait for the initial build and index setup to finish.
 ```powershell
 docker compose ps
 curl.exe --fail http://127.0.0.1:7861/healthz
+curl.exe --fail http://127.0.0.1:7861/readyz
 ```
 
-The app should show `healthy`, and `/healthz` should return
-`{"status":"ok"}`. These commands verify that the app is ready; they do not verify shutdown.
+`{"status":"ok"}` and `{"status":"ready"}` should be returned . These commands verify that the app is ready.
 
 7. To stop the docker command, press **Ctrl+C** in its PowerShell window. Alternatively, from another PowerShell window in the project folder, run:
 
