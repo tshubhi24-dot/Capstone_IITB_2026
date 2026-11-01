@@ -1,0 +1,4 @@
+# `npm install pptxgenjs` here to rebuild the deck; the install is not committed.
+node_modules/
+package-lock.json
+package.json
