@@ -106,6 +106,28 @@ the same split for the HTTP deployment: `APPROVAL_SECRET` appears in the
   `APPROVAL_SECRET` reaches only the portal; ordinary config still reaches
   every server) and `tests/test_tools.py:test_run_python_sees_no_secrets`.
 
+### Where the secrets come from
+
+`.env` at the project root, gitignored (root `.gitignore`, `.env` with
+`!.env.example` kept as the template). Nothing in the repo holds a real value.
+
+It is read by the **entry points only** — `app.py`, `analystdesk/agent/__main__.py`
+and the four scripts (`run_eval.py`, `reflect.py`, `calibrate_judge.py`,
+`memory_compare.py`), each calling `load_dotenv(ROOT / ".env")`. Those values
+land in the parent process's `os.environ`, and `_env_for()` then decides which
+of them each server is allowed to inherit.
+
+No server module calls `load_dotenv`. That matters: a server receives exactly the
+subset `_env_for` grants it and does not re-read the file to get more.
+
+*Caveat, and it belongs in the open-question column:* that is a convention, not a
+mechanism. `connections()` starts each server with `cwd=PROJECT_DIR`, so `.env`
+sits in the working directory and is readable to every server process. A server
+that called `load_dotenv()` — today, or after a careless edit — would recover a
+secret `_env_for` had withheld. The scoping raises the bar; it does not seal the
+file off. Enforcing it properly would mean either not placing `.env` in the
+servers' `cwd`, or passing secrets by a channel the child cannot re-read.
+
 ## 7. Sandbox — the container is the boundary
 
 `servers/sandbox.py:_docker_cmd`:
