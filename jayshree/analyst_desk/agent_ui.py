@@ -2,7 +2,7 @@
 
 Flow in the UI:
   1. Analyst enters a request -> Start. The agent checks scope and drafts a plan.
-  2. Plan gate: approve, or edit the JSON and approve the edited plan.
+  2. Plan gate: approve, edit the JSON and approve, or cancel before research.
   3. The agent researches with MCP tools; every tool call and result streams
      into the activity log.
   4. Note gate: the draft note, its code check (numbers verified) and buttons
@@ -62,6 +62,8 @@ def _event_line(ev: dict) -> str:
         return ("🔁 **Revised plan drafted**" if ev.get("replan")
                 else "📝 **Plan drafted** by the research lead") + suffix
     if n == "review_plan":
+        if ev["action"] == "cancel":
+            return "🚫 **Plan cancelled** — research did not start"
         return f"👤 **Plan {'edited and approved' if ev['action'] == 'edit' else 'approved'}** by the analyst"
     if n == "research":
         calls = ev.get("tool_calls") or []
@@ -259,13 +261,21 @@ async def _drive(run_id: str, payload):
         await queue.put(ev)
 
     task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="inprocess"))
-    while not (task.done() and queue.empty()):
-        try:
-            ev = await asyncio.wait_for(queue.get(), timeout=0.5)
-            yield "event", ev
-        except asyncio.TimeoutError:
-            continue
-    yield "done", task.result()
+    try:
+        while not (task.done() and queue.empty()):
+            try:
+                ev = await asyncio.wait_for(queue.get(), timeout=0.5)
+                yield "event", ev
+            except asyncio.TimeoutError:
+                continue
+        yield "done", task.result()
+    finally:
+        if not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None = None):
@@ -278,7 +288,7 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     plan_md, plan_json, note_md, check_md, note_body = "", "", "", "", ""
     show_plan = show_note = False
     if gate and gate["gate"] == "plan":
-        status = f"### ⏸ Waiting for you: approve or edit the plan\nRun `{run_id}` · {usage}"
+        status = f"### ⏸ Waiting for you: approve, edit, or cancel the plan\nRun `{run_id}` · {usage}"
         p = gate["plan"]
         plan_md = (f"**Companies:** {', '.join(p['companies'])} · **Fiscal years:** "
                    f"{', '.join(map(str, p['fiscal_years']))}\n\n**Sub-questions**\n"
@@ -298,6 +308,8 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             status = f"### ✅ Published\nRun `{run_id}` · {usage}"
         elif outcome == "rejected":
             status = f"### 🛑 Rejected by the analyst\nRun `{run_id}` · {usage}"
+        elif outcome == "cancelled":
+            status = f"### 🚫 Plan cancelled — research did not start\nRun `{run_id}` · {usage}"
         elif v.get("guard") and not v["guard"].get("ok"):
             status = f"### ⛔ Out of scope\n{v['guard']['reason']}"
         elif not v:
@@ -360,7 +372,9 @@ def build_agent_panel(workflow_mode):
             with gr.Accordion("✏️ Edit the plan (JSON)", open=False):
                 plan_json = gr.Code(language="json", label="Plan")
                 edit_plan_btn = gr.Button("Approve the edited plan")
-            approve_plan_btn = gr.Button("✅ Approve plan and start research", variant="primary")
+            with gr.Row():
+                approve_plan_btn = gr.Button("✅ Approve plan and start research", variant="primary")
+                cancel_plan_btn = gr.Button("🚫 Cancel plan", variant="stop")
 
         with gr.Group(visible=False) as note_box:
             gr.Markdown("## 🧾 Draft note — your approval is needed")
@@ -518,6 +532,10 @@ def build_agent_panel(workflow_mode):
             async for out in resume_with(rid, {"action": "approve"}):
                 yield out
 
+        async def on_cancel_plan(rid):
+            async for out in resume_with(rid, {"action": "cancel"}):
+                yield out
+
         async def on_edit_plan(rid, text):
             try:
                 plan = json.loads(text)
@@ -561,13 +579,15 @@ def build_agent_panel(workflow_mode):
                 (request.submit, on_start, [request, approver, workflow_mode]),
                 (rerun_btn.click, on_rerun_without_memory, [run_id, approver]),
                 (approve_plan_btn.click, on_approve_plan, [run_id]),
+                (cancel_plan_btn.click, on_cancel_plan, [run_id]),
                 (edit_plan_btn.click, on_edit_plan, [run_id, plan_json]),
                 (approve_note_btn.click, on_approve_note, [run_id, approver]),
                 (edit_note_btn.click, on_edit_note, [run_id, note_body]),
-                (reject_btn.click, on_reject, [run_id, reject_reason]),
-                (load_btn.click, on_load, [run_id])):
-            (trigger(fn, inputs, outputs).then(refresh_runs, None, runs_table)
+                (reject_btn.click, on_reject, [run_id, reject_reason])):
+            event = trigger(fn, inputs, outputs)
+            (event.then(refresh_runs, None, runs_table)
              .then(memory_tables, [approver], [prefs_table, coverage_table, notes_mem_table]))
+        load_btn.click(on_load, [run_id], outputs)
         runs_table.select(on_pick_run, [runs_table], outputs)
         refresh_runs_btn.click(refresh_runs, None, runs_table)
         mem_outputs = [prefs_table, coverage_table, notes_mem_table]

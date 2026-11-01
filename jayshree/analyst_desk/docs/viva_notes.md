@@ -454,7 +454,9 @@ So the two layers are independent. The guard catches attacks early, with clear B
 **Code:** [analystdesk/agent/graph.py](../analystdesk/agent/graph.py), [checks.py](../analystdesk/agent/checks.py), [figures.py](../analystdesk/agent/figures.py), and the command-line runner [__main__.py](../analystdesk/agent/__main__.py). Diagram: `python -m analystdesk.agent graph` prints it (Mermaid).
 
 ```
-input_guard → plan → [analyst: approve/edit plan] → research ⇄ tools (ReAct)
+input_guard → plan → [analyst: approve/edit/cancel plan]
+                         ├─ cancel → END
+                         └─ approve/edit → research ⇄ tools (ReAct)
    tools ─(NOT_IN_COVERAGE)→ replan → plan → [analyst sees revised plan]
 → write → check ─(issues, max 2)→ write
 → [analyst: approve / edit / reject exact note] ─edit→ check
@@ -469,7 +471,7 @@ input_guard → plan → [analyst: approve/edit plan] → research ⇄ tools (Re
 | Conditional edges | after_guard, after_research, after_tools, after_check, after_review |
 | A self-correction loop | `check` sends code-found issues back to `write`, at most 2 times |
 | Persistent checkpointer, stop and resume | `AsyncSqliteSaver` at `data/runs/checkpoints.sqlite`. Each CLI command exits at a gate, and the next resumes from a **new process** |
-| A plan object shown to the user | `review_plan` interrupt. The analyst approves or edits it (`--edit-plan plan.json`) |
+| A plan object shown to the user | `review_plan` interrupt. The analyst approves or edits it (`--edit-plan plan.json`); the app can also cancel before research starts |
 | Replanning when a tool contradicts the plan | A NOT_IN_COVERAGE tool result triggers `replan`, and the analyst sees the revised plan |
 | ReAct inside the specialist | `research`: the model calls tools, observes, and repeats, within a budget of 24 tool calls and 120k tokens |
 | Human approval of the exact payload (L14) | `review_note` signs the exact note. An edit goes back through `check`, then needs a fresh approval |
@@ -504,7 +506,7 @@ That verified share is the dashboard metric for the "alert below 98%" (Phase 8).
 
 **In the app:**
 1. Type a request and press **Start**.
-2. The **plan** appears. **Approve** it, or edit the JSON and approve the edited plan.
+2. The **plan** appears. **Approve** it, edit the JSON and approve the edited plan, or choose **Cancel plan** to end before research starts. The cancelled run remains in run history.
 3. The **activity log** streams every step live, including each MCP tool call with its arguments (`get_financials(ticker='V', fiscal_year=2024)`) and its result (✔/✖).
 4. The **note** appears, with numbered sources and the code check (e.g. "10/11 numbers verified" with the flagged number listed).
 5. **Approve** (it's signed and published), **edit** (it's re-checked and needs a fresh approval), or **reject**.

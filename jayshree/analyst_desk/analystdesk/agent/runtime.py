@@ -167,7 +167,7 @@ def _status(snapshot: dict) -> str:
             else "⏸ waiting: note approval"
     if v.get("guard") and not v["guard"].get("ok"):
         return "⛔ out of scope"
-    return {"published": "✅ published", "rejected": "🛑 rejected",
+    return {"published": "✅ published", "rejected": "🛑 rejected", "cancelled": "🚫 plan cancelled",
             "publish_failed": "❌ publish refused"}.get(v.get("outcome"), "⏳ in progress / stopped")
 
 

@@ -275,10 +275,14 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
     # 3. human gate: approve or edit the plan
     def review_plan(state: AgentState):
         decision = interrupt({"gate": "plan", "plan": state["plan"]})
+        if decision.get("action") == "cancel":
+            return {"outcome": "cancelled", "trace": _event("review_plan", action="cancel")}
         out = {"trace": _event("review_plan", action="approve")}
         if decision.get("action") == "edit":
             edited = Plan(**{**state["plan"], **decision.get("plan", {})}).model_dump()
             out = {"plan": edited, "trace": _event("review_plan", action="edit", plan=edited)}
+        elif decision.get("action") != "approve":
+            raise ValueError("Plan decision must be approve, edit, or cancel.")
         if state.get("messages"):   # resuming after a replan: tell the researcher
             out["messages"] = [HumanMessage("REVISED APPROVED PLAN (follow this one):\n"
                                             + json.dumps(out.get("plan", state["plan"]), indent=1))]
@@ -484,7 +488,11 @@ def build_graph(llm, tools: list, publish_tool, passage_text=None, hooks: Hooks 
     g.add_edge(START, "input_guard")
     g.add_conditional_edges("input_guard", n["after_guard"])
     g.add_edge("plan", "review_plan")
-    g.add_edge("review_plan", "research")
+
+    def after_plan_review(state: AgentState) -> Literal["research", "__end__"]:
+        return END if state.get("outcome") == "cancelled" else "research"
+
+    g.add_conditional_edges("review_plan", after_plan_review)
     g.add_conditional_edges("research", after_research)
     g.add_conditional_edges("tools", after_tools)
     g.add_edge("replan", "plan")

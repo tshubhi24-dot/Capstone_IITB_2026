@@ -30,7 +30,7 @@ import time
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
-from langgraph.graph import START, StateGraph
+from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 from pydantic import BaseModel, Field
 
@@ -194,8 +194,10 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
         except Exception:   # noqa: BLE001 — outside a streaming run
             return None
 
-    def fan_out(state: AgentState) -> list[Send]:
+    def fan_out(state: AgentState) -> list[Send] | str:
         """Parallel fan-out: one researcher and one risk-diff per company, one quant."""
+        if state.get("outcome") == "cancelled":
+            return END
         plan = state["plan"]
         base = {"plan": plan, "round": state.get("replans", 0), "lessons": state.get("lessons") or []}
         sends = [Send("researcher", {**base, "company": t}) for t in plan["companies"]]
@@ -258,7 +260,7 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
     g.add_edge(START, "input_guard")
     g.add_conditional_edges("input_guard", n["after_guard"])
     g.add_edge("plan", "review_plan")
-    g.add_conditional_edges("review_plan", fan_out, ["researcher", "quant", "risk_diff"])
+    g.add_conditional_edges("review_plan", fan_out, ["researcher", "quant", "risk_diff", END])
     for agent in ("researcher", "quant", "risk_diff"):
         g.add_edge(agent, "gather")
     g.add_conditional_edges("gather", after_gather)
