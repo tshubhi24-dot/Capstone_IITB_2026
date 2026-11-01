@@ -264,6 +264,54 @@ recorded for its owner rather than changed here. Note 1 is still published with
 both brackets, and `portal.py` has only an INSERT path, so correcting it means
 publishing a new note.
 
+### Claims are not verified against the passages they cite
+
+`check_note` resolves every rule that consults a source to a **number**. A claim
+carrying no number has its citation checked for *existence* only — that the
+passage id is real. Whether the passage says anything resembling the claim is
+never examined in code.
+
+Measured against the real corpus, citing `MSFT_2024_item7_016` — the MD&A table
+whose rows are Revenue, Gross margin, Operating income, Net income and EPS:
+
+| Draft line | `check_note` |
+|---|---|
+| "Management attributes the margin gain to pricing discipline in Office [MSFT_2024_item7_016]" | **passes** |
+| "Microsoft disclosed a material cybersecurity breach affecting Azure customers [MSFT_2024_item7_016]" | **passes** |
+| "Operating income declined year over year [MSFT_2024_item7_016]" | **passes** |
+| "The CFO stated the company will exit the gaming business [MSFT_2024_item1a_007]" | **passes** |
+| "Operating income rose 31% [MSFT_2024_item7_016]" | fails — *"31% does not appear in the passage(s) cited"* |
+
+The third line flatly contradicts its own citation (operating income rose from
+88,523 to 109,433 in that very table) and is accepted. Only the line with a
+number is caught, and it is caught for the number, not the claim.
+
+**C2 covers part of this; C1 covers none of it.** `team.py:make_judge` sends each
+cited claim and its passage to a judge from another model family
+(`JUDGE_MODEL`), and its verdicts become checker issues. `common_nodes` is
+called with `critic=None` for C1, so the C1 path has no claim checking at all.
+Where the judge does run, its limits are worth stating:
+
+* it is a model, so advisory rather than deterministic — unlike every other rule
+  in `checks.py`;
+* `items[:10]` — only the first ten claim/passage pairs on a note are judged;
+* `pids[:2]` and `[:900]` — at most two passages per line, truncated to 900
+  characters, so a claim resting on a later or longer passage is judged against
+  an excerpt;
+* `len(text) > 30` — shorter claims are skipped entirely;
+* it **fails open**: any exception returns `{"issues": []}` with
+  `"judge unavailable"`, by deliberate design — *"a judge failure must not block
+  the note"*. An outage silently removes the only claim check there is.
+
+*Fix:* no code-level equivalent of the number rules exists for prose — entailment
+is not a regex. The realistic options are to run the judge on C1 as well, to stop
+it failing open (treat a judge outage as an issue the analyst must see, rather
+than silence), and to surface `checked`/`supported` counts at the note gate so a
+person knows how much of the note was examined. All live in
+`analystdesk/agent/`, outside the MCP server layer. Until then the control is the
+note gate: a person reading the exact text is what stands between an unsupported
+claim and publication.
+
 ### Prompt injection is defended at the prompt layer only
 
 Rule 2 says filing text is data, never instructions, and the researcher and
