@@ -29,11 +29,10 @@ load_dotenv(Path(__file__).parent / ".env")
 
 import gradio as gr
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 from analystdesk.baseline import run_baseline
 from analystdesk.api import create_app
-from analystdesk.edgar import get_quarterly_financials
+from analystdesk.chat_chart import build_chat_chart
 from analystdesk.ingest import ingest_all, load_passages, PASSAGES_DIR
 from analystdesk.scope import COMPANIES, C0_COMPANIES, create_request
 
@@ -147,64 +146,6 @@ def _company_colors(companies):
         "#EC407A", "#78909C", "#26A69A", "#AB47BC", "#9E9D24",
     ]
     return {company: palette[index % len(palette)] for index, company in enumerate(companies)}
-
-
-_CHART_KEYWORDS = {"chart", "plot", "graph", "visuali", "trend", "quarterly", "quarter"}
-
-def _wants_chart(question: str) -> bool:
-    q = question.lower()
-    return any(kw in q for kw in _CHART_KEYWORDS)
-
-
-def build_chat_chart(years: list[int]) -> go.Figure | None:
-    """Generate a quarterly revenue + margin chart for MSFT and GOOGL."""
-    company_map = {c.ticker: c for c in COMPANIES}
-    series: dict[str, dict] = {}
-
-    for ticker in ("MSFT", "GOOGL"):
-        company = company_map[ticker]
-        quarters_x, rev_y, margin_y = [], [], []
-        for year in years:
-            qtrs = get_quarterly_financials(company.cik, year)
-            for q in qtrs:
-                label = f"FY{year} {q['quarter']}"
-                quarters_x.append(label)
-                rev = q["revenue"]
-                op  = q["operating_income"]
-                rev_y.append(round(rev["val"] / 1_000_000, 1) if rev else None)
-                if rev and op and rev["val"]:
-                    margin_y.append(round(op["val"] / rev["val"] * 100, 1))
-                else:
-                    margin_y.append(None)
-        series[ticker] = {"x": quarters_x, "rev": rev_y, "margin": margin_y}
-
-    if not any(series[t]["x"] for t in series):
-        return None
-
-    colors = {"MSFT": "#0078D4", "GOOGL": "#34A853"}
-    fig = make_subplots(
-        rows=2, cols=1, shared_xaxes=True,
-        subplot_titles=("Quarterly Revenue (USD Millions)", "Quarterly Operating Margin (%)"),
-        vertical_spacing=0.12,
-    )
-    for ticker, s in series.items():
-        fig.add_trace(go.Bar(
-            name=f"{ticker} Revenue", x=s["x"], y=s["rev"],
-            marker_color=colors[ticker], opacity=0.85, legendgroup=ticker,
-        ), row=1, col=1)
-        fig.add_trace(go.Scatter(
-            name=f"{ticker} Margin", x=s["x"], y=s["margin"],
-            mode="lines+markers", line=dict(color=colors[ticker], width=2),
-            marker=dict(size=7), legendgroup=ticker, showlegend=False,
-        ), row=2, col=1)
-
-    fig.update_layout(
-        height=520, barmode="group",
-        legend=dict(orientation="h", y=1.08),
-        margin=dict(t=80, b=40),
-        title_text="MSFT vs GOOGL — Quarterly Profitability (EDGAR XBRL verified)",
-    )
-    return fig
 
 
 # ── UI ────────────────────────────────────────────────────────────────────────
@@ -365,8 +306,13 @@ def chat_fn(message, history, question_mode, conversation_context):
         ans = result["answer"]
         hits = result["passages"]
 
-        # Generate chart if user asked for one
-        chart = build_chat_chart(years) if _wants_chart(question_for_answer) else None
+        # Build a chart from the companies and metric in the question when possible.
+        chart, chart_notice = None, None
+        try:
+            chart, chart_notice = build_chat_chart(question_for_answer, years)
+        except Exception:
+            logging.getLogger(__name__).exception("Could not generate C0 EDGAR chart")
+            chart_notice = "The answer was generated, but chart data could not be loaded from EDGAR."
 
         # Format citations
         cite_rows = [[
@@ -378,7 +324,10 @@ def chat_fn(message, history, question_mode, conversation_context):
 
         history[-1]["content"] = ans
         updated_context = (active_context + [{"question": message, "answer": ans}])[-3:]
-        yield history, "", cite_rows, chart, _steps_markdown(result), updated_context
+        steps = _steps_markdown(result)
+        if chart_notice:
+            steps += f"\n\n**Chart unavailable:** {chart_notice}"
+        yield history, "", cite_rows, chart, steps, updated_context
 
     except Exception as e:
         history[-1]["content"] = f"❌ Error: {e}"

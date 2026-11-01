@@ -103,6 +103,9 @@ It provides `/healthz`, `/readyz`, and interactive API documentation at
 
 In the **Research** tab, choose **C0 · No-Agent (Baseline)**, **C1 · Single
 agent**, or **C2 · Team**. C1 and C2 include plan and draft approval steps.
+C0 generates an EDGAR chart from a question that names a supported company and
+financial metric; it uses the requested fiscal year(s), and displays quarterly
+periods when the question explicitly asks for quarterly data.
 
 ## 4. Unit tests and evaluation (contributors)
 
