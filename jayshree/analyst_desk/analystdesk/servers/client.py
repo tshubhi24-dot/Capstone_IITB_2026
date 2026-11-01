@@ -26,8 +26,21 @@ from . import AGENT_TOOLS, SERVERS
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Secrets the servers do not need are not passed to them
-_WITHHELD_ENV = ("OPENROUTER_API_KEY",)
+# Least privilege applied to secrets, not just tools (L7): each secret names the
+# only servers that need it, and is withheld from every other one. compose.yaml
+# does the same for the HTTP deployment — APPROVAL_SECRET appears in the
+# research-portal service's environment and in no other.
+_SECRET_ENV = {
+    "OPENROUTER_API_KEY": frozenset(),                   # no server calls a model
+    "APPROVAL_SECRET": frozenset({"research-portal"}),   # only the portal verifies tokens
+}
+
+
+def _env_for(server: str) -> dict[str, str]:
+    """The environment one server is started with: everything except the
+    secrets it has no use for."""
+    return {k: v for k, v in os.environ.items()
+            if k not in _SECRET_ENV or server in _SECRET_ENV[k]}
 
 
 def _url_var(name: str) -> str:
@@ -37,7 +50,6 @@ def _url_var(name: str) -> str:
 
 def connections(servers: list[str] | None = None) -> dict:
     """stdio subprocesses, or HTTP when MCP_URL_<SERVER> is set (Docker Compose)."""
-    env = {k: v for k, v in os.environ.items() if k not in _WITHHELD_ENV}
     out = {}
     for name, module in SERVERS.items():
         if servers is not None and name not in servers:
@@ -47,7 +59,7 @@ def connections(servers: list[str] | None = None) -> dict:
             out[name] = {"transport": "streamable_http", "url": url}
         else:
             out[name] = {"transport": "stdio", "command": sys.executable, "args": ["-m", module],
-                         "cwd": str(PROJECT_DIR), "env": env}
+                         "cwd": str(PROJECT_DIR), "env": _env_for(name)}
     return out
 
 
