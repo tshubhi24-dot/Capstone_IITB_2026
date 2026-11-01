@@ -17,17 +17,25 @@ hard-codes Office's palette: until the deck's own colors are written into
 ## One slide per fix
 
 Slides sit on a single `FIX` layout (title placeholder, footer, slide number),
-with one `pres.addSection()` per fix. To add the next one:
+with one `pres.addSection()` per fix. Two helpers do the shared frame:
 
 ```js
 pres.addSection({ title: "Your fix" });
-const s2 = pres.addSlide({ masterName: "FIX", sectionTitle: "Your fix" });
-s2.addText("Your fix", { placeholder: "title" });
+const s3 = pres.addSlide({ masterName: "FIX", sectionTitle: "Your fix" });
+s3.addText("Your fix", { placeholder: "title" });
+
+leftCards(s3, [ /* Issue runs */ ], [ /* Fix Made runs */ ]);
+rightHead(s3, "a one-line caption");
+// then compose the right column: table, mono block, or both
 ```
 
-Then the same three regions: **Issue** and **Fix Made** cards on the left,
-**How it works** on the right. Keep the reasoning in `slide.addNotes()` rather
-than on the slide — the slide carries the claim, the notes carry the argument.
+`leftCards()` draws the Issue and Fix Made cards at fixed geometry;
+`rightHead()` draws the "HOW IT WORKS" heading plus its caption. Only the right
+column differs per slide — slide 1 is a table over a monospace block, slide 2 a
+monospace payload over a table.
+
+Keep the reasoning in `slide.addNotes()` rather than on the slide: the slide
+carries the claim, the notes carry the argument.
 
 ## Gotchas that cost time
 
@@ -48,11 +56,15 @@ than on the slide — the slide carries the claim, the notes carry the argument.
 Text overflow is the defect that actually ships, and it is invisible in the
 generator. The figures this deck was built against:
 
-| Block | Text | Box | Slack |
-|---|---|---|---|
-| monospace levels (Courier New 10pt) | 5.92" × 2.35" | 6.30" × 2.94" | +0.38" / +0.59" |
-| Issue prose (Calibri 14pt) | 1.63" | 1.80" | +0.17" |
-| Fix Made prose (Calibri 14pt) | 1.99" | 2.20" | +0.21" |
+| Slide | Block | Text | Box | Slack |
+|---|---|---|---|---|
+| 1 | monospace levels (Courier New 10pt) | 5.92" × 2.35" | 6.30" × 2.94" | +0.38" / +0.59" |
+| 1 | Issue prose (Calibri 14pt) | 1.63" | 1.80" | +0.17" |
+| 1 | Fix Made prose (Calibri 14pt) | 1.99" | 2.20" | +0.21" |
+| 2 | injected payload (Courier New 10pt) | 4.50" × 0.47" | 6.30" × 0.62" | +1.80" / +0.15" |
+| 2 | Issue prose (Calibri 14pt) | 1.38" | 1.80" | +0.42" |
+| 2 | Fix Made prose (Calibri 14pt) | 1.99" | 2.20" | +0.21" |
+| 2 | five-links table (Calibri 11pt) | 2 lines/row, 0.37" | rowH 0.46" | +0.09" |
 
 Those were computed, not rendered — LibreOffice and Poppler were not available
 when the deck was first built, so **it has never been visually checked**. If you
