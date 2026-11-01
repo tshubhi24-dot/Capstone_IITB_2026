@@ -227,17 +227,30 @@ replaying a note that is already published.
 `memory.py:open_store`, `runtime.py:run_until_gate`. Note the mode is ignored on
 Windows, which the team develops on.
 
-### Prompt injection is defended at the prompt layer only
+### Citations are not structurally validated
 
-Rule 2 says filing text is data, never instructions, and the researcher and
-specialist prompts say so explicitly. But there is no code-level validation of
-text-shaped model output — only numbers are checked arithmetically.
+`check_note` verifies every **number** — a `[fact: ...]` value against XBRL, a
+`[calc:]`/`[growth:]`/`[diff:]` percentage by recomputing it, a quoted figure
+against the passage cited on its line. It does not verify that a **citation** is
+well-formed or belongs to the number beside it.
 
-That is the hole two bare `[OperatingIncomeLoss/2024/0000950170-24-087843]`
-brackets fell through in published note 1: each number carried a correct
-`[fact: ...]` tag followed by a bracket holding *the other concept's* fact_id.
+Published note 1 shows what gets through. Each figure carried a correct tag
+followed by a bare bracket holding *the other concept's* fact_id:
+
+```
+$245,122.0M [fact: RevenueFromContract.../2024/0000950170-24-087843]
+            [OperatingIncomeLoss/2024/0000950170-24-087843]
+```
+
+So the revenue sentence cites operating income's fact and vice versa.
 `check_note` reported a clean 6/6, because such a bracket is not a `[fact:]`
-tag, not a number, and does not match `PASSAGE_ID`.
+tag, is not a number, and does not match `PASSAGE_ID` — no rule has an opinion
+about it.
+
+This is a traceability failure, not an authorization one: that note was
+genuinely approved by a person, its HMAC verified, and `publish_note` accepted
+it correctly. Every defence in the section below did its job. Nothing in
+`tests/security/` covers this, and nothing could — the two gaps are independent.
 
 *Fix:* a structural rule in `checks.py` —
 
@@ -246,6 +259,37 @@ STRAY = re.compile(rf"\[(?!fact:|calc:|growth:|diff:)\s*{FACT_ID}\s*\]")
 ```
 
 — which turns a mis-citation into an issue the self-correction loop repairs.
+`analystdesk/agent/checks.py` is outside the MCP server layer, so this is
+recorded for its owner rather than changed here. Note 1 is still published with
+both brackets, and `portal.py` has only an INSERT path, so correcting it means
+publishing a new note.
+
+### Prompt injection is defended at the prompt layer only
+
+Rule 2 says filing text is data, never instructions, and the researcher and
+specialist prompts say so explicitly. A prompt is not a control, so the question
+is what an injection would actually have to defeat.
+
+For the **write path** the answer is five independent links, each pinned by
+`tests/security/test_forced_approval_injection.py` (14 tests): `publish_note` is
+in no research agent's allow-list; `hooks.pre` denies the call anyway; the
+signing key is withheld from `python-sandbox`; the import guard blocks `os`,
+`os.path` and relative imports; and the HMAC is over
+`note_hash(title, body, tickers)`, so no minted or re-used token verifies. An
+injection cannot publish.
+
+What remains unvalidated is everything that needs **no tool call**. Nothing in
+code stops the model from following injected instructions inside the note it
+drafts — quoting attacker-supplied text as though it were filing content,
+adopting a framing the passage dictates, or omitting what the passage tells it
+to omit. `check_note` would pass all of that: the text carries no unsourced
+number and cites a passage that really does contain it.
+
+*Fix:* no cheap one. The honest framing is that the write path is enforced in
+code while the note's prose is not, and that the note gate is the control there —
+a person reads the exact text before it is published. Narrowing it further would
+mean treating passage text as hostile in the writer's prompt and checking the
+draft against the passages it cites for framing, not just for numbers.
 
 ### `http` transport binds `0.0.0.0` with no default host allow-list
 
