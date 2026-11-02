@@ -23,7 +23,7 @@ Docker Compose starts the app, its supporting services, and the monitoring stack
    notepad .env
    ```
 
-   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private;never include it in a shared ZIP or send it to anyone.
+   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private; never include it in a shared ZIP or send it to anyone.
 
 5. Build and start the full stack:
 
@@ -44,9 +44,17 @@ curl.exe --fail http://127.0.0.1:7861/healthz
 curl.exe --fail http://127.0.0.1:7861/readyz
 ```
 
-`{"status":"ok"}` and `{"status":"ready"}` should be returned . These commands verify that the app is ready.
+`{"status":"ok"}` and `{"status":"ready"}` should be returned. These commands verify that the app is ready.
 
-7. To stop the docker command, press **Ctrl+C** in its PowerShell window. Alternatively, from another PowerShell window in the project folder, run:
+7. Verify the Grafana metrics dashboard:
+
+   1. Open <http://127.0.0.1:9090/targets>. The `analyst-desk` target should show **1 / 1 up**. You can also open <http://127.0.0.1:9090/graph>, enter `up{job="analyst-desk"}`, and select **Execute**; the result should be `1`. This confirms that Prometheus can scrape the app, but it does not mean a research run has generated metrics.
+   2. Open <http://127.0.0.1:7861>, go to **Research**, select **C1 · Single agent** or **C2 · Team**, enter a question, and click **Start**. Approve the plan and let the run reach a gate or finish. C0 is the no-agent baseline and does not generate the agent-run metrics shown in this dashboard. You do not need to publish a note to generate run and tool-call metrics.
+   3. Wait at least 15 seconds for Prometheus to scrape the updated counters. On <http://127.0.0.1:9090/graph>, execute `sum(ad_runs_total)`, `sum(ad_tool_calls_total)`, and `sum(ad_tokens_total)`. After a C1/C2 run, these queries should return values; a metric may not appear until its corresponding event occurs.
+   4. Open <http://127.0.0.1:3000> and select the **Analyst Desk** dashboard. Set the time range to **Last 6 hours**, then refresh or wait for its 30-second auto-refresh. Dashboard panels use different lookback windows (30 minutes, 1 hour, and 6 hours), so activity must fall within a panel's window. The verified-share panel requires a checked draft at the note gate; the published-notes panel requires approving and publishing a note.
+   5. If the target is down, confirm the app is healthy with `docker compose ps` and inspect startup logs using `docker compose logs --tail 100 app`. If Prometheus queries return metrics but the dashboard is blank, check the dashboard time range and refresh it.
+
+8. To stop the docker command, press **Ctrl+C** in its PowerShell window. Alternatively, from another PowerShell window in the project folder, run:
 
 ```powershell
 docker compose down
