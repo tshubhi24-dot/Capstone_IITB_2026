@@ -120,8 +120,8 @@ def score(case: dict, out: dict) -> dict:
 
 RESULTS = EVAL_DIR / "results"
 TIMEOUT_S = 480
-# Blended price for openai/gpt-4.1-mini on OpenRouter ($0.40/M input, $1.60/M
-# output), assuming ~90% of tokens are input as in our runs. An estimate.
+# Blended default OpenRouter price ($0.40/M input, $1.60/M output), assuming
+# ~90% of tokens are input as in our runs. An estimate, not model-specific billing.
 PRICE_PER_M = float(os.getenv("PRICE_PER_M_TOKENS", "0.52"))
 
 

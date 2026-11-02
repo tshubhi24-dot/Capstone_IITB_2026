@@ -23,7 +23,13 @@ Docker Compose starts the app, its supporting services, and the monitoring stack
    notepad .env
    ```
 
-   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private; never include it in a shared ZIP or send it to anyone.
+   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private; never include it in a shared ZIP or send it to anyone. `.env` should contain only this API key; do not add prompts, model IDs, or other project configuration to it.
+
+Prompts and model IDs are version-controlled in
+[`config/llm.toml`](./config/llm.toml). Edit and commit that file to change
+the C0, agent, judge, or reflection model, or any LLM prompt. The application
+validates the config version, required entries, and prompt-template placeholders
+on startup and fails with an explicit error if it is missing or invalid.
 
 5. Build and start the full stack:
 
@@ -86,7 +92,7 @@ Set-Location "$HOME\Downloads\Capstone_IITB_2026\jayshree\analyst_desk"
 The setup script creates a project-local `.venv` and installs packages from
 `requirements.txt`; it does not install them globally.
 
-2. Create `.env` and add your OpenRouter API key:
+2. Create `.env` and add only your OpenRouter API key:
 
 ```powershell
 Copy-Item .env.example .env

@@ -28,6 +28,7 @@ ENV HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1
 
 COPY analystdesk/ analystdesk/
+COPY config/ config/
 COPY scripts/ scripts/
 COPY app.py agent_ui.py eval_ui.py ./
 

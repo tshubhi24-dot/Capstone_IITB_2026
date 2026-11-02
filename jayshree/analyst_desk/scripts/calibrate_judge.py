@@ -77,7 +77,8 @@ def cohen_kappa(a: list[bool], b: list[bool]) -> float:
 
 async def score() -> None:
     from analystdesk.agent.runtime import passage_text
-    from analystdesk.agent.team import JUDGE_MODEL, make_judge, make_judge_llm
+    from analystdesk.agent.team import make_judge, make_judge_llm
+    from analystdesk.llm_config import LLM_CONFIG
     rows = list(csv.DictReader(LABELS.open(encoding="utf-8")))
     labelled = [r for r in rows if r["human"].strip().lower() in ("yes", "no")]
     if len(labelled) < 20:
@@ -91,7 +92,7 @@ async def score() -> None:
         judge.append(verdict.get("supported") == verdict.get("checked") == 1)
     agree = sum(h == j for h, j in zip(human, judge)) / len(human)
     kappa = cohen_kappa(human, judge)
-    result = {"judge_model": JUDGE_MODEL, "n": len(human), "agreement": round(agree, 3),
+    result = {"judge_model": LLM_CONFIG.model("judge"), "n": len(human), "agreement": round(agree, 3),
               "cohen_kappa": round(kappa, 3),
               "confusion": {"both_yes": sum(h and j for h, j in zip(human, judge)),
                             "both_no": sum(not h and not j for h, j in zip(human, judge)),

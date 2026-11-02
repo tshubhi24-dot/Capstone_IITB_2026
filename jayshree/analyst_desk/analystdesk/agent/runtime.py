@@ -17,6 +17,8 @@ import time
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
+from ..llm_config import LLM_CONFIG
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 CHECKPOINTS = Path(os.getenv("AGENT_CHECKPOINTS", ROOT / "data" / "runs" / "checkpoints.sqlite"))
 RESEARCH_TOOLS = {"search_filings", "get_passage", "list_filings", "get_financials",
@@ -25,10 +27,10 @@ RESEARCH_TOOLS = {"search_filings", "get_passage", "list_filings", "get_financia
 Event = dict[str, Any]
 
 
-def make_llm():
+def make_llm(model_role: str = "agent"):
     from langchain_openai import ChatOpenAI
     return ChatOpenAI(
-        model=os.getenv("AGENT_MODEL", os.getenv("C0_MODEL", "openai/gpt-4.1-mini")),
+        model=LLM_CONFIG.model(model_role),
         base_url="https://openrouter.ai/api/v1",
         api_key=os.environ["OPENROUTER_API_KEY"],
         temperature=0,
