@@ -299,6 +299,104 @@ s2.addNotes(
   "is removed, rather than passing regardless."
 );
 
+// ════ appendix ═══════════════════════════════════════════════════════════════
+// Reference material, not a fix. Reuses the FIX layout as a title-only frame:
+// leftCards() is simply not called, so the full width is free.
+pres.addSection({ title: "Appendix" });
+const a1 = pres.addSlide({ masterName: "FIX", sectionTitle: "Appendix" });
+a1.addText("Appendix — verification by configuration", { placeholder: "title" });
+
+a1.addText(
+  [
+    { text: "C0  ", options: { bold: true, breakLine: false } },
+    { text: "fixed workflow, no agency — baseline.py uses no LLM at all; c0_pipeline.py makes one LLM call, no tool loop",
+      options: { breakLine: true } },
+    { text: "C1  ", options: { bold: true, breakLine: false } },
+    { text: "one agent with every research tool, as a LangGraph graph: ReAct loop, two human gates, self-correction loop",
+      options: { breakLine: true } },
+    { text: "C2  ", options: { bold: true, breakLine: false } },
+    { text: "a team — researcher and risk_diff per company plus one quant, fanned out in parallel, then a compliance critic",
+      options: { breakLine: false } },
+  ],
+  { x: 0.55, y: 1.30, w: 12.2, h: 0.75, margin: 0, isTextBox: true,
+    fontSize: 12, color: C.text1, align: "left", lineSpacingMultiple: 1.06 },
+);
+
+a1.addText("Same model, tools and budgets across C1 and C2, so E1 compares orchestration only.", {
+  x: 0.55, y: 2.14, w: 12.2, h: 0.26, margin: 0, isTextBox: true,
+  fontSize: 12, italic: true, color: THEME.colors.accent4,
+});
+
+const YES = { text: "Yes", options: { align: "center" } };
+const NO = { text: "—", options: { align: "center", color: THEME.colors.accent5 } };
+const JUDGE = { text: "Yes — judge", options: { align: "center", bold: true } };
+const row = (layer, c0, c1, c2, strong) => [
+  { text: layer, options: strong ? { bold: true } : {} }, c0, c1, c2,
+].map((cell) => (strong && typeof cell === "object"
+  ? { ...cell, options: { ...cell.options, fill: { color: "FBEEEC" } } }
+  : cell));
+
+a1.addTable(
+  [
+    [
+      { text: "Verification layer", options: { bold: true, color: THEME.colors.lt1, fill: { color: THEME.colors.accent3 } } },
+      { text: "C0", options: { bold: true, color: THEME.colors.lt1, fill: { color: THEME.colors.accent3 }, align: "center" } },
+      { text: "C1", options: { bold: true, color: THEME.colors.lt1, fill: { color: THEME.colors.accent3 }, align: "center" } },
+      { text: "C2", options: { bold: true, color: THEME.colors.lt1, fill: { color: THEME.colors.accent3 }, align: "center" } },
+    ],
+    row("Figure placeholders rendered by code (figures.py)", NO, YES, YES),
+    row("Numbers vs XBRL — [fact:] [calc:] [growth:] [diff:]", NO, YES, YES),
+    row("Quoted number appears in the cited passage", NO, YES, YES),
+    row("Cited passage exists", NO, YES, YES),
+    row("Investment-advice keyword filter (11 terms)", NO, YES, YES),
+    row("Claims checked against the passages they cite", NO, NO, JUDGE, true),
+    row("Self-correction loop (max 2 revisions)", NO, YES, YES),
+    row("Plan gate and note gate (a person approves)", NO, YES, YES),
+    row("Server-side HMAC re-verified on publish", NO, YES, YES),
+  ],
+  { x: 0.55, y: 2.52, w: 12.2, colW: [6.20, 1.90, 2.00, 2.10],
+    rowH: [0.32, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34, 0.34],
+    fontSize: 11, color: C.text1, fontFace: "Calibri", valign: "middle",
+    border: { type: "solid", color: "D6E2EA", pt: 1 }, margin: 0.06,
+    objectName: "verification matrix" },
+);
+
+a1.addText(
+  "The highlighted row is the only claim verification anywhere in the project — and it is a model, "
+  + "not a rule. Every deterministic check resolves to a number.",
+  { x: 0.55, y: 6.20, w: 12.2, h: 0.3, margin: 0, isTextBox: true,
+    fontSize: 12, italic: true, color: THEME.colors.accent6 },
+);
+
+a1.addNotes(
+  "Verified in code, not from memory.\n\n" +
+  "C0 has no verification in-pipeline at all: neither c0_pipeline.py nor baseline.py mentions " +
+  "check_note. C0 hands the model a context block tagged [fact_id: ...] and asks it to cite them. " +
+  "The 31.7% verified share in the E1 results is check_note run on C0's output afterwards by the " +
+  "eval harness, not something C0 did.\n\n" +
+  "C1 wiring: graph.py:436 calls common_nodes(llm, publish_tool, passage_text) and critic defaults " +
+  "to None, so the check node runs check_note and nothing else.\n\n" +
+  "C2 wiring: runtime.py:106 calls _build(..., live=True), which passes " +
+  "judge_llm=make_judge_llm() into build_team_graph, giving critic=make_judge(...). The check node " +
+  "then appends the judge's issues to the code checks. This path is live in the recorded eval, " +
+  "because evaluation.run_agent goes through run_until_gate. The two _build calls without the " +
+  "judge (runtime.py:159 and :191) use _NoModel() and are read-only state inspection for show and " +
+  "get_run.\n\n" +
+  "Two things worth being precise about. First, the judge changes 'ok', not 'verified_share': it " +
+  "appends to issues, which can send a draft back through the revision loop, but verified and " +
+  "total are counted only by check_note's number rules. So C2's 80.2% mean verified share against " +
+  "C1's 96.6% is purely about numbers - the judge is invisible in that metric. Second, C1 is the " +
+  "configuration most likely to be demonstrated, and it is the one with no claim checking at all; " +
+  "for C1 the honest answer to 'how do you know the prose is supported by the filings' is that a " +
+  "person reads it at the note gate.\n\n" +
+  "Where the judge does run, its limits: it is a model from another family (JUDGE_MODEL), so " +
+  "advisory rather than deterministic; items[:10] judges only the first ten claim/passage pairs; " +
+  "pids[:2] with passages truncated to 900 characters; claims shorter than 30 characters are " +
+  "skipped; and it fails open - any exception returns no issues with 'judge unavailable', by " +
+  "deliberate design, so an outage silently removes the only claim check there is.\n\n" +
+  "See docs/security_summary.md, 'Claims are not verified against the passages they cite'."
+);
+
 (async () => {
   await pres.writeFile({ fileName: OUT });
   await applyTheme(OUT, THEME);

@@ -14,6 +14,16 @@ needed. It runs after `writeFile()` because pptxgenjs sets the theme's fonts but
 hard-codes Office's palette: until the deck's own colors are written into
 `ppt/theme/theme1.xml`, every scheme color resolves to Office blue.
 
+## Slides
+
+1. **Securing secrets** — the `_SECRET_ENV` fix
+2. **Forced approval injection** — the `tests/security/` chain
+3. **Appendix — verification by configuration** — what C0, C1 and C2 each verify
+
+The appendix reuses the `FIX` layout as a title-only frame: `leftCards()` is
+simply not called, so the full 12.2" width is free. Reference slides go after
+the fixes, in their own `Appendix` section.
+
 ## One slide per fix
 
 Slides sit on a single `FIX` layout (title placeholder, footer, slide number),
@@ -65,6 +75,9 @@ generator. The figures this deck was built against:
 | 2 | Issue prose (Calibri 14pt) | 1.38" | 1.80" | +0.42" |
 | 2 | Fix Made prose (Calibri 14pt) | 1.99" | 2.20" | +0.21" |
 | 2 | five-links table (Calibri 11pt) | 2 lines/row, 0.37" | rowH 0.46" | +0.09" |
+| 3 | C0/C1/C2 definitions (Calibri 12pt) | 0.65" | 0.75" | +0.10" |
+| 3 | verification matrix (Calibri 11pt) | 2.52" → 5.90" | caption at 6.20" | +0.30" gap |
+| 3 | single-line table cell | 0.31" incl. margins | rowH 0.34" | +0.03" |
 
 Those were computed, not rendered — LibreOffice and Poppler were not available
 when the deck was first built, so **it has never been visually checked**. If you
