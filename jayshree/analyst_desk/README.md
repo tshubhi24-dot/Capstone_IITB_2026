@@ -142,6 +142,27 @@ The evaluation gate requires at least 20 cases, at least **95%** task success,
 and zero policy violations. Use the development set for tuning; keep held-out
 cases for final evaluation.
 
+### Run the evaluation gate in GitHub Actions before a demo
+
+The regular **Analyst Desk CI** workflow runs offline tests and Docker Compose
+validation on pushes and pull requests; it does not call the model API. To run
+the paid evaluation only when the team requests it:
+
+1. In the repository, open **Settings → Secrets and variables → Actions** and
+   add a repository secret named `OPENROUTER_API_KEY`. Do not put the key in
+   workflow files or commit a `.env` file.
+2. Open **Actions → Analyst Desk Evaluation Gate → Run workflow**, select the
+   branch to evaluate, and start the workflow.
+3. The workflow evaluates C1 on all 20 development cases. It passes only with
+   at least **95% task success**, at least 20 evaluated cases, and zero policy
+   violations. A failed gate fails the workflow run.
+4. Download the `analyst-desk-evaluation-<run-id>-<attempt>` artifact from the
+   workflow run to inspect its JSON results. Generated results are not committed.
+
+This workflow uses OpenRouter and may incur API charges; the 20-case run can
+take several minutes. It evaluates only the development split. Do not use the
+held-out set for this routine gate.
+
 3. To test the Prometheus alert rule against synthetic below-threshold and
 recovery samples, start Docker Compose and run these commands from the analyst project
 folder:
