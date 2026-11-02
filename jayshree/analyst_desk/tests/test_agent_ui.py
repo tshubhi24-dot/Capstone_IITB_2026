@@ -1,13 +1,17 @@
 import asyncio
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import gradio as gr
 
+from analystdesk import memory
 from agent_ui import (
     _can_start_agent_run,
     _can_add_preference,
     _can_use_run_actions,
+    _delete_memory_item,
     _drive,
     _has_run_id,
     _parse_edited_plan,
@@ -40,6 +44,21 @@ class AgentPanelTests(unittest.TestCase):
         self.assertFalse(_can_add_preference(""))
         self.assertFalse(_can_add_preference(" \t\n "))
         self.assertTrue(_can_add_preference("Always include a comparison"))
+
+    def test_memory_delete_confirmation_flow_end_to_end(self):
+        async def exercise_delete():
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with patch.object(memory, "MEMORY_DB", Path(temp_dir) / "memory.sqlite"):
+                    key = await memory.add_preference("analyst", "Keep this preference")
+                    selection = ["preferences", "analyst", key]
+
+                    self.assertFalse(await _delete_memory_item(selection, confirmed=False))
+                    self.assertEqual(len(await memory.preferences("analyst")), 1)
+
+                    self.assertTrue(await _delete_memory_item(selection, confirmed=True))
+                    self.assertEqual(await memory.preferences("analyst"), [])
+
+        asyncio.run(exercise_delete())
 
     def test_playbook_controls_require_a_selected_row(self):
         self.assertEqual(_playbook_button_states(None, None, False), (False, False, False, False))
@@ -130,6 +149,19 @@ class AgentPanelTests(unittest.TestCase):
             if component["type"] == "button"
             and component["props"].get("value") == "🗑 Delete selected memory"
         )
+        confirm_delete_button = next(
+            component for component in config["components"]
+            if component["type"] == "button" and component["props"].get("value") == "Confirm deletion"
+        )
+        cancel_delete_button = next(
+            component for component in config["components"]
+            if component["type"] == "button" and component["props"].get("value") == "Cancel"
+        )
+        confirmation_prompt = next(
+            component for component in config["components"]
+            if component["type"] == "group"
+            and component["props"].get("elem_id") == "memory-delete-confirmation"
+        )
         playbook_buttons = [
             next(
                 component for component in config["components"]
@@ -169,12 +201,18 @@ class AgentPanelTests(unittest.TestCase):
             event for event in config["dependencies"]
             if event.get("api_name") == "on_delete_mem"
         )
+        self.assertEqual(delete_event["targets"], [(confirm_delete_button["id"], "click")])
         self.assertIn(delete_memory_button["id"], delete_event.get("outputs", []))
-        self.assertTrue(any(
-            event.get("targets") == [(delete_memory_button["id"], "click")]
-            and "window.confirm" in event.get("js", "")
-            for event in config["dependencies"]
-        ))
+        request_delete_event = next(
+            event for event in config["dependencies"]
+            if event.get("targets") == [(delete_memory_button["id"], "click")]
+        )
+        self.assertIn(confirmation_prompt["id"], request_delete_event.get("outputs", []))
+        cancel_event = next(
+            event for event in config["dependencies"]
+            if event.get("targets") == [(cancel_delete_button["id"], "click")]
+        )
+        self.assertIn(confirmation_prompt["id"], cancel_event.get("outputs", []))
         lesson_tables = [
             component for component in config["components"]
             if component["type"] == "dataframe"

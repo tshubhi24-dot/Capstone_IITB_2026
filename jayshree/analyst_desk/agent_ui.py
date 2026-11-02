@@ -48,6 +48,16 @@ def _can_add_preference(text: str | None) -> bool:
     return bool(text and text.strip())
 
 
+async def _delete_memory_item(selection: list | None, confirmed: bool) -> bool:
+    if not confirmed or not selection:
+        return False
+
+    from analystdesk import memory as ltm
+
+    await ltm.forget(tuple(selection[:2]), selection[2])
+    return True
+
+
 def _playbook_button_states(
     lesson_key: str | None, lesson_status: str | None, frozen: bool
 ) -> tuple[bool, bool, bool, bool]:
@@ -472,12 +482,17 @@ def build_agent_panel(workflow_mode):
             notes_mem_table = gr.Dataframe(headers=["ticker", "key", "note", "published", "title", "figures"],
                                            interactive=False, wrap=True, label="Past-note memory")
             selected_mem = gr.State(None)
-            delete_confirmed = gr.State(False)
             with gr.Row():
                 selected_label = gr.Markdown("_Nothing selected_")
                 delete_mem_btn = gr.Button(
                     "🗑 Delete selected memory", variant="stop", size="sm", interactive=False
                 )
+            delete_status = gr.Markdown()
+            with gr.Group(visible=False, elem_id="memory-delete-confirmation") as delete_confirmation:
+                gr.Markdown("**Delete this memory?** This action cannot be undone.")
+                with gr.Row():
+                    confirm_delete_btn = gr.Button("Confirm deletion", variant="stop")
+                    cancel_delete_btn = gr.Button("Cancel")
 
         with gr.Accordion("📘 Playbook: lessons learned from development runs (review here)", open=False):
             gr.Markdown(
@@ -600,15 +615,28 @@ def build_agent_panel(workflow_mode):
                     f"Selected memory of note #{table.iloc[row, 2]} for {table.iloc[row, 0]}",
                     gr.update(interactive=True))
 
-        async def on_delete_mem(sel, name, confirmed):
-            if not confirmed:
-                return (sel, "_Deletion canceled._", gr.update(interactive=bool(sel)),
-                        *await memory_tables(name))
-            from analystdesk import memory as ltm
-            if sel:
-                await ltm.forget(tuple(sel[:2]), sel[2])
-            return (None, "_Deleted._" if sel else "_Nothing selected_",
-                    gr.update(interactive=False), *await memory_tables(name))
+        def request_memory_deletion(sel):
+            if not sel:
+                return gr.update(visible=False), gr.update(interactive=False), "_Select a memory row first._"
+            return gr.update(visible=True), gr.update(interactive=False), ""
+
+        async def on_delete_mem(sel, name):
+            deleted = await _delete_memory_item(sel, confirmed=True)
+            if not deleted:
+                return (
+                    sel, gr.update(visible=False), gr.update(interactive=bool(sel)),
+                    "_Select a memory row first._", *await memory_tables(name),
+                )
+            return (
+                None, gr.update(visible=False), gr.update(interactive=False),
+                "_Memory deleted._", *await memory_tables(name),
+            )
+
+        def cancel_memory_deletion(sel):
+            return (
+                gr.update(visible=False), gr.update(interactive=bool(sel)),
+                "_Deletion canceled._",
+            )
 
         async def on_start(req, name, agents, busy=False, current_run_id="", memory_on=True):
             def response(status_text, enabled, running, inputs_enabled):
@@ -866,17 +894,22 @@ def build_agent_panel(workflow_mode):
         notes_mem_table.select(
             on_pick_note_mem, [notes_mem_table], [selected_mem, selected_label, delete_mem_btn]
         )
-        delete_confirmation = delete_mem_btn.click(
-            fn=None,
-            inputs=[],
-            outputs=[delete_confirmed],
-            js="() => [window.confirm('Delete the selected memory? This cannot be undone.')]",
+        delete_mem_btn.click(
+            request_memory_deletion,
+            [selected_mem],
+            [delete_confirmation, delete_mem_btn, delete_status],
             show_progress="hidden",
         )
-        delete_confirmation.then(
+        confirm_delete_btn.click(
             on_delete_mem,
-            [selected_mem, approver, delete_confirmed],
-            [selected_mem, selected_label, delete_mem_btn, *mem_outputs],
+            [selected_mem, approver],
+            [selected_mem, delete_confirmation, delete_mem_btn, delete_status, *mem_outputs],
+        )
+        cancel_delete_btn.click(
+            cancel_memory_deletion,
+            [selected_mem],
+            [delete_confirmation, delete_mem_btn, delete_status],
+            show_progress="hidden",
         )
         approver.blur(memory_tables, [approver], mem_outputs)
 
