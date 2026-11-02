@@ -229,10 +229,17 @@ Windows, which the team develops on.
 
 ### Citations are not structurally validated
 
-`check_note` verifies every **number** — a `[fact: ...]` value against XBRL, a
-`[calc:]`/`[growth:]`/`[diff:]` percentage by recomputing it, a quoted figure
-against the passage cited on its line. It does not verify that a **citation** is
-well-formed or belongs to the number beside it.
+**What is checked.** Given a passage citation, `check_note` does confirm the id
+resolves: `[MSFT_2024_item7_999]` is reported as *"Cited passage
+MSFT_2024_item7_999 does not exist"*. That is the "cited passage id resolves"
+row in the verification matrix, and it holds in C1 and C2 alike.
+
+**What is not.** The existence check sees only what `PASSAGE_ID` matches —
+`\b([A-Z]{1,5}_\d{4}_item(?:1a|7)_\d{3})\b`. Nothing verifies that a bracket
+*is* a citation, nor that a citation belongs to the number beside it. A bracket
+holding a **fact_id** matches no rule at all: it is not a `[fact:]` tag (no
+prefix), not a number, and not a passage id. So it is not an *invalid* citation
+being waved through — there is no candidate for any rule to inspect.
 
 Published note 1 shows what gets through. Each figure carried a correct tag
 followed by a bare bracket holding *the other concept's* fact_id:
@@ -242,10 +249,19 @@ $245,122.0M [fact: RevenueFromContract.../2024/0000950170-24-087843]
             [OperatingIncomeLoss/2024/0000950170-24-087843]
 ```
 
-So the revenue sentence cites operating income's fact and vice versa.
-`check_note` reported a clean 6/6, because such a bracket is not a `[fact:]`
-tag, is not a number, and does not match `PASSAGE_ID` — no rule has an opinion
-about it.
+So the revenue sentence cites operating income's fact and vice versa, and
+`check_note` reported a clean 6/6.
+
+C2's judge does not rescue it. `team.py:make_judge` strips `[(fact|calc):...]`
+from each line and then needs a `PASSAGE_ID` to fetch passages to compare
+against; a stray fact_id bracket has no prefix to strip and matches no passage
+id, so the line yields no passages and is skipped. The judge scores claim
+support, not citation syntax.
+
+(Noted while checking that: the strip regex covers `fact` and `calc` only, so
+`[growth: ...]` and `[diff: ...]` tags are left inside the claim text sent to
+the judge. Harmless for correctness, and a one-word fix —
+`(fact|calc|growth|diff)` — whenever `agent/` is next touched.)
 
 This is a traceability failure, not an authorization one: that note was
 genuinely approved by a person, its HMAC verified, and `publish_note` accepted

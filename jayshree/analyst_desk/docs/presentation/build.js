@@ -347,7 +347,10 @@ a1.addTable(
     row("Figure placeholders rendered by code (figures.py)", NO, YES, YES),
     row("Numbers vs XBRL — [fact:] [calc:] [growth:] [diff:]", NO, YES, YES),
     row("Quoted number appears in the cited passage", NO, YES, YES),
-    row("Cited passage exists", NO, YES, YES),
+    // "Cited passage exists" read as though citations were validated; they are
+    // not — a bracket holding a fact_id matches no rule. See security_summary.md,
+    // "Citations are not structurally validated".
+    row("Cited passage id resolves to a real passage", NO, YES, YES),
     row("Investment-advice keyword filter (11 terms)", NO, YES, YES),
     row("Claims checked against the passages they cite", NO, NO, JUDGE, true),
     row("Self-correction loop (max 2 revisions)", NO, YES, YES),
@@ -394,7 +397,13 @@ a1.addNotes(
   "pids[:2] with passages truncated to 900 characters; claims shorter than 30 characters are " +
   "skipped; and it fails open - any exception returns no issues with 'judge unavailable', by " +
   "deliberate design, so an outage silently removes the only claim check there is.\n\n" +
-  "See docs/security_summary.md, 'Claims are not verified against the passages they cite'."
+  "One row is narrower than it looks: 'cited passage id resolves' means exactly that - a bad id " +
+  "like MSFT_2024_item7_999 is caught. It does not mean citations are validated. A bracket " +
+  "holding a fact_id rather than a passage id matches no rule at all: not a [fact:] tag, not a " +
+  "number, not a PASSAGE_ID, so no rule has a candidate to inspect. That is the separate gap " +
+  "'Citations are not structurally validated', and published note 1 carries two such brackets.\n\n" +
+  "See docs/security_summary.md, 'Claims are not verified against the passages they cite' and " +
+  "'Citations are not structurally validated'."
 );
 
 (async () => {
