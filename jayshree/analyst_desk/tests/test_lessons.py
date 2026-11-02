@@ -28,6 +28,63 @@ class PlaybookTests(unittest.TestCase):
         used = asyncio.run(lessons.relevant("Compare Microsoft and Alphabet margins, fiscal year ends differ"))
         self.assertEqual([u["key"] for u in used], [k1])
 
+    def test_exact_duplicate_lessons_merge_sources_and_keep_one_review_status(self):
+        async def exercise():
+            first_key = await lessons.add_pending(L1)
+            duplicate = {
+                **L1,
+                "when": "  COMPARING companies with different fiscal year ends. ",
+                "do": "state each company's period end next to its figures",
+                "applies_to": ["FISCAL-YEAR", "comparison"],
+                "source_case": "d10",
+                "source_config": "c2",
+                "source_issue": "same lesson from another case",
+            }
+            self.assertIsNone(await lessons.add_pending(duplicate))
+            pending = await lessons.list_lessons("pending")
+            self.assertEqual([item["key"] for item in pending], [first_key])
+            self.assertEqual(
+                {source["source_case"] for source in pending[0]["source_cases"]},
+                {"d09", "d10"},
+            )
+
+            self.assertTrue(await lessons.review(first_key, True, "Reviewer"))
+            self.assertIsNone(await lessons.add_pending({**L1, "source_case": "d11"}))
+            self.assertEqual(await lessons.list_lessons("pending"), [])
+            approved = await lessons.list_lessons("approved")
+            self.assertEqual([item["key"] for item in approved], [first_key])
+            self.assertEqual(
+                {source["source_case"] for source in approved[0]["source_cases"]},
+                {"d09", "d10", "d11"},
+            )
+            self.assertEqual(await lessons.list_lessons("rejected"), [])
+
+        asyncio.run(exercise())
+
+    def test_conflicting_legacy_duplicates_return_to_pending_review(self):
+        async def exercise():
+            async with memory.open_store() as store:
+                await store.aput(("lessons", "approved"), "approved-copy",
+                                 {**L1, "created_at": "2026-01-01T00:00:00+00:00",
+                                  "reviewed_by": "Reviewer", "reviewed_at": "2026-01-02T00:00:00+00:00"})
+                await store.aput(("lessons", "rejected"), "rejected-copy",
+                                 {**L1, "created_at": "2026-01-02T00:00:00+00:00",
+                                  "reviewed_by": "Reviewer", "reviewed_at": "2026-01-03T00:00:00+00:00",
+                                  "review_reason": "duplicate"})
+
+            pending = await lessons.list_lessons("pending")
+            self.assertEqual(len(pending), 1)
+            self.assertEqual(await lessons.list_lessons("approved"), [])
+            self.assertEqual(await lessons.list_lessons("rejected"), [])
+            self.assertEqual(len(pending[0]["review_history"]), 2)
+
+            self.assertTrue(await lessons.review(pending[0]["key"], False, "Reviewer", "reviewed again"))
+            self.assertEqual(await lessons.list_lessons("pending"), [])
+            self.assertEqual(await lessons.list_lessons("approved"), [])
+            self.assertEqual(len(await lessons.list_lessons("rejected")), 1)
+
+        asyncio.run(exercise())
+
     def test_rejected_lesson_kept_with_reason(self):
         k2 = asyncio.run(lessons.add_pending(L2))
         asyncio.run(lessons.review(k2, False, "Jayshree", "too specific to one case"))

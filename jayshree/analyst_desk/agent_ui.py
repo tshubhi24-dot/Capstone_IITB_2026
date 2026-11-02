@@ -66,6 +66,18 @@ def _playbook_button_states(
     return pending and not frozen, pending and not frozen, selected and not frozen, selected and frozen
 
 
+def _lesson_source_label(lesson: dict) -> str:
+    sources = lesson.get("source_cases") or [{
+        "source_case": lesson.get("source_case", ""),
+        "source_config": lesson.get("source_config", ""),
+    }]
+    return ", ".join(
+        f"{source.get('source_case', '')}/{source.get('source_config', '')}".strip("/")
+        for source in sources
+        if source.get("source_case") or source.get("source_config")
+    )
+
+
 def _parse_edited_plan(plan_text: str | None, original_plan_text: str | None) -> tuple[dict | None, str]:
     if not original_plan_text:
         return None, "The original plan is unavailable. Reload the plan before editing."
@@ -917,7 +929,7 @@ def build_agent_panel(workflow_mode):
             from analystdesk import lessons as pb
             frozen = await pb.is_frozen()
             pend = [[x["key"], x["when"], x["do"], ", ".join(x.get("applies_to", [])),
-                     f"{x.get('source_case')}/{x.get('source_config', '')}", x.get("source_issue", "")[:160]]
+                     _lesson_source_label(x), x.get("source_issue", "")[:160]]
                     for x in await pb.list_lessons("pending")]
             appr = [[x["key"], x["when"], x["do"], ", ".join(x.get("applies_to", [])), x.get("reviewed_by", "")]
                     for x in await pb.list_lessons("approved")]

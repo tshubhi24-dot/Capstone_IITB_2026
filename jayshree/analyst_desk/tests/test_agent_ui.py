@@ -14,6 +14,7 @@ from agent_ui import (
     _delete_memory_item,
     _drive,
     _has_run_id,
+    _lesson_source_label,
     _parse_edited_plan,
     _playbook_button_states,
     build_agent_panel,
@@ -73,6 +74,17 @@ class AgentPanelTests(unittest.TestCase):
         self.assertEqual(
             _playbook_button_states("lesson-1", "pending", True),
             (False, False, False, True),
+        )
+
+    def test_lesson_source_label_shows_all_merged_cases(self):
+        self.assertEqual(
+            _lesson_source_label({
+                "source_cases": [
+                    {"source_case": "d01", "source_config": "c1"},
+                    {"source_case": "d02", "source_config": "c2"},
+                ],
+            }),
+            "d01/c1, d02/c2",
         )
 
     def test_edited_plan_requires_valid_substantive_change(self):
