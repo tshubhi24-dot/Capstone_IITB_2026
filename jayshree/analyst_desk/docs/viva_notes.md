@@ -1,8 +1,8 @@
 # Analyst Desk: viva notes
 
-These notes explain what was built, why it was built that way, what else was considered, and the questions an examiner is likely to ask. Each section ends with evidence you can show. The notes grow as the project grows.
+These notes explain what Analyst Desk does, why each part is built the way it is, what else was considered, and the questions an examiner is likely to ask. Most sections end with evidence you can show in the app.
 
-Read [architecture.md](architecture.md) for the diagram and [plan.md](plan.md) for the phases. These notes explain the reasoning behind both.
+Read [architecture.md](architecture.md) for the components and diagrams. These notes give the reasoning behind them.
 
 ---
 
@@ -21,6 +21,29 @@ Read [architecture.md](architecture.md) for the diagram and [plan.md](plan.md) f
 - **Technology:** MSFT, GOOGL, AAPL, AMZN, META, NVDA, AMD, ORCL.
 - **Finance:** JPM, GS, BAC, V, MS, MA, WFC.
 
+### 0.1 The app at a glance
+
+| Tab | What it shows | Sections below |
+|---|---|---|
+| 📈 Dashboard | EDGAR-verified revenue, margin and income for any of the 15 companies | 1 |
+| 🔎 Research | One tab, three workflows: **C0 · No-Agent**, **C1 · Single agent**, **C2 · Team**. C1 and C2 add the plan and note gates, the team board, activity log, your runs, 🧠 Memory, 📘 Playbook and 📚 Published notes | 3.9–3.10, 7–9 |
+| 📏 Evaluation | Golden set, live evaluation runs, the E1 table, a per-case grid, ⚖️ judge calibration | 10 |
+| 🔍 Data Explorer | Search the 10-K passages directly | 2–3 |
+| 🗂️ Raw Data | The C0 `ResearchNote` JSON, with every figure's fact_id | 1 |
+
+The same server also exposes a FastAPI API with health checks (section 11).
+
+### 0.2 Who built what (the viva asks about your own part)
+
+| Area | Built by |
+|---|---|
+| The base system: EDGAR facts, ingestion, retrieval, MCP servers, C0/C1/C2 graphs, checker, memory, playbook, evaluation harness, observability, the app | Jayshree |
+| **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
+| **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
+| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests (11) | Shubhi |
+
+Every part is explained below, but expect the deepest questions on your own role.
+
 ---
 
 ## 1. Numbers: where they come from and why we trust them
@@ -37,7 +60,7 @@ Read [architecture.md](architecture.md) for the diagram and [plan.md](plan.md) f
 
 **What.** Every number carries an ID of the form `{concept}/{fiscal_year}/{accession}`, for example `OperatingIncomeLoss/2024/0000950170-24-087843`.
 
-**Why.** The accession number identifies one exact SEC filing. Anyone can open it on EDGAR and check the number by hand. The compliance critic (built later) checks every number in a draft against its fact by code, not by asking an LLM.
+**Why.** The accession number identifies one exact SEC filing. Anyone can open it on EDGAR and check the number by hand. The checker checks every number in a draft against its fact by code, not by asking an LLM.
 
 ### 1.3 Fiscal-year alignment (signature challenge A)
 
@@ -203,7 +226,7 @@ Each passage is turned into an embedding with `all-MiniLM-L6-v2`, a small local 
 
 **Rewrite.** Each sub-query has the company name, ticker and year removed ("What was Goldman Sachs' provision for credit losses in 2023?" becomes "What was provision for credit losses in"), because the metadata filter already covers them. See 3.8 for why this matters.
 
-**Why code, not an LLM?** Company names and years can be found exactly from our supported list. That makes it deterministic, free and unit-tested (rule 1). An LLM technique such as HyDE can be compared later.
+**Why code, not an LLM?** Company names and years can be found exactly from our supported list. That makes it deterministic, free and unit-tested (rule 1). An LLM technique such as HyDE could be compared against it.
 
 ### 3.6 Engineering fixes made along the way
 
@@ -285,6 +308,12 @@ Each passage is turned into an embedding with `all-MiniLM-L6-v2`, a small local 
 - *"Isn't changing labels after seeing results cheating?"* It would be if we only relaxed the failing ones, or if this were the held-out set. We applied one written rule to every query, kept the original labels and results, and the held-out check is still to be done by someone who didn't tune the system.
 - *"Why is the reranker so slow?"* It runs a transformer on each (query, passage) pair: 50 pairs per query, on CPU. A GPU or a smaller candidate pool would cut it.
 - *"Why does decomposition help so much?"* Metadata filtering. "Goldman Sachs 2023" narrows about 12,600 passages down to about 560 before any ranking happens.
+
+### 3.10 C0 follow-ups and charts
+
+- **Follow-ups** ([chat_context.py](../analystdesk/chat_context.py)). Choosing *Follow-up* adds the last three question-and-answer pairs to the question, labelled "use only to resolve references; verify the answer using the retrieved passages and EDGAR numbers". Retrieval and EDGAR look-ups still run fresh, so an earlier answer is never treated as evidence. *New question* sends the question alone.
+- **Charts** ([chat_chart.py](../analystdesk/chat_chart.py)). Code reads the metric from the question: operating or pre-tax margin, operating or pre-tax income, or revenue. It reads the companies and years the same way, and draws the EDGAR values with Plotly. "Quarterly" in the question switches to quarterly periods. If a value doesn't exist (for example, operating income for a bank), the chart says so instead of plotting something else.
+- **Why code and not the model?** The same rule as everywhere else: the chart shows XBRL values selected by code, so it can't disagree with the cited figures.
 
 ---
 
@@ -394,7 +423,7 @@ So the two layers are independent. The guard catches attacks early, with clear B
 - **Version conflict.** fastmcp 4.x moved to MCP SDK 2, but langchain-mcp-adapters still needs SDK 1. Both are pinned in `requirements.txt` (fastmcp 3.4.11, mcp < 2, adapters 0.3.2).
 - **stdout is the protocol.** Over stdio, anything a server prints to stdout corrupts the JSON-RPC stream and the client hangs. The retriever's progress messages now go to stderr.
 - **Loading models inside a tool thread hung.** filings-kb now loads its index at startup, in the main thread. That also makes the first search fast (~30 s startup, then ~1 s per search).
-- **A process per call.** By default the adapter starts a new server process for every tool call. Phase 4 must hold persistent sessions for a run.
+- **A process per call.** By default the adapter starts a new server process for every tool call. Each run therefore opens one session per server and holds it for the whole run (`runtime.open_tools`).
 
 ### 5.9 Practice questions (MCP)
 
@@ -421,7 +450,8 @@ So the two layers are independent. The guard catches attacks early, with clear B
 |---|---|---|
 | `index` | Builds the vector index once, then exits | internal |
 | `filings-kb`, `edgar`, `python-sandbox`, `research-portal` | The MCP servers, over HTTP on port 8000 | **internal only, no internet** |
-| `app` | The Gradio UI on port 7861 | internal + outside (needs OpenRouter) |
+| `app` | FastAPI + Gradio on port 7861 (health check `/readyz`) | internal + outside (needs OpenRouter) |
+| `jaeger`, `prometheus`, `grafana` | Traces, metrics and alerts, dashboard (section 10.4) | internal + localhost |
 
 **Design decisions and why:**
 
@@ -445,7 +475,7 @@ So the two layers are independent. The guard catches attacks early, with clear B
 
 **Likely questions:**
 - *"Why not mount the Docker socket so the sandbox server can start a fresh container per call?"* Access to the socket is effectively root on the host. A bug or injection in the sandbox server would then control the whole machine. A single locked-down container with a guarded child process is safer.
-- *"What still needs adding for the full L16 bar?"* Prometheus, Grafana and an alert (Phase 8), the agent graph (Phases 4–6), CI with an evaluation gate, and a test install on a clean machine.
+- *"How do you know the app is up?"* `/healthz` answers as soon as the server runs. `/readyz` returns 503 until the retriever and index are loaded, and Compose uses it as the app's health check (section 11).
 
 ---
 
@@ -473,7 +503,7 @@ input_guard → plan → [analyst: approve/edit/cancel plan]
 | Persistent checkpointer, stop and resume | `AsyncSqliteSaver` at `data/runs/checkpoints.sqlite`. Each CLI command exits at a gate, and the next resumes from a **new process** |
 | A plan object shown to the user | `review_plan` interrupt. The analyst approves or edits it (`--edit-plan plan.json`); the app can also cancel before research starts |
 | Replanning when a tool contradicts the plan | A NOT_IN_COVERAGE tool result triggers `replan`, and the analyst sees the revised plan |
-| ReAct inside the specialist | `research`: the model calls tools, observes, and repeats, within a budget of 24 tool calls and 120k tokens |
+| ReAct inside the specialist | `research`: the model calls tools, observes, and repeats, within the run's tool budget (`tool_budget`: 12 + 12 per company, so 24 for one company and 36 for two) and 120k tokens |
 | Human approval of the exact payload (L14) | `review_note` signs the exact note. An edit goes back through `check`, then needs a fresh approval |
 
 **Live run evidence (gpt-4.1-mini via OpenRouter):**
@@ -493,7 +523,7 @@ input_guard → plan → [analyst: approve/edit/cancel plan]
 - Cited passages exist.
 - No advice wording.
 
-That verified share is the dashboard metric for the "alert below 98%" (Phase 8).
+That verified share is the dashboard metric behind the "alert below 98%" (section 10.4).
 
 **Likely questions:**
 - *"Where is the model deciding and where is code?"* The model plans, chooses tools and writes the prose. Code checks scope, enforces coverage on the plan, computes and inserts every key figure, verifies every number, and signs approvals. People approve the plan and the note.
@@ -511,7 +541,7 @@ That verified share is the dashboard metric for the "alert below 98%" (Phase 8).
 4. The **note** appears, with numbered sources and the code check (e.g. "10/11 numbers verified" with the flagged number listed).
 5. **Approve** (it's signed and published), **edit** (it's re-checked and needs a fresh approval), or **reject**.
 6. **Published notes** lists everything in the research portal.
-7. **Load run** resumes any run by its id, even after restarting the app.
+7. **📂 Your runs** lists every run with its status. Click one to reopen or resume it, even after restarting the app.
 
 **Tool transport in the app.** The app uses MCP's in-memory transport: the same protocol and schemas as stdio or HTTP, but no subprocesses, and filings-kb reuses the app's already-loaded index.
 
@@ -565,13 +595,13 @@ Result file: `data/evaluation/results/memory_compare_20261025-112601.json`. You 
 ### 8.4 Correction and deletion (policy in practice)
 
 - **🧠 Memory panel** (Research tab, C1/C2): view preferences, the coverage list and past-note memory, and delete any item.
-- **Use memory** switch: a run with it off neither reads nor writes memory.
+- **↻ Re-run this request without memory**: that run neither reads nor writes memory (section 9.5).
 - `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed.
 
 **Likely questions:**
 - *"Can the agent change its own memory?"* No. No tool writes memory. Only two code paths do: the analyst's "Add preference", and publish-after-approval.
 - *"What if a stored preference is wrong?"* Delete it in the panel. Each run's activity log shows which preferences were used.
-- *"How do you stop memory from leaking private data?"* Memory holds only the analyst's own preferences and published, verified figures. The private watchlist (L15) gets its own namespace that never reaches a prompt or search tool; that's in the security phase.
+- *"How do you stop memory from leaking private data?"* Memory holds only the analyst's own preferences and published, verified figures. A private watchlist (L15) would need its own namespace that never reaches a prompt or search tool; that belongs with the security work (defences by role 4).
 
 ---
 
@@ -607,7 +637,7 @@ input_guard → plan → [analyst: plan gate] → fan-out in parallel (LangGraph
 Every tool call in C2, and in C1 via `ToolNode(awrap_tool_call=...)`, passes through:
 - **Pre-tool:**
   - *permission*: is the tool in this agent's allow-list? If not, `PERMISSION_DENIED`;
-  - *budget*: each agent instance has its own tool-call budget (researcher 6, quant 14, risk_diff 6). When it's used up, `BUDGET_EXCEEDED`;
+  - *budget*: each agent instance has its own share of the run's budget, set by `specialist_budgets` (section 9.7). When it's used up, `BUDGET_EXCEEDED`;
   - *EDGAR rate limit*: at most 10 calls per second.
 - **Post-tool:** a trace event (agent, tool, arguments, ok or error code, duration), streamed live to the app's activity log.
 
@@ -625,7 +655,7 @@ Denials go back to the agent as normal tool results, so it adapts instead of cra
 2. **A judge from a different model family** (`meta-llama/llama-3.3-70b-instruct`, while the writer is `gpt-4.1-mini`) checks each cited claim against its passage text. Unsupported claims become issues for the writer.
 3. **Issues go back to the writer** for up to 2 revisions. Whatever remains is shown to the analyst at the gate; nothing is hidden.
 
-**Why a different family for the judge?** A model judging its own family's output tends to share its blind spots. The brief asks for this, and also for checking the judge against 20+ human labels with Cohen's kappa (Phase 8). Until then, the judge's verdicts are advisory: they're shown and sent back, but never silently trusted.
+**Why a different family for the judge?** A model judging its own family's output tends to share its blind spots. The brief asks for this, and also for checking the judge against 20+ human labels with Cohen's kappa (section 10.3). The judge's verdicts are advisory: they're shown and sent back to the writer, but a person makes the final call at the note gate.
 
 ### 9.4 Fixes found by tracing real runs (good viva stories)
 
@@ -651,6 +681,40 @@ Denials go back to the agent as normal tool results, so it adapts instead of cra
 The Research tab in **C2 · Team** mode has a **👥 Team board** with one row per agent: research lead, each researcher and risk-diff agent, the quant, writer, critic, you (the note gate) and the publisher. Each row shows status (queued → working → handed off), tool calls, last action and details (passages, facts, confidence, errors). It updates live as hook events stream in; in a test run it refreshed 40 times. Mid-run you can see some specialists already handed off while others are still working, which is the parallel fan-out made visible. Loaded runs rebuild the board from their history, because each hand-off now saves that agent's tool calls.
 
 **Demo tip:** start a C2 run, approve the plan, and narrate the board: "five specialists start at once; the quant only has EDGAR and the sandbox; the risk-diff agent hit its budget, and the hook stopped it; the critic verified every number and the judge flagged one claim for me to decide on."
+
+### 9.7 One budget for C1 and C2 (role 3)
+
+**Code:** `graph.tool_budget` and `team.specialist_budgets`. Tests: `SameBudgetTests` in [tests/test_graph.py](../tests/test_graph.py), and [tests/test_team_e2e.py](../tests/test_team_e2e.py).
+
+- **The rule.** The brief compares the single agent and the team with "the same tools and budget". A run may make **12 + 12 per company** tool calls (24, 36, 48), in C1 and C2 alike. `AGENT_MAX_TOOL_CALLS` fixes it for experiments.
+- **The split in C2:**
+  - the quant gets **3 per company + 3**: 3 `get_financials` calls per company, plus room for `run_python` and a retry if the sandbox times out;
+  - the rest is shared evenly by each company's researcher and risk-diff agent;
+  - any remainder goes to the quant;
+  - the shares always add up to the C1 total. One company: researcher 9, risk-diff 9, quant 6. Two companies: 6 + 6 per company, quant 12.
+- **Why it matters.** With different budgets, E1 would measure the budget, not the orchestration.
+- **Evidence from live runs:**
+  - In run `0c8cbf5f` the quant hit two sandbox TIMEOUTs and had no call left, which led to the retry room.
+  - In run `c5test` the specialist prompts showed `search_filings(company=…, item=…)` without a `query`. The tool rejected every first search, wasting 7 of 24 calls. The prompts now show the query, and a test renders every specialist prompt and checks each `search_filings` example includes one.
+- **Offline end-to-end tests** run both graphs with a scripted model and the real tools, so a wiring regression fails CI without any API cost.
+
+### 9.8 Placeholder safety: a bug found by comparing memory on and off (role 2)
+
+**What happened (run `1cc35ab6`).**
+1. The analyst's preference said "always include a peer comparison table". The plan covered only JPM.
+2. The writer added rows for GS, BAC, MS and WFC with placeholders typed in square brackets, such as `[GS_2024_margin]`.
+3. The renderer only knew `{…}` and the checker didn't look for placeholders, so the note was **published with blanks**.
+4. In the same run, the "what changed" lines were inserted without a heading and went unnoticed.
+
+**Fixes:**
+- `render` accepts both spellings and reports any key that isn't in KEY FIGURES.
+- `check_note` rejects any leftover figure placeholder. That also covers notes edited by hand, which are re-checked without rendering.
+- `insert_changes` always puts the comparison under "What changed since our last note", without repeating a heading the writer already wrote.
+- The writer prompt now says to use only KEY FIGURES placeholders, and to mention companies outside the plan in words.
+
+**Why a passage id isn't mistaken for a placeholder.** A passage id like `JPM_2024_item7_001` has digits after the year, so it never matches the placeholder pattern `TICKER_YEAR_name`. A test locks this in.
+
+**Likely question:** *"Why didn't the preference fetch the peers' figures?"* A preference can't widen the approved plan. The analyst approved a plan for JPM only, and pulling in four more companies would change what was approved (rule 3). The note now states that the peers are outside the plan, rather than showing blanks.
 
 ---
 
@@ -678,6 +742,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - Lessons are **pending** until a person approves them in the app (Research tab, C1/C2 → 📘 Playbook). Rejections are kept with their reason, and the brief asks for one rejected lesson as evidence.
 - Approved lessons are **retrieved only when relevant** (tag and word overlap, top 3) and shown to the planner, researchers and specialists, and writer. Each run's log says how many lessons it used.
 - **Freeze** the playbook before the held-out run; a frozen playbook refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
+- **Duplicates are merged.** If reflection produces the same lesson twice (same *when*, *do* and tags after normalising case and spacing), it is stored once with all its source cases. If earlier copies were given conflicting decisions, the lesson goes back to pending for a fresh review.
 - Code: [analystdesk/lessons.py](../analystdesk/lessons.py).
 
 ### 10.3 Judge calibration (L13)
@@ -699,3 +764,81 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - **Alert:** Prometheus rule `VerifiedShareBelow98` (the brief's exact alert) ([docker/prometheus/alerts.yml](../docker/prometheus/alerts.yml)).
 - `docker compose up` now also starts **Jaeger (:16686), Prometheus (:9090) and Grafana (:3000)**.
 - **Known gap:** the MCP servers' own spans form separate traces, because trace context isn't propagated over the in-memory MCP connection. The lecture's `traceparent` header approach would fix this over HTTP.
+
+### 10.5 Practice questions (agents, memory, evaluation)
+
+1. Where does the model decide, and where does code decide? Give three examples of each.
+2. What happens to a note that still fails the check after 2 revisions?
+3. How does the plan gate differ from the note gate? What can the analyst do at each?
+4. Why does every specialist get its own budget, and how are the budgets set?
+5. Checkpointer vs store: what lives in each?
+6. Why are past-note figures trustworthy enough to compare against?
+7. A preference asks for peers outside the plan. What happens, and why?
+8. Why is the judge a different model family, and how do you know it can be trusted?
+9. Why is kappa better than raw agreement?
+10. Why must lessons come only from development cases, and why freeze the playbook?
+11. Why does an evaluation run force memory off?
+12. C2 is more accurate than C1 but three times the cost. Does it justify the cost?
+
+---
+
+## 11. Configuration, serving and CI (L16)
+
+### 11.1 Prompts and models in one versioned file
+
+**Code:** [config/llm.toml](../config/llm.toml), [analystdesk/llm_config.py](../analystdesk/llm_config.py). Tests: [tests/test_llm_config.py](../tests/test_llm_config.py).
+
+- **What it holds:**
+  - every model ID, under the roles `c0`, `agent`, `judge` and `reflection`;
+  - every prompt: C0 system and answer, planner, researcher, writer, the three specialists, judge and reflection.
+- **Validated at start-up:**
+  - the file's format version;
+  - that every required model and prompt is present;
+  - that each prompt template uses **exactly** the placeholders the code fills, for example `{company}`, `{budget}` and `{plan}` for a specialist.
+  An invalid file stops the app with a clear error rather than failing halfway through a run.
+- **Why.** Prompts are behaviour, so they belong in version control next to the code, reviewable in a pull request. A change of model or prompt shows up in git history and can be tied to an evaluation result. `.env` holds only the API key, which is a secret, not configuration.
+
+### 11.2 FastAPI around the UI
+
+**Code:** [analystdesk/api.py](../analystdesk/api.py). Tests: [tests/test_api.py](../tests/test_api.py).
+
+- The Gradio UI is mounted inside a FastAPI app, so one server provides:
+  - `/healthz`, for liveness;
+  - `/readyz`, which returns 503 until the retriever is loaded;
+  - `/docs`, the interactive API documentation;
+  - the research API.
+- **The research API:**
+  - `POST /api/research` starts a C1 or C2 run and **streams events** (server-sent events) up to the plan gate;
+  - `POST /api/research/{run_id}/decision` approves, edits or rejects at a gate and streams on to the next gate.
+- **The same graph and gates as the UI**, so the API can't skip an approval. Publishing still needs the signed approval of the exact note, verified by the portal.
+- **Why readiness separately from health?** Loading the index takes time. A server can be alive but not yet able to search. Compose's health check uses `/readyz`, so the app counts as healthy only once it can answer.
+
+### 11.3 CI and the evaluation gate
+
+**Code:** [.github/workflows/ci.yml](../../../.github/workflows/ci.yml), [.github/workflows/evaluation-gate.yml](../../../.github/workflows/evaluation-gate.yml), `evaluation_gate_failures` in [evaluation.py](../analystdesk/evaluation.py). Tests: [tests/test_eval_gate.py](../tests/test_eval_gate.py).
+
+- **CI (every push and pull request):** installs CPU-only PyTorch and the requirements, runs the whole offline test suite (184 tests, no API key), and validates `compose.yaml`.
+- **The evaluation gate (on demand, uses the API key stored as a GitHub secret):**
+  1. runs C1 on the 20 development cases;
+  2. **fails** if fewer than 20 cases ran, task success is below 95%, or there is any policy violation;
+  3. attaches the results JSON to the workflow run.
+- **Why on demand and not on every push?** It costs money and takes minutes. Offline tests catch wiring bugs for free on every change; the gate is run before a demo or a release.
+- **Why only development cases?** Running held-out cases routinely would leak them into tuning.
+- **Alert rules have tests too.** `promtool test rules` feeds synthetic below-threshold and recovery samples to `VerifiedShareBelow98` ([alerts.test.yml](../docker/prometheus/alerts.test.yml)).
+
+### 11.4 Deployment details
+
+- **Compose health check:** the app's health check is `/readyz`. Runs, memory, portal notes and the approval key live in named volumes, so they survive restarts and image rebuilds.
+- **Setup:** `setup.bat` creates a project-local `.venv` and installs the requirements on Windows, with a check for Python 3.12 or newer.
+- **Windows output encoding:** `app.py` switches stdout and stderr to UTF-8, because emoji progress messages crashed the app when its output went to a file or pipe.
+
+### 11.5 Practice questions (operations)
+
+1. Why are prompts in `config/llm.toml` and not in `.env` or in the code?
+2. What does the config validator check, and why fail at start-up?
+3. Why `/readyz` as well as `/healthz`?
+4. Can the API publish a note without a person? Why not?
+5. What does CI run on every push, and what does it deliberately not run?
+6. What makes the evaluation gate fail?
+7. How do you test an alert rule without waiting for a real incident?
+

@@ -29,11 +29,11 @@ Memory is read-only to the agent: no tool lets the model write, edit or delete m
 
 - **Delete:** in the 🧠 Memory panel, click a preference or a past-note memory, then **Delete selected memory**. The next run no longer sees it.
 - **Correct:** delete the wrong item and add the right one (preferences), or re-run `python scripts/backfill_memory.py`, which rebuilds past-note memory from the published notes in the portal.
-- **Switch off:** untick **Use memory** when starting a run. That run neither reads nor writes memory. This is also how memory-on vs memory-off is compared.
+- **Run without memory:** memory is on by default for each analyst. **↻ Re-run this request without memory** (C1/C2 panel) repeats a request with memory off; that run neither reads nor writes memory. This is also how memory-on vs memory-off is compared. Through the API, send `"memory_on": false`. Evaluation runs (`AGENT_EVAL=1`) always run without memory.
 - **Forget everything:** delete `data/memory/memory.sqlite`. Published notes stay in the portal, because publishing is a separate, approved record.
 
-## Limits and planned changes
+## Limits
 
 - Preferences are free text and are not checked; a contradictory preference is followed as written. The analyst sees which preferences were used in each run's activity log.
-- No automatic expiry yet: memory stays until deleted.
-- The **private watchlist** (brief, L15) will live in its own namespace that is never sent to any search tool or model prompt. It is added with the security phase.
+- A preference cannot widen a run's scope. For example, "always include a peer table" does not add peers to the approved plan. Figures for companies outside the plan are not available to the writer, and any placeholder for them is rejected by the checker.
+- There is no automatic expiry: memory stays until it is deleted.

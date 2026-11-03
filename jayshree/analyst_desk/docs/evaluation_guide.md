@@ -109,7 +109,7 @@ The compliance critic uses a judge from a **different model family** (`meta-llam
 | | Question | How | Status |
 |---|---|---|---|
 | **E1** | Does the agent justify its cost? | C0 vs C1 vs C2 on the same cases | Dev done; held-out pending |
-| **E2** | Do the defences work? | Red-team suite with defences off vs on; also false blocks on clean cases | Phase 9 (attacks: role 5) |
+| **E2** | Do the defences work? | Red-team suite with defences off vs on; also false blocks on clean cases | Attacks written by role 5 |
 | **E3** | Did the Reflexion lessons help? | Held-out with `--no-lessons` vs with the frozen playbook | Tooling ready; needs approved lessons and held-out cases |
 | **E4** | Signature ablation | Critic loop on vs off; table-aware vs plain passages | To build |
 
