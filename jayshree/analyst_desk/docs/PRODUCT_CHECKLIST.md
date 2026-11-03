@@ -1,46 +1,27 @@
-# R1 completion checklist: Domain and Product Lead
+# Analyst Desk Product and Domain Checklist
 
-Use the capstone brief to define the product and domain work for Analyst Desk, independently of the current implementation. Main may be incomplete or incorrect: it is an implementation to assess against the requirements, not the authority for those requirements.
+Define the analyst's problem, supported research scope, evidence standards and acceptance policies independently of the current implementation. Assess existing behavior against those decisions and record a gap when it falls short.
 
-The phases below are a practical work breakdown, not a list of separately prescribed course requirements. They distinguish direct R1 duties, shared project evidence and common team obligations. All items start unchecked. Existing drafts, controls and automated tests are inputs to review; they do not establish completed human decisions or brief compliance.
+This checklist covers product and domain work, including the shared evidence needed for product acceptance. It is not a complete technical implementation checklist. The responsibility key and handoffs identify the engineers who own the supporting systems and evaluation.
 
-Start the decision and contribution log in phase 1 and update it throughout the work, as the brief requires. Phase 11 checks the completed record; it is not the point at which logging starts.
+All tasks remain unchecked until the work and review occur. Existing drafts, controls and automated tests are inputs to review; they do not establish completed human decisions, adoption or validation. Maintain the project decision and contribution log throughout the work.
 
-## Authority and requirement mapping
+## Execution order: product definitions, then shared validation
 
-The [capstone architecture and build guide](../capstone_projects_Analyst_Desk.pdf) is the source for this checklist. References use its printed page numbers. Separate cohort guidelines control official deadlines, marks and other cohort conditions.
+Prepare the domain and product proposals first. Where a phase also needs team agreement, leave that shared review open until the relevant owners participate. Preparing a proposal does not complete its adoption, implementation or evaluation.
 
-| Requirement in the brief | Source | Checklist coverage | Responsibility |
-|---|---|---|---|
-| Define the problem and users. | p.4, Team roles, role 1; p.15, intended analyst and task. | Phase 1. | Direct R1. |
-| Define the data. | p.4, role 1; pp.15-16, filing evidence and coverage. | Phases 1 and 3. | R1 defines requirements; R2 implements ingestion/retrieval. |
-| Define written policies. | p.4, role 1; pp.15-16, numerical trust, supported claims and human sign-off. | Phase 3. | Direct R1 domain policies; implementation belongs to the relevant engineers. |
-| Define golden-set content. | p.4, role 1; pp.5-6 and 16, evaluation protocol and question types. | Phases 4 and 5. | R1 domain meaning/content; R5 owns the independent evaluation process. |
-| Talk to the domain expert. | p.4, role 1. | Phase 2. | Direct R1. |
-| Own the demo script. | p.4, role 1; p.16, the three required demo stories. | Phase 10. | R1 owns the script/narrative; role owners supply their working components. |
-| Check held-out cases against the written policy. | p.5, role separations. | Phase 8. | Explicit R1 review; R5 owns protected authoring/storage and agent tuners must not author those cases. |
-| Identify a real user, measure an outcome and state limits accurately. | p.6, Scope and impact. | Phases 1 and 9. | Common project requirement with R1 product ownership. |
-| Explain the architecture and own work; record decisions and contributions. | pp.4-6 and 17. | Phase 11. | Common obligation for every member, including R1. |
-| Supply memory, lessons, evaluation, security and operational evidence. | p.3 minimum bar; pp.5-6 and 15-16. | Phases 6-11. | Shared dependencies; these do not make R1 the implementation owner for R2-R6. |
-
-Scope and acceptance decisions must be justified from the brief and domain review before checking whether the current code satisfies them. Record a gap or request a change when the implementation differs; do not redefine success merely to match its output.
-
-## Execution order: R1 work first, shared validation afterwards
-
-Prepare the following R1-owned work first. Where a phase also needs team agreement, prepare the R1 proposal and leave the shared review open. Preparing a proposal does not complete its adoption, implementation or evaluation.
-
-| Order | Work to start with | Roles | R1 output | Related phase |
+| Order | Work to start with | Roles | Product/domain output | Related phase |
 |---|---|---|---|---|
 | 1 | Define the analyst's problem and the intended product outcome. | R1 | Problem statement and proposed success measures. | 1 |
 | 2 | Identify a real user and describe their research workflow and needs. | R1 | User/workflow description and research scenarios. | 1 |
-| 3 | Define data, source and coverage requirements from the brief. | R1 | Requirements and justified coverage proposal, independent of existing code. | 1 |
-| 4 | Talk to a human domain expert and assess the feedback. | R1 | Actual feedback and R1 decisions. | 2 |
+| 3 | Define data, source and coverage requirements. | R1 | Requirements and justified coverage proposal, independent of existing code. | 1 |
+| 4 | Talk to a human domain expert and assess the feedback. | R1 | Actual feedback and domain decisions. | 2 |
 | 5 | Define written financial, research and acceptance policies. | R1 | Policy proposal with examples and unresolved questions. | 3 |
 | 6 | Define golden-answer content and domain scoring expectations for development work. | R1 | Source-grounded expectations/rubric for R5 review; no protected-case authoring. | 4 |
-| 7 | Prepare the required demo narrative and script from the brief. | R1 | Three-story script and a list of evidence needed from the team. | 10 |
-| Throughout | Record actual decisions/contributions and practise the architecture and own scope. | R1 | Maintained log and personal viva preparation. | 11 |
+| 7 | Prepare the demonstration narrative and script. | R1 | Three-story script and a list of evidence needed from the team. | 10 |
+| Throughout | Record actual decisions/contributions and practise the architecture and own scope. | R1 | Maintained decision/contribution log and presentation preparation. | 11 |
 
-After the R1 work is prepared, coordinate the following shared work with the other role owners. The explicit R1 duty to check held-out cases needs R5's controlled input and belongs in this second pass.
+After the product and domain proposals are prepared, coordinate shared validation with the other role owners. R1 policy review of held-out cases requires controlled access from R5.
 
 | Shared work | Roles | Boundary |
 |---|---|---|
@@ -51,11 +32,9 @@ After the R1 work is prepared, coordinate the following shared work with the oth
 | Review independent experiments, security evidence and reported outcomes. | R1, R2, R3, R4, R5, R6 | R1 interprets product impact; execution remains with the relevant owners. |
 | Execute the full demo, collect operational evidence and finalize submission. | R1, R2, R3, R4, R5, R6 | R1 owns the narrative; each member supplies evidence for their component. |
 
-## Project workflow rules (not additional course requirements)
+## Review and recording rules
 
 - Keep repository content, deliverables, code comments, commit messages and pull-request descriptions in English.
-- Keep conversations and personal operational details out of project artifacts.
-- Develop on `R1_role`, based on main commit `f2fb159623ddfb3547ce2f0ed2615902c6d3d1d6`. Record a new baseline if main changes before evaluation or demonstration.
 - Check an item only after the work occurs. Record the evidence, actual reviewer, date, source version and decision.
 - Keep protected evaluation questions and answers outside the application, model context and ordinary project artifacts. R5 controls access.
 
@@ -74,54 +53,54 @@ R1 defines and reviews domain requirements. Shared or dependent evidence below d
 
 ## 1. Define the problem, user and supported scope
 
-**Classification:** Direct R1 duties plus the common scope/impact requirement. **Owner:** R1. **Support:** R2, R3. **Brief:** pp.4-6 and 15-16.
+**Classification:** R1 product definition with shared scope and impact review. **Owner:** R1. **Support:** R2, R3.
 
-**Roles:** R1, R2, R3. Prepare the R1 scope proposal first; coordinate source/workflow agreement afterwards.
+**Roles:** R1, R2, R3. Prepare the product scope proposal first; coordinate source/workflow agreement afterwards.
 
 - [ ] Identify a real equity-research user and describe their current filing-comparison workflow and pain points.
 - [ ] State the product outcome and supported research questions: financial figures, year/peer comparisons, disclosed risk changes and follow-up research.
-- [ ] Independently define and justify data/source coverage meeting the brief's 10-15 companies, two sectors and three years. Require Item 1A Risk Factors, Item 7 MD&A, preserved tables, financial facts, company/year/Item metadata and cached evidence; evaluate any existing corpus against those requirements.
+- [ ] Independently define and justify data/source coverage for 10-15 companies, two sectors and three years. Require Item 1A Risk Factors, Item 7 MD&A, preserved tables, financial facts, company/year/Item metadata and cached evidence; evaluate any existing corpus against those requirements.
 - [ ] Define handling for unsupported companies/years, missing evidence, incompatible comparisons and requests for investment recommendations. Treat additional features such as quarterly charts as separate scope decisions.
 - [ ] Define measurable usefulness criteria and how they will be measured; agree the scope with the team.
 
 **Completion evidence:** an adopted product-scope record with user, problem, outcomes, boundaries, acceptance questions and unresolved limitations.
 
-The current main implementation's company names, Technology/Finance sectors and FY2022-2024 are candidates to assess, not mandatory selections in the brief. Retain, revise or reject them with a documented reason.
+Treat existing company, sector and year selections as candidates to assess. Retain, revise or reject them with a documented domain reason.
 
 ## 2. Obtain actual domain-expert feedback
 
-**Classification:** Direct R1 duty. **Owner:** R1. **Brief:** pp.4-6.
+**Classification:** Direct R1 duty. **Owner:** R1.
 
-**Roles:** R1. Domain-user feedback may supplement, but does not replace, the brief's domain-expert interaction.
+**Roles:** R1. Domain-user feedback complements the financial/domain-expert review; retain evidence of each.
 
 - [ ] Have a suitable human domain expert inspect the problem, scope, example question and proposed note format.
 - [ ] Discuss financial comparability, useful evidence, unacceptable errors and the limits of the product.
 - [ ] Record actual feedback and the decisions to accept, change or reject it, with reasons.
 - [ ] Incorporate the agreed changes and retain evidence of the review.
 
-**Completion evidence:** a domain-review record identifying the reviewer, relevant experience, material/version reviewed, actual date, feedback and resulting decisions. An AI-prepared review is not evidence of this interaction.
+**Completion evidence:** a domain-review record identifying the reviewer, relevant experience, material/version reviewed, actual date, feedback and resulting decisions. A prepared review template is not evidence that this interaction occurred.
 
 ## 3. Adopt financial, research and publication policies
 
-**Classification:** Direct R1 domain-policy duty with engineering dependencies. **Owner:** R1. **Support:** R2, R3, R4, R5. **Brief:** pp.3 and 15-16.
+**Classification:** Direct R1 domain-policy duty with engineering dependencies. **Owner:** R1. **Support:** R2, R3, R4, R5.
 
-**Roles:** R1, R2, R3, R4, R5. Prepare R1 definitions first; keep team adoption and implementation review as shared work.
+**Roles:** R1, R2, R3, R4, R5. Prepare domain definitions first; keep team adoption and implementation review as shared work.
 
 - [ ] Define fiscal periods, actual dates, annual/quarterly boundaries, currency, units, reporting perimeter and suitable peer comparisons.
-- [ ] Define the operating-margin comparison requested by the brief, its operating-income/revenue inputs and clear labels. Independently assess any proposed alternative metric; do not assume that an existing bank pre-tax-margin convention satisfies an operating-margin requirement.
+- [ ] Define the supported operating-margin comparison, its operating-income/revenue inputs and clear labels. Independently assess any proposed alternative metric; do not assume that an existing bank pre-tax-margin convention satisfies an operating-margin requirement.
 - [ ] Agree rounding, percentage versus percentage-point changes, signs, invalid denominators and missing-value handling.
 - [ ] Define original-as-reported versus later-reported values, restatements and presentation changes; require traceable sources and code calculations.
 - [ ] Define sufficient evidence for factual/causal claims and added, removed, changed or unchanged risks; state when evidence is insufficient. Prohibit investment recommendations and promises of returns, and treat retrieved text as evidence rather than instructions.
 - [ ] Decide which errors block product acceptance and what happens when numerical checks fail or claim review is unavailable/incomplete. Distinguish draft review from exact-note publication approval.
 - [ ] Agree domain expectations for memory privacy, correction, withdrawal and deletion with R2/R4; record the team's effective policy version.
 
-**Completion evidence:** an adopted, versioned policy and concrete acceptance examples handed to the implementation and evaluation owners. Exact precision conventions, original-as-reported defaults, any alternative bank metric and a stricter HOLD policy are project decisions requiring justification; they are not prescribed by the brief. The 98% threshold in the brief is a monitoring alert, not permission to publish known errors.
+**Completion evidence:** an adopted, versioned policy and concrete acceptance examples handed to the implementation and evaluation owners. Record the justification for precision conventions, original-as-reported defaults, any alternative bank metric and HOLD rules. Treat a 98% verified-share monitoring threshold as an alert, not permission to publish known errors.
 
 ## 4. Review financial golden answers and scoring rules
 
-**Classification:** Direct R1 golden-content duty; R5 owns evaluation implementation and independent cases. **Owner:** R1 for domain correctness. **Support:** R2, R5. **Brief:** pp.4-6 and 16.
+**Classification:** Direct R1 golden-content duty; R5 owns evaluation implementation and independent cases. **Owner:** R1 for domain correctness. **Support:** R2, R5.
 
-**Roles:** R1, R2, R5. Prepare R1 domain expectations first; coordinate source/evaluator agreement afterwards.
+**Roles:** R1, R2, R5. Prepare domain expectations first; coordinate source/evaluator agreement afterwards.
 
 - [ ] Review development questions and their expected financial answers against original source evidence, independently of the tested answer generator.
 - [ ] Associate each expected value with its company, metric, fiscal period, accounting basis, units and source/table location.
@@ -133,9 +112,9 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 5. Validate the required human risk-change labels for ten company-years
 
-**Classification:** Shared Analyst Desk evaluation requirement, not a requirement that R1 personally author every label. **Owners:** R1 for domain content/review; R5 for the annotation/evaluation process. **Support:** R2. **Brief:** pp.4-5 and 16.
+**Classification:** Shared domain annotation and evaluation work; R1 does not personally own every label. **Owners:** R1 for domain content/review; R5 for the annotation/evaluation process. **Support:** R2.
 
-**Roles:** R1, R2, R5. Coordinate this shared annotation/review work after the R1 policy and content proposal.
+**Roles:** R1, R2, R5. Coordinate this shared annotation/review work after the domain policy and content proposal.
 
 - [ ] Select ten target company-years and obtain the relevant earlier/later filing evidence for each comparison.
 - [ ] Ensure human reviewers inspect both periods and assign findings using agreed risk-label definitions, with a rationale and source locations. Perform or coordinate R1 domain review without compromising evaluation independence.
@@ -147,9 +126,9 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 6. Review a current-version research note and close product findings
 
-**Classification:** R1 product acceptance and domain interpretation of shared end-to-end requirements. **Owner:** R1. **Support:** R2, R3, R4, R5. **Brief:** pp.3 and 15-16.
+**Classification:** R1 product acceptance and domain interpretation of shared end-to-end requirements. **Owner:** R1. **Support:** R2, R3, R4, R5.
 
-**Roles:** R1, R2, R3, R4, R5. Review the product against adopted requirements; do not assume current main is correct.
+**Roles:** R1, R2, R3, R4, R5. Review the product against adopted requirements; do not assume existing behavior is correct.
 
 - [ ] Select a representative development request and record the code/configuration, source snapshot, scope and adopted policy used for the review.
 - [ ] Run through the application's research and human-review gates under the applicable authorization; retain the exact plan, note, checks and trace.
@@ -161,7 +140,7 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 7. Review memory behaviour and development lessons
 
-**Classification:** Shared memory/learning evidence; R2/R3 own implementation and R5 measures effects. **Owner:** R1 for domain judgement. **Support:** R2, R3, R4, R5. **Brief:** p.3, L9/L12; pp.15-16.
+**Classification:** Shared memory/learning evidence; R2/R3 own implementation and R5 measures effects. **Owner:** R1 for domain judgement. **Support:** R2, R3, R4, R5.
 
 **Roles:** R1, R2, R3, R4, R5.
 
@@ -174,7 +153,7 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 8. Confirm independent evaluation and security handoffs
 
-**Classification:** Explicit R1 held-out policy review plus shared evidence owned by R5 and the engineering roles. **Owner:** R5 for independent evaluation; R1 reviews domain/policy alignment. **Support:** R2, R3, R4. **Brief:** pp.3-6 and 16.
+**Classification:** R1 held-out policy review with independent evaluation owned by R5 and supporting engineering roles. **Owner:** R5 for independent evaluation; R1 reviews domain/policy alignment. **Support:** R2, R3, R4.
 
 **Roles:** R1, R2, R3, R4, R5. R5 provides the controlled cases and evaluation evidence before R1 completes this review.
 
@@ -188,7 +167,7 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 9. Interpret experiments and validate product claims
 
-**Classification:** Shared experiment evidence and common outcome/interpretation obligations. **Owner:** R1 for product interpretation; R5 for execution/scoring. **Support:** R2, R3, R4, R6. **Brief:** pp.5-6 and 16.
+**Classification:** Shared experiment evidence and common outcome/interpretation obligations. **Owner:** R1 for product interpretation; R5 for execution/scoring. **Support:** R2, R3, R4, R6.
 
 **Roles:** R1, R2, R3, R4, R5, R6.
 
@@ -199,13 +178,13 @@ The current main implementation's company names, Technology/Finance sectors and 
 - [ ] Distinguish actual provider charges from estimates and current frozen configurations from historical results with incomplete provenance.
 - [ ] Validate the usefulness outcome from phase 1 and agree evidence-backed presentation claims, including negative results and limitations.
 
-**Completion evidence:** an R1 interpretation of R5's versioned results, measured user/product outcomes and an agreed claim-to-evidence register. Do not infer superiority from architecture or a development score alone.
+**Completion evidence:** a product interpretation of R5's versioned results, measured user/product outcomes and an agreed claim-to-evidence register. Do not infer superiority from architecture or a development score alone.
 
 ## 10. Rehearse and record the required demonstration
 
-**Classification:** Direct R1 demo-script duty; the required technical demonstrations are team work. **Owner:** R1 for script and narrative. **Support:** R2-R6. **Brief:** pp.4, 6 and 15-16.
+**Classification:** Direct R1 demo-script duty; the required technical demonstrations are team work. **Owner:** R1 for script and narrative. **Support:** R2-R6.
 
-**Roles:** R1, R2, R3, R4, R5, R6. Draft the R1 script first; execute and verify the full demo with the team afterwards.
+**Roles:** R1, R2, R3, R4, R5, R6. Draft the demo script first; execute and verify the full demo with the team afterwards.
 
 - [ ] Demonstrate a margin comparison with every financial figure linked to its supporting fact or calculation.
 - [ ] Demonstrate the critic finding/correcting a planted wrong number while an injected retrieved article's investment recommendation stays out of the note.
@@ -218,18 +197,18 @@ The current main implementation's company names, Technology/Finance sectors and 
 
 ## 11. Complete submission, contribution evidence and individual viva
 
-**Classification:** Common submission, contribution and individual-viva obligations. **Owner:** R1 for product narrative and personal contribution. **Support:** R2-R6. **Brief:** pp.6 and 17.
+**Classification:** Shared delivery and contribution evidence, with role-specific presentation preparation. **Owner:** R1 for product narrative and personal contribution. **Support:** R2-R6.
 
-**Roles:** R1, R2, R3, R4, R5, R6. Maintain R1's own records/practice throughout; complete shared submission checks with the team.
+**Roles:** R1, R2, R3, R4, R5, R6. Maintain the decision/contribution record throughout and complete shared submission checks with the team.
 
 - [ ] Redraw and explain the architecture and a numbered request walkthrough, including decisions made by models, code and people.
 - [ ] Explain scope, financial/risk definitions, evidence limits, memory behaviour, experiment trade-offs, an actual design decision and remaining pilot-readiness work.
 - [ ] Finalize slides and review the 4-6-page evaluation report for accurate scope, impact, denominators and limitations with R5.
 - [ ] Check the submission evidence with its owners: R2 memory policy, R4 threat model and R6 reproducible installation, actual CI failure/explanation and working alert evidence.
 - [ ] Record personal work, actual reviews, decisions and contributions with evidence; acknowledge outstanding dependencies rather than marking them completed.
-- [ ] Perform a final R1 readiness review and prepare only reviewed, English-language project artifacts for the team's merge process.
+- [ ] Perform a final product-readiness review and prepare only reviewed, English-language project artifacts for the team's merge process.
 
-**Completion evidence:** the final presentation package, reviewed report, actual contribution/decision log, viva practice and a documented R1 readiness decision.
+**Completion evidence:** the final presentation package, reviewed report, actual contribution/decision log, presentation preparation and a documented product-readiness decision.
 
 ## Completion record
 
@@ -239,11 +218,11 @@ Record this for each phase when it is completed:
 |---|---|---|---|---|
 | Not yet recorded | Pending | Pending | Pending | Pending |
 
-Suggested artifact names, document formats and the number of operational checklist items are organizational choices, not additional course requirements. The current implementation does not limit what a correct requirement or expected answer can demand. Existing drafts may be reused after actual review; their existence does not check off a phase.
+Artifact names and document formats are organizational choices. Existing behavior does not limit what a correct requirement or expected answer can demand. Reuse drafts only after actual review; their existence does not complete a phase.
 
-## Sources and related material
+## Related project documents
 
-- [Capstone architecture and build guide](../capstone_projects_Analyst_Desk.pdf): printed pp.3-6, 15-17. Cohort guidelines separately control official deadlines and marks.
-- [R1 problem statement draft](R1_PROBLEM_STATEMENT.md) and [work and decision log](R1_WORK_LOG.md). Draft preparation does not complete the R1 review or validation items above.
+- [Problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx).
+- [Project work and decision log](PROJECT_WORK_LOG.md). Preparing an artifact does not complete its review or validation.
 - [Project overview and current setup](../README.md).
 - [Architecture](architecture.md), [memory policy](memory_policy.md), [development evaluation](evaluation.md) and [evaluation guide](evaluation_guide.md).
