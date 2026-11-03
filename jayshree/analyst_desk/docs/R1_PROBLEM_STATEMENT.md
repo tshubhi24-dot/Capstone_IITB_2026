@@ -8,7 +8,7 @@ Equity research analysts at asset managers need to prepare company-comparison no
 
 Analysts need a research workflow that makes financial comparisons and their supporting evidence easy to inspect. Every financial figure and derived calculation must be traceable to filing evidence and checked in code. Differences in fiscal periods, units and metric definitions must be explicit. Conclusions about changes in risk disclosures must be supported by evidence from both periods, with uncertainty and missing evidence clearly stated.
 
-Analyst Desk should assist this work by coordinating filing research, quantitative analysis and independent criticism into a cited draft. The analyst must be able to review and edit the research plan and approve the exact final note before publication. The project's value must be evaluated through research quality, cost and time against comparable fixed-workflow and single-agent baselines.
+Analyst Desk should assist this work by coordinating filing research, quantitative analysis and a separate critic review into a cited draft. The analyst must be able to review and edit the research plan and approve the exact final note before publication. The project's value must be evaluated through research quality, cost and time against comparable fixed-workflow and single-agent baselines.
 
 ## Intended outcome
 
@@ -37,6 +37,7 @@ These follow-up decisions will be recorded separately. No user interview, measur
 
 ## Source and tracking
 
+- [Word document](R1_PROBLEM_STATEMENT.docx).
 - [Capstone architecture and build guide](../capstone_projects_Analyst_Desk.pdf), printed pp.4, 6 and 15-16.
 - [R1 completion checklist](R1_CHECKLIST.md), phase 1 and the R1-first execution order.
 - [R1 work and decision log](R1_WORK_LOG.md).
