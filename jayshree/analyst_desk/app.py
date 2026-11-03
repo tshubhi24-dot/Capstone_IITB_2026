@@ -23,6 +23,10 @@ import threading
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+# the emoji in progress messages crash print() on a Windows cp1252 pipe or log file
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")

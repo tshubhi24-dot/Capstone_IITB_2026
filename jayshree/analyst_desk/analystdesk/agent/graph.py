@@ -141,6 +141,20 @@ def tool_json(raw) -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def insert_changes(body: str, changed: str) -> str:
+    """Put the code-computed 'what changed' lines into the note, always under a heading.
+
+    The writer may leave {WHAT_CHANGED} with or without its own heading above it; without
+    one, the lines read as the end of the note and the analyst does not notice them.
+    """
+    section = "## What changed since our last note\n" + changed
+    if "{WHAT_CHANGED}" not in body:
+        return body + "\n\n" + section
+    before = body.split("{WHAT_CHANGED}")[0].rstrip().splitlines()
+    has_heading = bool(before) and before[-1].lstrip().startswith("#")
+    return body.replace("{WHAT_CHANGED}", changed if has_heading else section)
+
+
 def trim_context(msgs: list, max_chars: int = MAX_CONTEXT_CHARS) -> list:
     """Short-term memory (L9): keep the system prompt, the request and the most
     recent tool rounds within a size budget. The cut always lands on an AI
@@ -302,17 +316,14 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         d: Draft = result["parsed"]
         d.body, render_issues = render(d.body, figures)   # code inserts every key figure
         if changed:   # code inserts the comparison with the last note
-            if "{WHAT_CHANGED}" in d.body:
-                d.body = d.body.replace("{WHAT_CHANGED}", changed)
-            else:
-                d.body += "\n\n## What changed since our last note\n" + changed
+            d.body = insert_changes(d.body, changed)
         return {"draft": d.model_dump(), "render_issues": render_issues, "tokens": usage(result["raw"]),
                 "trace": _event("write", revision=state.get("revisions", 0))}
 
     # 6. code checks every number and citation; C2 adds the critic's judge
     async def check(state: AgentState):
         r = check_note(state["draft"]["body"], passage_text=passage_text)
-        issues = (state.get("render_issues") or []) + r.issues
+        issues = list(dict.fromkeys((state.get("render_issues") or []) + r.issues))   # no repeats
         result = {"ok": not issues, "issues": issues, "verified": r.verified_numbers,
                   "total": r.total_numbers, "verified_share": r.verified_share}
         tokens = 0

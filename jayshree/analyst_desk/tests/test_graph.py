@@ -100,6 +100,29 @@ class ToolJsonTests(unittest.TestCase):
         self.assertEqual(tool_json("not json"), {})
 
 
+class WhatChangedSectionTests(unittest.TestCase):
+    """Live run 1cc35ab6 (3 Nov): the writer left {WHAT_CHANGED} with no heading, so the
+    comparison with the last note read as the note's last lines and went unnoticed."""
+
+    CHANGED = "- margin FY2024: unchanged since the last note at 42.29%."
+
+    def test_bare_placeholder_gets_the_heading(self):
+        from analystdesk.agent.graph import insert_changes
+        body = insert_changes("Margin was 42.29%.\n\n{WHAT_CHANGED}", self.CHANGED)
+        self.assertIn("## What changed since our last note\n" + self.CHANGED, body)
+
+    def test_writer_heading_is_not_repeated(self):
+        from analystdesk.agent.graph import insert_changes
+        body = insert_changes("Text.\n\n## What changed since our last note\n{WHAT_CHANGED}", self.CHANGED)
+        self.assertEqual(body.count("What changed since our last note"), 1)
+        self.assertIn(self.CHANGED, body)
+
+    def test_no_placeholder_appends_the_section(self):
+        from analystdesk.agent.graph import insert_changes
+        body = insert_changes("Text.", self.CHANGED)
+        self.assertTrue(body.endswith("## What changed since our last note\n" + self.CHANGED))
+
+
 
 class TeamGraphTests(unittest.TestCase):
     def test_team_shape(self):

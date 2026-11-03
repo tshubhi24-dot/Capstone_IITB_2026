@@ -28,6 +28,7 @@ import re
 from dataclasses import dataclass, field
 
 from ..servers.edgar_server import get_fact
+from .figures import PLACEHOLDER
 
 # A fact_id has its own slashes (Concept/2024/0000950170-24-087843), so the
 # division in [calc: A / B] is the " / " between two complete fact_ids
@@ -193,6 +194,10 @@ def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult
         for pid in sorted(set(PASSAGE_ID.findall(body))):
             if not passage_exists(pid):
                 issues.append(f"Cited passage {pid} does not exist.")
+
+    # a figure placeholder left in the note means a number is missing (e.g. a peer not in the plan)
+    for key in sorted(set(PLACEHOLDER.findall(body))):
+        issues.append(f"Unknown placeholder {{{key}}}.")
 
     for m in ADVICE.finditer(body):
         issues.append(f"Investment-advice wording {m.group()!r} is not allowed in a research note.")
