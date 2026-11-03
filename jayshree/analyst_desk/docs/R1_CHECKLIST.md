@@ -244,5 +244,6 @@ Suggested artifact names, document formats and the number of operational checkli
 ## Sources and related material
 
 - [Capstone architecture and build guide](../capstone_projects_Analyst_Desk.pdf): printed pp.3-6, 15-17. Cohort guidelines separately control official deadlines and marks.
+- [R1 problem statement draft](R1_PROBLEM_STATEMENT.md) and [work and decision log](R1_WORK_LOG.md). Draft preparation does not complete the R1 review or validation items above.
 - [Project overview and current setup](../README.md).
 - [Architecture](architecture.md), [memory policy](memory_policy.md), [development evaluation](evaluation.md) and [evaluation guide](evaluation_guide.md).
