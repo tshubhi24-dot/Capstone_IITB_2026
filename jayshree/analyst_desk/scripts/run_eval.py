@@ -35,7 +35,9 @@ from dotenv import load_dotenv              # noqa: E402
 
 load_dotenv(ROOT / ".env")
 
-from analystdesk.evaluation import PRICE_PER_M, RESULTS, load_cases, run_one, summarise   # noqa: E402
+from analystdesk.evaluation import (  # noqa: E402
+    PRICE_PER_M, RESULTS, evaluation_gate_failures, load_cases, run_one, summarise,
+)
 
 
 async def main() -> None:
@@ -45,6 +47,17 @@ async def main() -> None:
     ap.add_argument("--cases", nargs="*", help="only these case ids")
     ap.add_argument("--tag", default=time.strftime("%Y%m%d-%H%M%S"))
     ap.add_argument("--no-lessons", action="store_true", help="E3 'before playbook' run")
+    ap.add_argument(
+        "--min-success-rate",
+        type=float,
+        help="fail if task success is below this fraction (for example, 0.95)",
+    )
+    ap.add_argument(
+        "--min-cases",
+        type=int,
+        default=1,
+        help="fail if fewer than this many cases were evaluated",
+    )
     args = ap.parse_args()
     if args.no_lessons:
         os.environ["AGENT_LESSONS"] = "0"
@@ -73,6 +86,18 @@ async def main() -> None:
     for k in keys:
         print(f"{k:22}" + "".join(f"{str(summary[c][k]):>26}" for c in summary))
     print(f"\nsaved {path.relative_to(ROOT)}")
+    if args.min_success_rate is not None:
+        failures = [
+            f"{config}: {failure}"
+            for config, result in summary.items()
+            for failure in evaluation_gate_failures(result, args.min_success_rate, args.min_cases)
+        ]
+        if failures:
+            print("\nEvaluation gate failed:", file=sys.stderr)
+            for failure in failures:
+                print(f"- {failure}", file=sys.stderr)
+            raise SystemExit(1)
+        print(f"\nEvaluation gate passed: task success >= {args.min_success_rate:.1%}; no policy violations.")
 
 
 if __name__ == "__main__":

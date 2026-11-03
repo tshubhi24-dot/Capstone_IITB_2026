@@ -1,8 +1,8 @@
-"""Research Agent tab — run the C1 agent from the app, with both human gates.
+"""Research-agent panel — run C1 or C2 with both human approval gates.
 
 Flow in the UI:
   1. Analyst enters a request -> Start. The agent checks scope and drafts a plan.
-  2. Plan gate: approve, or edit the JSON and approve the edited plan.
+  2. Plan gate: approve, edit the JSON and approve, or cancel before research.
   3. The agent researches with MCP tools; every tool call and result streams
      into the activity log.
   4. Note gate: the draft note, its code check (numbers verified) and buttons
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import re
 import sqlite3
 import uuid
@@ -29,6 +30,80 @@ EXAMPLES = [
 ]
 
 _FACT_TAG = re.compile(r"\[(fact|calc|growth|diff):\s*([^\]]+?)\s*\]")
+
+
+def _can_start_agent_run(request: str | None, workflow: str | None, running: bool = False) -> bool:
+    return not running and workflow in ("c1", "c2") and bool(request and request.strip())
+
+
+def _has_run_id(run_id: str | None) -> bool:
+    return bool(run_id and run_id.strip())
+
+
+def _can_use_run_actions(run_id: str | None, running: bool = False) -> bool:
+    return not running and _has_run_id(run_id)
+
+
+def _can_add_preference(text: str | None) -> bool:
+    return bool(text and text.strip())
+
+
+async def _delete_memory_item(selection: list | None, confirmed: bool) -> bool:
+    if not confirmed or not selection:
+        return False
+
+    from analystdesk import memory as ltm
+
+    await ltm.forget(tuple(selection[:2]), selection[2])
+    return True
+
+
+def _playbook_button_states(
+    lesson_key: str | None, lesson_status: str | None, frozen: bool
+) -> tuple[bool, bool, bool, bool]:
+    selected = bool(lesson_key)
+    pending = selected and lesson_status == "pending"
+    return pending and not frozen, pending and not frozen, selected and not frozen, selected and frozen
+
+
+def _lesson_source_label(lesson: dict) -> str:
+    sources = lesson.get("source_cases") or [{
+        "source_case": lesson.get("source_case", ""),
+        "source_config": lesson.get("source_config", ""),
+    }]
+    return ", ".join(
+        f"{source.get('source_case', '')}/{source.get('source_config', '')}".strip("/")
+        for source in sources
+        if source.get("source_case") or source.get("source_config")
+    )
+
+
+def _parse_edited_plan(plan_text: str | None, original_plan_text: str | None) -> tuple[dict | None, str]:
+    if not original_plan_text:
+        return None, "The original plan is unavailable. Reload the plan before editing."
+
+    try:
+        plan_data = json.loads(plan_text or "")
+    except (json.JSONDecodeError, TypeError):
+        return None, "Enter valid JSON before approving the edited plan."
+    if not isinstance(plan_data, dict):
+        return None, "The plan must be a JSON object."
+
+    try:
+        original_data = json.loads(original_plan_text)
+        if not isinstance(original_data, dict):
+            return None, "The original plan is invalid. Reload the plan before editing."
+
+        from analystdesk.agent.graph import Plan
+
+        edited_plan = Plan(**plan_data).model_dump()
+        original_plan = Plan(**original_data).model_dump()
+    except (json.JSONDecodeError, TypeError, ValueError) as error:
+        return None, f"Plan validation failed: {error}"
+
+    if edited_plan == original_plan:
+        return None, "No plan changes detected. Make a valid change before approving."
+    return edited_plan, "Valid plan changes detected. You can approve the edited plan."
 
 
 # ── formatting ────────────────────────────────────────────────────────────────
@@ -62,6 +137,8 @@ def _event_line(ev: dict) -> str:
         return ("🔁 **Revised plan drafted**" if ev.get("replan")
                 else "📝 **Plan drafted** by the research lead") + suffix
     if n == "review_plan":
+        if ev["action"] == "cancel":
+            return "🚫 **Plan cancelled** — research did not start"
         return f"👤 **Plan {'edited and approved' if ev['action'] == 'edit' else 'approved'}** by the analyst"
     if n == "research":
         calls = ev.get("tool_calls") or []
@@ -259,13 +336,21 @@ async def _drive(run_id: str, payload):
         await queue.put(ev)
 
     task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="inprocess"))
-    while not (task.done() and queue.empty()):
-        try:
-            ev = await asyncio.wait_for(queue.get(), timeout=0.5)
-            yield "event", ev
-        except asyncio.TimeoutError:
-            continue
-    yield "done", task.result()
+    try:
+        while not (task.done() and queue.empty()):
+            try:
+                ev = await asyncio.wait_for(queue.get(), timeout=0.5)
+                yield "event", ev
+            except asyncio.TimeoutError:
+                continue
+        yield "done", task.result()
+    finally:
+        if not task.done():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None = None):
@@ -276,15 +361,19 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     usage = f"tool calls **{v.get('tool_calls', 0)}** · tokens **{v.get('tokens', 0):,}**"
 
     plan_md, plan_json, note_md, check_md, note_body = "", "", "", "", ""
+    plan_edit_feedback = ""
+    original_plan_json = ""
     show_plan = show_note = False
     if gate and gate["gate"] == "plan":
-        status = f"### ⏸ Waiting for you: approve or edit the plan\nRun `{run_id}` · {usage}"
+        status = f"### ⏸ Waiting for you: approve, edit, or cancel the plan\nRun `{run_id}` · {usage}"
         p = gate["plan"]
         plan_md = (f"**Companies:** {', '.join(p['companies'])} · **Fiscal years:** "
                    f"{', '.join(map(str, p['fiscal_years']))}\n\n**Sub-questions**\n"
                    + "\n".join(f"1. {q}" for q in p["sub_questions"])
                    + "\n\n**Outline:** " + " → ".join(p["outline"]))
         plan_json = json.dumps(p, indent=2)
+        original_plan_json = plan_json
+        plan_edit_feedback = "Make a valid change to the JSON plan to enable this button."
         show_plan = True
     elif gate and gate["gate"] == "note":
         status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
@@ -298,6 +387,8 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             status = f"### ✅ Published\nRun `{run_id}` · {usage}"
         elif outcome == "rejected":
             status = f"### 🛑 Rejected by the analyst\nRun `{run_id}` · {usage}"
+        elif outcome == "cancelled":
+            status = f"### 🚫 Plan cancelled — research did not start\nRun `{run_id}` · {usage}"
         elif v.get("guard") and not v["guard"].get("ok"):
             status = f"### ⛔ Out of scope\n{v['guard']['reason']}"
         elif not v:
@@ -312,7 +403,9 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     return (run_id, status, "\n\n".join(log) or "_No activity yet._",
             gr.update(value=plan_md), gr.update(value=plan_json), gr.update(visible=show_plan),
             gr.update(value=note_md), gr.update(value=check_md), gr.update(value=note_body),
-            gr.update(visible=show_note), _past_notes(), board)
+            gr.update(visible=show_note), _past_notes(), board,
+            gr.update(value=plan_edit_feedback), original_plan_json,
+            gr.update(interactive=False))
 
 
 def _log_from_trace(values: dict) -> list[str]:
@@ -325,29 +418,28 @@ def _log_from_trace(values: dict) -> list[str]:
     return lines
 
 
-# ── the tab ───────────────────────────────────────────────────────────────────
+# ── the panel ─────────────────────────────────────────────────────────────────
 
-def build_agent_tab():
-    with gr.Tab("🤖 Research Agent"):
+def build_agent_panel(workflow_mode):
+    with gr.Column():
         gr.Markdown(
-            "Research agents over the MCP tools. They plan, wait for your approval, research with "
-            "tools (every call is shown live), write a note whose numbers are inserted and checked "
-            "by code, and publish **only after you approve the exact note**. **C1** is one agent "
-            "with all tools; **C2** is a team: parallel researchers, a quant, risk-diff agents and "
-            "a compliance critic. Memory is used automatically for your own coverage."
+            "The selected agent workflow plans, waits for your approval, researches with "
+            "tools (every call is shown live), writes a note whose numbers are inserted and checked "
+            "by code, and publishes **only after you approve the exact note**. **C1** is one agent "
+            "with all tools; **C2** is a team of parallel researchers, a quant, risk-diff agents, "
+            "and a compliance critic. Memory is used automatically for your own coverage."
         )
         with gr.Row():
             request = gr.Textbox(label="Research request", scale=5,
                                  placeholder="e.g. Compare Microsoft and Alphabet operating margins 2022-2024")
-            mode = gr.Radio([("C1 · single agent", "c1"), ("C2 · team", "c2")], value="c2",
-                            label="Agents", scale=2)
-            start_btn = gr.Button("▶ Start", variant="primary", scale=1)
+            start_btn = gr.Button("▶ Start", variant="primary", scale=1, interactive=False)
+            start_busy = gr.State(False)
         gr.Examples([[e] for e in EXAMPLES], inputs=request)
         with gr.Row():
             run_id = gr.Textbox(label="Run id (paste one to resume)", scale=2)
-            load_btn = gr.Button("⟳ Load run", scale=1)
+            load_btn = gr.Button("⟳ Load run", scale=1, interactive=False)
             approver = gr.Textbox(label="Your name (approvals, preferences)", value="analyst", scale=2)
-            rerun_btn = gr.Button("↻ Re-run this request without memory", scale=2)
+            rerun_btn = gr.Button("↻ Re-run this request without memory", scale=2, interactive=False)
         with gr.Accordion("📂 Your runs: click a row to load it", open=True):
             runs_table = gr.Dataframe(
                 headers=["run id", "agents", "updated (UTC)", "status", "numbers verified", "tool calls",
@@ -361,8 +453,12 @@ def build_agent_tab():
             plan_md = gr.Markdown()
             with gr.Accordion("✏️ Edit the plan (JSON)", open=False):
                 plan_json = gr.Code(language="json", label="Plan")
-                edit_plan_btn = gr.Button("Approve the edited plan")
-            approve_plan_btn = gr.Button("✅ Approve plan and start research", variant="primary")
+                plan_edit_feedback = gr.Markdown()
+                plan_json_baseline = gr.State("")
+                edit_plan_btn = gr.Button("Approve the edited plan", interactive=False)
+            with gr.Row():
+                approve_plan_btn = gr.Button("✅ Approve plan and start research", variant="primary")
+                cancel_plan_btn = gr.Button("🚫 Cancel plan", variant="stop")
 
         with gr.Group(visible=False) as note_box:
             gr.Markdown("## 🧾 Draft note — your approval is needed")
@@ -390,7 +486,7 @@ def build_agent_tab():
             with gr.Row():
                 new_pref = gr.Textbox(label="Add a standing preference", scale=4,
                                       placeholder="e.g. Always include a peer comparison table")
-                add_pref_btn = gr.Button("Add", scale=1)
+                add_pref_btn = gr.Button("Add", scale=1, interactive=False)
             prefs_table = gr.Dataframe(headers=["key", "preference", "added (UTC)"],
                                        interactive=False, wrap=True)
             coverage_table = gr.Dataframe(headers=["ticker", "notes", "last published"],
@@ -400,7 +496,15 @@ def build_agent_tab():
             selected_mem = gr.State(None)
             with gr.Row():
                 selected_label = gr.Markdown("_Nothing selected_")
-                delete_mem_btn = gr.Button("🗑 Delete selected memory", variant="stop", size="sm")
+                delete_mem_btn = gr.Button(
+                    "🗑 Delete selected memory", variant="stop", size="sm", interactive=False
+                )
+            delete_status = gr.Markdown()
+            with gr.Group(visible=False, elem_id="memory-delete-confirmation") as delete_confirmation:
+                gr.Markdown("**Delete this memory?** This action cannot be undone.")
+                with gr.Row():
+                    confirm_delete_btn = gr.Button("Confirm deletion", variant="stop")
+                    cancel_delete_btn = gr.Button("Cancel")
 
         with gr.Accordion("📘 Playbook: lessons learned from development runs (review here)", open=False):
             gr.Markdown(
@@ -411,14 +515,16 @@ def build_agent_tab():
             pending_table = gr.Dataframe(headers=["key", "when", "do", "tags", "from case", "issue that triggered it"],
                                          interactive=False, wrap=True, label="Pending your review")
             selected_lesson = gr.State(None)
+            selected_lesson_status = gr.State(None)
+            playbook_frozen = gr.State(False)
             with gr.Row():
                 selected_lesson_md = gr.Markdown("_Click a pending lesson to select it_")
                 lesson_reason = gr.Textbox(label="Reason (required to reject)", scale=2)
             with gr.Row():
-                approve_lesson_btn = gr.Button("✅ Approve lesson", variant="primary")
-                reject_lesson_btn = gr.Button("🛑 Reject lesson", variant="stop")
-                freeze_btn = gr.Button("🧊 Freeze playbook")
-                unfreeze_btn = gr.Button("Unfreeze")
+                approve_lesson_btn = gr.Button("✅ Approve lesson", variant="primary", interactive=False)
+                reject_lesson_btn = gr.Button("🛑 Reject lesson", variant="stop", interactive=False)
+                freeze_btn = gr.Button("🧊 Freeze playbook", interactive=False)
+                unfreeze_btn = gr.Button("Unfreeze", interactive=False)
             approved_table = gr.Dataframe(headers=["key", "when", "do", "tags", "approved by"],
                                           interactive=False, wrap=True, label="Approved (used by agents)")
             rejected_table = gr.Dataframe(headers=["key", "when", "do", "rejected by", "reason"],
@@ -429,24 +535,57 @@ def build_agent_tab():
                                 value=_past_notes, wrap=True)
 
         outputs = [run_id, status, activity, plan_md, plan_json, plan_box,
-                   note_md, check_md, note_body, note_box, past, board]
+                   note_md, check_md, note_body, note_box, past, board,
+                   plan_edit_feedback, plan_json_baseline, edit_plan_btn]
 
-        async def run_step(rid, payload, prior_log, prior_events=None, mode="c1"):
+        def start_control_updates(req, mode, running, current_run_id):
+            return (
+                gr.update(interactive=_can_start_agent_run(req, mode, running)),
+                running,
+                gr.update(interactive=not running),
+                gr.update(interactive=not running),
+                gr.update(interactive=_can_use_run_actions(current_run_id, running)),
+                gr.update(interactive=_can_use_run_actions(current_run_id, running)),
+            )
+
+        async def run_step(rid, payload, prior_log, prior_events=None, mode="c1", request_text=""):
             log, events = list(prior_log), list(prior_events or [])
-            yield (rid, "### ⏳ Agents working…", "\n\n".join(log) or "_Starting…_",
-                   gr.update(), gr.update(), gr.update(visible=False),
-                   gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
-                   _board(events, mode))
-            async for kind, item in _drive(rid, payload):
-                if kind == "event":
-                    events.append(item)
-                    log.append(_event_line(item))
-                    yield (rid, "### ⏳ Agents working…", "\n\n".join(log),
-                           gr.update(), gr.update(), gr.update(visible=False),
-                           gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
-                           _board(events, mode))
-                else:
-                    yield _view(rid, item, log, events)
+            yield (
+                rid, "### ⏳ Agents working…", "\n\n".join(log) or "_Starting…_",
+                gr.update(), gr.update(), gr.update(visible=False),
+                gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
+                _board(events, mode), gr.update(value=""), gr.update(),
+                gr.update(interactive=False),
+                *start_control_updates(request_text, mode, True, rid),
+            )
+            try:
+                async for kind, item in _drive(rid, payload):
+                    if kind == "event":
+                        events.append(item)
+                        log.append(_event_line(item))
+                        yield (
+                            rid, "### ⏳ Agents working…", "\n\n".join(log),
+                            gr.update(), gr.update(), gr.update(visible=False),
+                            gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
+                            _board(events, mode), gr.update(value=""), gr.update(),
+                            gr.update(interactive=False),
+                            *start_control_updates(request_text, mode, True, rid),
+                        )
+                    else:
+                        yield (*_view(rid, item, log, events),
+                               *start_control_updates(request_text, mode, False, rid))
+            except Exception:
+                logging.getLogger(__name__).exception("Agent run failed")
+                failure_updates = [gr.update() for _ in outputs]
+                failure_updates[1] = "### Run failed; check the server logs for details"
+                failure_updates[5] = gr.update(visible=False)
+                failure_updates[9] = gr.update(visible=False)
+                failure_updates[-3] = gr.update(value="")
+                failure_updates[-1] = gr.update(interactive=False)
+                yield (
+                    *failure_updates,
+                    *start_control_updates(request_text, mode, False, rid),
+                )
 
         async def memory_tables(name):
             from analystdesk import memory as ltm
@@ -462,35 +601,98 @@ def build_agent_tab():
             return prefs, cov, notes
 
         async def on_add_pref(name, text):
+            if not _can_add_preference(text):
+                yield ("", *await memory_tables(name), gr.update(interactive=False))
+                return
+
+            yield (gr.update(), gr.update(), gr.update(), gr.update(),
+                   gr.update(interactive=False))
             from analystdesk import memory as ltm
-            if text.strip():
-                await ltm.add_preference((name or "analyst").strip(), text)
-            return ("", *await memory_tables(name))
+            await ltm.add_preference((name or "analyst").strip(), text)
+            yield ("", *await memory_tables(name), gr.update(interactive=False))
+
+        def update_add_preference_button(text):
+            return gr.update(interactive=_can_add_preference(text))
 
         def on_pick_pref(table, name, evt: gr.SelectData):
             row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
             key = table.iloc[row, 0]
             return (["preferences", (name or "analyst").strip(), key],
-                    f"Selected preference: **{table.iloc[row, 1]}**")
+                    f"Selected preference: **{table.iloc[row, 1]}**",
+                    gr.update(interactive=True))
 
         def on_pick_note_mem(table, evt: gr.SelectData):
             row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
             return (["notes", table.iloc[row, 0], table.iloc[row, 1]],
-                    f"Selected memory of note #{table.iloc[row, 2]} for {table.iloc[row, 0]}")
+                    f"Selected memory of note #{table.iloc[row, 2]} for {table.iloc[row, 0]}",
+                    gr.update(interactive=True))
+
+        def request_memory_deletion(sel):
+            if not sel:
+                return gr.update(visible=False), gr.update(interactive=False), "_Select a memory row first._"
+            return gr.update(visible=True), gr.update(interactive=False), ""
 
         async def on_delete_mem(sel, name):
-            from analystdesk import memory as ltm
-            if sel:
-                await ltm.forget(tuple(sel[:2]), sel[2])
-            return (None, "_Deleted._" if sel else "_Nothing selected_", *await memory_tables(name))
+            deleted = await _delete_memory_item(sel, confirmed=True)
+            if not deleted:
+                return (
+                    sel, gr.update(visible=False), gr.update(interactive=bool(sel)),
+                    "_Select a memory row first._", *await memory_tables(name),
+                )
+            return (
+                None, gr.update(visible=False), gr.update(interactive=False),
+                "_Memory deleted._", *await memory_tables(name),
+            )
 
-        async def on_start(req, name, agents, memory_on=True):
-            if not req.strip():
-                yield (gr.update(), "### Please enter a request", *[gr.update() for _ in range(10)])
+        def cancel_memory_deletion(sel):
+            return (
+                gr.update(visible=False), gr.update(interactive=bool(sel)),
+                "_Deletion canceled._",
+            )
+
+        async def on_start(req, name, agents, busy=False, current_run_id="", memory_on=True):
+            def response(status_text, enabled, running, inputs_enabled):
+                updates = [gr.update() for _ in outputs]
+                updates[1] = status_text
+                return (
+                    *updates,
+                    gr.update(interactive=enabled),
+                    running,
+                    gr.update(interactive=inputs_enabled),
+                    gr.update(interactive=inputs_enabled),
+                    gr.update(interactive=_has_run_id(current_run_id)),
+                    gr.update(interactive=_has_run_id(current_run_id)),
+                )
+
+            if busy:
+                yield response(
+                    "### A research run is already in progress",
+                    False,
+                    True,
+                    False,
+                )
+                return
+            if not req or not req.strip():
+                yield response(
+                    "### Please enter a request",
+                    _can_start_agent_run(req, agents),
+                    False,
+                    True,
+                )
+                return
+            if agents not in ("c1", "c2"):
+                yield response(
+                    "### Choose C1 or C2 to start agent research",
+                    False,
+                    False,
+                    True,
+                )
                 return
             payload = {"request": req, "analyst": (name or "analyst").strip(), "memory_on": memory_on,
-                       "mode": agents or "c2"}
-            async for out in run_step(uuid.uuid4().hex[:8], payload, [], [], payload["mode"]):
+                       "mode": agents}
+            async for out in run_step(
+                uuid.uuid4().hex[:8], payload, [], [], payload["mode"], req
+            ):
                 yield out
 
         async def resume_with(rid, decision):
@@ -498,29 +700,63 @@ def build_agent_tab():
             from analystdesk.agent.runtime import get_run
             values = (await get_run(rid))["values"]
             async for out in run_step(rid, Command(resume=decision), _log_from_trace(values),
-                                      values.get("trace", []), values.get("mode", "c1")):
+                                      values.get("trace", []), values.get("mode", "c1"),
+                                      values.get("request", "")):
                 yield out
 
-        async def on_rerun_without_memory(rid, name):
+        async def on_rerun_without_memory(rid, name, req, agents, busy):
             """Same request and agents as the loaded run, as a new run with memory off."""
-            from analystdesk.agent.runtime import get_run
-            v = (await get_run((rid or "").strip()))["values"]
-            if not v.get("request"):
-                yield (gr.update(), "### Load a run first, then re-run it without memory",
-                       *[gr.update() for _ in range(10)])
+            if busy:
+                yield run_action_response(
+                    "### A research run is already in progress", req, agents, rid, True
+                )
                 return
-            async for out in on_start(v["request"], name, v.get("mode", "c1"), memory_on=False):
+
+            yield run_action_response(
+                "### Loading run for a memory-off rerun…", req, agents, rid, True
+            )
+            from analystdesk.agent.runtime import get_run
+            try:
+                v = (await get_run((rid or "").strip()))["values"]
+            except Exception:
+                logging.getLogger(__name__).exception("Unable to load run for memory-off rerun")
+                yield run_action_response(
+                    "### Unable to load run; check the server logs for details",
+                    req, agents, rid, False,
+                )
+                return
+            if not v.get("request"):
+                yield run_action_response(
+                    "### Load a run first, then re-run it without memory",
+                    req, agents, rid, False,
+                )
+                return
+            async for out in on_start(
+                v["request"], name, v.get("mode", "c1"), busy=False,
+                current_run_id=rid, memory_on=False
+            ):
                 yield out
 
         async def on_approve_plan(rid):
             async for out in resume_with(rid, {"action": "approve"}):
                 yield out
 
-        async def on_edit_plan(rid, text):
-            try:
-                plan = json.loads(text)
-            except ValueError as e:
-                yield (rid, f"### ⚠️ Plan JSON is invalid: {e}", *[gr.update() for _ in range(10)])
+        async def on_cancel_plan(rid):
+            async for out in resume_with(rid, {"action": "cancel"}):
+                yield out
+
+        def update_plan_edit_button(text, original_plan):
+            edited_plan, feedback = _parse_edited_plan(text, original_plan)
+            return gr.update(interactive=edited_plan is not None), feedback
+
+        async def on_edit_plan(rid, text, req, agents, busy, original_plan):
+            plan, feedback = _parse_edited_plan(text, original_plan)
+            if plan is None:
+                updates = [gr.update() for _ in outputs]
+                updates[1] = "### Edited plan was not submitted"
+                updates[-3] = gr.update(value=feedback)
+                updates[-1] = gr.update(interactive=False)
+                yield (*updates, *start_control_updates(req, agents, busy, rid))
                 return
             async for out in resume_with(rid, {"action": "edit", "plan": plan}):
                 yield out
@@ -537,49 +773,163 @@ def build_agent_tab():
             async for out in resume_with(rid, {"action": "reject", "reason": reason or "no reason given"}):
                 yield out
 
-        async def on_load(rid):
+        def run_action_response(status_text, req, agents, rid, running):
+            updates = [gr.update() for _ in outputs]
+            updates[1] = status_text
+            if running:
+                updates[-1] = gr.update(interactive=False)
+            return (*updates, *start_control_updates(req, agents, running, rid))
+
+        async def on_load(rid, req, agents, busy):
             from analystdesk.agent.runtime import get_run
             rid = (rid or "").strip()
-            result = await get_run(rid)
-            return _view(rid, result, _log_from_trace(result["values"]))
+            if busy:
+                yield run_action_response(
+                    "### A research run is already in progress", req, agents, rid, True
+                )
+                return
+
+            yield run_action_response("### Loading run…", req, agents, rid, True)
+            try:
+                result = await get_run(rid)
+            except Exception:
+                logging.getLogger(__name__).exception("Unable to load run")
+                yield run_action_response(
+                    "### Unable to load run; check the server logs for details",
+                    req, agents, rid, False,
+                )
+                return
+            yield (*_view(rid, result, _log_from_trace(result["values"])),
+                   *start_control_updates(req, agents, False, rid))
 
         async def refresh_runs():
             from analystdesk.agent.runtime import list_runs
             return [[r["run_id"], r["mode"], r["updated"], r["status"], r["check"], r["tool_calls"], r["request"]]
                     for r in await list_runs()]
 
-        async def on_pick_run(table, evt: gr.SelectData):
+        async def on_pick_run(table, evt: gr.SelectData, req, agents, busy):
             row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
             rid = table.iloc[row, 0] if hasattr(table, "iloc") else table[row][0]
-            return await on_load(str(rid))
+            async for out in on_load(str(rid), req, agents, busy):
+                yield out
+
+        start_outputs = [*outputs, start_btn, start_busy, request, workflow_mode, load_btn, rerun_btn]
+        start_inputs = [request, approver, workflow_mode, start_busy, run_id]
+
+        def refresh_after(event):
+            (event.then(refresh_runs, None, runs_table)
+             .then(memory_tables, [approver], [prefs_table, coverage_table, notes_mem_table]))
+
+        for trigger in (start_btn.click, request.submit):
+            refresh_after(trigger(
+                on_start,
+                start_inputs,
+                start_outputs,
+                concurrency_id="agent-start",
+                concurrency_limit=1,
+                trigger_mode="once",
+            ))
+        refresh_after(rerun_btn.click(
+            on_rerun_without_memory,
+            [run_id, approver, request, workflow_mode, start_busy],
+            start_outputs,
+            concurrency_id="agent-start",
+            concurrency_limit=1,
+            trigger_mode="once",
+        ))
+
+        def update_start_button(req, agents, busy):
+            return gr.update(interactive=_can_start_agent_run(req, agents, busy))
+
+        def update_run_actions(rid, busy):
+            enabled = _can_use_run_actions(rid, busy)
+            return gr.update(interactive=enabled), gr.update(interactive=enabled)
+
+        run_id.input(update_run_actions, [run_id, start_busy], [load_btn, rerun_btn])
+        run_id.change(update_run_actions, [run_id, start_busy], [load_btn, rerun_btn])
+        plan_json.input(
+            update_plan_edit_button,
+            [plan_json, plan_json_baseline],
+            [edit_plan_btn, plan_edit_feedback],
+        )
+        plan_json.change(
+            update_plan_edit_button,
+            [plan_json, plan_json_baseline],
+            [edit_plan_btn, plan_edit_feedback],
+        )
+        request.input(
+            update_start_button,
+            [request, workflow_mode, start_busy],
+            start_btn,
+        )
+        workflow_mode.change(
+            update_start_button,
+            [request, workflow_mode, start_busy],
+            start_btn,
+        )
 
         # every action refreshes the runs list afterwards
         for trigger, fn, inputs in (
-                (start_btn.click, on_start, [request, approver, mode]),
-                (request.submit, on_start, [request, approver, mode]),
-                (rerun_btn.click, on_rerun_without_memory, [run_id, approver]),
                 (approve_plan_btn.click, on_approve_plan, [run_id]),
-                (edit_plan_btn.click, on_edit_plan, [run_id, plan_json]),
+                (cancel_plan_btn.click, on_cancel_plan, [run_id]),
+                (edit_plan_btn.click, on_edit_plan,
+                 [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline]),
                 (approve_note_btn.click, on_approve_note, [run_id, approver]),
                 (edit_note_btn.click, on_edit_note, [run_id, note_body]),
-                (reject_btn.click, on_reject, [run_id, reject_reason]),
-                (load_btn.click, on_load, [run_id])):
-            (trigger(fn, inputs, outputs).then(refresh_runs, None, runs_table)
-             .then(memory_tables, [approver], [prefs_table, coverage_table, notes_mem_table]))
-        runs_table.select(on_pick_run, [runs_table], outputs)
+                (reject_btn.click, on_reject, [run_id, reject_reason])):
+            event = trigger(fn, inputs, start_outputs)
+            refresh_after(event)
+        load_btn.click(
+            on_load,
+            [run_id, request, workflow_mode, start_busy],
+            start_outputs,
+            concurrency_id="agent-start",
+            concurrency_limit=1,
+            trigger_mode="once",
+        )
+        runs_table.select(
+            on_pick_run,
+            [runs_table, request, workflow_mode, start_busy],
+            start_outputs,
+            concurrency_id="agent-start",
+            concurrency_limit=1,
+            trigger_mode="once",
+        )
         refresh_runs_btn.click(refresh_runs, None, runs_table)
         mem_outputs = [prefs_table, coverage_table, notes_mem_table]
-        add_pref_btn.click(on_add_pref, [approver, new_pref], [new_pref, *mem_outputs])
-        prefs_table.select(on_pick_pref, [prefs_table, approver], [selected_mem, selected_label])
-        notes_mem_table.select(on_pick_note_mem, [notes_mem_table], [selected_mem, selected_label])
-        delete_mem_btn.click(on_delete_mem, [selected_mem, approver], [selected_mem, selected_label, *mem_outputs])
+        new_pref.input(update_add_preference_button, [new_pref], add_pref_btn)
+        new_pref.change(update_add_preference_button, [new_pref], add_pref_btn)
+        add_pref_btn.click(on_add_pref, [approver, new_pref], [new_pref, *mem_outputs, add_pref_btn])
+        prefs_table.select(
+            on_pick_pref, [prefs_table, approver], [selected_mem, selected_label, delete_mem_btn]
+        )
+        notes_mem_table.select(
+            on_pick_note_mem, [notes_mem_table], [selected_mem, selected_label, delete_mem_btn]
+        )
+        delete_mem_btn.click(
+            request_memory_deletion,
+            [selected_mem],
+            [delete_confirmation, delete_mem_btn, delete_status],
+            show_progress="hidden",
+        )
+        confirm_delete_btn.click(
+            on_delete_mem,
+            [selected_mem, approver],
+            [selected_mem, delete_confirmation, delete_mem_btn, delete_status, *mem_outputs],
+        )
+        cancel_delete_btn.click(
+            cancel_memory_deletion,
+            [selected_mem],
+            [delete_confirmation, delete_mem_btn, delete_status],
+            show_progress="hidden",
+        )
         approver.blur(memory_tables, [approver], mem_outputs)
 
         async def playbook_tables():
             from analystdesk import lessons as pb
             frozen = await pb.is_frozen()
             pend = [[x["key"], x["when"], x["do"], ", ".join(x.get("applies_to", [])),
-                     f"{x.get('source_case')}/{x.get('source_config', '')}", x.get("source_issue", "")[:160]]
+                     _lesson_source_label(x), x.get("source_issue", "")[:160]]
                     for x in await pb.list_lessons("pending")]
             appr = [[x["key"], x["when"], x["do"], ", ".join(x.get("applies_to", [])), x.get("reviewed_by", "")]
                     for x in await pb.list_lessons("approved")]
@@ -587,48 +937,95 @@ def build_agent_tab():
                    for x in await pb.list_lessons("rejected")]
             status_md = (f"**Playbook {'🧊 FROZEN' if frozen else 'open'}** · {len(pend)} pending · "
                          f"{len(appr)} approved · {len(rej)} rejected")
-            return status_md, pend, appr, rej
+            return (status_md, pend, appr, rej, frozen,
+                    *[gr.update(interactive=False) for _ in range(4)])
 
-        pb_outputs = [playbook_status, pending_table, approved_table, rejected_table]
+        def playbook_controls(key, status, frozen):
+            return tuple(
+                gr.update(interactive=enabled)
+                for enabled in _playbook_button_states(key, status, frozen)
+            )
 
-        def on_pick_lesson(table, evt: gr.SelectData):
-            row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
-            return table.iloc[row, 0], f"Selected: **When {table.iloc[row, 1]}** → {table.iloc[row, 2]}"
+        pb_outputs = [
+            playbook_status, pending_table, approved_table, rejected_table, playbook_frozen,
+            approve_lesson_btn, reject_lesson_btn, freeze_btn, unfreeze_btn,
+        ]
 
-        async def on_review_lesson(key, name, reason, approve):
+        def lesson_picker(status):
+            def on_pick_lesson(table, frozen, evt: gr.SelectData):
+                row = evt.index[0] if isinstance(evt.index, (list, tuple)) else evt.index
+                key = table.iloc[row, 0]
+                return (
+                    key, status, f"Selected: **When {table.iloc[row, 1]}** → {table.iloc[row, 2]}",
+                    *playbook_controls(key, status, frozen),
+                )
+            return on_pick_lesson
+
+        async def on_review_lesson(key, status, name, reason, approve):
             from analystdesk import lessons as pb
-            if not key:
-                return (None, "_Select a pending lesson first_", reason, *await playbook_tables())
+            if not key or status != "pending":
+                return (None, None, "_Select a pending lesson first_", reason, *await playbook_tables())
             if not approve and not (reason or "").strip():
-                return (key, "_Give a reason to reject it_", reason, *await playbook_tables())
+                return (key, status, "_Give a reason to reject it_", reason, *await playbook_tables())
             ok = await pb.review(key, approve, (name or "analyst").strip(), reason or "")
             msg = (("✅ Approved" if approve else "🛑 Rejected") if ok
                    else "_Not changed: the playbook is frozen_")
-            return (None, msg, "", *await playbook_tables())
+            return (None, None, msg, "", *await playbook_tables())
 
-        async def on_freeze(name, frozen):
+        async def on_freeze(name, frozen, key):
+            if not key:
+                return (None, None, "_Select a lesson row first_", "", *await playbook_tables())
             from analystdesk import lessons as pb
             await pb.set_frozen(frozen, (name or "analyst").strip())
-            return await playbook_tables()
+            return (None, None, f"_Playbook {'frozen' if frozen else 'unfrozen'}._",
+                    "", *await playbook_tables())
 
-        pending_table.select(on_pick_lesson, [pending_table], [selected_lesson, selected_lesson_md])
-        lesson_review_out = [selected_lesson, selected_lesson_md, lesson_reason, *pb_outputs]
-        async def on_approve_lesson(k, n, r):
-            return await on_review_lesson(k, n, r, True)
+        lesson_selection_outputs = [
+            selected_lesson, selected_lesson_status, selected_lesson_md,
+            approve_lesson_btn, reject_lesson_btn, freeze_btn, unfreeze_btn,
+        ]
+        for table, lesson_status in (
+            (pending_table, "pending"),
+            (approved_table, "approved"),
+            (rejected_table, "rejected"),
+        ):
+            table.select(
+                lesson_picker(lesson_status),
+                [table, playbook_frozen],
+                lesson_selection_outputs,
+            )
 
-        async def on_reject_lesson(k, n, r):
-            return await on_review_lesson(k, n, r, False)
+        lesson_review_out = [
+            selected_lesson, selected_lesson_status, selected_lesson_md, lesson_reason, *pb_outputs
+        ]
+        async def on_approve_lesson(k, status, n, r):
+            return await on_review_lesson(k, status, n, r, True)
 
-        async def on_freeze_playbook(n):
-            return await on_freeze(n, True)
+        async def on_reject_lesson(k, status, n, r):
+            return await on_review_lesson(k, status, n, r, False)
 
-        async def on_unfreeze_playbook(n):
-            return await on_freeze(n, False)
+        async def on_freeze_playbook(n, key):
+            return await on_freeze(n, True, key)
 
-        approve_lesson_btn.click(on_approve_lesson, [selected_lesson, approver, lesson_reason], lesson_review_out)
-        reject_lesson_btn.click(on_reject_lesson, [selected_lesson, approver, lesson_reason], lesson_review_out)
-        freeze_btn.click(on_freeze_playbook, [approver], pb_outputs)
-        unfreeze_btn.click(on_unfreeze_playbook, [approver], pb_outputs)
+        async def on_unfreeze_playbook(n, key):
+            return await on_freeze(n, False, key)
+
+        approve_lesson_btn.click(
+            on_approve_lesson,
+            [selected_lesson, selected_lesson_status, approver, lesson_reason],
+            lesson_review_out,
+        )
+        reject_lesson_btn.click(
+            on_reject_lesson,
+            [selected_lesson, selected_lesson_status, approver, lesson_reason],
+            lesson_review_out,
+        )
+        freeze_btn.click(
+            on_freeze_playbook, [approver, selected_lesson], lesson_review_out
+        )
+        unfreeze_btn.click(
+            on_unfreeze_playbook, [approver, selected_lesson], lesson_review_out
+        )
 
         async def on_page_load(name):
             return (await refresh_runs(), *await memory_tables(name), *await playbook_tables())

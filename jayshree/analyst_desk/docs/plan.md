@@ -395,7 +395,7 @@ tests/red_team/
 ## Phase 10 — Deployment
 
 **Lecture:** L16
-**Goal:** One command starts the whole system. CI fails if eval drops below threshold.
+**Goal:** One command starts the whole system. CI runs the offline test suite and validates the Compose configuration; the API-backed evaluation gate runs locally.
 
 **Files to write:**
 ```
@@ -418,8 +418,8 @@ config.py                 # all prompts + model IDs in one versioned file
 **VIVA questions:**
 - Why keep all prompts and model IDs in one versioned config file?
   (reproducibility — you can rerun any experiment with the exact same prompts and models)
-- What does the CI eval gate do?
-  (runs the evaluation harness on every push; fails the build if task-success rate drops below threshold)
+- How is evaluation gated without putting API credentials in CI?
+  (run the development evaluation locally with `scripts/run_eval.py`; the gate fails below the configured task-success threshold or when policy violations are found)
 
 ---
 

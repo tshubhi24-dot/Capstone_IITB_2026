@@ -123,10 +123,12 @@ def _next_item():
 def build_eval_tab():
     with gr.Tab("📏 Evaluation"):
         gr.Markdown(
-            "How we test the system, like an exam: **golden questions** with answers fixed in advance "
-            "(numbers from SEC XBRL), run on **C0 / C1 / C2** with the same model and tools, **marked by "
-            "code** (right figures, citations, refusals, no advice) with a **judge model** for what code "
-            "cannot decide. Memory is off for every evaluation run.")
+            "**Purpose:** Compare **C0 (baseline)**, **C1 (single agent)**, and **C2 (agent team)** "
+            "on the same development questions against predefined expected outcomes.\n\n"
+            "**Evaluation criteria:** Expected figures, required citations, appropriate refusals, and "
+            "investment-advice language.\n\n"
+            "**Results:** Compare answer quality, number traceability, run time, and estimated cost.\n\n"
+            "**Judge calibration:** Check how closely the citation-support judge agrees with human reviewers.")
 
         with gr.Accordion("📋 Golden set (development cases)", open=False):
             golden_md = gr.Markdown()

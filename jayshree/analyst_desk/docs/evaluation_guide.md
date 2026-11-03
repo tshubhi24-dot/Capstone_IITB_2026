@@ -118,7 +118,7 @@ For every configuration, report: task success, policy violations, attack success
 ## 7. Reflexion lessons (feeds E3)
 
 1. `python scripts/reflect.py data/evaluation/results/eval_dev_merged.json` turns **development** failures into *pending* lessons.
-2. Review them in the Research Agent tab → 📘 Playbook. **Approve** the useful ones, and **reject** the others with a reason; keep at least one rejected lesson as evidence.
+2. Review them in the Research tab (select C1 or C2) → 📘 Playbook. **Approve** the useful ones, and **reject** the others with a reason; keep at least one rejected lesson as evidence.
 3. **Freeze** the playbook before running the held-out set.
 
 ## 8. Who does what (independence rules from the brief)

@@ -454,7 +454,9 @@ So the two layers are independent. The guard catches attacks early, with clear B
 **Code:** [analystdesk/agent/graph.py](../analystdesk/agent/graph.py), [checks.py](../analystdesk/agent/checks.py), [figures.py](../analystdesk/agent/figures.py), and the command-line runner [__main__.py](../analystdesk/agent/__main__.py). Diagram: `python -m analystdesk.agent graph` prints it (Mermaid).
 
 ```
-input_guard → plan → [analyst: approve/edit plan] → research ⇄ tools (ReAct)
+input_guard → plan → [analyst: approve/edit/cancel plan]
+                         ├─ cancel → END
+                         └─ approve/edit → research ⇄ tools (ReAct)
    tools ─(NOT_IN_COVERAGE)→ replan → plan → [analyst sees revised plan]
 → write → check ─(issues, max 2)→ write
 → [analyst: approve / edit / reject exact note] ─edit→ check
@@ -469,7 +471,7 @@ input_guard → plan → [analyst: approve/edit plan] → research ⇄ tools (Re
 | Conditional edges | after_guard, after_research, after_tools, after_check, after_review |
 | A self-correction loop | `check` sends code-found issues back to `write`, at most 2 times |
 | Persistent checkpointer, stop and resume | `AsyncSqliteSaver` at `data/runs/checkpoints.sqlite`. Each CLI command exits at a gate, and the next resumes from a **new process** |
-| A plan object shown to the user | `review_plan` interrupt. The analyst approves or edits it (`--edit-plan plan.json`) |
+| A plan object shown to the user | `review_plan` interrupt. The analyst approves or edits it (`--edit-plan plan.json`); the app can also cancel before research starts |
 | Replanning when a tool contradicts the plan | A NOT_IN_COVERAGE tool result triggers `replan`, and the analyst sees the revised plan |
 | ReAct inside the specialist | `research`: the model calls tools, observes, and repeats, within a budget of 24 tool calls and 120k tokens |
 | Human approval of the exact payload (L14) | `review_note` signs the exact note. An edit goes back through `check`, then needs a fresh approval |
@@ -498,13 +500,13 @@ That verified share is the dashboard metric for the "alert below 98%" (Phase 8).
 - *"What happens if the check still fails after 2 revisions?"* The note goes to the analyst **with the issues listed**. Nothing is hidden, and the analyst can edit or reject.
 - *"How does resume work?"* Every step's state is saved under the run's `thread_id` in SQLite. `Command(resume=decision)` continues from the exact interrupt, even in a different process.
 
-### 7.1 Demoing it in the app (Research Agent tab)
+### 7.1 Demoing it in the app (Research tab, C1/C2)
 
 **Code:** [agent_ui.py](../agent_ui.py), and [runtime.py](../analystdesk/agent/runtime.py), which the CLI and the app share.
 
 **In the app:**
 1. Type a request and press **Start**.
-2. The **plan** appears. **Approve** it, or edit the JSON and approve the edited plan.
+2. The **plan** appears. **Approve** it, edit the JSON and approve the edited plan, or choose **Cancel plan** to end before research starts. The cancelled run remains in run history.
 3. The **activity log** streams every step live, including each MCP tool call with its arguments (`get_financials(ticker='V', fiscal_year=2024)`) and its result (✔/✖).
 4. The **note** appears, with numbered sources and the code check (e.g. "10/11 numbers verified" with the flagged number listed).
 5. **Approve** (it's signed and published), **edit** (it's re-checked and needs a fresh approval), or **reject**.
@@ -513,7 +515,7 @@ That verified share is the dashboard metric for the "alert below 98%" (Phase 8).
 
 **Tool transport in the app.** The app uses MCP's in-memory transport: the same protocol and schemas as stdio or HTTP, but no subprocesses, and filings-kb reuses the app's already-loaded index.
 
-**The Research Chat tab** is C0, the fixed baseline. It now shows "How this answer was built": the per-company searches, the EDGAR facts and the model. Years come from the question; the confusing "Fiscal Years" box is gone.
+In the **Research** tab, choose **C0 · No-Agent (Baseline)** for the fixed baseline. It shows "How this answer was built": the per-company searches, the EDGAR facts and the model. Choose C1 or C2 for agent runs with plan and note approval gates.
 
 **Live run through the app** (Visa vs Mastercard, run `51e25127`): 18 tool calls, all successful; 95 s; 48k tokens. The checker sent the draft back twice: first two margins the writer had typed itself, then one stray "55%". The final draft reached the gate at 10/11 verified, with the issue shown to the analyst. **That's the design: code flags it, and a person decides.**
 
@@ -562,7 +564,7 @@ Result file: `data/evaluation/results/memory_compare_20261025-112601.json`. You 
 
 ### 8.4 Correction and deletion (policy in practice)
 
-- **🧠 Memory panel** (Research Agent tab): view preferences, the coverage list and past-note memory, and delete any item.
+- **🧠 Memory panel** (Research tab, C1/C2): view preferences, the coverage list and past-note memory, and delete any item.
 - **Use memory** switch: a run with it off neither reads nor writes memory.
 - `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed.
 
@@ -646,7 +648,7 @@ Denials go back to the agent as normal tool results, so it adapts instead of cra
 
 ### 9.6 Showing it: the team board (app)
 
-The Research Agent tab has a **👥 Team board** with one row per agent: research lead, each researcher and risk-diff agent, the quant, writer, critic, you (the note gate) and the publisher. Each row shows status (queued → working → handed off), tool calls, last action and details (passages, facts, confidence, errors). It updates live as hook events stream in; in a test run it refreshed 40 times. Mid-run you can see some specialists already handed off while others are still working, which is the parallel fan-out made visible. Loaded runs rebuild the board from their history, because each hand-off now saves that agent's tool calls.
+The Research tab in **C2 · Team** mode has a **👥 Team board** with one row per agent: research lead, each researcher and risk-diff agent, the quant, writer, critic, you (the note gate) and the publisher. Each row shows status (queued → working → handed off), tool calls, last action and details (passages, facts, confidence, errors). It updates live as hook events stream in; in a test run it refreshed 40 times. Mid-run you can see some specialists already handed off while others are still working, which is the parallel fan-out made visible. Loaded runs rebuild the board from their history, because each hand-off now saves that agent's tool calls.
 
 **Demo tip:** start a C2 run, approve the plan, and narrate the board: "five specialists start at once; the quant only has EDGAR and the sandbox; the risk-diff agent hit its budget, and the hook stopped it; the critic verified every number and the judge flagged one claim for me to decide on."
 
@@ -673,7 +675,7 @@ The Research Agent tab has a **👥 Team board** with one row per agent: researc
 ### 10.2 Reflexion (L12)
 
 - [scripts/reflect.py](../scripts/reflect.py) reads a **development** evaluation result (it refuses held-out results). For each agent run it collects what went wrong: failed scoring, and critic issues across revisions. A reflection prompt then turns these into at most 2 lessons per run: *"When <situation>: <what to do>"*, with tags.
-- Lessons are **pending** until a person approves them in the app (Research Agent tab → 📘 Playbook). Rejections are kept with their reason, and the brief asks for one rejected lesson as evidence.
+- Lessons are **pending** until a person approves them in the app (Research tab, C1/C2 → 📘 Playbook). Rejections are kept with their reason, and the brief asks for one rejected lesson as evidence.
 - Approved lessons are **retrieved only when relevant** (tag and word overlap, top 3) and shown to the planner, researchers and specialists, and writer. Each run's log says how many lessons it used.
 - **Freeze** the playbook before the held-out run; a frozen playbook refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
 - Code: [analystdesk/lessons.py](../analystdesk/lessons.py).

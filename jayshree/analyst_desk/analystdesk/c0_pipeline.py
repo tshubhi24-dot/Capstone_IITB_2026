@@ -8,8 +8,8 @@ This is the complete C0 experiment configuration. It is a fixed workflow:
   4. Call the LLM once with that prompt (no tool loop, no planning)
   5. Return the answer with passage citations and fact_ids
 
-C0 uses OpenRouter (C0_MODEL, default openai/gpt-4.1-mini) via the OpenAI-compatible API.
-The model is fixed in config — not chosen by an agent.
+C0 uses the model configured for the `c0` role in the versioned LLM config
+via OpenRouter's OpenAI-compatible API. The model is fixed in config — not chosen by an agent.
 """
 
 from __future__ import annotations
@@ -18,30 +18,11 @@ import os
 from pathlib import Path
 
 from .edgar import get_financials, get_quarterly_financials
+from .llm_config import LLM_CONFIG
 from .query import decompose, find_companies, search_decomposed
 from .scope import COMPANIES, C0_COMPANIES
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-C0_MODEL = os.getenv("C0_MODEL", "openai/gpt-4.1-mini")
-
-SYSTEM_PROMPT = """You are a financial research assistant.
-Answer the analyst's question using ONLY the provided context (retrieved passages and EDGAR numbers).
-Do not use prior knowledge. If the context does not answer the question, say so.
-Always cite passage IDs in square brackets like [MSFT_2024_item7_003].
-Do not recommend buying or selling any security."""
-
-ANSWER_TEMPLATE = """
-RETRIEVED PASSAGES:
-{passages}
-
-EDGAR VERIFIED NUMBERS (source: SEC XBRL filings):
-{numbers}
-
-ANALYST QUESTION:
-{question}
-
-Answer concisely with citations. Every number must cite its fact_id.
-"""
 
 
 def _format_passages(hits: list[dict]) -> str:
@@ -133,7 +114,8 @@ def answer(
     numbers_text = _format_numbers(tickers, years)
 
     # Step 3 — fill fixed prompt template
-    user_content = ANSWER_TEMPLATE.format(
+    user_content = LLM_CONFIG.format_prompt(
+        "c0_answer",
         passages=_format_passages(hits),
         numbers=numbers_text,
         question=question,
@@ -150,9 +132,9 @@ def answer(
                 api_key=OPENROUTER_API_KEY,
             )
             response = client.chat.completions.create(
-                model=C0_MODEL,
+                model=LLM_CONFIG.model("c0"),
                 messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": LLM_CONFIG.prompt("c0_system")},
                     {"role": "user", "content": user_content},
                 ],
                 max_tokens=800,
@@ -167,7 +149,7 @@ def answer(
         "answer": answer_text,
         "passages": hits,
         "years": years,
-        "model": C0_MODEL,
+        "model": LLM_CONFIG.model("c0"),
         "pipeline": "C0-fixed-RAG",
         "tokens": tokens,
         # how the answer was built, for display: the fixed steps C0 took

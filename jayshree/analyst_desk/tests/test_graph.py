@@ -1,7 +1,55 @@
+import asyncio
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from analystdesk.agent.runtime import _NoModel
-from analystdesk.agent.graph import build_graph
+from analystdesk.agent.graph import Plan, build_graph
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import Command
+
+
+class _PlanModel:
+    def with_structured_output(self, model, include_raw=False):
+        return self
+
+    def bind_tools(self, tools):
+        return self
+
+    async def ainvoke(self, messages):
+        plan = Plan(
+            companies=["MSFT"],
+            fiscal_years=[2024],
+            sub_questions=["What changed in Microsoft's financials?"],
+            outline=["Financial performance"],
+        )
+        return {"parsed": plan, "raw": SimpleNamespace(usage_metadata={"total_tokens": 1})}
+
+
+async def _resume_plan_gate(graph, action="cancel"):
+    checkpointer = MemorySaver()
+    app = graph.compile(checkpointer=checkpointer)
+    config = {"configurable": {"thread_id": "cancel-plan-test"}}
+    async for _ in app.astream(
+        {"request": "Compare Microsoft margins in 2024", "memory_on": False},
+        config,
+        stream_mode="updates",
+    ):
+        pass
+
+    snapshot = await app.aget_state(config)
+    if not snapshot.tasks or not snapshot.tasks[0].interrupts:
+        raise AssertionError("workflow did not pause at the plan approval gate")
+
+    updates = []
+    async for update in app.astream(
+        Command(resume={"action": action}),
+        config,
+        stream_mode="updates",
+    ):
+        updates.extend(update)
+    final = await app.aget_state(config)
+    return final.values, updates, final.next
 
 
 class GraphShapeTests(unittest.TestCase):
@@ -15,6 +63,30 @@ class GraphShapeTests(unittest.TestCase):
         self.assertIn(("tools", "replan"), edges)         # replanning
         self.assertIn(("check", "count_revision"), edges)  # self-correction loop
         self.assertIn(("review_note", "check"), edges)    # edited note is re-checked
+        self.assertIn(("review_plan", "__end__"), edges)  # cancelled plan stops before research
+
+    def test_c1_cancel_at_plan_gate_stops_before_research(self):
+        import os
+        from analystdesk.agent.graph import build_graph
+
+        with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+            values, updates, next_nodes = asyncio.run(
+                _resume_plan_gate(build_graph(_PlanModel(), [], None))
+            )
+
+        self.assertEqual(values["outcome"], "cancelled")
+        self.assertEqual(next_nodes, ())
+        self.assertNotIn("research", [node for update in updates for node in update])
+        self.assertNotIn("write", [node for update in updates for node in update])
+
+    def test_invalid_plan_decision_does_not_start_research(self):
+        import os
+        from analystdesk.agent.graph import build_graph
+
+        with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+            with self.assertRaisesRegex(ValueError, "approve, edit, or cancel"):
+                asyncio.run(_resume_plan_gate(build_graph(_PlanModel(), [], None), action="unexpected"))
+
 
 
 
@@ -40,6 +112,21 @@ class TeamGraphTests(unittest.TestCase):
             self.assertIn(("review_plan", a), edges)   # parallel fan-out
             self.assertIn((a, "gather"), edges)
         self.assertIn(("gather", "replan"), edges)
+        self.assertIn(("review_plan", "__end__"), edges)
+
+    def test_c2_cancel_at_plan_gate_prevents_team_fanout(self):
+        import os
+        from analystdesk.agent.team import build_team_graph
+
+        with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+            values, updates, next_nodes = asyncio.run(
+                _resume_plan_gate(build_team_graph(_PlanModel(), [], None))
+            )
+
+        self.assertEqual(values["outcome"], "cancelled")
+        self.assertEqual(next_nodes, ())
+        executed_nodes = [node for update in updates for node in update]
+        self.assertFalse({"researcher", "quant", "risk_diff", "gather", "write"} & set(executed_nodes))
 
 
 class HooksTests(unittest.TestCase):

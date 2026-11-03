@@ -1,11 +1,13 @@
 beautifulsoup4
 chromadb
+fastapi>=0.115,<1
 gradio
 openai
 plotly
 python-dotenv
 rank-bm25
 sentence-transformers
+uvicorn>=0.30,<1
 # MCP (Phase 3). Pinned together: langchain-mcp-adapters needs MCP SDK 1.x,
 # and fastmcp 4.x moved to SDK 2.x.
 fastmcp==3.4.11
