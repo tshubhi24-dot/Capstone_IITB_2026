@@ -1,189 +1,410 @@
-## 1. About the project
+# Analyst Desk
 
-Analyst Desk helps analysts research covered companies using SEC filing data and searchable passages from 10-K filings. Its research agents create evidence-backed drafts, check figures and citations, and pause for analyst approval before publishing a note. The project includes a FastAPI service, a Gradio research interface, and a Docker Compose deployment with monitoring.
+**Multi-agent equity research over SEC filings, with every number verified and a person approving every note.**
 
-## 2. Run with Docker Compose (recommended)
+IIT Bombay Agentic AI Capstone · Project 5
 
-Docker Compose starts the app, its supporting services, and the monitoring stack. Python is not required on the host.
+An equity research analyst asks a question such as *"Compare Microsoft's and Alphabet's operating margins in fiscal 2024 and tell me what changed in their risk factors."* Analyst Desk plans the research and shows the plan for approval. It reads the companies' 10-K filings, pulls the exact reported figures from SEC XBRL data and computes ratios in code. It then drafts a cited note and checks every number and claim. Nothing is published until the analyst approves that exact note.
 
-1. Download and install **Docker Desktop for Windows** from
-   [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
-2. Start Docker Desktop and wait until its engine is running.
-3. Open PowerShell and change the current folder to `analyst_desk`, where
-   `compose.yaml` is located. Replace the example path with your extracted project path.
+The design follows three rules:
+
+1. **The model proposes; code and people decide.** Figures, arithmetic, scope and permissions are plain tested code. The model plans, chooses tools and writes the prose.
+2. **Outside text is data, never instructions.** Filing text and tool results are passed to the model as evidence only.
+3. **A person approves each exact change to the outside world.** Approval is a signature over the exact note; any edit invalidates it.
+
+---
+
+## Contents
+
+1. [Features](#1-features)
+2. [Coverage](#2-coverage)
+3. [Architecture](#3-architecture)
+4. [Results](#4-results)
+5. [Run it](#5-run-it)
+6. [Using the app](#6-using-the-app)
+7. [API](#7-api)
+8. [Configuration](#8-configuration)
+9. [Tests, evaluation and CI](#9-tests-evaluation-and-ci)
+10. [Project structure](#10-project-structure)
+11. [Documentation](#11-documentation)
+12. [Working on the project](#12-working-on-the-project)
+
+---
+
+## 1. Features
+
+### Three research workflows, compared like for like
+
+| | Workflow | How it works |
+|---|---|---|
+| **C0** | Fixed pipeline (no agent) | Deterministic retrieval and EDGAR look-up, then one model call. Supports follow-up questions and draws an EDGAR chart for the metric asked about. |
+| **C1** | Single agent | One LangGraph agent with all research tools: plan → approve → ReAct research → write → code check → approve → publish. |
+| **C2** | Team of agents | A research lead fans out in parallel to a researcher and a risk-diff agent per company, plus a quant. Each sends back a typed hand-off; a writer drafts and a compliance critic reviews. |
+
+All three use the same model, the same tools and the same tool-call budget. The only difference is how the work is organised, so the comparison measures orchestration alone.
+
+### Numbers you can trust
+
+- **Every figure comes from SEC XBRL** and carries a `fact_id` (`concept/fiscal_year/accession`) pointing at the exact filing.
+- **The model never types a key figure.** It writes a placeholder such as `{MSFT_2024_margin}`, and code inserts the value with its source tag (`[fact: …]`, `[calc: …]`, `[growth: …]`, `[diff: …]`).
+- **A code checker verifies every number** before the analyst sees the note:
+  - facts are checked against XBRL;
+  - margins, growth and changes are recomputed;
+  - a quoted number must appear, with its unit, in the passage cited on the same line;
+  - cited passages must exist;
+  - no figure placeholder may be left unfilled;
+  - no investment-advice wording is allowed.
+- **Fiscal years are aligned** by each period's end date, which matters for June, September and January year-ends. Only full-year facts count.
+- **Values are as originally reported**; later restatements are shown as warnings.
+- **Banks are measured on pre-tax margin**, other companies on operating margin. The basis is fixed per company, and the two are never compared.
+
+### Human in control
+
+- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs.
+- **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval.
+- **Signed approval:** the gate signs the exact note with an HMAC key. The publishing server verifies the signature, so a skipped or forged approval is refused at the server.
+- **Stop and resume:** every run is checkpointed in SQLite. Any run can be reopened from the run list, even after a restart.
+
+### Retrieval over 10-K filings
+
+- 12,586 passages from Item 1A (Risk Factors) and Item 7 (MD&A). Tables are kept as tables, with their labels.
+- Hybrid search: BM25 plus MiniLM vectors (Chroma), fused with Reciprocal Rank Fusion, then a cross-encoder reranker.
+- Query decomposition in code: one filtered sub-query per company and year, with the names stripped from the query text.
+- **Recall@5 = 0.903** on 36 labelled queries, up from 0.472 without decomposition.
+
+### Tools over MCP, with least privilege
+
+- Four MCP servers expose eight typed tools:
+  - **filings-kb:** `search_filings`, `get_passage`;
+  - **edgar:** `list_filings`, `get_financials`, `get_fact`;
+  - **python-sandbox:** `run_python`;
+  - **research-portal:** `get_past_notes`, `publish_note`.
+- Each agent is bound only to its own tools.
+- **Hooks wrap every tool call:**
+  - before the call: the permission allow-list, a per-agent budget and an EDGAR rate limit;
+  - after the call: a trace event.
+- Errors come back as typed results, for example `NOT_IN_COVERAGE`, so the agent can re-plan instead of crashing.
+- **Sandboxed Python** for arithmetic. An import guard and audit hooks catch attempts early; the Docker container is the real boundary, with no network, a read-only filesystem, a non-root user and resource limits.
+
+### Memory
+
+- **Long-term memory**, stored in a LangGraph SQLite store:
+  - analyst preferences;
+  - a coverage list;
+  - past-note figures, parsed from the verified tags of published notes.
+- **"What changed since our last note"** is computed by code from those figures, including restatements.
+- **The analyst controls it:** view and delete entries in the app, or re-run any request without memory to compare.
+- **Short-term memory** (the research conversation within a run) is trimmed to a size budget.
+
+### Learning from mistakes (Reflexion playbook)
+
+- `scripts/reflect.py` turns failures on development cases into short "when … do …" lessons.
+- **A person reviews every lesson** in the 📘 Playbook. Only approved lessons are used, and only the 3 most relevant to each request. Rejected lessons are kept with their reason, and duplicates are merged.
+- **The playbook can be frozen** before a held-out evaluation.
+
+### Evaluation
+
+- A golden set of 20 development cases: numeric, comparison, risk-change and refusal. Expected values are computed from XBRL by code and frozen beforehand.
+- Scoring is done in code. A judge from a different model family (Llama 3.3 70B) checks claims against passages, and it is calibrated against human labels with Cohen's kappa.
+- The **📏 Evaluation tab** shows the golden set, live runs, the results table, a per-case grid with drill-down, and the judge-calibration workflow.
+
+### Operations
+
+- **Observability:**
+  - traces: OpenTelemetry → Jaeger;
+  - metrics: Prometheus;
+  - a Grafana dashboard: verified-number share, cost per note, latency, critic rejections, tool calls, hook denials;
+  - an alert when the verified share drops below 98%.
+- **FastAPI service:** health and readiness endpoints, plus a streaming research API, with the Gradio UI mounted on the same server.
+- **Docker Compose** starts the app, the four MCP servers on an internal network with no internet access, and the observability stack.
+- **Versioned LLM configuration:** all prompts and model IDs live in `config/llm.toml`, validated at start-up.
+- **GitHub Actions CI:**
+  - offline tests and Compose validation on every push and pull request;
+  - an on-demand evaluation gate: at least 95% task success and zero policy violations.
+
+---
+
+## 2. Coverage
+
+15 companies × fiscal years 2022–2024 (45 company-years):
+
+| Sector | Companies |
+|---|---|
+| Technology | MSFT, GOOGL, AAPL, AMZN, META, NVDA, AMD, ORCL |
+| Financials | JPM, GS, BAC, MS, WFC (pre-tax margin), V, MA (operating margin) |
+
+Requests outside this scope are declined with a reason, as are requests for investment advice ("Should I buy…", price targets).
+
+---
+
+## 3. Architecture
+
+```
+Analyst ──► Gradio UI + FastAPI ──► input guard (scope, advice) ──► plan ──► [plan gate]
+                                                                              │
+          C1: one ReAct agent ◄───────────────────────────────────────────────┤
+          C2: researcher×N ‖ risk-diff×N ‖ quant  ──► typed hand-offs ──► gather
+                                                                              │
+                writer (placeholders) ──► code checks (+ judge in C2) ──► revise ≤2
+                                                                              │
+                                      [note gate: approve · edit · reject] ──► publish (signed)
+
+Every tool call ──► hooks (permission · budget · rate limit · trace) ──► MCP servers
+   filings-kb (hybrid index) · edgar (XBRL cache) · python-sandbox · research-portal
+
+Memory + playbook (LangGraph store) · checkpoints (SQLite) · traces · metrics · alerts
+```
+
+Full description: [docs/architecture.md](docs/architecture.md). The reasoning behind each design choice: [docs/viva_notes.md](docs/viva_notes.md).
+
+---
+
+## 4. Results
+
+Development set, 20 cases, same model (`openai/gpt-4.1-mini`), tools and budget for every configuration. Memory was off and runs stopped at the note gate. Details and the per-case grid: [docs/evaluation.md](docs/evaluation.md).
+
+| | C0 fixed pipeline | C1 single agent | C2 team |
+|---|---|---|---|
+| Task success | 16/20 | 19/20 | 20/20 |
+| Policy violations | 0 | 0 | 0 |
+| Numbers verified (mean) | 32% | 97% | 80% |
+| Cost per case (est.) | $0.0013 | $0.0063 | $0.0198 |
+| Latency, median | 3.8 s | 14.2 s | 50.9 s |
+
+Retrieval: Recall@5 0.903 on table-aware passages ([docs/retrieval_eval.md](docs/retrieval_eval.md)).
+
+These are development results. Final claims use a held-out set written by a team member who does not tune the agents, run three times to show the spread.
+
+---
+
+## 5. Run it
+
+You need your own [OpenRouter](https://openrouter.ai) API key. All data is in the repository: 10-K passages and XBRL facts, so there is no SEC download.
+
+### Option A: Docker Compose (everything, recommended)
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running.
+2. In a terminal, go to the project folder and create `.env` with your key:
 
    ```powershell
-   Set-Location "$HOME\Downloads\Capstone_IITB_2026\jayshree\analyst_desk"
+   cd Capstone_IITB_2026\jayshree\analyst_desk
+   Copy-Item .env.example .env     # Mac/Linux: cp .env.example .env
+   notepad .env                    # set OPENROUTER_API_KEY; never commit or share .env
    ```
 
-4. Create `.env` and add your own OpenRouter API key:
-
-   ```powershell
-   Copy-Item .env.example .env
-   notepad .env
-   ```
-
-   Replace the `OPENROUTER_API_KEY` placeholder and save. Keep `.env` private; never include it in a shared ZIP or send it to anyone. `.env` should contain only this API key; do not add prompts, model IDs, or other project configuration to it.
-
-Prompts and model IDs are version-controlled in
-[`config/llm.toml`](./config/llm.toml). Edit and commit that file to change
-the C0, agent, judge, or reflection model, or any LLM prompt. The application
-validates the config version, required entries, and prompt-template placeholders
-on startup and fails with an explicit error if it is missing or invalid.
-
-5. Build and start the full stack:
+3. Start the stack:
 
    ```powershell
    docker compose up --build
    ```
 
-On a clean machine, the first build downloads dependencies and CPU embedding/reranker models, then builds the vector index from 12,586 passages. It can take 20 minutes or more depending on network speed and CPU; no GPU is required. Later starts reuse the image and persistent index, run-checkpoint, long-term-memory, portal-note, and approval volumes.
+   The first start takes about 20 minutes. It downloads the dependencies and the CPU embedding and reranker models, then builds the search index once. No GPU is needed. Later starts take seconds, and the index, runs, memory, notes and approval key persist in Docker volumes.
 
-Keep this PowerShell window open; `docker compose up` stays attached while the
-services run. Wait for the initial build and index setup to finish.
+| Service | Address |
+|---|---|
+| App | <http://127.0.0.1:7861> |
+| API docs | <http://127.0.0.1:7861/docs> |
+| Grafana (dashboard "Analyst Desk") | <http://127.0.0.1:3000> |
+| Jaeger traces | <http://127.0.0.1:16686> |
+| Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
-6. To verify startup/readiness, open another PowerShell window and run:
+Check it is ready: `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
 
-```powershell
-docker compose ps
-curl.exe --fail http://127.0.0.1:7861/healthz
-curl.exe --fail http://127.0.0.1:7861/readyz
-```
+Stop it with **Ctrl+C** or `docker compose down`. Don't use `--volumes` unless you want to delete stored runs, memory and notes.
 
-`{"status":"ok"}` and `{"status":"ready"}` should be returned. These commands verify that the app is ready.
+**Checking the dashboard:**
+1. Run a C1 or C2 request in the app and approve the plan.
+2. After about 15 seconds, Prometheus at <http://127.0.0.1:9090/graph> returns values for `sum(ad_runs_total)` and `sum(ad_tool_calls_total)`.
+3. In Grafana, set the time range to *Last 6 hours*. The verified-share panel fills once a draft reaches the note gate.
 
-7. Verify the Grafana metrics dashboard:
+### Option B: Python (development and tests)
 
-   1. Open <http://127.0.0.1:9090/targets>. The `analyst-desk` target should show **1 / 1 up**. You can also open <http://127.0.0.1:9090/graph>, enter `up{job="analyst-desk"}`, and select **Execute**; the result should be `1`. This confirms that Prometheus can scrape the app, but it does not mean a research run has generated metrics.
-   2. Open <http://127.0.0.1:7861>, go to **Research**, select **C1 · Single agent** or **C2 · Team**, enter a question, and click **Start**. Approve the plan and let the run reach a gate or finish. C0 is the no-agent baseline and does not generate the agent-run metrics shown in this dashboard. You do not need to publish a note to generate run and tool-call metrics.
-   3. Wait at least 15 seconds for Prometheus to scrape the updated counters. On <http://127.0.0.1:9090/graph>, execute `sum(ad_runs_total)`, `sum(ad_tool_calls_total)`, and `sum(ad_tokens_total)`. After a C1/C2 run, these queries should return values; a metric may not appear until its corresponding event occurs.
-   4. Open <http://127.0.0.1:3000> and select the **Analyst Desk** dashboard. Set the time range to **Last 6 hours**, then refresh or wait for its 30-second auto-refresh. Dashboard panels use different lookback windows (30 minutes, 1 hour, and 6 hours), so activity must fall within a panel's window. The verified-share panel requires a checked draft at the note gate; the published-notes panel requires approving and publishing a note.
-   5. If the target is down, confirm the app is healthy with `docker compose ps` and inspect startup logs using `docker compose logs --tail 100 app`. If Prometheus queries return metrics but the dashboard is blank, check the dashboard time range and refresh it.
-
-8. To stop the docker command, press **Ctrl+C** in its PowerShell window. Alternatively, from another PowerShell window in the project folder, run:
+Python 3.12 or newer.
 
 ```powershell
-docker compose down
+cd Capstone_IITB_2026\jayshree\analyst_desk
+.\setup.bat                          # creates .venv and installs requirements
+                                     # Mac/Linux: python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+Copy-Item .env.example .env          # then set OPENROUTER_API_KEY
+.\.venv\Scripts\python.exe app.py    # http://127.0.0.1:7861
 ```
 
-Named volumes survive `docker compose down` and app-container recreation. Do
-not use `docker compose down --volumes` unless you intend to delete persisted
-project data.
+The first search builds the vector index, which takes about 10 minutes on CPU, once.
 
-## 3. Run the local Python GUI (alternative)
-
-Use this option if you want to run the app directly in Python instead of
-Docker. Install **Python 3.12 or newer** from
-[python.org/downloads](https://www.python.org/downloads/). During installation,
-enable **Add python.exe to PATH** and install the Python launcher (`py`).
-Verify it in PowerShell:
+Optionally, with Docker Desktop running, build the locked-down code sandbox so that `run_python` uses a container instead of the local guarded process:
 
 ```powershell
-py --version
+docker build -t analystdesk-sandbox -f docker/sandbox/Dockerfile .
 ```
 
-1. Open PowerShell and change the current folder to `analyst_desk`, run `setup.bat` to install the dependencies:
+Don't run the Python app and the Docker app at the same time, because both use port 7861.
+
+---
+
+## 6. Using the app
+
+| Tab | What it is |
+|---|---|
+| 📈 **Dashboard** | EDGAR-verified revenue, margin and income charts and table for any of the 15 companies |
+| 🔎 **Research** | Choose **C0 · No-Agent**, **C1 · Single agent** or **C2 · Team** |
+| 📏 **Evaluation** | Golden set; run C0/C1/C2 on chosen cases; E1 results and per-case grid (click a row to see the note); ⚖️ judge calibration |
+| 🔍 **Data Explorer** | Search the 10-K passages directly, filtered by company and year |
+| 🗂️ **Raw Data** | The full C0 `ResearchNote` JSON, with every figure's fact_id |
+
+**C0 in the Research tab:** ask a question, or choose *Follow-up* to use the last three exchanges as context. The answer cites passages and EDGAR figures. A chart is drawn for the metric asked about (quarterly if requested), and *How this answer was built* lists the searches, facts and model used.
+
+**C1 and C2 in the Research tab:**
+1. Type a request (or pick an example) and press **Start**.
+2. **Approve**, edit or cancel the plan.
+3. Watch the live **👥 Team board** (C2: one row per agent, with status, tool calls and hand-off details) and the **🔧 Agent activity** log (every step and tool call with its result).
+4. Review the note: numbered sources and the code check (for example "18/18 numbers verified", with any issue listed).
+5. **Approve** to sign and publish it, **edit** it (re-checked; needs a fresh approval) or **reject** it.
+
+Also in this tab:
+- **📂 Your runs:** click one to reopen or resume it.
+- **↻ Re-run without memory:** compare the same request without memory.
+- **🧠 Memory:** view, add and delete preferences, coverage and past-note figures.
+- **📘 Playbook:** approve, reject or freeze lessons.
+- **📚 Published notes:** everything in the research portal.
+
+**Try it:** choose **C2 · Team** and ask *"Compare Microsoft's and Alphabet's operating margins in fiscal 2024."* Approve the plan and watch the team board. Then approve the note and ask again: the second note has a **"What changed since our last note"** section computed from the first.
+
+---
+
+## 7. API
+
+The app is a FastAPI server with the Gradio UI mounted at `/`. Interactive docs are at `/docs`.
+
+| Method and path | Purpose |
+|---|---|
+| `GET /healthz` | Liveness: `{"status": "ok"}` |
+| `GET /readyz` | Readiness: returns 503 until the retriever and index are loaded |
+| `POST /api/research` | Start a C1 or C2 run (`request`, `mode`, `analyst`, `memory_on`). Streams events (server-sent events) until the plan gate. |
+| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. Streams until the next gate or the end. |
+
+The API runs the same graph and gates as the UI, so publishing still requires a signed approval of the exact note.
+
+---
+
+## 8. Configuration
+
+| Where | What |
+|---|---|
+| `.env` | **Only** `OPENROUTER_API_KEY`. Git-ignored; never commit it. |
+| [`config/llm.toml`](config/llm.toml) | Every prompt and model ID: the `c0`, `agent`, `judge` and `reflection` models, and the C0, planner, researcher, writer, specialist, judge and reflection prompts. Version-controlled and validated at start-up (version, required entries and template placeholders); the app refuses to start with an invalid file. |
+
+Optional environment variables:
+
+| Variable | Default | Effect |
+|---|---|---|
+| `AGENT_CALLS_BASE`, `AGENT_CALLS_PER_COMPANY` | 12, 12 | Tool-call budget per run: 24 for one company, 36 for two, 48 for three. The same for C1 and C2; C2 splits it across its specialists. |
+| `AGENT_MAX_TOOL_CALLS` | unset | Fixes the budget for experiments |
+| `AGENT_TOKEN_BUDGET`, `AGENT_MAX_CONTEXT_CHARS` | 120000, 60000 | Token budget per run; size of the trimmed research context |
+| `AGENT_LESSONS` | 1 | `0` disables the playbook (the "before" runs for E3) |
+| `SANDBOX_MODE` | auto | `docker`, `local` or `auto` (Docker when available) |
+| `METRICS_PORT` | 9464 | Prometheus `/metrics` port |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | unset | Send traces to Jaeger or any OTLP collector |
+| `PRICE_PER_M_TOKENS` | 0.52 | Cost estimate used in metrics and evaluation |
+
+---
+
+## 9. Tests, evaluation and CI
 
 ```powershell
-Set-Location "$HOME\Downloads\Capstone_IITB_2026\jayshree\analyst_desk"
-.\setup.bat
+.\.venv\Scripts\python.exe -m unittest discover -s tests          # 184 tests, no API key needed
+.\.venv\Scripts\python.exe scripts\run_eval.py --configs c0 c1 c2 --split dev
+.\.venv\Scripts\python.exe scripts\eval_report.py data\evaluation\results\eval_dev_<tag>.json   # writes docs/evaluation.md
+.\.venv\Scripts\python.exe scripts\eval_retrieval.py                # Recall@5 report
+.\.venv\Scripts\python.exe scripts\reflect.py data\evaluation\results\eval_dev_merged.json      # pending lessons
+.\.venv\Scripts\python.exe scripts\calibrate_judge.py sample        # judge calibration items
 ```
 
-The setup script creates a project-local `.venv` and installs packages from
-`requirements.txt`; it does not install them globally.
+Evaluation runs use memory off, auto-approve the plan, stop at the note gate (nothing is published), and count failures and timeouts rather than hiding them.
 
-2. Create `.env` and add only your OpenRouter API key:
+**GitHub Actions:**
+- **Analyst Desk CI** runs on every push and pull request. It runs the full offline test suite and validates the Docker Compose file, with no API calls.
+- **Analyst Desk Evaluation Gate** runs on demand:
+  1. Add the repository secret `OPENROUTER_API_KEY`.
+  2. Go to **Actions → Analyst Desk Evaluation Gate → Run workflow**.
+  3. It runs C1 on the 20 development cases and fails unless task success is at least 95% with zero policy violations. The results JSON is attached to the workflow run.
 
-```powershell
-Copy-Item .env.example .env
-notepad .env
-```
-Do not share your OpenRouter API key.
-3. Start the app:
-
-```powershell
-.\.venv\Scripts\python.exe app.py
-```
-
-4. Open <http://127.0.0.1:7861>. The first search may take several minutes while
-the local search index is built. Keep the PowerShell window open.
-
-5. Press **Ctrl+C** to stop the server. Do not run this local GUI and the Docker app at
-the same time; both use port `7861`.
-
-The local app is served by FastAPI with the Gradio research UI mounted at `/`.
-It provides `/healthz`, `/readyz`, and interactive API documentation at
-<http://127.0.0.1:7861/docs>.
-
-In the **Research** tab, choose **C0 · No-Agent (Baseline)**, **C1 · Single
-agent**, or **C2 · Team**. C1 and C2 include plan and draft approval steps.
-C0 generates an EDGAR chart from a question that names a supported company and
-financial metric; it uses the requested fiscal year(s), and displays quarterly
-periods when the question explicitly asks for quarterly data.
-
-## 4. Unit tests and evaluation (contributors)
-
-Run the checks below locally from the project folder when you want to verify a change.
-
-1. To run the automated unit and data-integrity tests (no API key required):
-
-```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests -v
-```
-
-2. The live C1 development evaluation uses the API, so run it only when `.env`
-contains a valid `OPENROUTER_API_KEY`:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\run_eval.py --configs c1 --split dev --min-cases 20 --min-success-rate 0.95
-```
-
-The evaluation gate requires at least 20 cases, at least **95%** task success,
-and zero policy violations. Use the development set for tuning; keep held-out
-cases for final evaluation.
-
-### Run the evaluation gate in GitHub Actions before a demo
-
-The regular **Analyst Desk CI** workflow runs offline tests and Docker Compose
-validation on pushes and pull requests; it does not call the model API. To run
-the paid evaluation only when the team requests it:
-
-1. In the repository, open **Settings → Secrets and variables → Actions** and
-   add a repository secret named `OPENROUTER_API_KEY`. Do not put the key in
-   workflow files or commit a `.env` file.
-2. Open **Actions → Analyst Desk Evaluation Gate → Run workflow**, select the
-   branch to evaluate, and start the workflow.
-3. The workflow evaluates C1 on all 20 development cases. It passes only with
-   at least **95% task success**, at least 20 evaluated cases, and zero policy
-   violations. A failed gate fails the workflow run.
-4. Download the `analyst-desk-evaluation-<run-id>-<attempt>` artifact from the
-   workflow run to inspect its JSON results. Generated results are not committed.
-
-This workflow uses OpenRouter and may incur API charges; the 20-case run can
-take several minutes. It evaluates only the development split. Do not use the
-held-out set for this routine gate.
-
-3. To test the Prometheus alert rule against synthetic below-threshold and
-recovery samples, start Docker Compose and run these commands from the analyst project
-folder:
+**Alert rule test** (with Compose running):
 
 ```powershell
 docker compose up -d prometheus
 docker compose cp .\docker\prometheus\alerts.yml prometheus:/tmp/alerts.yml
 docker compose cp .\docker\prometheus\alerts.test.yml prometheus:/tmp/alerts.test.yml
-docker compose exec -T prometheus sh -c "cd /tmp && promtool test rules alerts.test.yml"
-docker compose exec -u 0 -T prometheus rm -f /tmp/alerts.yml /tmp/alerts.test.yml
+docker compose exec -T prometheus sh -c "cd /tmp && promtool test rules alerts.test.yml"   # prints SUCCESS
 ```
 
-The `promtool` command should print `SUCCESS` and return exit code `0`. The
-cleanup command removes the temporary test files from the Prometheus container.
+---
 
-## 5. Project structure
+## 10. Project structure
 
-- `analystdesk/`: application logic, data retrieval, agents, and tools.
-- `app.py`: main web application.
-- `agent_ui.py`, `eval_ui.py`: agent and evaluation interfaces.
-- `data/`: committed filing passages and financial data used by the app.
-- `tests/`: automated tests.
-- `docs/architecture.md`: architecture and data flow.
-- `del_handover.md`: additional technical handoff details.
+```
+analyst_desk/
+├── app.py                 Gradio UI + FastAPI server (Dashboard, Research, Data Explorer, Raw Data)
+├── agent_ui.py            C1/C2 panel: gates, team board, activity, runs, memory, playbook, notes
+├── eval_ui.py             Evaluation tab
+├── config/llm.toml        Prompts and model IDs (versioned)
+├── analystdesk/
+│   ├── scope.py           Companies, sectors, margin basis, covered years
+│   ├── edgar.py           XBRL facts: fiscal-year alignment, full-year filter, as-reported values
+│   ├── baseline.py        Figures and margins in Python
+│   ├── ingest.py          10-K parsing: Items 1A and 7, tables kept as tables
+│   ├── retrieve.py        Hybrid BM25 + vector search, RRF, cross-encoder reranker
+│   ├── query.py           Query decomposition and rewrite
+│   ├── c0_pipeline.py     C0 fixed pipeline
+│   ├── chat_chart.py      C0 EDGAR charts; chat_context.py: C0 follow-ups
+│   ├── servers/           The four MCP servers, the client, the sandbox runner
+│   ├── approval.py        HMAC approval tokens
+│   ├── agent/             graph.py (C1 + shared nodes), team.py (C2), hooks.py, checks.py,
+│   │                      figures.py, runtime.py
+│   ├── memory.py          Long-term memory and "what changed"
+│   ├── lessons.py         Reflexion playbook
+│   ├── evaluation.py      Scoring, runner, evaluation gate
+│   ├── observability.py   Traces and metrics
+│   ├── llm_config.py      Loads and validates config/llm.toml
+│   └── api.py             FastAPI endpoints
+├── scripts/               Evaluation, reflection, judge calibration, retrieval eval, utilities
+├── data/                  passages/, passages_plain/, edgar_cache/, evaluation/ (all committed)
+├── docker/                Sandbox image, Prometheus rules and tests, Grafana dashboard
+├── tests/                 Unit, integration and offline end-to-end tests
+├── Dockerfile, compose.yaml, setup.bat, requirements.txt
+└── docs/                  See below
+```
+
+Built locally on first use and not in git: the Chroma index (`data/index/`), run checkpoints (`data/runs/`), memory (`data/memory/`), published notes (`data/portal/`) and the approval key (`data/approval/`).
+
+---
+
+## 11. Documentation
+
+| Document | Contents |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Components, data flow, agent graphs, deployment |
+| [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
+| [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
+| [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, how to correct or delete it |
+| [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works and how to read the results |
+| [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
+| [docs/retrieval_eval.md](docs/retrieval_eval.md) | Retrieval Recall@5 results |
+| [docs/plan.md](docs/plan.md) | Team build plan and contribution log |
+
+---
+
+## 12. Working on the project
+
+1. `git pull`, then work on your own branch (`<name>/<feature>`) and open a pull request to `main`.
+2. Run `python -m unittest discover -s tests` before every pull request; CI runs it too.
+3. Never commit `.env` or any key. Everyone uses their own OpenRouter key.
+4. Log your work in the contribution log in [docs/plan.md](docs/plan.md).
+
+**Independence rules** (they keep the results honest):
+
+| Task | Who |
+|---|---|
+| Held-out evaluation cases (`data/evaluation/heldout/`) | Role 5 only; whoever tunes the agents must not write or see them |
+| Judge-calibration labels | Role 5, checked by role 1 |
+| Red-team attacks | Role 5; whoever builds the defences must not write the attacks |
+| Tuning prompts, agents and lessons | Development cases only |
