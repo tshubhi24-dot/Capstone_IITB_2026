@@ -48,7 +48,21 @@ from .checks import ADVICE, check_note
 from .figures import build_figures, figures_table, render
 from .hooks import Hooks, wrap_for_toolnode
 
-MAX_TOOL_CALLS = int(os.getenv("AGENT_MAX_TOOL_CALLS", "24"))
+# Tool-call budget for one run, the SAME for C1 and C2 (brief: the single agent and the team get
+# "the same tools and budget"; L11: only the division of work changes). It grows with the number
+# of companies in the plan: 12 + 12 per company = 24 for one company, 36 for two, 48 for three.
+# C2 splits this same total across its specialists (team.specialist_budgets).
+CALLS_BASE = int(os.getenv("AGENT_CALLS_BASE", "12"))
+CALLS_PER_COMPANY = int(os.getenv("AGENT_CALLS_PER_COMPANY", "12"))
+
+
+def tool_budget(n_companies: int) -> int:
+    """Tool calls one run may make, C1 and C2 alike. AGENT_MAX_TOOL_CALLS fixes it (experiments)."""
+    fixed = os.getenv("AGENT_MAX_TOOL_CALLS")
+    if fixed:
+        return int(fixed)
+    return CALLS_BASE + CALLS_PER_COMPANY * max(1, n_companies)
+
 TOKEN_BUDGET = int(os.getenv("AGENT_TOKEN_BUDGET", "120000"))
 MAX_CONTEXT_CHARS = int(os.getenv("AGENT_MAX_CONTEXT_CHARS", "60000"))
 MAX_REVISIONS = 2
@@ -385,20 +399,24 @@ def add_common_tail(g: StateGraph, n: dict) -> None:
 def build_graph(llm, tools: list, publish_tool, passage_text=None, hooks: Hooks | None = None):
     """Assemble the C1 graph. tools: the research tools (no write tool);
     publish_tool: publish_note, used only by the publish node after approval."""
-    hooks = hooks or Hooks(max_calls_per_agent=MAX_TOOL_CALLS)
+    own_hooks = hooks is None             # the run's budget is set from the plan (see research)
+    hooks = hooks or Hooks(max_calls_per_agent=tool_budget(1))
     tool_node = ToolNode(tools, awrap_tool_call=wrap_for_toolnode(hooks, "single_agent"))
     research_llm = llm.bind_tools(tools)
     n = common_nodes(llm, publish_tool, passage_text)
 
     # 4. ReAct research loop
     async def research(state: AgentState):
+        budget = tool_budget(len(state["plan"]["companies"]))
+        if own_hooks:
+            hooks.max_calls_per_agent = budget   # the pre-tool hook enforces the same number
         msgs = state.get("messages") or []
         if not msgs:
             from ..lessons import as_prompt
             msgs = [SystemMessage(LLM_CONFIG.format_prompt(
                         "researcher",
                         plan=json.dumps(state["plan"], indent=1),
-                        budget=MAX_TOOL_CALLS,
+                        budget=budget,
                     ) + as_prompt(state.get("lessons") or [])),
                     HumanMessage(state["request"])]
             new = msgs
@@ -412,7 +430,8 @@ def build_graph(llm, tools: list, publish_tool, passage_text=None, hooks: Hooks 
 
     def after_research(state) -> Literal["tools", "write"]:
         last = state["messages"][-1]
-        over = state.get("tool_calls", 0) > MAX_TOOL_CALLS or state.get("tokens", 0) > TOKEN_BUDGET
+        budget = tool_budget(len(state["plan"]["companies"]))
+        over = state.get("tool_calls", 0) > budget or state.get("tokens", 0) > TOKEN_BUDGET
         return "tools" if getattr(last, "tool_calls", None) and not over else "write"
 
     def after_tools(state) -> Literal["replan", "research"]:
