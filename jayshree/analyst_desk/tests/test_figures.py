@@ -23,6 +23,22 @@ class FiguresTests(unittest.TestCase):
         _, issues = render("{MSFT_2019_revenue}", build_figures(["MSFT"], [2024]))
         self.assertEqual(issues, ["Unknown placeholder {MSFT_2019_revenue}."])
 
+    def test_square_bracket_placeholders(self):
+        """Live run 1cc35ab6 (3 Nov): the writer typed [GS_2024_margin] in a peer table; it was
+        neither filled nor flagged, and the note was published with the blanks."""
+        figures = build_figures(["JPM"], [2024])
+        rendered, issues = render("| JPM | [JPM_2024_margin] |\n| GS | [GS_2024_margin] |", figures)
+        self.assertIn(figures["JPM_2024_margin"]["text"], rendered)    # known: filled
+        self.assertEqual(issues, ["Unknown placeholder {GS_2024_margin}."])   # unknown: flagged
+
+    def test_checker_rejects_leftover_placeholders(self):
+        """A note edited by hand is re-checked without render(), so the checker must catch them."""
+        r = check_note("GS margin: {GS_2024_margin}; BAC margin: [BAC_2024_margin] [JPM_2024_item7_001].")
+        self.assertFalse(r.ok)
+        self.assertIn("Unknown placeholder {GS_2024_margin}.", r.issues)
+        self.assertIn("Unknown placeholder {BAC_2024_margin}.", r.issues)
+        self.assertFalse(any("item7" in i for i in r.issues))          # a passage id is not a placeholder
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -49,6 +49,7 @@ CONTEXT: Findings, tool results and the plan are below, plus a table of KEY FIGU
 TASK: Draft the note following the outline.
 CONSTRAINTS (checked by code; violations are sent back to you):
 - For any figure in the KEY FIGURES table, write its placeholder exactly, e.g. {{MSFT_2024_margin}}. Never type those numbers yourself: code inserts the exact value and its source.
+- Use only placeholders that appear in the KEY FIGURES table, always in curly braces. A company that is not in the table is outside this note's plan: say so in words, never invent a placeholder for it.
 - For growth rates and margin changes use the KEY FIGURES placeholders too ({{MSFT_2024_revenue_growth}}, {{MSFT_2024_margin_change}}); never compute or type your own.
 - Any other number (e.g. segment figures) must be quoted exactly as it appears in a filing passage, with its unit, and that passage id must be cited on the same line, e.g. [MSFT_2024_item7_017].
 - Never use a number that is in neither the KEY FIGURES nor a cited passage.

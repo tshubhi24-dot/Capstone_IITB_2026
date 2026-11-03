@@ -24,7 +24,8 @@ from ..edgar import get_financials
 from ..scope import COMPANIES
 
 _BY_TICKER = {c.ticker: c for c in COMPANIES}
-PLACEHOLDER = re.compile(r"\{([A-Z]{1,5}_\d{4}_[a-z_]+)\}")
+# {MSFT_2024_margin}; [MSFT_2024_margin] too, which the writer sometimes types in tables
+PLACEHOLDER = re.compile(r"[{\[]([A-Z]{1,5}_\d{4}_[a-z_]+)[}\]]")
 
 
 def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
