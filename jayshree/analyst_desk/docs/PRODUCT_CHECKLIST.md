@@ -223,6 +223,7 @@ Artifact names and document formats are organizational choices. Existing behavio
 ## Related project documents
 
 - [Problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx).
+- [Supported research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx).
 - [Project work and decision log](PROJECT_WORK_LOG.md). Preparing an artifact does not complete its review or validation.
 - [Project overview and current setup](../README.md).
 - [Architecture](architecture.md), [memory policy](memory_policy.md), [development evaluation](evaluation.md) and [evaluation guide](evaluation_guide.md).
