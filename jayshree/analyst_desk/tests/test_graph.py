@@ -122,6 +122,17 @@ class WhatChangedSectionTests(unittest.TestCase):
         body = insert_changes("Text.", self.CHANGED)
         self.assertTrue(body.endswith("## What changed since our last note\n" + self.CHANGED))
 
+    def test_slot_is_filled_when_there_is_nothing_to_compare(self):
+        """Memory eval m01/m04 (4 Nov): with memory off, the writer echoed the request's
+        "what changed" heading and left {WHAT_CHANGED}, which nothing filled."""
+        from analystdesk.agent.graph import insert_changes
+        off = insert_changes("### What changed since our last note\n{WHAT_CHANGED}", "", memory_on=False)
+        self.assertNotIn("{WHAT_CHANGED}", off)
+        self.assertIn("Memory was not used", off)
+        on = insert_changes("{WHAT_CHANGED}", "", memory_on=True)
+        self.assertIn("no previous note", on)
+        self.assertEqual(insert_changes("Text.", ""), "Text.")
+
 
 
 class TeamGraphTests(unittest.TestCase):

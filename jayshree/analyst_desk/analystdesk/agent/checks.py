@@ -43,6 +43,7 @@ PASSAGE_ID = re.compile(r"\b([A-Z]{1,5}_\d{4}_item(?:1a|7)_\d{3})\b")
 MONEY = re.compile(r"\$\s?[\d,]+(?:\.\d+)?\s?(?:[MBK]\b|million|billion)?")
 PERCENT = re.compile(r"-?\d+(?:\.\d+)?\s?%")
 POINTS = re.compile(r"[+-]?\d+(?:\.\d+)?\s?(?:pp\b|percentage points?)")
+SLOT = re.compile(r"\{([A-Z][A-Z_]{2,})\}")   # {WHAT_CHANGED}; figure keys have lowercase parts
 ADVICE = re.compile(
     r"\b(buy|sell|hold rating|overweight|underweight|outperform|underperform|"
     r"price target|we recommend|strong buy|investors should)\b", re.I)
@@ -198,6 +199,9 @@ def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult
     # a figure placeholder left in the note means a number is missing (e.g. a peer not in the plan)
     for key in sorted(set(PLACEHOLDER.findall(body))):
         issues.append(f"Unknown placeholder {{{key}}}.")
+    # a template slot such as {WHAT_CHANGED} must be filled by code, never published as is
+    for slot in sorted(set(SLOT.findall(body))):
+        issues.append(f"Unfilled slot {{{slot}}}.")
 
     for m in ADVICE.finditer(body):
         issues.append(f"Investment-advice wording {m.group()!r} is not allowed in a research note.")

@@ -189,8 +189,8 @@ def get_retriever(passages: list[dict] | None = None) -> HybridRetriever:
     """Return a cached HybridRetriever. Builds the index on first call."""
     global _retriever
     if _retriever is None:
+        from .ingest import default_table_aware, load_passages
         if passages is None:
-            from .ingest import load_passages
             passages = load_passages()
         if not passages:
             raise RuntimeError(
@@ -198,7 +198,9 @@ def get_retriever(passages: list[dict] | None = None) -> HybridRetriever:
                 "python -c \"from analystdesk.ingest import ingest_all; ingest_all()\""
             )
         print(f"Building retriever over {len(passages)} passages...")
-        _retriever = HybridRetriever(passages)
+        # same collection names as scripts/eval_retrieval.py, so each index is built once
+        prefix = "analyst_desk" if default_table_aware() else "analyst_desk_plain"
+        _retriever = HybridRetriever(passages, collection_prefix=prefix)
     return _retriever
 
 

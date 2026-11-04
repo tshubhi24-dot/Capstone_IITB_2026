@@ -141,12 +141,20 @@ def tool_json(raw) -> dict:
     return data if isinstance(data, dict) else {}
 
 
-def insert_changes(body: str, changed: str) -> str:
+def insert_changes(body: str, changed: str, memory_on: bool = True) -> str:
     """Put the code-computed 'what changed' lines into the note, always under a heading.
 
     The writer may leave {WHAT_CHANGED} with or without its own heading above it; without
     one, the lines read as the end of the note and the analyst does not notice them.
+    With nothing to compare (memory off, or no previous note) the writer may still leave the
+    slot because the request asked "what changed"; it is filled with the reason, never left.
     """
+    if not changed:
+        if "{WHAT_CHANGED}" not in body:
+            return body
+        reason = ("There is no previous note in memory to compare against." if memory_on else
+                  "Memory was not used for this note, so it is not compared with a previous note.")
+        return body.replace("{WHAT_CHANGED}", reason)
     section = "## What changed since our last note\n" + changed
     if "{WHAT_CHANGED}" not in body:
         return body + "\n\n" + section
@@ -315,8 +323,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                          f"FINDINGS:\n{_findings(state)[-60000:]}")])
         d: Draft = result["parsed"]
         d.body, render_issues = render(d.body, figures)   # code inserts every key figure
-        if changed:   # code inserts the comparison with the last note
-            d.body = insert_changes(d.body, changed)
+        # code inserts the comparison with the last note (or why there is none)
+        d.body = insert_changes(d.body, changed, state.get("memory_on", True))
         return {"draft": d.model_dump(), "render_issues": render_issues, "tokens": usage(result["raw"]),
                 "trace": _event("write", revision=state.get("revisions", 0))}
 

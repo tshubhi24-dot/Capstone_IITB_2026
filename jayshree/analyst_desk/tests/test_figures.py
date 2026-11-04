@@ -39,6 +39,11 @@ class FiguresTests(unittest.TestCase):
         self.assertIn("Unknown placeholder {BAC_2024_margin}.", r.issues)
         self.assertFalse(any("item7" in i for i in r.issues))          # a passage id is not a placeholder
 
+    def test_checker_rejects_an_unfilled_slot(self):
+        r = check_note("### What changed since our last note\n{WHAT_CHANGED}")
+        self.assertEqual(r.issues, ["Unfilled slot {WHAT_CHANGED}."])
+        self.assertTrue(check_note("Lower-case {braces} and {Mixed_Case} are ordinary text.").ok)
+
 
 if __name__ == "__main__":
     unittest.main()

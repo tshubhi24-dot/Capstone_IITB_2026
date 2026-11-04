@@ -11,6 +11,7 @@ passage_id format: {ticker}_{year}_{item}_{seq}
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 import urllib.request
@@ -482,8 +483,15 @@ def ingest_all(companies=None, years=None, table_aware: bool = True) -> list[dic
     return all_passages
 
 
-def load_passages(table_aware: bool = True) -> list[dict]:
-    """Load all saved passages from disk."""
+def default_table_aware() -> bool:
+    """Which passages the app and agents use: table-aware unless PASSAGES_VARIANT=plain (E4)."""
+    return os.getenv("PASSAGES_VARIANT", "table").lower() != "plain"
+
+
+def load_passages(table_aware: bool | None = None) -> list[dict]:
+    """Load all saved passages from disk (default: PASSAGES_VARIANT, table-aware)."""
+    if table_aware is None:
+        table_aware = default_table_aware()
     passages = []
     passages_dir = PASSAGES_DIR if table_aware else PLAIN_PASSAGES_DIR
     for f in sorted(passages_dir.glob("*.jsonl")):
