@@ -117,10 +117,12 @@ All three use the same model, the same tools and the same tool-call budget. The 
   - an alert when the verified share drops below 98%.
 - **FastAPI service:** health and readiness endpoints, plus a streaming research API, with the Gradio UI mounted on the same server.
 - **Docker Compose** starts the app, the four MCP servers on an internal network with no internet access, and the observability stack.
+- **One team image:** CI publishes a fully pinned image (base image, `requirements.lock`, torch, model snapshots, prebuilt search index) to GitHub Container Registry on every merge to `main`, so every teammate runs exactly the same build.
 - **Versioned LLM configuration:** all prompts and model IDs live in `config/llm.toml`, validated at start-up.
 - **GitHub Actions CI:**
   - offline tests and Compose validation on every push and pull request;
   - an on-demand evaluation gate: at least 95% task success and zero policy violations.
+  - the team Docker image, published on every merge to `main` (test-built on pull requests).
 
 ---
 
@@ -181,24 +183,36 @@ These are development results. Final claims use a held-out set written by a team
 
 You need your own [OpenRouter](https://openrouter.ai) API key. All data is in the repository: 10-K passages and XBRL facts, so there is no SEC download.
 
-### Option A: Docker Compose (everything, recommended)
+### Option A: Docker, the team image (everything, recommended)
+
+Everyone runs **the same image**. CI builds it from `main` after every merge and publishes it to GitHub Container Registry as `ghcr.io/tshubhi24-dot/analyst-desk`. In that image, the base image, every Python package (`requirements.lock`), torch, the two models and the search index are all fixed, so it behaves the same on every machine.
+
+**One-time setup:**
 
 1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running.
-2. In a terminal, go to the project folder and create `.env` with your key:
+2. If the image is private (the default for a new package), sign in to the registry once:
+   1. On GitHub, go to **Settings → Developer settings → Personal access tokens → Tokens (classic)** and create a token with only the `read:packages` scope.
+   2. Run:
+
+      ```powershell
+      docker login ghcr.io -u <your-github-username>    # paste the token as the password
+      ```
+3. Get the code and create `.env` with **your own** key:
 
    ```powershell
+   git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
    cd Capstone_IITB_2026\jayshree\analyst_desk
    Copy-Item .env.example .env     # Mac/Linux: cp .env.example .env
    notepad .env                    # set OPENROUTER_API_KEY; never commit or share .env
    ```
 
-3. Start the stack:
+**Every time:**
 
-   ```powershell
-   docker compose up --build
-   ```
-
-   The first start takes about 20 minutes. It downloads the dependencies and the CPU embedding and reranker models, then builds the search index once. No GPU is needed. Later starts take seconds, and the index, runs, memory, notes and approval key persist in Docker volumes.
+```powershell
+git pull                  # same code, config and data as the image
+docker compose pull       # the exact image CI built from main
+docker compose up         # ready in about 5 minutes (models and index load once); open http://127.0.0.1:7861
+```
 
 | Service | Address |
 |---|---|
@@ -208,14 +222,32 @@ You need your own [OpenRouter](https://openrouter.ai) API key. All data is in th
 | Jaeger traces | <http://127.0.0.1:16686> |
 | Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
-Check it is ready: `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
+- **Check it is ready:** `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
+- **Stop it** with **Ctrl+C** or `docker compose down`. Your runs, memory, published notes and approval key stay in Docker volumes. Don't use `--volumes` unless you want to delete them.
+- **Run a specific version**, for example to compare with a teammate or before a change: each commit on `main` has an image tagged `sha-<first 7 characters of the commit>`.
 
-Stop it with **Ctrl+C** or `docker compose down`. Don't use `--volumes` unless you want to delete stored runs, memory and notes.
+  ```powershell
+  $env:ANALYSTDESK_IMAGE = "ghcr.io/tshubhi24-dot/analyst-desk:sha-1a2b3c4"; docker compose up
+  ```
+- **Your own code changes:** `docker compose up --build` builds the image from your folder instead. It takes about 20 minutes the first time, and the index is built on first start if your passages changed. Run `docker compose pull` to go back to the team image.
+- **Only the app is ever reachable:** it is bound to `127.0.0.1`, and the MCP servers run on an internal network with no internet access. Your API key stays in your `.env` and is never part of the image.
 
 **Checking the dashboard:**
 1. Run a C1 or C2 request in the app and approve the plan.
 2. After about 15 seconds, Prometheus at <http://127.0.0.1:9090/graph> returns values for `sum(ad_runs_total)` and `sum(ad_tool_calls_total)`.
 3. In Grafana, set the time range to *Last 6 hours*. The verified-share panel fills once a draft reaches the note gate.
+
+**Troubleshooting:**
+
+| Problem | Fix |
+|---|---|
+| `docker compose pull` says *denied* or *unauthorized* | Run `docker login ghcr.io` (step 2 above), or ask the repository owner to give you access to the package |
+| Pull is slow | The image is about 3.6 GB (PyTorch, models, index). Only the first pull is large; later pulls fetch only the layers that changed |
+| `port is already allocated` | Something else is using port 7861, often a Python `app.py`. Stop it, then run `docker compose up` again |
+| C1/C2 runs failed with *unable to open database file* (Docker runs from before this image) | Fixed automatically: the `volume-init` service gives the app user ownership of its data volumes on every start, keeping their data |
+| The index service runs for about 10 minutes | Your checkout's passages differ from the image's. Run `git pull` so they match, or let it build once; it is reused afterwards |
+
+**For the repository owner (once):** after the first publish, open the package at *github.com/tshubhi24-dot → Packages → analyst-desk → Package settings*. Either make it **Public**, or under *Manage access* give each teammate **Read** access. Linking it to this repository makes repository collaborators inherit access.
 
 ### Option B: Python (development and tests)
 
@@ -323,6 +355,7 @@ Evaluation runs use memory off, auto-approve the plan, stop at the note gate (no
 
 **GitHub Actions:**
 - **Analyst Desk CI** runs on every push and pull request. It runs the full offline test suite and validates the Docker Compose file, with no API calls.
+- **Analyst Desk Docker Image** runs on every merge to `main`. It builds the pinned image with the search index baked in and publishes it as `ghcr.io/tshubhi24-dot/analyst-desk:main` and `:sha-<commit>`. On pull requests it only test-builds the image, without the index and without publishing.
 - **Analyst Desk Evaluation Gate** runs on demand:
   1. Add the repository secret `OPENROUTER_API_KEY`.
   2. Go to **Actions → Analyst Desk Evaluation Gate → Run workflow**.
@@ -370,7 +403,9 @@ analyst_desk/
 ├── data/                  passages/, passages_plain/, edgar_cache/, evaluation/ (all committed)
 ├── docker/                Sandbox image, Prometheus rules and tests, Grafana dashboard
 ├── tests/                 Unit, integration and offline end-to-end tests
-├── Dockerfile, compose.yaml, setup.bat, requirements.txt
+├── Dockerfile, compose.yaml, setup.bat
+├── requirements.txt       Dependencies (human-edited; used by a local venv)
+├── requirements.lock      Exact versions the Docker image installs
 └── docs/                  See below
 ```
 
