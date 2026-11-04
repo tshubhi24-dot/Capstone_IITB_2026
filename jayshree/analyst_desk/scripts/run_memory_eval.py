@@ -108,7 +108,7 @@ def write_report(data: dict, path: Path) -> None:
         f"**{s['off']['success']}/{s['cases']}** (no memory text) |",
         f"| By kind | {', '.join(f'{k} {v}' for k, v in s['on']['by_kind'].items())} | |",
         f"| Errors | {s['on']['errors']} | {s['off']['errors']} |",
-        f"| Tokens per case (mean) | {s['on']['tokens_mean']:,} | {s['off']['tokens_mean']:,} |"
+        f"| Tokens per case (mean) | {s['on']['tokens_mean']:,.0f} | {s['off']['tokens_mean']:,.0f} |"
         if s['on']['tokens_mean'] and s['off']['tokens_mean'] else "| Tokens per case (mean) | - | - |",
         f"| Cost per case (USD, est.) | {s['on']['cost_per_case_usd']} | {s['off']['cost_per_case_usd']} |",
         f"| Seconds per case (mean) | {s['on']['seconds_mean']} | {s['off']['seconds_mean']} |",

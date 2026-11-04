@@ -57,14 +57,19 @@ def expected_figure(evidence: list[str]) -> str:
 
 
 def score(q: dict, text: str, passage_text) -> dict:
-    from analystdesk.agent.checks import check_note
+    """grounded: the figure comes from a cited passage that contains it, or from an XBRL
+    [fact: ...] tag (the agents' code-rendered figures)."""
+    from analystdesk.agent.checks import FACT, check_note
     from analystdesk.evaluation import figure_present
     cited = set(PASSAGE_ID.findall(text))
+    tagged = " ".join(m.group(0) for m in FACT.finditer(text))
     stated = grounded = 0
     for t in q["targets"]:
-        if figure_present(expected_figure(t["evidence"]), text):
+        expected = expected_figure(t["evidence"])
+        if figure_present(expected, text):
             stated += 1
-        if any(any(e in (passage_text(pid) or "") for e in t["evidence"]) for pid in cited):
+        if any(any(e in (passage_text(pid) or "") for e in t["evidence"]) for pid in cited) or (
+                tagged and figure_present(expected, tagged)):
             grounded += 1
     r = check_note(text.replace("[fact_id:", "[fact:"), passage_text=passage_text) if text else None
     n = len(q["targets"])
@@ -127,9 +132,11 @@ def write_report(data: dict, path: Path) -> None:
         "runs stop at the note gate. Scored in code.",
         "",
         "- **Stated:** every expected figure is in the answer (same unit, within rounding).",
-        "- **Grounded:** for every expected figure, the answer cites a passage that contains it.",
+        "- **Grounded:** for every expected figure, the answer cites a passage that contains it, or "
+        "gives it with an XBRL `[fact: …]` tag.",
         "- **Verified:** share of the answer's numbers the checker verifies (XBRL tags, or quotes found "
-        "in the passage cited on the same line).",
+        "in the passage cited on the same line). Dollar quotes from a table captioned \"(In millions)\" "
+        "count when a cell equals them within the stated rounding (`checks._in_millions_table`).",
         "",
         "| Configuration | Passages | Stated | Grounded | Verified (mean %) | Errors | Tokens | Latency (median s) |",
         "|---|---|---|---|---|---|---|---|",
@@ -167,9 +174,22 @@ def main() -> None:
     ap.add_argument("--tag", default=time.strftime("%Y%m%d-%H%M%S"))
     ap.add_argument("--worker-out", type=Path, help=argparse.SUPPRESS)
     ap.add_argument("--report", type=Path, help="rewrite docs/e4_tables.md from a saved result")
+    ap.add_argument("--rescore", type=Path, help="re-score a saved result's answers (no model calls)")
     a = ap.parse_args()
     if a.report:
         write_report(json.loads(a.report.read_text(encoding="utf-8")), a.report)
+        return
+    if a.rescore:
+        from analystdesk.ingest import load_passages
+        data = json.loads(a.rescore.read_text(encoding="utf-8"))
+        texts = {v: {p["passage_id"]: p["text"] for p in load_passages(v == "table")} for v in ("table", "plain")}
+        questions = {q["qid"]: q for q in load_questions()}
+        for r in data["rows"]:
+            r.update(score(questions[r["qid"]], r["text"], texts[r["variant"]].get))
+        data["summary"] = summarise(data["rows"])
+        a.rescore.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        write_report(data, a.rescore)
+        print(json.dumps(data["summary"], indent=2))
         return
     os.environ["AGENT_EVAL"] = "1"       # memory off
     os.environ["AGENT_LESSONS"] = "0"    # lessons off: only the passages differ

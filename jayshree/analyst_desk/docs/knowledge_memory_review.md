@@ -13,7 +13,7 @@ The last column is blank on purpose: tick it when the technique is covered in th
 | # | Practice | What it means | Analyst Desk | Status | Worth adding? | In notes? |
 |---|---|---|---|---|---|---|
 | K1 | Structure-aware chunking | Split by document structure (sections, headings), not fixed token windows | Split by 10-K Item, then by heading; six parser fixes for real filings ([ingest.py](../analystdesk/ingest.py)) | ✅ | — | ☐ |
-| K2 | Keep tables as tables | Preserve row and column labels so numbers stay meaningful | Each data table is its own passage of `label \| value` rows, titled, split by row with the header repeated | ✅ | Measure the value on answers: [e4_tables.md](e4_tables.md) | ☐ |
+| K2 | Keep tables as tables | Preserve row and column labels so numbers stay meaningful | Each data table is its own passage of `label \| value` rows, titled, split by row with the header repeated | ✅ | Measured on answers ([e4_tables.md](e4_tables.md)): no improvement over plain passages on 18 table questions; kept for citable, captioned table chunks | ☐ |
 | K3 | Rich metadata + filtering | Store company, year, section, type, source id on each chunk; filter before ranking | `company`, `fiscal_year`, `item`, `kind`, `accession`; filters applied before BM25 and vector ranking | ✅ | — | ☐ |
 | K4 | Hybrid sparse + dense search | Combine keyword (BM25) and embedding search | BM25 + MiniLM/Chroma, fused with Reciprocal Rank Fusion | ✅ | — | ☐ |
 | K5 | Reranking | A cross-encoder re-scores a shortlist | `ms-marco-MiniLM-L-6-v2` over the top 50 | ✅ | Its cost: about 0.7–1 s per query on CPU. A smaller pool (top 20) could be measured | ☐ |
@@ -24,7 +24,7 @@ The last column is blank on purpose: tick it when the technique is covered in th
 | K10 | Embedding model choice | Pick the embedder by measured recall | `all-MiniLM-L6-v2` (small, CPU, no cost) | 🟡 | Try `bge-small-en-v1.5` with the same Recall@5 script; it's a one-line change plus rebuilding the index | ☐ |
 | K11 | Retrieval evaluation | Labelled queries; Recall@k, ideally also MRR or nDCG; held-out labels | 36 labelled queries, Recall@5, labels as evidence strings that work across chunkings | 🟡 | Add **MRR** (rank of the first hit) to `eval_retrieval.py`; a held-out set written by role 5 | ☐ |
 | K12 | Index versioning | Rebuild when the source changes; never serve stale embeddings | The Chroma collection is named after a fingerprint of the passages | ✅ | — | ☐ |
-| K13 | Provenance and citations | Every claim points to a source the reader can check | Passage ids and filing accession; XBRL fact_ids; the checker verifies quotes against the cited passage | ✅ | **Cell-level citation** for table numbers (the passage id plus the row label) would make table quotes exact | ☐ |
+| K13 | Provenance and citations | Every claim points to a source the reader can check | Passage ids and filing accession; XBRL fact_ids; the checker verifies quotes against the cited passage | ✅ | Table quotes are unit-aware (a "(In millions)" caption gives cells their unit). Next: **cell-level citation** (the passage id plus the row label) | ☐ |
 | K14 | Retrieved text is data | Never follow instructions found in documents | Rule 2: passages are given to the model as evidence only | 🟡 | Owned by the security work (red-team attacks hidden in filing text) | ☐ |
 | K15 | Freshness | New filings flow in on a schedule | Fixed corpus (FY2022–2024), committed so results are reproducible | ➖ | Out of scope for the capstone; mention it as future work | ☐ |
 
@@ -66,7 +66,7 @@ Ranked by value for the project and the viva, against effort:
 
 | Step | Effort | Why |
 |---|---|---|
-| 1. Run and report the memory evaluation (M14) and E4 on answers (K2) | Done in this branch | Turns "memory helps" and "tables help" into measured claims |
+| 1. Run and report the memory evaluation (M14) and E4 on answers (K2) | **Done:** memory ON 11/11, OFF 11/11 clean, one bug found and fixed; E4 showed no gain from table-aware passages but exposed the unit-aware quote gap, now fixed | Turns "memory helps" and "tables help" into measured claims |
 | 2. Contextual chunk headers (K8), measured with Recall@5 | Small | A well-known technique with a clear before and after |
 | 3. Preference conflict check (M8) + an explicit sharing decision (M5) | Small | Closes visible policy gaps an examiner may probe |
 | 4. MRR in the retrieval report (K11) | Small | Shows *where* the first correct passage lands, not only whether it's in the top 5 |

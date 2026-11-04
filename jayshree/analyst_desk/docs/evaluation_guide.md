@@ -111,7 +111,7 @@ The compliance critic uses a judge from a **different model family** (`meta-llam
 | **E1** | Does the agent justify its cost? | C0 vs C1 vs C2 on the same cases | Dev done; held-out pending |
 | **E2** | Do the defences work? | Red-team suite with defences off vs on; also false blocks on clean cases | Attacks written by role 5 |
 | **E3** | Did the Reflexion lessons help? | Held-out with `--no-lessons` vs with the frozen playbook | Tooling ready; needs approved lessons and held-out cases |
-| **E4** | Signature ablation | Critic loop on vs off; table-aware vs plain passages | To build |
+| **E4** | Signature ablation | Critic loop on vs off; table-aware vs plain passages | Table-aware vs plain measured on answers ([e4_tables.md](e4_tables.md)); critic on/off still to run |
 
 For every configuration, report: task success, policy violations, attack success, false blocks, cost per case, median and p95 latency, and errors.
 

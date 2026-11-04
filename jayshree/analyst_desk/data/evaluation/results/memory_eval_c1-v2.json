@@ -1,0 +1,486 @@
+{
+  "tag": "c1-v2",
+  "mode": "c1",
+  "summary": {
+    "cases": 11,
+    "on": {
+      "success": 11,
+      "errors": 0,
+      "tokens_mean": 23252.0,
+      "seconds_mean": 66.5,
+      "cost_per_case_usd": 0.0121,
+      "by_kind": {
+        "change": "3/3",
+        "restated": "1/1",
+        "no_previous": "1/1",
+        "preference": "3/3",
+        "scope": "1/1",
+        "deleted": "2/2"
+      }
+    },
+    "off": {
+      "success": 11,
+      "errors": 0,
+      "tokens_mean": 19671.5,
+      "seconds_mean": 38.3,
+      "cost_per_case_usd": 0.0102
+    }
+  },
+  "rows": [
+    {
+      "id": "m01",
+      "kind": "change",
+      "request": "What changed in Microsoft's operating margin since our last note? Cover fiscal 2024.",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m01-on",
+        "success": true,
+        "checks": {
+          "previous:MSFT": true,
+          "change:MSFT=move": true,
+          "heading": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": [
+            "MSFT"
+          ]
+        },
+        "plan_companies": [
+          "MSFT"
+        ],
+        "tokens": 36747,
+        "seconds": 327.6,
+        "body": "### Executive Summary\nMicrosoft's operating margin improved notably in fiscal 2024, reaching 44.64%, up from 41.77% in fiscal 2023 and 42.06% in fiscal 2022. This increase reflects strong revenue growth and operational leverage across its business segments.\n\n### Operating Margin Overview for Fiscal 2024\nFor the fiscal year ended June 30, 2024, Microsoft reported an operating income of $109.433 billion on revenue of $245.122 billion, resulting in an operating margin of 44.64% $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] [OperatingIncomeLoss/2024/0000950170-24-087843, RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843].\n\n### Year-over-Year Operating Margin Comparison (2022-2024)\nThe operating margin increased from 41.77% in fiscal 2023 to 44.64% in fiscal 2024, after being 42.06% in fiscal 2022. Fiscal 2023 operating income was $88.523 billion on $211.915 billion revenue, and fiscal 2022 operating income was $83.383 billion on $198.270 billion revenue [OperatingIncomeLoss/2023/0000950170-23-035122, RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000950170-23-035122; OperatingIncomeLoss/2022/0001564590-22-026876, RevenueFromContractWithCustomerExcludingAssessedTax/2022/0001564590-22-026876].\n\n### Drivers of Operating Margin Changes in Fiscal 2024\nThe margin expansion was driven by 16% revenue growth across all segments, including Intelligent Cloud (Azure), Productivity and Business Processes (Office 365 Commercial), and More Personal Computing (Gaming). Gross margin increased 17% year-over-year, supported by growth in Microsoft Cloud and Gaming, partially offset by a decline in Devices [MSFT_2024_item7_017, MSFT_2024_item7_016].\n\nNon-GAAP adjustments in fiscal 2023 included a $1.2 billion charge related to severance, hardware impairments, and lease consolidation activities, which were absent in fiscal 2024, improving operating income comparability [MSFT_2024_item7_040].\n\n### Risk Factors Impacting Operating Margin\nNo significant new or changed risk factors specifically impacting operating margin were identified in the fiscal 2024 Item 1A risk disclosures. Microsoft continues to face intense competition and risks related to innovation and market dynamics [MSFT_2024_item1a_000].\n\n### Revenue and Operating Income Trends\nRevenue increased 16% in fiscal 2024 compared to 7% in fiscal 2023, while operating income grew 24% in 2024 versus 6% in 2023, demonstrating strong operational leverage and efficiency gains [MSFT_2024_item7_016].\n\n### Conclusion\nMicrosoft's fiscal 2024 operating margin improved significantly due to robust revenue growth, effective cost management, and the absence of prior year non-recurring charges. The company maintains competitive risks but continues to leverage its diversified business segments to enhance profitability.\n\n### What changed since our last note\n- Previous note on MSFT: #101 \"Seeded note: MSFT FY2023\" (2026-09-01).\n- margin: 41.77% [calc: OperatingIncomeLoss/2023/0000950170-23-035122 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000950170-23-035122] (FY2023, last note) \u2192 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] (FY2024), +2.87 pp [diff: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843 - OperatingIncomeLoss/2023/0000950170-23-035122 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000950170-23-035122].\n- revenue: $211,915.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000950170-23-035122] (FY2023, last note) \u2192 $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] (FY2024).\n- operating income: $88,523.0M [fact: OperatingIncomeLoss/2023/0000950170-23-035122] (FY2023, last note) \u2192 $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] (FY2024)."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m01-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "MSFT"
+        ],
+        "tokens": 34106,
+        "seconds": 86.4,
+        "body": "Microsoft's operating margin for fiscal year 2024 was 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843], up from {MSFT_2023_margin} in fiscal year 2023, reflecting a notable margin expansion. This improvement was driven by a 16% revenue increase to $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] and a corresponding rise in operating income to $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] from $88.5 billion in 2023 [MSFT_2024_item7_017, MSFT_2023_item7_017].\n\nRevenue growth was broad-based across all segments, with Intelligent Cloud (Azure), Productivity and Business Processes (Office 365 Commercial), and More Personal Computing (Gaming) contributing significantly [MSFT_2024_item7_017]. Gross margin increased by 17%, outpacing the 13% rise in cost of revenue, which was driven by growth in Microsoft Cloud and Gaming but partially offset by a decline in Devices [MSFT_2024_item7_017].\n\nA key factor in the margin improvement was the absence in 2024 of a $1.2 billion charge recorded in Q2 of fiscal 2023 related to employee severance, hardware impairments, and lease consolidation costs, which had negatively impacted the prior year's non-GAAP operating income [MSFT_2024_item7_017].\n\nRisk factors outlined in the 10-K include intense competition, geopolitical instability, supply chain challenges, and operational risks related to infrastructure investments, which could affect future results but were not specifically cited as drivers of the 2024 margin changes [MSFT_2024_item1a_000].\n\nManagement commentary emphasizes that the improved operating margin reflects strong revenue growth combined with operational efficiencies across segments [MSFT_2024_item7_017]."
+      }
+    },
+    {
+      "id": "m02",
+      "kind": "change",
+      "request": "What was JPMorgan's pre-tax margin in 2024, and what changed since our last note?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m02-on",
+        "success": true,
+        "checks": {
+          "previous:JPM": true,
+          "change:JPM=unchanged": true,
+          "heading": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": [
+            "JPM"
+          ]
+        },
+        "plan_companies": [
+          "JPM"
+        ],
+        "tokens": 42489,
+        "seconds": 102.8,
+        "body": "### Executive Summary\nJPMorgan Chase reported a pre-tax margin of 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270] for fiscal year 2024, reflecting a continued improvement compared to prior years. This note analyzes the margin evolution, key drivers behind changes since our last note, and relevant revenue and expense trends.\n\n### JPMorgan Pre-Tax Margin Analysis for 2024\nJPMorgan's pre-tax margin in fiscal year 2024 was 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270], based on pretax income of $75,081.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270] and net revenue of $177,556.0M [fact: RevenuesNetOfInterestExpense/2024/0000019617-25-000270] for the full calendar year ending December 31, 2024.\n\n### Comparison of Pre-Tax Margins: 2022-2024\nThe pre-tax margin has increased steadily over the past three years:\n- 2022: 35.87% (calculated from 2022 pretax income and revenue)\n- 2023: 38.97%\n- 2024: 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270]\nThis progression indicates improving profitability relative to revenue.\n\n### Key Drivers of Margin Changes Since Last Note\nThe margin improvement since our last note is driven by several factors:\n- Adoption of updated Accounting for Investments in Tax Credit Structures guidance effective January 1, 2024.\n- Higher pretax income and shifts in the mix of income and expenses subject to U.S. federal, state, and local taxes.\n- Significant net gain on Visa shares and a $1.0 billion contribution of Visa shares to the JPMorgan Chase Foundation recorded in Q2 2024.\n- Prior year effects included impacts from the First Republic acquisition and income tax benefits related to finalized income tax regulations, which lowered the effective tax rate in 2023 [JPM_2024_item7_044].\n\n### Risk Factors Impacting Financial Performance\nWhile specific risk factors influencing margin changes were not detailed in the findings, JPMorgan's 10-K notes typical risks such as credit losses, market volatility, and regulatory changes that could affect future margins.\n\n### Revenue and Expense Trends\nFrom 2023 to 2024:\n- Net revenue increased by 2% to $71.5 billion.\n- Net interest income remained flat at $54.9 billion, with declines in Banking & Wealth Management offset by gains in Card Services.\n- Noninterest revenue rose 10%, driven by higher asset management fees, card income, and Home Lending production revenue.\n- Noninterest expenses increased from $33.97 billion to $35.35 billion.\n- Provision for credit losses decreased from $2.09 billion to $762 million, reflecting improved credit conditions [JPM_2024_item7_087].\n\n### What changed since our last note\n- Previous note on JPM: #102 \"Seeded note: JPM FY2024\" (2026-09-01).\n- margin FY2024: unchanged since the last note at 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270].\n- revenue FY2024: unchanged since the last note at $177,556.0M [fact: RevenuesNetOfInterestExpense/2024/0000019617-25-000270].\n- pretax income FY2024: unchanged since the last note at $75,081.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270].\n\n### Conclusion\nJPMorgan Chase's pre-tax margin improved to 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270] in 2024, supported by higher pretax income and favorable income mix changes. Revenue growth and expense management contributed to this margin expansion despite some increased expenses. The adoption of new accounting guidance and significant one-time items related to Visa shares also influenced the margin dynamics."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m02-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "JPM"
+        ],
+        "tokens": 29556,
+        "seconds": 70.5,
+        "body": "JPMorgan Chase reported a pre-tax margin of 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270] in fiscal year 2024, up from 38.97% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225 / RevenuesNetOfInterestExpense/2023/0000019617-24-000225] in fiscal year 2023. This improvement reflects a margin increase of +3.32 pp [diff: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270 - IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225 / RevenuesNetOfInterestExpense/2023/0000019617-24-000225] percentage points, driven by a 21.86% [growth: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225] growth in pretax income alongside a 12.30% [growth: RevenuesNetOfInterestExpense/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2023/0000019617-24-000225] increase in net revenue [IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270, RevenuesNetOfInterestExpense/2024/0000019617-25-000270, IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225, RevenuesNetOfInterestExpense/2023/0000019617-24-000225].\n\nKey factors contributing to the margin expansion include the adoption of updated accounting guidance for investments in tax credit structures effective January 1, 2024, and the impact of a net gain on Visa shares along with the contribution of Visa shares to the JPMorgan Chase Foundation recorded in Q2 2024 [JPM_2024_item7_044]. These elements influenced the mix of income and expenses subject to U.S. federal, state, and local taxes, thereby affecting the effective tax rate and pretax margin.\n\nNo new analyst notes or updates have been published since our last report, so no additional changes are noted at this time.\n\nIn summary:\n- Fiscal year 2024 pre-tax margin: 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270]\n- Fiscal year 2023 pre-tax margin: 38.97% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225 / RevenuesNetOfInterestExpense/2023/0000019617-24-000225]\n- Margin increase driven by higher pretax income and tax-related accounting changes\n- Impact from Visa shares gain and charitable contribution\n\nThis analysis is based on JPMorgan Chase's fiscal years ending December 31, 2023 and 2024."
+      }
+    },
+    {
+      "id": "m03",
+      "kind": "restated",
+      "request": "How has Bank of America's 2024 revenue changed since our last note?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m03-on",
+        "success": true,
+        "checks": {
+          "previous:BAC": true,
+          "change:BAC=restated": true,
+          "heading": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": [
+            "BAC"
+          ]
+        },
+        "plan_companies": [
+          "BAC"
+        ],
+        "tokens": 15403,
+        "seconds": 30.7,
+        "body": "Bank of America's total revenue for fiscal year 2024 was $101,887.0M [fact: Revenues/2024/0000070858-25-000139], ending on 2024-12-31. This revenue figure reflects a restatement from a previously reported higher amount, now using the as-reported value for accuracy [Revenues/2024/0000070858-25-000139].\n\nComparing to prior years, 2024 revenue increased by approximately 3.35% from 2023, which had revenue of $98.581 billion [Revenues/2023/0000070858-24-000122]. The 2023 revenue itself was up 3.82% from 2022's $94.95 billion [Revenues/2022/0000070858-23-000092].\n\nPretax income for 2024 was $29,254.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139] with a pretax margin of 28.71% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139 / Revenues/2024/0000070858-25-000139], unchanged since our last note ## What changed since our last note\n- Previous note on BAC: #103 \"Seeded note: BAC FY2024\" (2026-09-01).\n- margin FY2024: unchanged since the last note at 28.71% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139 / Revenues/2024/0000070858-25-000139].\n- revenue FY2024: the last note reported $105,856.0M [fact: Revenues/2024/0000070858-25-000139]; the value now reported is $101,887.0M [fact: Revenues/2024/0000070858-25-000139]. Restated since the last note; this note uses the current value.\n- pretax income FY2024: unchanged since the last note at $29,254.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139]. [IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139].\n\nSince our last note dated 2026-09-01, the 2024 revenue figure has been restated downward from $105.856 billion to $101,887.0M [fact: Revenues/2024/0000070858-25-000139], reflecting updated reporting; pretax income remains unchanged at $29,254.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139] [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000070858-25-000139 / Revenues/2024/0000070858-25-000139].\n\nNo new or changed risk factors impacting revenue were identified in the latest filings. The steady revenue growth trend from 2022 through 2024 continues, albeit with the noted restatement adjustment.\n\nOverall, Bank of America shows consistent revenue growth with stable pretax margins, though the restatement highlights the importance of using the latest reported figures for analysis."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m03-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "BAC"
+        ],
+        "tokens": 25024,
+        "seconds": 31.1,
+        "body": "## Introduction\nThis note reviews Bank of America's reported revenue for fiscal year 2024, compares it to 2023, and discusses key factors influencing the revenue change as well as notable risks highlighted in the 2024 10-K.\n\n## Bank of America 2024 Revenue Overview\nBank of America reported net revenue of $101,887.0M [fact: Revenues/2024/0000070858-25-000139] for the fiscal year ended December 31, 2024 [Revenues/2024/0000070858-25-000139].\n\n## Comparison of 2024 Revenue to 2023\nThis represents a 3.35% increase compared to the 2023 revenue of $98.581 billion [Revenues/2023/0000070858-24-000122].\n\n## Drivers and Risks Affecting Revenue in 2024\n- Noninterest income rose by $4.2 billion, driven by higher card income, service charges, investment and brokerage fees, and investment banking fees [BAC_2024_item7_018].\n- Business lending revenue declined by $476 million due to lower net interest income and leasing-related revenue, partially offset by increased tax credit activity [BAC_2024_item7_079].\n- Global Transaction Services revenue decreased by $911 million, mainly from higher deposit costs, partially offset by growth in average deposit balances and treasury service charges [BAC_2024_item7_079].\n\nRisks and trends impacting revenue include:\n- Weaknesses in the U.S. housing market from higher mortgage rates and home prices, affecting mortgage product demand [BAC_2024_item1a_046].\n- Market volatility, monetary policy changes, and regulatory developments that could affect net interest income and overall revenue [BAC_2024_item1a_006].\n- Exposure to economic and political risks in international markets, including currency fluctuations and geopolitical instability [BAC_2024_item1a_051].\n- Climate-related risks potentially impacting reputation and operations [BAC_2024_item1a_139].\n\n## Conclusion\nBank of America\u2019s revenue increased modestly in 2024 compared to 2023, supported by growth in noninterest income despite declines in business lending and transaction services revenues. The company faces ongoing risks from macroeconomic factors, housing market conditions, and geopolitical uncertainties that could influence future revenue trends.\n\nMemory was not used for this note, so it is not compared with a previous note."
+      }
+    },
+    {
+      "id": "m04",
+      "kind": "no_previous",
+      "request": "What changed in Alphabet's operating margin since our last note? Cover fiscal 2024.",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m04-on",
+        "success": true,
+        "checks": {
+          "no_previous:GOOGL": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "GOOGL"
+        ],
+        "tokens": 38152,
+        "seconds": 31.4,
+        "body": "Alphabet's operating margin for fiscal 2024 was 32.11% [calc: OperatingIncomeLoss/2024/0001652044-25-000014 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014], reflecting an increase from approximately 27.4% in 2023 and 26.5% in 2022. This represents a roughly 5 percentage point improvement from 2023 to 2024 [GOOGL_2024_item7_023].\n\nThe margin expansion was driven by a 14% increase in consolidated revenues to $350,018.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014] and a 33% rise in operating income to $112,390.0M [fact: OperatingIncomeLoss/2024/0001652044-25-000014] [GOOGL_2024_item7_023]. Key contributors included higher revenues and reduced employee compensation expenses in Google Services, alongside operating income growth in Google Cloud despite increased costs [GOOGL_2024_item7_048].\n\nHowever, risk factors disclosed in Item 1A highlight potential margin pressures from shifts toward lower-margin products and services, increased investments in growth areas such as Google Cloud and Other Bets, and changes in product mix [GOOGL_2024_item1a_013].\n\nIn summary, Alphabet's fiscal 2024 operating margin improved significantly compared to prior years, supported by strong revenue and operating income growth, while mindful of risks that could impact future margins.\n\n## What changed since our last note\n- No previous note on GOOGL in memory, so there is nothing to compare against."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m04-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "GOOGL"
+        ],
+        "tokens": 35277,
+        "seconds": 75.1,
+        "body": "Alphabet's operating margin for fiscal year 2024 was 32.11% [calc: OperatingIncomeLoss/2024/0001652044-25-000014 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014], reflecting a notable increase from previous years. This compares to an operating margin of approximately 27.42% in 2023 and 26.46% in 2022, showing a steady upward trend over the three-year period.\n\nThe improvement in operating margin was driven by a 14% increase in consolidated revenues to $350,018.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014], alongside a 33% rise in operating income to $112,390.0M [fact: OperatingIncomeLoss/2024/0001652044-25-000014]. Key contributors included growth in Google Services operating income by $25.4 billion, supported by revenue gains partially offset by higher content acquisition and traffic acquisition costs, and reduced employee compensation expenses. Google Cloud operating income increased by $4.4 billion, fueled by revenue growth but partially offset by increased infrastructure and personnel costs. Other Bets experienced a higher operating loss due to increased employee compensation. Additionally, general and administrative expenses declined by $2.2 billion, mainly due to lower legal charges and reduced employee compensation [GOOGL_2024_item7_023, GOOGL_2024_item7_048, GOOGL_2024_item7_045].\n\nRisk factors that could impact operating margin include Alphabet's significant reliance on advertising revenue, which accounted for over 75% of total revenues in 2024. Reduced advertiser spending or technologies that block or affect ad personalization could adversely affect results. International operations, representing about 51% of revenues, expose the company to risks such as foreign ownership restrictions, geopolitical tensions, regulatory challenges, and longer payment cycles. Furthermore, shifts toward lower-margin products and services, including expansion into devices, Google Cloud, consumer subscriptions, and investments in Other Bets, may exert downward pressure on future operating margins [GOOGL_2024_item1a_000, GOOGL_2024_item1a_013].\n\nIn conclusion, Alphabet's operating margin improved significantly in fiscal 2024 due to strong revenue growth and effective cost management, although ongoing risks related to advertising dependence and international operations remain relevant considerations."
+      }
+    },
+    {
+      "id": "m05",
+      "kind": "change",
+      "request": "What changed in Visa's and Mastercard's operating margins since our last notes? Cover fiscal 2024.",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m05-on",
+        "success": true,
+        "checks": {
+          "previous:V": true,
+          "previous:MA": true,
+          "change:V=move": true,
+          "change:MA=move": true,
+          "heading": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": [
+            "MA",
+            "V"
+          ]
+        },
+        "plan_companies": [
+          "V",
+          "MA"
+        ],
+        "tokens": 47089,
+        "seconds": 73.4,
+        "body": "**Introduction**  \nThis note reviews the changes in operating margins for Visa (V) and Mastercard (MA) during fiscal year 2024, comparing them to the prior year and analyzing key drivers and risks.\n\n**Operating Margin Overview for Visa and Mastercard in 2024**  \nVisa reported an operating margin of 65.68% [calc: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in fiscal 2024 (period ending September 30, 2024), while Mastercard's operating margin was 55.32% [calc: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011] for fiscal 2024 (calendar year ended December 31, 2024).\n\n**Comparison to Prior Fiscal Years**  \nVisa's operating margin increased from approximately 64.32% in fiscal 2023 to 65.68% [calc: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in 2024, reflecting a margin expansion of about 1.36 percentage points. Conversely, Mastercard's operating margin decreased slightly from about 55.81% in fiscal 2023 to 55.32% [calc: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011] in 2024, a decline of roughly 0.49 percentage points.\n\n**Drivers of Operating Margin Changes in 2024**  \nVisa's operating expenses rose by 6% year-over-year, driven primarily by increases in personnel costs (+7%), marketing (+16%), general and administrative expenses (+20%), and professional fees (+17%), partially offset by a 50% reduction in litigation provisions. This controlled expense growth alongside a 10% revenue increase supported the margin improvement [V_2024_item7_037, V_2024_item7_002].  \nMastercard experienced a 13% increase in operating expenses, with general and administrative costs up 14%, depreciation and amortization up 12%, and a significant rise in litigation provisions (+26%). These expense pressures outpaced the 12% revenue growth, contributing to the slight margin compression [MA_2024_item7_045, MA_2024_item7_003].\n\n**Risk Factors Impacting Margins**  \nNo new risk factors specifically impacting operating margins were highlighted in the Item 1A sections for either company in fiscal 2024 filings.\n\n**Revenue and Operating Income Analysis**  \nVisa's revenue grew from $32,653 million in fiscal 2023 to $35,926.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in 2024, with operating income increasing from $21,000 million to $23,595.0M [fact: OperatingIncomeLoss/2024/0001403161-24-000058]. Mastercard's revenue rose from $25,098 million in 2023 to $28,167.0M [fact: Revenues/2024/0001141391-25-000011] in 2024, with operating income increasing from $14,008 million to $15,582.0M [fact: OperatingIncomeLoss/2024/0001141391-25-000011].\n\n**Conclusion**  \nVisa's operating margin improved modestly in fiscal 2024 due to controlled expense growth and strong revenue gains, while Mastercard faced margin pressure from faster expense growth relative to revenue. Both companies showed solid revenue and operating income growth in their respective fiscal years.\n\n## What changed since our last note\n- Previous note on V: #105 \"Seeded note: V FY2023\" (2026-09-01).\n- margin: 64.31% [calc: OperatingIncomeLoss/2023/0001403161-23-000099 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001403161-23-000099] (FY2023, last note) \u2192 65.68% [calc: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] (FY2024), +1.37 pp [diff: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058 - OperatingIncomeLoss/2023/0001403161-23-000099 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001403161-23-000099].\n- revenue: $32,653.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001403161-23-000099] (FY2023, last note) \u2192 $35,926.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] (FY2024).\n- operating income: $21,000.0M [fact: OperatingIncomeLoss/2023/0001403161-23-000099] (FY2023, last note) \u2192 $23,595.0M [fact: OperatingIncomeLoss/2024/0001403161-24-000058] (FY2024).\n- Previous note on MA: #106 \"Seeded note: MA FY2023\" (2026-09-01).\n- margin: 55.81% [calc: OperatingIncomeLoss/2023/0001141391-24-000022 / Revenues/2023/0001141391-24-000022] (FY2023, last note) \u2192 55.32% [calc: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011] (FY2024), -0.49 pp [diff: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011 - OperatingIncomeLoss/2023/0001141391-24-000022 / Revenues/2023/0001141391-24-000022].\n- revenue: $25,098.0M [fact: Revenues/2023/0001141391-24-000022] (FY2023, last note) \u2192 $28,167.0M [fact: Revenues/2024/0001141391-25-000011] (FY2024).\n- operating income: $14,008.0M [fact: OperatingIncomeLoss/2023/0001141391-24-000022] (FY2023, last note) \u2192 $15,582.0M [fact: OperatingIncomeLoss/2024/0001141391-25-000011] (FY2024)."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m05-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "V",
+          "MA"
+        ],
+        "tokens": 37502,
+        "seconds": 53.9,
+        "body": "### Introduction\nThis note reviews the changes in operating margins for Visa and Mastercard in fiscal year 2024, comparing them to prior years and analyzing key drivers.\n\n### Operating Margin Overview for Visa and Mastercard in Fiscal 2024\nVisa reported an operating margin of 65.68% [calc: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in fiscal 2024 (period ending September 30, 2024), while Mastercard's operating margin was 55.32% [calc: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011] for fiscal 2024 (calendar year ended December 31, 2024).\n\n### Comparison with Fiscal Years 2022 and 2023\nVisa's operating margin increased slightly from 64.31% in 2023 to 65.68% [calc: OperatingIncomeLoss/2024/0001403161-24-000058 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in 2024, up from 64.19% in 2022. Mastercard's operating margin decreased marginally from 55.81% in 2023 to 55.32% [calc: OperatingIncomeLoss/2024/0001141391-25-000011 / Revenues/2024/0001141391-25-000011] in 2024, down from 55.15% in 2022.\n\n### Drivers of Operating Margin Changes\nVisa's operating expenses rose by 6% in 2024 compared to 2023, driven by increases in personnel, marketing, and general and administrative expenses, partially offset by a 50% reduction in litigation provisions [V_2024_item7_037]. This expense growth was outpaced by revenue growth, supporting margin expansion.\n\nMastercard experienced a 13% increase in operating expenses in 2024 versus 2023, primarily due to higher general and administrative costs, depreciation, and litigation provisions [MA_2024_item7_045]. Despite this, revenue growth helped mitigate margin contraction.\n\n### Revenue and Operating Income Analysis\nVisa's revenue grew from $32.65 billion in 2023 to $35,926.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001403161-24-000058] in 2024, with operating income increasing from $21.0 billion to $23,595.0M [fact: OperatingIncomeLoss/2024/0001403161-24-000058]. Mastercard's revenue rose from $25.10 billion in 2023 to $28,167.0M [fact: Revenues/2024/0001141391-25-000011] in 2024, and operating income increased from $14.0 billion to $15,582.0M [fact: OperatingIncomeLoss/2024/0001141391-25-000011].\n\n### Conclusion\nVisa's operating margin improved modestly in fiscal 2024, supported by strong revenue growth and controlled expense increases. Mastercard's margin declined slightly due to faster expense growth relative to revenue. Both companies demonstrated solid revenue and operating income growth in fiscal 2024.\n\n### What changed since our last note\nMemory was not used for this note, so it is not compared with a previous note."
+      }
+    },
+    {
+      "id": "m06",
+      "kind": "preference",
+      "request": "What was NVIDIA's revenue in fiscal 2024?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m06-on",
+        "success": true,
+        "checks": {
+          "sentinel": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 1,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "NVDA"
+        ],
+        "tokens": 4280,
+        "seconds": 7.5,
+        "body": "## Introduction\nThis note reviews NVIDIA's revenue performance in fiscal year 2024, ending January 28, 2024.\n\n## NVIDIA Revenue Overview in Fiscal 2024\nNVIDIA reported total revenues of $60,922.0M [fact: Revenues/2024/0001045810-24-000029] for fiscal 2024 [Revenues/2024/0001045810-24-000029]. The operating income for the same period was $32,972.0M [fact: OperatingIncomeLoss/2024/0001045810-24-000029], resulting in an operating margin of 54.12% [calc: OperatingIncomeLoss/2024/0001045810-24-000029 / Revenues/2024/0001045810-24-000029].\n\n## Year-over-Year Revenue Comparison\nWhile specific prior year figures are not provided here, the strong operating margin of 54.12% [calc: OperatingIncomeLoss/2024/0001045810-24-000029 / Revenues/2024/0001045810-24-000029] indicates robust profitability alongside the revenue scale.\n\n## Revenue Segment Analysis\nDetailed segment breakdowns are not included in the current data set; thus, we cannot specify the main revenue contributors for fiscal 2024.\n\n## Summary and Conclusions\nNVIDIA achieved significant revenue of $60,922.0M [fact: Revenues/2024/0001045810-24-000029] in fiscal 2024, with a high operating margin of 54.12% [calc: OperatingIncomeLoss/2024/0001045810-24-000029 / Revenues/2024/0001045810-24-000029], underscoring strong operational efficiency.\n\nPrepared for the Analyst Desk."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m06-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "NVDA"
+        ],
+        "tokens": 3917,
+        "seconds": 6.6,
+        "body": "NVIDIA reported total revenue of $60,922.0M [fact: Revenues/2024/0001045810-24-000029] for fiscal year 2024, which ended on 2024-01-28. The operating income for the same period was $32,972.0M [fact: OperatingIncomeLoss/2024/0001045810-24-000029], resulting in an operating margin of 54.12% [calc: OperatingIncomeLoss/2024/0001045810-24-000029 / Revenues/2024/0001045810-24-000029] [Revenues/2024/0001045810-24-000029]."
+      }
+    },
+    {
+      "id": "m07",
+      "kind": "preference",
+      "request": "Compare Microsoft's and Alphabet's operating margins in fiscal 2024.",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m07-on",
+        "success": true,
+        "checks": {
+          "period_end:MSFT": true,
+          "period_end:GOOGL": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 1,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "MSFT",
+          "GOOGL"
+        ],
+        "tokens": 18562,
+        "seconds": 49.3,
+        "body": "### Introduction\nThis note compares the operating margins of Microsoft and Alphabet for fiscal year 2024, highlighting revenue, operating income, and factors influencing margin differences based on their MD&A disclosures.\n\n### Revenue Analysis for Microsoft and Alphabet in Fiscal 2024\nMicrosoft reported total revenue of $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] for the fiscal year ended June 30, 2024, while Alphabet reported total revenue of $350,018.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014] for the fiscal year ended December 31, 2024.\n\n### Operating Income Analysis for Microsoft and Alphabet in Fiscal 2024\nOperating income for Microsoft in fiscal 2024 was $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843], and for Alphabet, it was $112,390.0M [fact: OperatingIncomeLoss/2024/0001652044-25-000014].\n\n### Operating Margin Calculation and Comparison\nMicrosoft's operating margin for fiscal 2024 was 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843], whereas Alphabet's operating margin was 32.11% [calc: OperatingIncomeLoss/2024/0001652044-25-000014 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014]. Microsoft's margin was notably higher than Alphabet's for the respective fiscal years.\n\n### Drivers of Operating Margin Differences Based on MD&A\nAccording to Microsoft's MD&A, the operating margin benefited from revenue growth across all segments, including Intelligent Cloud (Azure), Productivity and Business Processes (Office 365 Commercial), and More Personal Computing (Gaming). Although cost of revenue increased due to growth in Microsoft Cloud and Gaming, this was partially offset by a decline in Devices costs [MSFT_2024_item7_017].\n\nAlphabet's margin improvement was driven by increased revenues in Google Services and Google Cloud. However, this was partially offset by higher content acquisition costs, traffic acquisition costs (TAC), and employee compensation expenses. A reduction in employee compensation expenses also contributed positively to operating income [GOOGL_2024_item7_048].\n\n### Conclusion\nIn fiscal 2024, Microsoft achieved a higher operating margin than Alphabet, supported by broad segment growth and effective cost management. Alphabet's operating margin, while improved, was influenced by revenue growth alongside increased content and infrastructure costs.\n\nBoth companies' fiscal year ends differ, with Microsoft ending June 30 and Alphabet December 31, which should be considered when comparing their financial results."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m07-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "MSFT",
+          "GOOGL"
+        ],
+        "tokens": 9877,
+        "seconds": 11.9,
+        "body": "### Introduction\nThis note compares the operating margins of Microsoft and Alphabet for fiscal year 2024, highlighting revenue, operating income, margin calculations, and contextual factors.\n\n### Revenue Comparison for Fiscal 2024\nMicrosoft reported total revenue of $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] for its fiscal year ending June 30, 2024, while Alphabet reported $350,018.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014] for its fiscal year ending December 31, 2024.\n\n### Operating Income Analysis for Fiscal 2024\nOperating income for Microsoft was $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] in fiscal 2024. Alphabet's operating income for the same fiscal year was $112,390.0M [fact: OperatingIncomeLoss/2024/0001652044-25-000014].\n\n### Operating Margin Calculation and Comparison\nMicrosoft's operating margin stood at 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] for fiscal 2024, significantly higher than Alphabet's operating margin of 32.11% [calc: OperatingIncomeLoss/2024/0001652044-25-000014 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0001652044-25-000014] for the same period. Note that Microsoft's fiscal year ends mid-year (June 30), whereas Alphabet's ends at calendar year-end (December 31).\n\n### Drivers of Operating Margins from MD&A\nWhile specific MD&A details are not included here, Microsoft's higher operating margin typically reflects strong performance in high-margin segments such as cloud services and software licensing. Alphabet's margin, though lower, benefits from its advertising business and investments in growth areas.\n\n### Historical Operating Margin Trends\nHistorical trends are not detailed in this note; however, the current margins indicate Microsoft maintains a robust margin advantage over Alphabet in fiscal 2024.\n\n### Conclusion\nIn fiscal 2024, Microsoft achieved a notably higher operating margin than Alphabet, supported by its revenue and operating income figures. Differences in fiscal year-ends should be considered when comparing these metrics.\n"
+      }
+    },
+    {
+      "id": "m08",
+      "kind": "preference",
+      "request": "What was Amazon's operating margin in 2023?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m08-on",
+        "success": true,
+        "checks": {
+          "table": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 1,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "AMZN"
+        ],
+        "tokens": 5970,
+        "seconds": 9.2,
+        "body": "## Introduction\nThis note reviews Amazon's operating margin for the fiscal year 2023, analyzing its financial performance and key drivers.\n\n## Amazon's Financial Overview in 2023\nAmazon reported total revenue of $574,785.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008] for the fiscal year ending December 31, 2023 [RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008].\n\n## Operating Income and Revenue Analysis\nOperating income for the same period was $36,852.0M [fact: OperatingIncomeLoss/2023/0001018724-24-000008] [OperatingIncomeLoss/2023/0001018724-24-000008].\n\n## Operating Margin Calculation and Comparison\nThe operating margin for 2023 was 6.41% [calc: OperatingIncomeLoss/2023/0001018724-24-000008 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008], reflecting the ratio of operating income to total revenue. This margin provides insight into Amazon's operational efficiency during the year.\n\n## Drivers of Operating Margin Changes in 2023\nDetails on the main factors affecting Amazon's operating margin in 2023 according to the MD&A section were not provided in the available data.\n\n## Summary Table of Key Figures\n| Metric           | Value           |\n|------------------|-----------------|\n| Total Revenue    | $574,785.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008] |\n| Operating Income | $36,852.0M [fact: OperatingIncomeLoss/2023/0001018724-24-000008] |\n| Operating Margin | 6.41% [calc: OperatingIncomeLoss/2023/0001018724-24-000008 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008]% |\n\n## Conclusion\nAmazon's operating margin in 2023 stood at 6.41% [calc: OperatingIncomeLoss/2023/0001018724-24-000008 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008]%, based on reported operating income and revenue for the fiscal year ending December 31, 2023. This metric is a key indicator of the company's profitability from operations during the period."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m08-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "AMZN"
+        ],
+        "tokens": 6452,
+        "seconds": 9.6,
+        "body": "## Introduction\nThis note reviews Amazon's financial performance in 2023, focusing on its operating margin.\n\n## Amazon's 2023 Revenue Analysis\nAmazon reported total revenue of $574,785.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008] for the fiscal year ending December 31, 2023 [RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008].\n\n## Amazon's 2023 Operating Income Analysis\nOperating income for the same period was $36,852.0M [fact: OperatingIncomeLoss/2023/0001018724-24-000008] [OperatingIncomeLoss/2023/0001018724-24-000008].\n\n## Calculation and Interpretation of Amazon's 2023 Operating Margin\nThe operating margin, calculated as operating income divided by revenue, was 6.41% [calc: OperatingIncomeLoss/2023/0001018724-24-000008 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008] in 2023. This margin reflects Amazon's profitability from its core operations during the year.\n\n## Summary\nAmazon's operating margin of 6.41% [calc: OperatingIncomeLoss/2023/0001018724-24-000008 / RevenueFromContractWithCustomerExcludingAssessedTax/2023/0001018724-24-000008] in 2023 indicates its operational efficiency and profitability for that fiscal year ending December 31, 2023."
+      }
+    },
+    {
+      "id": "m09",
+      "kind": "scope",
+      "request": "What was JPMorgan's pre-tax margin in 2024?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m09-on",
+        "success": true,
+        "checks": {
+          "scope:plan": true,
+          "scope:no_placeholder": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 1,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "JPM"
+        ],
+        "tokens": 8388,
+        "seconds": 24.2,
+        "body": "JPMorgan Chase reported a pre-tax margin of 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270] in fiscal year 2024, based on pre-tax income of $75,081.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270] and net revenue of $177,556.0M [fact: RevenuesNetOfInterestExpense/2024/0000019617-25-000270] for the period ending 2024-12-31 [IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270, RevenuesNetOfInterestExpense/2024/0000019617-25-000270].\n\nComparing this margin to previous years (2022 and 2023) would provide insight into JPMorgan's profitability trend, though specific historical margin figures are not included here. The main drivers affecting the 2024 pre-tax margin, as discussed in JPMorgan's MD&A, typically include revenue growth in key segments, expense management, and credit loss provisions; however, detailed segment analysis and MD&A commentary are not provided in the current data.\n\nIn peer comparison, JPMorgan's pre-tax margin should be evaluated alongside Goldman Sachs (GS), Bank of America (BAC), Morgan Stanley (MS), and Wells Fargo (WFC) to contextualize its performance within the banking sector. Unfortunately, corresponding margin data for these peers is not available in this note.\n\nRisk factors outlined in JPMorgan's 2024 10-K that could impact future pre-tax margins generally encompass economic conditions, regulatory changes, credit risk, and market volatility. Specific risk disclosures relevant to margin impact are not detailed here.\n\nThis note focuses on JPMorgan Chase's 2024 pre-tax margin and highlights areas for further analysis including historical trends, peer benchmarking, and risk considerations."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m09-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "JPM"
+        ],
+        "tokens": 7986,
+        "seconds": 22.1,
+        "body": "### Introduction\nThis note reviews JPMorgan Chase's financial performance in fiscal year 2024, focusing on its pre-tax margin and comparison with prior years.\n\n### JPMorgan's Revenue and Pre-tax Income in 2024\nIn fiscal year 2024, JPMorgan Chase reported total net revenue of $177,556.0M [fact: RevenuesNetOfInterestExpense/2024/0000019617-25-000270] and pre-tax income of $75,081.0M [fact: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270] [IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270, RevenuesNetOfInterestExpense/2024/0000019617-25-000270]. The fiscal year ended on 2024-12-31.\n\n### Calculation of Pre-tax Margin\nPre-tax margin is calculated as pre-tax income divided by total revenue, expressed as a percentage.\n\n### JPMorgan's Pre-tax Margin in 2024\nUsing the reported figures, JPMorgan's pre-tax margin for 2024 was 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270].\n\n### Comparison with Prior Years\nWhile exact prior year margins are not provided as placeholders, filings indicate that JPMorgan's revenue and pre-tax income have grown from 2022 through 2024, suggesting an improving margin trend [RevenuesNetOfInterestExpense/2023/0000019617-24-000225, IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2023/0000019617-24-000225; RevenuesNetOfInterestExpense/2022/0000019617-23-000231, IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2022/0000019617-23-000231].\n\n### Conclusion\nJPMorgan Chase achieved a strong pre-tax margin of 42.29% [calc: IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-000270 / RevenuesNetOfInterestExpense/2024/0000019617-25-000270] in fiscal year 2024, reflecting solid profitability relative to its revenue base."
+      }
+    },
+    {
+      "id": "m10",
+      "kind": "deleted",
+      "request": "What changed in Microsoft's operating margin since our last note? Cover fiscal 2024.",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m10-on",
+        "success": true,
+        "checks": {
+          "no_previous:MSFT": true,
+          "absent:Previous note on MSFT": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "MSFT"
+        ],
+        "tokens": 34748,
+        "seconds": 68.7,
+        "body": "### Introduction\nThis note reviews Microsoft's operating margin performance in fiscal year 2024, comparing it with prior years and analyzing the main drivers and risks impacting the margin.\n\n### Operating Margin Overview for Fiscal 2024\nMicrosoft reported an operating income of $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] on revenue of $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] for fiscal 2024 (period ended 2024-06-30), resulting in an operating margin of 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843].\n\n### Comparison with Prior Years (2022 and 2023)\nThe operating margin improved from 42.06% in fiscal 2022 and 41.77% in fiscal 2023 to 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] in fiscal 2024, reflecting enhanced profitability despite rising expenses.\n\n### Drivers of Operating Margin Changes in 2024\nAccording to the MD&A [MSFT_2024_item7_018], revenue grew by $33.2 billion or 16%, driven by growth in Microsoft Cloud, Gaming, and Productivity segments, partially offset by a decline in Devices. Gross margin increased by $25.0 billion or 17%, supported by improvements in More Personal Computing and Microsoft Cloud segments. Operating expenses rose by $4.0 billion or 7%, mainly due to Gaming (including the Activision Blizzard acquisition) and cloud engineering investments. Excluding accounting estimate changes, gross margin percentage increased by 2 points.\n\n### Risk Factors Impacting Operating Margin\nItem 1A highlights ongoing risks that could affect operating margin, including intense competition across all markets, risks from vertically integrated hardware and software products increasing costs, competition impacting Windows OS margins, macroeconomic and geopolitical uncertainties affecting supply chains and costs, and environmental factors potentially increasing data center operating expenses [MSFT_2024_item1a_000, MSFT_2024_item1a_028].\n\n### Conclusion\nMicrosoft's operating margin improved notably in fiscal 2024, driven by strong revenue and gross margin growth across key segments, despite higher operating expenses. However, competitive pressures and external risks remain relevant factors for future margin performance.\n\n### What changed since our last note\n- No previous note on MSFT in memory, so there is nothing to compare against."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m10-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "MSFT"
+        ],
+        "tokens": 22763,
+        "seconds": 47.5,
+        "body": "### Introduction\nThis note reviews the changes in Microsoft's operating margin for fiscal year 2024, comparing it to fiscal year 2023 and analyzing the main drivers behind the margin evolution.\n\n### Operating Margin Overview for Fiscal 2024\nMicrosoft reported an operating margin of 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] for fiscal year 2024, which ended on June 30, 2024. This margin reflects operating income of $109,433.0M [fact: OperatingIncomeLoss/2024/0000950170-24-087843] on revenue of $245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] [OperatingIncomeLoss/2024/0000950170-24-087843, RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843].\n\n### Comparison with Fiscal 2023\nIn fiscal year 2023, Microsoft\u2019s operating margin was approximately 41.77%, based on operating income of $88.5 billion and revenue of $211.9 billion [OperatingIncomeLoss/2023/0000950170-23-035122, RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000950170-23-035122]. The margin improvement to 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843] in 2024 represents a notable increase.\n\n### Drivers of Operating Margin Changes\nThe operating income grew by 24% year-over-year, outpacing the 16% revenue growth. This was driven by broad segment growth, particularly in Microsoft Cloud and Gaming, partially offset by a decline in Devices. Gross margin increased by 17%, supported by improvements across all segments. Operating expenses rose by 7%, mainly due to investments in Gaming (including the Activision Blizzard acquisition) and cloud engineering, partially offsetting margin expansion [MSFT_2024_item7_016, MSFT_2024_item7_018].\n\n### Risk Factors and MD&A Commentary\nNo specific risk factors or one-time items were disclosed that materially impacted the operating margin in fiscal 2024. Management commentary highlighted scaling of AI infrastructure and sales mix shifts within Microsoft Cloud as factors influencing margin dynamics.\n\n### Conclusion\nMicrosoft\u2019s operating margin improved significantly in fiscal 2024 compared to fiscal 2023, driven by strong segment growth and disciplined expense management. The company\u2019s strategic investments in cloud and gaming contributed to higher operating income and margin expansion.\n\n### What changed since our last note\nMemory was not used for this note, so it is not compared with a previous note."
+      }
+    },
+    {
+      "id": "m11",
+      "kind": "deleted",
+      "request": "What was Apple's revenue in fiscal 2024?",
+      "mode": "c1",
+      "on": {
+        "run_id": "memeval-c1-v2-m11-on",
+        "success": true,
+        "checks": {
+          "absent:Prepared for the Analyst Desk": true,
+          "no_unfilled_slot": true
+        },
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "AAPL"
+        ],
+        "tokens": 3944,
+        "seconds": 6.6,
+        "body": "Apple reported total revenue of $391,035.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000320193-24-000123] for its fiscal year ending on 2024-09-28. This revenue figure corresponds to the period from October 1, 2023, to September 28, 2024, and is reported under the revenue concept \"RevenueFromContractWithCustomerExcludingAssessedTax\" [0000320193-24-000123]."
+      },
+      "off": {
+        "run_id": "memeval-c1-v2-m11-off",
+        "success": true,
+        "memory_text_found": [],
+        "memory_used": {
+          "preferences": 0,
+          "previous_notes": []
+        },
+        "plan_companies": [
+          "AAPL"
+        ],
+        "tokens": 3926,
+        "seconds": 6.6,
+        "body": "Apple's total revenue for fiscal year 2024, which ended on September 28, 2024, reached $391,035.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000320193-24-000123]. The company reported an operating income of $123,216.0M [fact: OperatingIncomeLoss/2024/0000320193-24-000123], resulting in an operating margin of 31.51% [calc: OperatingIncomeLoss/2024/0000320193-24-000123 / RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000320193-24-000123] [0000320193-24-000123]."
+      }
+    }
+  ]
+}

@@ -38,7 +38,7 @@ The same server also exposes a FastAPI API with health checks (section 11).
 | Area | Built by |
 |---|---|
 | The base system: EDGAR facts, ingestion, retrieval, MCP servers, C0/C1/C2 graphs, checker, memory, playbook, evaluation harness, observability, the app | Jayshree |
-| **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
+| **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8), the memory evaluation (8.5), E4 on answers and unit-aware table quotes (3.11), the best-practices review ([knowledge_memory_review.md](knowledge_memory_review.md)) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
 | **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests (11) | Shubhi |
 
@@ -314,6 +314,46 @@ Each passage is turned into an embedding with `all-MiniLM-L6-v2`, a small local 
 - **Follow-ups** ([chat_context.py](../analystdesk/chat_context.py)). Choosing *Follow-up* adds the last three question-and-answer pairs to the question, labelled "use only to resolve references; verify the answer using the retrieved passages and EDGAR numbers". Retrieval and EDGAR look-ups still run fresh, so an earlier answer is never treated as evidence. *New question* sends the question alone.
 - **Charts** ([chat_chart.py](../analystdesk/chat_chart.py)). Code reads the metric from the question: operating or pre-tax margin, operating or pre-tax income, or revenue. It reads the companies and years the same way, and draws the EDGAR values with Plotly. "Quarterly" in the question switches to quarterly periods. If a value doesn't exist (for example, operating income for a bank), the chart says so instead of plotting something else.
 - **Why code and not the model?** The same rule as everywhere else: the chart shows XBRL values selected by code, so it can't disagree with the cited figures.
+
+### 3.11 E4 measured on the answers, and unit-aware table quotes (role 2)
+
+**Code:** [scripts/run_e4_tables.py](../scripts/run_e4_tables.py), `_in_millions_table` in [checks.py](../analystdesk/agent/checks.py). Results: [e4_tables.md](e4_tables.md). Tests: [tests/test_e4_tables.py](../tests/test_e4_tables.py), `test_table_quote_in_millions` in [tests/test_checks.py](../tests/test_checks.py).
+
+**The question.** Recall@5 (3.8) showed that table-aware parsing doesn't make passages easier to *find*. The claim was that it makes a found table *usable*. To test that on answers rather than on retrieval:
+- 18 labelled questions whose answers sit in 10-K tables (iPhone revenue, segment revenue, R&D, ROA…);
+- run through C0 and C1, once on table-aware passages and once on plain ones (`PASSAGES_VARIANT=plain`);
+- scored in code: is the expected figure **stated**, is it **grounded** (a cited passage or an XBRL tag contains it), and what share of numbers is **verified**.
+
+**Result (one run, 18 questions each):**
+
+| | Stated | Grounded | Verified (mean) |
+|---|---|---|---|
+| C0, table-aware | 16/18 | 13/18 | 65% |
+| C0, plain | 18/18 | 14/18 | 58% |
+| C1, table-aware | 16/18 | 15/18 | 57% |
+| C1, plain | 16/18 | 16/18 | 66% |
+
+**Honest reading: on this set, table-aware passages do not improve the answers.** The differences are a question or two either way, within the noise of a single run. A likely reason (not tested): in these filings a flattened row still keeps each number next to its label, so a capable model can read both forms. Say this plainly in the viva; it's a negative result, measured properly.
+
+**What the experiment did find.** Verified share was low *for both* kinds of passage, and tracing it showed why:
+- The table passage reads "(In millions, except percentages) | … | Intelligent Cloud | 105,362".
+- The writer quoted "$105.362 billion".
+- The checker required the same digits *with the same unit*, so a correct figure counted as unverified.
+- Table cells have no unit of their own; the caption gives it.
+
+**Fix (unit-aware table quotes).** If a passage declares "(In millions)", a dollar quote counts when some cell equals it in millions **within the rounding the writer stated**:
+- "$105.4 billion" may be any cell from 105,350 to 105,450;
+- "$105,362 million" must be exactly 105,362;
+- "$105.9 billion", or the same quote against a passage without the caption, still fails.
+
+Re-scoring the saved answers (no new model calls) raised verified share from 14–51% to **57–66%**.
+
+**Likely questions:**
+- *"So why keep table-aware parsing?"* It doesn't hurt. It gives each table its own citable passage with a title and repeated header, which the unit-aware check relies on: the caption is always in the same chunk as the cells. A plain chunk can split the caption from its numbers. And it was the brief's requirement. But we don't claim it improves answers, because we measured that it doesn't here.
+- *"Isn't a tolerance a loophole?"* The tolerance is exactly the precision the writer chose, never more, and it only applies when the passage is a table in millions. A test locks the boundaries.
+- *"Why do the agents' numbers still fail verification sometimes?"* Mostly numbers written without any citation on their line. That's the writer, not retrieval, and the checker correctly flags them.
+
+**Caveat to volunteer.** The E1 dev results (10.1) were scored with the earlier, stricter checker, so their verified shares are lower bounds.
 
 ---
 
@@ -604,6 +644,43 @@ Result file: `data/evaluation/results/memory_compare_20261025-112601.json`. You 
 - *"How do you stop memory from leaking private data?"* Memory holds only the analyst's own preferences and published, verified figures. A private watchlist (L15) would need its own namespace that never reaches a prompt or search tool; that belongs with the security work (defences by role 4).
 
 ---
+
+### 8.5 Memory evaluation: 11 cases, memory on vs off (role 2)
+
+**Code:** [analystdesk/memory_eval.py](../analystdesk/memory_eval.py), [scripts/run_memory_eval.py](../scripts/run_memory_eval.py), cases in [data/evaluation/memory_cases.jsonl](../data/evaluation/memory_cases.jsonl). Results: [memory_eval.md](memory_eval.md). Tests: [tests/test_memory_eval.py](../tests/test_memory_eval.py).
+
+**Why.** Section 8.3 was one request, a demonstration. This turns "memory works" into a measured claim.
+
+**How:**
+- Each case **seeds a fresh memory store**, so the analyst's real memory is never touched:
+  - past notes are built from real XBRL figures, so they carry verified tags like a published note;
+  - preferences are added;
+  - deletions are applied where the case needs them.
+- The same request is run with memory **on** and **off** to the note gate. Lessons are off, so memory is the only difference.
+- Both drafts are scored in code.
+
+| Kind | Cases | Memory ON must… | Memory OFF must… |
+|---|---|---|---|
+| change | 3 (one company, two companies, unchanged) | cite the previous note; show the code-computed move under the heading | contain no memory lines |
+| restated | 1 (BAC FY2024 revenue) | say "Restated since the last note" | — |
+| no previous | 1 | say there is no previous note | — |
+| preference | 3 (an exact closing line, fiscal year-end dates, a summary table) | follow it | not show the closing line |
+| scope | 1 (a preference asking for peers outside the plan) | keep the plan to JPM, with no blank placeholders | — |
+| deleted | 2 (a deleted note, a deleted preference) | **not** use them | — |
+
+**Result (C1): memory ON 11/11, memory OFF 11/11 clean.** Memory costs about +18% tokens per case.
+
+**The bug it found (first run, `memory_eval_c1-v1.json`).**
+1. With memory **off**, two requests asked "what changed since our last note".
+2. The writer echoed that as a heading and left the slot `{WHAT_CHANGED}` in the note.
+3. Code only filled the slot when there was a comparison, and the checker didn't recognise the slot, so the literal text would have reached the analyst.
+
+The fix: code always fills the slot, with the reason when there is nothing to compare ("Memory was not used for this note…" or "There is no previous note…"), and the checker rejects any unfilled `{SLOT}`. The second run is clean. **This is a good viva story: the evaluation found a bug the unit tests didn't.**
+
+**Likely questions:**
+- *"Why a fresh store per case?"* Cases must not influence each other, and the analyst's real memory must not influence or be changed by an experiment.
+- *"Why are the seeded notes trustworthy?"* They're built from real XBRL figures with real fact tags, exactly as a published note would be; one case changes a value on purpose to simulate a restatement.
+- *"Isn't 11 cases small?"* Yes. It covers each memory behaviour once or more, and each check is deterministic. More cases (stale notes, conflicting preferences) can be added as those features are built.
 
 ## 9. C2: the team of agents, hooks and the compliance critic (L11, L14)
 
