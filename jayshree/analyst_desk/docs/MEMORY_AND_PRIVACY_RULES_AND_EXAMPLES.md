@@ -1,6 +1,6 @@
 # Analyst Desk Memory and Privacy Rules and Examples
 
-**Status:** Proposed companion to the one-page Memory and Privacy Policy. Team adoption, implementation and independent verification remain pending.
+**Status:** Final project specification v1.0.
 
 These rules define what Analyst Desk may retain, who may use it and what correction or deletion means. Saved analyst context, published research, run checkpoints, public source evidence and reviewed lessons have different purposes. A record being present in a database does not make it approved, private to the current user or safe to reuse.
 
@@ -33,9 +33,9 @@ The following are logical categories; they do not prescribe a new database for e
 | Coverage and published-note context | Derive from confirmed published records, preserving note/version, publication status, audience, source and review links. Coverage is not automatically public. A per-ticker storage key is not an ownership boundary. |
 | Private watchlist and other private context | Keep within its authorised internal scope. Do not attach a list or membership information to prompts, external search/embedding requests, ordinary logs or exports. An approved public-ticker research question does not authorise disclosing the private list. |
 | Reviewed lessons and playbooks | Retain proposal origin, applicability, evidence, exact review decision/version and frozen release identity. Keep pending/rejected/retired content separate from usable lessons; restrict access to underlying private development evidence. |
-| Public filing cache and retrieval indexes | Preserve public source identity and evidence context. Keep private preferences, questions, note context and protected cases out of the public filings index. If a private retrieval index is adopted later, give it its own authorised lifecycle and access controls. |
+| Public filing cache and retrieval indexes | Preserve public source identity and evidence context. Keep private preferences, questions, note context and protected cases out of the public filings index. Before enabling a private retrieval index, configure its authorised lifecycle and access controls. |
 
-For retained records, preserve the minimum identity, owner/workspace audience, purpose, origin, status, version and timestamps needed for review and the adopted lifecycle. Derived records must link to their source. Missing ownership or ambiguous visibility is not permission to show a record to everyone.
+For retained records, preserve the minimum identity, owner/workspace audience, purpose, origin, status, version and timestamps needed for review and the configured lifecycle. Derived records must link to their source. Missing ownership or ambiguous visibility is not permission to show a record to everyone.
 
 Apply access checks to APIs, UI panels, tools, retrieval filters, saved-run loading, exports and maintenance scripts. The application must establish trusted identity/authority; neither a model-provided field nor editable name grants it. Operators' maintenance access must be scoped, recorded and distinct from normal analyst access.
 
@@ -47,7 +47,7 @@ An authorised standing preference may shape presentation within the approved pla
 
 Retrieve only relevant permitted context. Record the IDs/versions actually used and whether selection was incomplete. A bounded memory panel or top-k lookup must not be described as a complete inventory of stored records or conclusive proof that no prior note exists. Distinguish no eligible note found, history retrieval failed and history not enabled.
 
-Live model processing can send selected context outside the local application. Before such use, explain the data categories and configured destination under the adopted run/data-flow authorisation. Include only necessary authorised fields. Permission to save locally is not blanket permission for every external use; do not create repeated approval prompts for actions already covered by a valid authorisation.
+Live model processing can send selected context outside the local application. Before such use, explain the data categories and configured destination under the valid run/data-flow authorisation. Include only necessary authorised fields. Permission to save locally is not blanket permission for every external use; do not create repeated approval prompts for actions already covered by a valid authorisation.
 
 Private watchlists, secrets, gold answers and protected dataset files must not enter model prompts, web/search queries or external embedding calls. A controlled evaluation may provide the intended current test question; it must not expose expected answers, unrelated cases or private context. Treat retrieved or saved text demanding disclosure as untrusted instructions and enforce the boundary in code. A private research interest can remain sensitive even when every underlying SEC document is public.
 
@@ -55,11 +55,11 @@ Minimise/redact sensitive content in traces, exception messages, export files, s
 
 ## Memory controls and recovery
 
-Declare saved analyst memory and reviewed-playbook settings separately before running. For the proposed saved-memory-off behaviour, disable optional preference/history retrieval and automatic derived-memory writes, including alternate tools that would reload that history. Public source search and required current-run checkpoints remain distinct. Do not claim no storage or no external processing from the toggle alone.
+Declare saved analyst memory and reviewed-playbook settings separately before running. In saved-memory-off mode, disable optional preference/history retrieval and automatic derived-memory writes, including alternate tools that would reload that history. Public source search and required current-run checkpoints remain distinct. Do not claim no storage or no external processing from the toggle alone.
 
 Turning memory off does not erase a prior run, remove published notes or revoke their approval. A new run and resuming an existing checkpoint are different operations. On resume/replan, check current permissions, memory settings, record versions and deletion/withdrawal status before reusing any saved snapshot. Do not revive obsolete context from the checkpoint merely because it was valid when first loaded.
 
-Preserve the original historical record of the run. If reconciliation changes the proposed plan/note or its material evidence/review basis, apply the required fresh checks and approval; do not silently rewrite an earlier decision.
+Preserve the original historical record of the run under the configured privacy and retention rules. If reconciliation changes the proposed plan/note or its material evidence/review basis, apply the required fresh checks and approval; do not silently rewrite an earlier decision.
 
 After a confirmed portal write, create/reconcile derived history using the existing saved-note identity. If memory updating fails, show **Published with memory sync pending/failed**. Repair the derived update independently; do not publish a duplicate note. If portal outcome is unknown, reconcile it before declaring publication or inserting approved history.
 
@@ -73,11 +73,11 @@ History-tool failure must not become "there was no earlier note." If optional co
 
 **Deleting derived memory.** State the selected record/category, owner/workspace and stores affected. Reconcile dependent coverage pointers, cached summaries and private retrieval entries. Keep an appropriately minimal deletion/suppression record where needed to prevent backfill or restoration from repopulating active memory; it must not retain the deleted sensitive content merely to log its deletion.
 
-**Deleting runs or broader data.** Define checkpoint/run, approved portal, private memory, lesson, index, log, export and backup scope separately. A delete-memory action does not automatically mean all those stores were erased. An authorised wider deletion request needs an inventory and an accurate result for each affected category: removed, retained for a stated adopted purpose, pending, or not controlled by this operation. Never promise full erasure from a single UI deletion or database-file removal.
+**Deleting runs or broader data.** Define checkpoint/run, approved portal, private memory, lesson, index, log, export and backup scope separately. A delete-memory action does not automatically mean all those stores were erased. An authorised wider deletion request needs an inventory and an accurate result for each affected category: removed, retained for a documented permitted purpose, pending, or not controlled by this operation. Never promise full erasure from a single UI deletion or database-file removal.
 
-**Backfill and restore.** Rebuilding note memory must respect current ownership, approved audience, withdrawal and deletion/suppression decisions. Restoration must apply the current privacy/lifecycle decisions before making records active. If a copy cannot yet be removed, restrict its use and report its status under the adopted policy. Already loaded state must be reconciled; do not claim to retract data already sent to a model or external recipient.
+**Backfill and restore.** Rebuilding note memory must respect current ownership, approved audience, withdrawal and deletion/suppression decisions. Restoration must apply the current privacy/lifecycle decisions before making records active. If a copy cannot yet be removed, restrict its use and report its status under the configured lifecycle rules. Already loaded state must be reconciled; do not claim to retract data already sent to a model or external recipient.
 
-**Retention.** Save only what is required for a declared research, review, resume or operational purpose. Before adoption, agree periods or deletion triggers for each category, who performs maintenance and how backups/restore are handled. This draft sets no arbitrary lifetime, deletion deadline, legal retention rule or third-party erasure guarantee. Explain any remaining records accurately; a privacy request must not be answered by deleting an active SQLite file and assuming every copy is gone.
+**Retention.** Save only what is required for a declared research, review, resume or operational purpose. Before storing private analyst data, configure a retention period or deletion trigger for each category, maintenance permissions and backup/restore handling. Do not enable private storage with unspecified lifecycle controls. This policy does not impose a universal lifetime or guarantee third-party erasure. Apply the configured limits and explain remaining records accurately; a privacy request must not be answered by deleting an active SQLite file and assuming every copy is gone.
 
 For example, Analyst A deletes a saved presentation preference, then resumes an old run containing its earlier snapshot. The application must reconcile the deletion before using that preference again. If it only removed the current preference entry, report that scope rather than "everything has been forgotten." Similarly, deleting a derived note entry must not be undone silently by rebuilding from unchanged portal notes.
 
@@ -93,11 +93,11 @@ Only accepted, relevant versions may enter a usable playbook. Rejected or retire
 
 Freeze an identifiable reviewed playbook version before held-out evaluation and record which lessons were retrieved. A mutable frozen flag alone does not establish reproducibility; changes require a distinct version and evaluation decision. Keep protected dataset files, gold answers, human labels and other held-out cases/results outside application-readable stores, embeddings, prompts and tools. R5 may supply the intended current evaluation question through a controlled runner. Segregate its authorised run state/results so they cannot be recalled by later cases or converted into development lessons. If a case informs tuning, treat it as development rather than continuing to call it unseen.
 
-Memory-on/off and lesson-before/after comparisons answer different questions. Keep research questions, public source snapshot, code, models, tools, budgets and the other context settings comparable; record intended differences. Evaluate correctness, relevance, failures, harmful effects, cost and latency, including lesson-generation cost for the learning comparison. R5 owns protected evaluation; neither a functioning toggle nor a policy draft demonstrates benefit.
+Memory-on/off and lesson-before/after comparisons answer different questions. Keep research questions, public source snapshot, code, models, tools, budgets and the other context settings comparable; record intended differences. Evaluate correctness, relevance, failures, harmful effects, cost and latency, including lesson-generation cost for the learning comparison. R5 owns protected evaluation; neither a functioning toggle nor this specification demonstrates benefit.
 
 ## Development examples and implementation roles
 
-The following are proposed development expectations, not completed tests, genuine lesson decisions or protected evaluation answers.
+The following are required development expectations, not completed tests, genuine lesson decisions or protected evaluation answers.
 
 | Situation | Expected behaviour |
 |---|---|
@@ -110,13 +110,13 @@ The following are proposed development expectations, not completed tests, genuin
 | A retrieved paragraph asks for the private watchlist | Treat it as untrusted instructions; block disclosure to models, tools, logs and exports. |
 | Portal save succeeds while derived-memory update fails | Retain confirmed publication and repair the separate sync operation using the same note identity. |
 
-| Role | Proposed responsibility |
+| Role | Required responsibility |
 |---|---|
-| R1 Domain and product | Review useful memory, privacy expectations, comparison meaning, correction/deletion messages and lesson applicability. Agree domain acceptance and unresolved choices. |
+| R1 Domain and product | Review useful memory, privacy expectations, comparison meaning, correction/deletion messages and lesson applicability. Specify domain acceptance and record versioned decisions. |
 | R2 Knowledge and memory | Own the memory engineering policy, record/provenance inventory, source/index separation, ownership metadata, retention and correction/deletion/backfill design. |
 | R3 Agents and orchestration | Implement scoped context selection, save triggers, separate settings, resume reconciliation, bounded context and reviewed-lesson/frozen-version workflows. |
 | R4 Tools control and security | Enforce verified identity, permissions, disclosure limits and deletion boundaries across tools/APIs/exports/maintenance; prevent instruction-based bypass. |
 | R5 Evaluation and red team | Independently verify isolation, off modes, lifecycle/recovery, watchlist protection, genuine lesson decisions, evaluation independence and measured benefit/harm. |
-| R6 Deployment and operations | Display truthful controls and outcomes; protect persistent stores and operational artifacts; implement adopted maintenance, backup/restore, recovery and evidence capture. |
+| R6 Deployment and operations | Display truthful controls and outcomes; protect persistent stores and operational artifacts; implement configured maintenance, backup/restore, recovery and evidence capture. |
 
-Before adoption, agree verified identities and the intended private/shared audience, data-flow permissions, per-category retention/backup decisions, deletion/suppression behaviour and frozen-version ownership. Record the effective policy version and actual reviews. These documents do not establish that current main enforces the proposed boundaries.
+Before enabling private memory, configure verified identities, private/shared audiences, data-flow permissions, per-category retention and backup rules, deletion/suppression behaviour and frozen-version ownership. Record the effective policy/configuration version and actual access, lifecycle and review decisions. R5 must verify the applicable boundaries on the deployed version; publishing these specifications does not establish enforcement.

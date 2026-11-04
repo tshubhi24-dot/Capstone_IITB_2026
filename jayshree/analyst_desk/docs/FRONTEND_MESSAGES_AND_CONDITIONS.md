@@ -1,8 +1,8 @@
 # Analyst Desk Frontend Messages and Trigger Conditions
 
-**Status:** Proposed for review. These messages define intended product behaviour; adoption, implementation and independent verification remain pending. This document does not certify the current application.
+**Status:** Final project specification v1.0.
 
-The catalogue contains 28 proposed banners in seven groups. Each banner is a short status message, accompanied by the necessary evidence, limitation or action detail. Use its ID to connect the displayed copy, backend trigger and verification case.
+The catalogue specifies 28 banners in seven groups. Each banner is a short status message, accompanied by the necessary evidence, limitation or action detail. Use its ID to connect the displayed copy, backend trigger and verification case.
 
 ## Ownership and display contract
 
@@ -14,15 +14,15 @@ The catalogue contains 28 proposed banners in seven groups. Each banner is a sho
 - Banner templates use at most 140 characters and short trigger labels at most 60. Runtime substitutions still require responsive layout and accessibility checks; do not truncate a material qualification or use a tooltip as the only disclosure.
 - Display essential expanded information beside the relevant result or control. In particular, a memory-off banner alone is insufficient without its storage/deletion explanation, and a Published banner must show any required memory-sync failure separately.
 - A blocker takes precedence over a ready state. Numerical checking, semantic review, source coverage, approval and persistence are separate facts. A justified limited answer may become eligible after its retained claims, scope and limitations receive the required review; not every unavailable value requires a permanent whole-note HOLD.
-- Source links below point to the project proposals on R1_role. They identify policy meaning, not proof that the current application implements the message or action. Runtime messages R01/R02 are proposed operational applications of those control rules, not literal claims that a policy specifies a particular provider integration.
+- Source links below identify the governing project specifications on R1_role. Implement each message's trigger and permitted action; displaying the text alone does not establish compliance. Runtime messages R01/R02 apply the same control rules without prescribing a particular provider integration.
 
 ## How to read the catalogue
 
-The table provides exact proposed banner copy and a short trigger. The detailed trigger and permitted action below each table are part of the contract. For example, F01 is an informative warning for a valid reported-fiscal-year comparison; it must not be repurposed as a reason to reject all different-year-end comparisons.
+The table provides exact banner copy and a short trigger. The detailed trigger and permitted action below each table are part of the contract. For example, F01 is an informative warning for a valid reported-fiscal-year comparison; it must not be repurposed as a reason to reject all different-year-end comparisons.
 
 ## 1. Scope and metric choice
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | S01 | Annual evidence available: {years}. Select explicit fiscal years. | Verified annual coverage is available. | R2/R3/R4 |
 | S02 | {selection} is outside supported coverage. Choose a supported selection or revise the request. | Requested company or year is unsupported. | R2/R3/R4 |
@@ -63,15 +63,15 @@ The table provides exact proposed banner copy and a short trigger. The detailed 
 
 **Trigger:** A bank or mixed-company margin request does not specify a metric clearly enough to select compatible inputs. Availability of a configured pre-tax ratio is not consent to use it.
 
-**Permitted action:** Ask for the metric before plan approval; offer only choices whose proposed support and required input availability are accurately described.
+**Permitted action:** Ask for the metric before plan approval; offer only choices whose metric support and required input availability are accurately described.
 
-**Expanded explanation and limits:** Operating margin uses operating income and compatible revenue. The proposed bank pre-tax task uses reviewed pre-tax income and corresponding total net revenue after interest expense. These are distinct measures.
+**Expanded explanation and limits:** Operating margin uses operating income and compatible revenue. The bank pre-tax task uses reviewed pre-tax income and corresponding total net revenue after interest expense. These are distinct measures.
 
 **Policy:** [BANK_METRICS_AND_COMPARISON_RULES.md](https://github.com/tshubhi24-dot/Capstone_IITB_2026/blob/R1_role/jayshree/analyst_desk/docs/BANK_METRICS_AND_COMPARISON_RULES.md).
 
 ## 2. Comparison and period boundaries
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | B02 | Operating-margin comparison unavailable for the selected bank. | Bank operating-income input is unavailable. | R2/R3/R4 |
 | B03 | Different margin definitions: a common ranking, gap or average is unavailable. | Requested ranking or gap mixes margin definitions. | R3/R4 |
@@ -138,7 +138,7 @@ Validate each company's own revenue/income pair first. An annual/quarter mismatc
 
 ## 3. Period, unit and filing validation
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | F02 | Reporting durations differ: {weeks}. Reported growth is not a calendar-adjusted or organic-growth measure. | Reviewed periods have different annual durations. | R2/R3 |
 | F04 | Calculation unavailable: {reason}. Check the input periods, units and financial basis. | Calculation inputs are incompatible or unverified. | R2/R3/R4 |
@@ -151,17 +151,17 @@ Validate each company's own revenue/income pair first. An annual/quarter mismatc
 
 **Permitted action:** Show week counts or actual durations alongside reported growth. Do not silently prorate or normalise; any separate method requires its own supported scope.
 
-**Expanded explanation and limits:** Revenue of USD 104 million over 52 weeks and USD 106 million over 53 weeks gives 1.92% reported growth. Equal USD 2 million weekly amounts illustrate the duration effect, not an automatically adopted normalisation method.
+**Expanded explanation and limits:** Revenue of USD 104 million over 52 weeks and USD 106 million over 53 weeks gives 1.92% reported growth. Equal USD 2 million weekly amounts illustrate the duration effect; they do not authorise automatic normalisation.
 
 **Policy:** [FISCAL_PERIODS_AND_UNITS_RULES.md](https://github.com/tshubhi24-dot/Capstone_IITB_2026/blob/R1_role/jayshree/analyst_desk/docs/FISCAL_PERIODS_AND_UNITS_RULES.md).
 
 ### F04
 
-**Trigger:** Inputs within the same calculation have mismatched annual/quarter/YTD dates, unverified currency or scale, incompatible operations/basis, or an invalid denominator under the adopted rules.
+**Trigger:** Inputs within the same calculation have mismatched annual/quarter/YTD dates, unverified currency or scale, incompatible operations/basis, or an invalid denominator under the financial rules.
 
 **Permitted action:** Show the specific affected input and limitation. Obtain compatible source-supported values or revise the task; do not invent a conversion or replace missing values with zero.
 
-**Expanded explanation and limits:** Different companies' own-FY windows alone are not this error. This version does not assume FX conversion. A positive revenue denominator is required for the proposed margin task; supported zero income with positive revenue remains valid.
+**Expanded explanation and limits:** Different companies' own-FY windows alone are not this error. This version does not assume FX conversion. A positive revenue denominator is required for the operating or pre-tax margin task; supported zero income with positive revenue remains valid.
 
 **Policy:** [FISCAL_PERIODS_AND_UNITS_RULES.md](https://github.com/tshubhi24-dot/Capstone_IITB_2026/blob/R1_role/jayshree/analyst_desk/docs/FISCAL_PERIODS_AND_UNITS_RULES.md).
 
@@ -187,7 +187,7 @@ Validate each company's own revenue/income pair first. An annual/quarter mismatc
 
 ## 4. Evidence review and blockers
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | E01 | Insufficient evidence for the year-over-year risk classification. | Paired disclosure coverage is insufficient. | R2/R3/R4 |
 | E02 | Explanation unsupported: {claim}. Correct arithmetic does not establish its business cause. | Evidence does not support a causal explanation. | R3/R4 |
@@ -238,7 +238,7 @@ A separately reviewed current passage may support a narrowly worded current-disc
 
 ## 5. Approval and publication
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | A02 | Ready for your review. Approve this exact note to save it. | Backend eligibility permits exact-note final review. | R3/R4 |
 | A03 | Approval no longer covers this version. Review the rechecked note and approve it again. | Approved content or material context changed. | R3/R4 |
@@ -271,7 +271,7 @@ A separately reviewed current passage may support a narrowly worded current-disc
 
 **Permitted action:** Reconcile the original operation and approved version against the authorised portal record. Do not announce success, regenerate content or create a duplicate to bypass uncertainty.
 
-**Expanded explanation and limits:** A matching durable record/receipt can resolve uncertainty. Retry only through the adopted controls while approval and eligibility remain valid; cancellation cannot undo an already committed write.
+**Expanded explanation and limits:** A matching durable record/receipt can resolve uncertainty. Retry only through the defined retry and reconciliation controls while approval and eligibility remain valid; cancellation cannot undo an already committed write.
 
 **Policy:** [ACCEPTANCE_AND_PUBLICATION_POLICY.md](https://github.com/tshubhi24-dot/Capstone_IITB_2026/blob/R1_role/jayshree/analyst_desk/docs/ACCEPTANCE_AND_PUBLICATION_POLICY.md).
 
@@ -293,7 +293,7 @@ Use this variant only when a derived-memory update was expected and its status i
 
 ## 6. Private memory and deletion
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | M01 | Saved analyst memory is off for this run. | Backend accepted and enforces saved-memory off. | R2/R3/R4 |
 | M02 | Saved context is unavailable for this request. | Saved context is missing or not authorised. | R2/R4 |
@@ -342,17 +342,17 @@ Do not offer a different visible result that confirms a guessed private record e
 
 **Trigger:** An authorised deletion operation returns verified results for its declared owner/workspace, record category and affected stores.
 
-**Permitted action:** Show what was removed, retained for a stated adopted purpose, pending or outside this operation. Reconcile indexes, loaded state, backfill and restore paths; offer only permitted follow-up actions.
+**Permitted action:** Show what was removed, retained for a documented permitted purpose, pending or outside this operation. Reconcile indexes, loaded state, backfill and restore paths; offer only permitted follow-up actions.
 
 **Expanded explanation and limits:** Deleting derived memory does not itself withdraw a portal note or erase checkpoints, logs, exports, backups or previously sent external data. Do not promise universal erasure; deleted context must not silently reactivate from a stale copy.
 
 **Policy:** [MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md](https://github.com/tshubhi24-dot/Capstone_IITB_2026/blob/R1_role/jayshree/analyst_desk/docs/MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md).
 
-Report the adopted operation's scope rather than a blanket 'everything is forgotten' claim. Withdrawal, correction, deletion of derived memory and deletion of a run/checkpoint are separate operations. Apply current deletion/suppression decisions before restored copies or backfilled portal records become active, and do not retain the deleted sensitive content merely to log its deletion. Retention and third-party erasure promises require separately agreed and verified arrangements.
+Report the authorised operation's scope rather than a blanket 'everything is forgotten' claim. Withdrawal, correction, deletion of derived memory and deletion of a run/checkpoint are separate operations. Apply current deletion/suppression decisions before restored copies or backfilled portal records become active, and do not retain the deleted sensitive content merely to log its deletion. Retention and third-party erasure promises require documented, verified arrangements.
 
 ## 7. Lessons and recovery
 
-| ID | Exact proposed banner | Show when | Backend owners |
+| ID | Exact banner | Show when | Backend owners |
 |---|---|---|---|
 | L01 | Lesson proposed. It is not active. Review its evidence before accepting or rejecting it. | A genuine development lesson awaits exact review. | R2/R3/R4 |
 | L02 | Frozen playbook {version} selected. Only accepted, applicable lessons from this version may guide this run. | An applicable frozen reviewed release is selected. | R2/R3/R4 |
@@ -403,7 +403,7 @@ A rate-limit banner does not itself authorise a model/configuration change, an o
 
 ## Review examples for the implementation handoff
 
-These are proposed development expectations, not executed tests or evidence that the controls already work.
+These are required development expectations, not executed tests or evidence that the controls already work.
 
 | Situation | Expected frontend and backend behaviour |
 |---|---|
@@ -427,11 +427,11 @@ A development scoring result is not a research-publication decision. If evaluati
 
 Keep correctness, completion and case validity separate. An established mandatory failure remains aggregate Fail even if a later timeout also makes completion incomplete. If no definite failure is established but required work did not complete, the aggregate is Incomplete. A disputed expectation requires documented adjudication, not a convenient pass or silent exclusion.
 
-The initial eight development cases remain proposals until the required human/source review, scoring agreement, execution adapters and freeze occur. Synthetic fixture correctness is separate from issuer-source retrieval and end-to-end performance; a legitimate production refusal of a fictional company is not a financial-calculation failure. The hypothetical ten-attempt example of six Pass, two Fail and two Incomplete means 60%, 20% and 20% of all attempts, not an observed result for the eight-case pack.
+Before scoring any of the eight development cases, complete the required human/source review, scoring agreement, adapter validation and version freeze. Synthetic fixture correctness is separate from issuer-source retrieval and end-to-end performance; a legitimate production refusal of a fictional company is not a financial-calculation failure. The hypothetical ten-attempt example of six Pass, two Fail and two Incomplete means 60%, 20% and 20% of all attempts, not an observed result for the eight-case pack.
 
 Do not expose expected answers, protected records or evaluator files to the evaluated application's prompts, tools, retrieval or analyst memory merely to display a scoring panel. A case Pass never supplies exact-note approval or proof of portal persistence.
 
-## Adoption handoff
+## Implementation and verification responsibilities
 
-R1 reviews the copy and domain distinctions; R2 confirms metadata and lifecycle inputs; R3 specifies state transitions and allowed recovery; R4 enforces authority and boundaries; R5 independently verifies negative and legitimate-use cases; R6 implements the visible messages and conditional controls. Agree the effective contract and actual verification evidence before claiming any message is implemented.
+R1 reviews the copy and domain distinctions; R2 confirms metadata and lifecycle inputs; R3 specifies state transitions and allowed recovery; R4 enforces authority and boundaries; R5 independently verifies negative and legitimate-use cases; R6 implements the visible messages and conditional controls. Implement against this versioned contract and retain configuration and execution evidence before claiming a message is implemented.
 

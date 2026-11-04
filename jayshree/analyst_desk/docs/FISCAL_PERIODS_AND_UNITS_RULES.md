@@ -1,12 +1,12 @@
 # Analyst Desk Fiscal Periods and Units Rules
 
-**Status:** Proposed policy for review. Team adoption, implementation handoffs and verification remain pending.
+**Status:** Final project specification v1.0.
 
 ## Purpose and scope
 
 A financial comparison must use the intended reporting periods and compatible units. Correct arithmetic does not make a comparison valid when the inputs cover different periods or use different scales.
 
-This policy covers annual research for the retained companies and FY2022, FY2023 and FY2024. It complements the bank metric rules: matching periods and units does not make operating and pre-tax margins interchangeable. The detailed original-versus-restated filing policy remains separate work.
+This policy covers annual research for the retained companies and FY2022, FY2023 and FY2024. It complements the bank metric rules: matching periods and units does not make operating and pre-tax margins interchangeable. Apply the Filing Version Policy to select the original-as-reported default or an explicitly approved later-reviewed basis and to retain the required version history.
 
 ## Fiscal period rules
 
@@ -64,11 +64,11 @@ Use base USD monetary values for this version. A companyfacts value in the USD u
 
 Normalise compatible scales in code before arithmetic. For example, thousands multiply by 1,000; millions by 1,000,000; billions by 1,000,000,000. Scale conversion does not resolve a different currency or accounting definition.
 
-Calculate and independently verify from unrounded normalised inputs. Display amounts by default in USD millions to one decimal place and margins/percentage-point changes to two decimals. If that amount display conceals a meaningful nonzero value, use a clearly labelled smaller unit or sufficient precision. Display rounding must never feed back into calculations.
+Calculate and independently verify from unrounded normalised inputs. Display amounts by default in USD millions to one decimal place and margins/percentage-point changes to two decimals. Use decimal `ROUND_HALF_UP` for final display rounding. If that amount display conceals a meaningful nonzero value, use a clearly labelled smaller unit or sufficient precision. Display rounding must never feed back into calculations.
 
 A computed ratio of 0.20 is displayed as 20.00%. A value already expressed as 20% must not be multiplied by 100 again. Distinguish percentage growth from percentage-point changes as specified in the bank metric rules.
 
-This version does not convert foreign currencies. A non-USD or mixed-currency request needs an explicit limitation and revised scope, unless a separate currency-conversion method and supporting evidence are adopted. A dollar symbol alone does not establish USD.
+This version does not convert foreign currencies. A non-USD or mixed-currency request needs an explicit limitation and revised scope, unless a separate currency-conversion method, supporting evidence and revised research scope are explicitly approved. A dollar symbol alone does not establish USD.
 
 For quoted values, verify currency and scale from the cited passage or its preserved table context. Matching digits alone is insufficient. Missing or ambiguous units require clarification or an unavailable result; do not infer that a bare 2.2, 2.2 thousand and 2.2 billion represent the same amount.
 
@@ -147,7 +147,7 @@ These are development acceptance examples. They do not define protected held-out
 
 ## Rule implementation responsibilities
 
-R1 reviews policy meaning, examples, limitation wording and acceptance expectations. R5 verifies every adopted rule through development regressions and independent evaluation. The implementation handoffs below remain proposed; they do not record team acknowledgement or completion.
+R1 owns policy meaning, examples, limitation wording and acceptance expectations. R5 verifies every rule through development regressions and independent evaluation. The implementation responsibilities below are required handoffs; record implementation and verification evidence separately from this specification.
 
 | Rule | Roles | Implementation responsibility |
 |---|---|---|
@@ -157,9 +157,11 @@ R1 reviews policy meaning, examples, limitation wording and acceptance expectati
 | Different year ends and 52 or 53 weeks | R2, R3, R6 | R2 provides dates and week counts. R3 qualifies interpretation; R6 displays windows and duration differences. |
 | Currency and scale extraction | R2, R4 | R2 preserves currency, source units, headers and scale factors. R4 rejects unresolved or incompatible tool values. |
 | Normalisation and arithmetic | R3, R4 | R3 calculates from normalised unrounded inputs. R4 provides isolated calculations and independent code checks. |
-| Display precision and unit labels | R3, R6 | R3 supplies values and metadata. R6 renders explicit currency, scale and precision without changing the calculation inputs. |
+| Display precision and unit labels | R3, R6 | R3 supplies values and metadata. R6 renders explicit currency, scale and precision using `ROUND_HALF_UP` without changing the calculation inputs. |
 | Quoted value verification | R3, R4 | R3 preserves source context for cited quantities. R4 validates currency, scale and value instead of digits alone. |
 | Missing evidence and revised approval | R3, R4, R6 | R3 retains unavailable rows and revises scope. R4 requires approval of the changed plan; R6 displays the reason and approval choices. |
 | Consistency and acceptance | R3, R4, R6 | R3/R4 block completed comparisons with unresolved period or unit errors. R6 applies the rules across notes, charts and exports. |
 
-Adoption and verified implementation of these rules remain pending. Publishing a policy does not establish application compliance or complete the wider financial and research policy.
+## Execution requirements
+
+Apply these period, currency, scale and rounding rules consistently to plans, calculation tools, checks, notes, charts, accessible chart details and exports. Preserve the effective policy version and the input metadata used for each result. The responsible roles must supply implementation and verification evidence; publication of this specification alone does not establish application compliance. Unresolved period or unit failures remain visible and block the affected completed comparison, even when arithmetic is correct or a draft has received ordinary analyst approval.

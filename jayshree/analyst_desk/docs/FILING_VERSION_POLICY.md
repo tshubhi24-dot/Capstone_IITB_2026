@@ -1,12 +1,12 @@
 # Analyst Desk Filing Version Policy
 
-**Status:** Proposed policy for review. Team adoption, implementation and verification remain pending.
+**Status:** Final project specification v1.0.
 
-## Purpose and proposed defaults
+## Purpose and defaults
 
 The same company's financial figure for the same fiscal period can appear differently in later filings. Analyst Desk must identify which version it uses, preserve the alternatives and avoid mixing incompatible inputs.
 
-For the historical FY2022-FY2024 project, propose **original-as-reported** as the default: reproduce the selected year's original annual filing using a frozen source snapshot. This supports a traceable historical account linked to the filing's financial statements and commentary. It does not imply that original figures are always the best basis for a current comparison.
+For the historical FY2022-FY2024 project, **original-as-reported** is the default: reproduce the selected year's original annual filing using a frozen source snapshot. This supports a traceable historical account linked to the filing's financial statements and commentary. It does not imply that original figures are always the best basis for a current comparison.
 
 A **later-reviewed presentation** may be used when explicitly requested or needed for a consistent comparison, after the supporting statements and explanation have been reviewed. Name this basis in the approved plan. It means the most recent eligible, reviewed presentation within the recorded snapshot and knowledge cutoff, not an unqualified claim to the latest SEC information.
 
@@ -45,13 +45,13 @@ For later-reviewed mode, prefer compatible comparative columns from the same rev
 
 Different companies need not have the same filing date or accession. Apply the approved basis and cutoff consistently to each company and disclose the selected filings. Do not require a single shared document across companies.
 
-Calculate all ratios and version differences in code from unrounded inputs. Recheck every selected value against its specific filing and source context. Apply the existing bank metric and fiscal-period/unit rules; a version change does not resolve an incompatible metric or period.
+Calculate all ratios and version differences in code from unrounded inputs. Recheck every selected value against its specific filing and source context. Apply the Bank Metrics and Comparison Rules and the Fiscal Periods and Units Rules, including decimal `ROUND_HALF_UP` for final display rounding; a version change does not resolve an incompatible metric or period.
 
 A same-period change caused by a new reporting presentation is a source-version change, not year-to-year business growth. Financial interpretations must follow the supported explanation. Link commentary to the appropriate source version; original management commentary does not automatically explain a later recast figure.
 
 ## Worked numerical examples
 
-All figures, companies and filing dates below are hypothetical. They illustrate the proposed rules and are not reported company results.
+All figures, companies and filing dates below are hypothetical. They illustrate the required rules and are not reported company results.
 
 ### One period with two presentations
 
@@ -107,7 +107,7 @@ Offer a supported reviewed basis or a clearly labelled historical request where 
 
 ## Persistence and acceptance rules
 
-Keep earlier approved notes and their source references identifiable. A cache refresh, revised source or new note must not silently rewrite their figures or approval record. Record a correction or superseding note as a separate version linked to the earlier note; follow the adopted privacy and retention policy rather than inventing a new deletion rule here.
+Keep earlier approved notes and their source references identifiable. A cache refresh, revised source or new note must not silently rewrite their figures or approval record. Record a correction or superseding note as a separate version linked to the earlier note; follow the Memory and Privacy Policy and the Memory and Privacy Rules and Examples rather than inventing a new deletion rule here.
 
 Where possible, show the original amount, selected later amount, source dates, reason and calculated difference together. If no later difference is detected, say "no difference detected in the reviewed snapshot"; do not claim that no later filing or correction exists anywhere.
 
@@ -133,7 +133,7 @@ These are development examples, not protected held-out questions or completed ve
 
 ## Rule implementation responsibilities
 
-R1 reviews the default, interpretation, classifications, messages and acceptance expectations. R5 independently verifies the agreed rules and controls evaluation versions. The handoffs below are proposed and do not record team acknowledgement or implementation completion.
+R1 owns the default, interpretation, classifications, messages and acceptance expectations. R5 independently verifies these rules and controls evaluation versions. The implementation responsibilities below are required handoffs; record implementation and verification evidence separately from this specification.
 
 | Rule | Roles | Implementation responsibility |
 |---|---|---|
@@ -147,4 +147,6 @@ R1 reviews the default, interpretation, classifications, messages and acceptance
 | Prior notes and reproducibility | R2, R4, R6 | R2 retains source/note links and separate versions. R4 preserves approval integrity; R6 presents correction and supersession history. |
 | Hold rules and acceptance | R3, R4, R6 | R3/R4 block completed results with unresolved version failures. R6 makes hold status visible instead of allowing an ordinary approval to bypass it. |
 
-The default and later-reviewed mode remain policy proposals. Their presence in this document does not establish that the application implements either mode or that any source review has occurred.
+## Execution requirements
+
+Implement original-as-reported as the historical default and require explicit plan selection for later-reviewed mode. Enforce source eligibility, non-reliance overrides, compatible input selection, snapshot/cutoff binding and separate plan/note approvals for every affected run. Preserve the effective policy version and evidence for source selection, review and corrections. The responsible roles must supply implementation and verification evidence; this specification does not record a completed application control or a completed source review.

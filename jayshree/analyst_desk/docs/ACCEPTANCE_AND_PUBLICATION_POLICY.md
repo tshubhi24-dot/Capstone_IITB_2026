@@ -1,6 +1,6 @@
 # Analyst Desk Acceptance and Publication Policy
 
-**Status:** Proposed policy for review. Team adoption, implementation and independent verification remain pending.
+**Status:** Final project specification v1.0.
 
 This policy defines when a research note is acceptable, who must approve it and how the application confirms that it was saved. A note must satisfy its financial, evidence and scope requirements before final approval. An approved note becomes Published only when its matching portal record is confirmed.
 
@@ -24,12 +24,12 @@ This policy governs saving a research note to the research portal/library. Appro
 
 ## Readiness and outcome states
 
-Readiness, approval and persistence are related but different decisions. Keep the reason, outstanding work and next permitted action visible. The labels below are proposed product states, not claims about current UI implementation.
+Readiness, approval and persistence are related but different decisions. Keep the reason, outstanding work and next permitted action visible. Implement the states below and verify their transitions against this specification.
 
 | State | Meaning and permitted next action |
 |---|---|
 | Draft | Content exists, but its inventory/checks/review are not complete. Continue research, checks or editing; no publication. |
-| Needs Review | Specific evidence or semantic review remains. A named reviewer may complete that work under the adopted policy; ordinary final approval does not substitute for it. |
+| Needs Review | Specific evidence or semantic review remains. A named authorised reviewer may complete that work under this policy; ordinary final approval does not substitute for it. |
 | HOLD | A known blocking error, unresolved evidence conflict, missing required source or unavailable review route prevents acceptance. Resolve it, narrow the answer legitimately or stop; no approval bypass. |
 | Ready for Approval | Required checks and claim review are complete for the exact note, scope is accounted for and no blocking finding remains. Present it for the explicit final human decision. |
 | Approved | A valid authorised human decision is bound to the exact eligible version and its evidence/review context. Publication may proceed while that approval and eligibility remain valid. |
@@ -74,15 +74,15 @@ Keep the original question and missing comparison identifiable. Do not silently 
 
 ### Completing an unavailable semantic review
 
-If the adopted live-use policy permits a human completion route, a named authorised analyst/domain reviewer must inspect each outstanding claim against its actual evidence and relevant context. Record the claim, evidence, decision, rationale, reviewer and version. A generic Approve click is not that review record.
+An authorised analyst/domain reviewer may complete an unavailable semantic review by inspecting each outstanding claim against its actual evidence and relevant context. Configure verified reviewer identities and permitted review actions before enabling this route. Record the claim, evidence, decision, rationale, reviewer, time and exact note version. A generic Approve click is not that review record.
 
-Preserve the automated critic's failed/incomplete status and costs. Human evidence review can resolve the live note's support questions; it does not retroactively turn a failed automated critic into a passing run or complete a required evaluation experiment. All mandatory numerical/source checks and other blockers still apply. If no permitted completion route is available, keep HOLD.
+Preserve the automated critic's failed/incomplete status and costs. Human evidence review can resolve the live note's support questions; it does not retroactively turn a failed automated critic into a passing run or complete a required evaluation experiment. All mandatory numerical/source checks, adequate evidence coverage and other blockers still apply. If neither automated review nor an authorised recorded human review can complete the requirement, keep HOLD.
 
 A reviewer may perform both evidence review and final approval when authorised; this policy does not impose a second-person quota. Record the two distinct decisions. Do not treat seniority, a confident model answer or urgency as evidence that an unresolved assertion is correct.
 
 ### Bounded repair and stopping
 
-Keep the automated critic/writer loop within the brief's maximum of two revisions and the applicable run authorisations. Exhaustion does not confer acceptance. Stop on unresolved blockers, explain them and permit only an authorised correction/review/resume path. Do not reset counters or erase prior failures to make the next attempt appear compliant.
+Keep the automated critic/writer loop at no more than two automated revisions and within the applicable run authorisations. Exhaustion does not confer acceptance. Stop on unresolved blockers, explain them and permit only an authorised correction/review/resume path. Do not reset counters or erase prior failures to make the next attempt appear compliant.
 
 ## Exact version approval and invalidation
 
@@ -116,7 +116,7 @@ If a timeout or lost response leaves the outcome unknown, reconcile the original
 
 For example, the save request times out after the portal may have stored the approved 20.00% margin note. Show Publication Outcome Unknown, find the original operation's matching saved record and confirm that result. Do not create another copy merely because the response was lost.
 
-Retrying an identical operation is permitted only through the adopted retry controls while approval and eligibility remain valid. It does not authorise new research, new model calls or a changed payload. Retain failures and attempts in the operation record; do not claim a successful write solely because no error is displayed.
+Retrying an identical operation is permitted only through versioned retry and reconciliation controls while approval and eligibility remain valid. It does not authorise new research, new model calls or a changed payload. Retain failures and attempts in the operation record; do not claim a successful write solely because no error is displayed.
 
 Only confirmed published notes should enter approved-note history and derived follow-up memory. Draft/checkpoint storage for resuming work must remain labelled with its actual status. If the portal write succeeds but memory synchronisation fails, report both facts and retry/reconcile that derived update separately; do not create a second portal note to repair memory.
 
@@ -126,15 +126,15 @@ Published history provides prior research context. It does not automatically est
 
 ## Corrections supersession and withdrawal
 
-Preserve the identity, decision and status of earlier versions in accordance with the adopted privacy and retention policy. A cache refresh or correction must not silently rewrite an earlier approval. This policy does not set a new permanent-retention or deletion rule.
+Preserve the identity, decision and status of earlier versions in accordance with the configured privacy and retention rules. A cache refresh or correction must not silently rewrite an earlier approval. This policy does not set a new permanent-retention or deletion rule.
 
 For a published error, create a linked corrected/superseding version, perform the relevant checks and obtain fresh exact-version approval. Mark the earlier note's status visibly and propagate that status to retrieval and follow-up memory. A later source correction may make a prior conclusion unsuitable for current use even if the stored original note remains identifiable as historical research.
 
-An authorised withdrawal changes the note's availability/status under the adopted policy. Record its reason and connection to any replacement. Do not describe withdrawal as deletion from every database, checkpoint, index or backup unless that action is actually performed and verified under the memory/privacy policy.
+An authorised withdrawal changes the note's availability/status under the configured lifecycle rules. Record its reason and connection to any replacement. Do not describe withdrawal as deletion from every database, checkpoint, index or backup unless that action is actually performed and verified under the memory/privacy policy.
 
 ## Development acceptance examples
 
-The examples below define proposed behaviour. They are not completed tests, protected evaluation answers or evidence of team adoption.
+The examples below define required behaviour. They are not completed tests or protected evaluation results.
 
 | Situation | Expected result |
 |---|---|
@@ -149,7 +149,7 @@ The examples below define proposed behaviour. They are not completed tests, prot
 
 ## Implementation responsibilities
 
-| Role | Proposed responsibility |
+| Role | Required responsibility |
 |---|---|
 | R1 Domain and product | Review acceptance criteria, valid limited answers, blockers, reviewer expectations, correction/withdrawal meaning and examples. |
 | R2 Knowledge and memory | Preserve source/version context, missing-data reasons and note lineage; keep corrected/withdrawn status consistent in retrieval and follow-up memory. |
@@ -158,4 +158,4 @@ The examples below define proposed behaviour. They are not completed tests, prot
 | R5 Evaluation and red team | Independently check numerical/semantic blockers, invalid/stale actions, edits, concurrent retries, uncertain writes and legitimate limited-answer acceptance. |
 | R6 Deployment and operations | Display truthful states, outstanding work, sources/checks and durable receipts; preserve recovery and trace visibility across failures/restarts. |
 
-Before adoption, agree the authorised reviewers and human completion route, the approval/context contract, correction/withdrawal behaviour and retry/reconciliation responsibilities. Record the effective version and actual decisions. A published policy document alone does not establish these controls.
+Before enabling publication, configure verified reviewer identities and action permissions, the approval/context contract, claim-level human review records, correction/withdrawal controls and retry/reconciliation responsibilities. Record the effective policy/configuration version and actual decisions. Verify enforcement at the publisher and portal boundaries; a published specification alone does not establish these controls.

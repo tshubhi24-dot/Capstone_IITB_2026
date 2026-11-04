@@ -1,6 +1,6 @@
 # Analyst Desk Golden Answers and Scoring Rules
 
-**Status:** Proposed rules and worked development examples. Source-eligibility approval, independent human verification, scoring agreement, policy adoption, freeze and handoff remain pending. No application evaluation has been run for this pack.
+**Status:** Final project specification v1.0.
 
 A golden answer is the expected correct result fixed from evidence and written requirements before inspecting the tested system's answer. It includes the financial meaning, source associations, required qualifications and legitimate limitations, rather than just a matching number.
 
@@ -76,11 +76,11 @@ Alphabet's filing detail distinguishes acceptance on 4 February 2025 from filing
 
 Alphabet's independent margin is `112390 / 350018 x 100 = 32.10977721145769646132484615076938900285%`. Microsoft minus Alphabet, calculated before display rounding, is **12.53452236181602030012455455581753505945 percentage points**, displayed **+12.53 percentage points**.
 
-Public companyfacts rows tied to these exact accessions corroborate the date windows and raw USD amounts. These expectations were independently calculated from the source inputs, rather than copied from the tested application's generated answer or expected-answer files. Complete source eligibility and evidence archiving still require review before freeze.
+Public companyfacts rows tied to these exact accessions corroborate the date windows and raw USD amounts. These expectations were independently calculated in code from the source inputs using decimal arithmetic at 40 significant digits, rather than copied from the tested application's generated answer or expected-answer files. Complete source eligibility and evidence archiving still require review before freeze.
 
 ## Issuer source development cases
 
-DG001-DG004 form one related family, FY2024 annual margins. Keep this family together when controlling case partitions; all four are development questions. The quoted questions state the candidate task precisely. The evaluator must pin the questions, permitted evidence and acceptable output variants before freeze. All contracts remain subject to review.
+DG001-DG004 form one related family, FY2024 annual margins. Keep this family together when controlling case partitions; all four are development questions. The quoted questions define the canonical tasks. Before scored execution, the evaluator must complete the verification requirements below and pin each question, permitted evidence and acceptable output variants in an identified scoring release.
 
 **DG001 Microsoft margin.** Question: "Using Microsoft's original FY2024 annual filing, calculate its reported consolidated operating margin. State the reporting period, revenue, operating income and source." Expected amounts shown here in USD millions: revenue 245,122, operating income 109,433 and calculated margin 44.64%, covering 1 July 2023 to 30 June 2024. Fail wrong input associations, unsupported source links or an identical-calendar-year claim.
 
@@ -105,7 +105,7 @@ An unavailable Microsoft result can pass this constrained question because the l
 
 ## Synthetic development boundary cases
 
-These fixtures are invented inputs for component or controlled-fixture development checks, not issuer results, live SEC retrieval tests, observed product failures, human risk labels or protected cases. Fixture input records are separate from expected answers in the local case pack. R5/R3 must declare the fixture adapter and execution boundary before scoring; none is implemented or validated by this document. A legitimate production scope refusal of fictional companies must not be scored as an end-to-end financial failure.
+These fixtures are invented inputs for component or controlled-fixture development checks, not issuer results, live SEC retrieval tests, observed product failures, human risk labels or protected cases. Fixture inputs must be supplied separately from expected answers. R5/R3 must declare and validate the fixture adapter and execution boundary before scoring; this specification does not establish that an adapter has been implemented or validated. A legitimate production scope refusal of fictional companies must not be scored as an end-to-end financial failure.
 
 **DG005 Scale conversion.** Company X's FY2024 annual revenue is 100 in a table headed USD millions; operating income is 20,000 in USD thousands. Both cover 1 January to 31 December 2024 on the same consolidated basis. Normalise to USD 100,000,000 and USD 20,000,000; expected margin is **20.00%**, not 20,000.00%. Check the table headers, conversion and associations, not merely the digits.
 
@@ -146,9 +146,9 @@ For example, the reviewer receives a FY2024 cybersecurity passage but the FY2023
 
 Match each quantity by company, metric, actual period, currency, scale, operations, filing presentation and specific source. Normalised source values are exact inputs. Finding the same digits elsewhere in a response cannot satisfy that association. Check compatible input pairs before calculating.
 
-Calculate using source precision without extra intermediate rounding. Proposed draft display uses USD millions to one decimal and margins/percentage-point changes to two decimals, with **ROUND_HALF_UP** for decimal ties. This tie convention is a proposal requiring agreement; the existing policies specify precision without resolving every tie. Unambiguous grouping and trailing-zero variants must not be confused with a different financial value. Where the exact question does not mandate a scale, an explicit mathematically equivalent USD scale conversion is acceptable; do not penalise a valid conversion as a wrong amount.
+Calculate using source precision without extra intermediate rounding. The Final v1 display rule uses USD millions to one decimal and margins/percentage-point changes to two decimals, with **ROUND_HALF_UP** for decimal ties. This rule resolves decimal ties for this scoring specification and must be pinned in the scoring release. Unambiguous grouping and trailing-zero variants must not be confused with a different financial value. Where the exact question does not mandate a scale, an explicit mathematically equivalent USD scale conversion is acceptable; do not penalise a valid conversion as a wrong amount.
 
-For a positive decimal tie, `20.125%` displays as **20.13%** under the proposed rule. Where a question does not fix the scale, **USD 100 million** and **USD 100,000,000** represent the same amount when labelled clearly. This flexibility does not permit an unapproved currency conversion.
+For a positive decimal tie, `20.125%` displays as **20.13%** under this rule. Where a question does not fix the scale, **USD 100 million** and **USD 100,000,000** represent the same amount when labelled clearly. This flexibility does not permit an unapproved currency conversion.
 
 Exact formulas and source inputs are authoritative; finite decimal reference strings are not a licence for premature rounding. Recompute ratios and differences independently at sufficient precision, then round the final display. Declare any narrowly justified computational tolerance before scoring. No blanket financial tolerance may excuse a wrong sign, unit, source association or rounding result.
 
@@ -163,15 +163,15 @@ The following ten-attempt illustration is hypothetical and separate from the eig
 
 Report: "Of ten attempts, six passed, two failed and two were incomplete." Do not silently remove the incomplete attempts and headline `6 / 8 = 75%` success. If a completed-attempt metric is also useful, label its denominator and report it alongside all attempts and completion. Any defective-case exclusion needs a recorded reason and evaluation version. A numerical-check rate also does not establish full-note accuracy or analyst usefulness.
 
-## Review and freeze requirements
+## Execution and scoring-release requirements
 
 Freezing means identifying a stable version of the question, permitted evidence, expected answer and scoring rules before a scored run. It does not prohibit corrections: a justified amendment creates a documented new version while preserving the earlier case and results. For example, if a frozen case changes its permitted filing presentation, re-review the compatible inputs and expected result under a new version; do not overwrite the old expectation to make an observed answer pass.
 
-Before freeze, record case/version and related family, exact question, permitted inputs/source snapshot and checksums, all input associations, formulas and rounding, mandatory findings/qualifications, allowed limitations/refusals and unacceptable substitutions. Pin the proposed policy/rubric versions. Keep source disputes, reviewer decisions and any amendments explicit.
+Before freeze, record case/version and related family, exact question, permitted inputs/source snapshot and checksums, all input associations, formulas and rounding, mandatory findings/qualifications, allowed limitations/refusals and unacceptable substitutions. Pin the applicable Final v1 policy/rubric versions. Keep source disputes, reviewer decisions and any amendments explicit.
 
-Specify the runner/adapter for issuer-source integration candidates and the separate controlled-fixture boundary for synthetic cases. Verify the intended evidence is supplied without expected-answer fields. Do not combine fixture correctness with live retrieval success or treat an unavailable test adapter as an application defect.
+Specify and validate the runner/adapter for issuer-source integration cases and the separate controlled-fixture boundary for synthetic cases. Verify the intended evidence is supplied without expected-answer fields. Do not combine fixture correctness with live retrieval success or treat an unavailable test adapter as an application defect.
 
-R1/R2 must confirm source eligibility for the stated historical task, including any applicable amendment/non-reliance concern; these drafts do not certify current/latest reliability. R5 independently verifies the expected answers and scoring contract before acknowledging the handoff and freezing an identified version. No scored result is implied here.
+R1/R2 must confirm source eligibility for the stated historical task, including any applicable amendment/non-reliance concern; finalising this specification does not certify current/latest reliability. R5 independently verifies the expected answers and scoring contract before acknowledging the handoff and freezing an identified version. No scored result is implied here.
 
 Development questions support practice and implementation feedback. Held-out questions test unseen performance; these eight cases and their close variants cannot later be claimed as independent unseen tests. The synthetic examples need a declared controlled test setup. A live app legitimately refusing fictional Company X is not a failed financial calculation, and a synthetic arithmetic pass is not proof of live SEC retrieval success.
 
@@ -185,4 +185,15 @@ Gold values, scoring records and protected assets belong evaluator-side. The con
 | R3 and R4 | Implement the workflow, checking and controls against the agreed development expectations. |
 | R6 | Provide reproducible configuration and diagnostic traces. |
 
-Independent human review, disagreement resolution, source-eligibility decisions, adopted policy/rubric versions, validated execution adapters, freeze and R5 acknowledgement remain open. Publishing this specification does not establish a completed evaluation handoff, application compliance or measured analyst benefit.
+### Execution checklist
+
+The domain specification is final. Complete the unchecked execution requirements before scored use.
+
+- [x] R1 domain specification defines the expected conclusions, scope and acceptable limitations for all eight development reference cases.
+- [ ] R2 verifies each issuer source's eligibility for the historical question, resolves applicable amendment/non-reliance concerns, and preserves the permitted source snapshot and checksums.
+- [ ] R5 independently recomputes the financial expectations, reviews the complete case contracts and scoring rules, and resolves disagreements with R1/R2 without tailoring expectations to observed application answers.
+- [ ] R3/R4 and R5 validate the issuer-source runner and separate synthetic-fixture adapters, including evidence delivery and exclusion of expected-answer fields and evaluator records.
+- [ ] R5 freezes an identified scoring release containing the exact questions, evidence, associations, formulas, Final v1 rounding rule, rubric versions and case-family partition decisions.
+- [ ] R5 acknowledges the verified handoff and runs the controlled evaluation with reproducible configuration and diagnostic evidence from R6, retaining failed and incomplete attempts alongside any passes.
+
+Final v1 specifies what must be verified and how results must be scored. It does not establish source eligibility, completed independent human review, a frozen case pack, validated adapters, a completed evaluation handoff, application compliance or measured analyst benefit.

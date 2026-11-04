@@ -4,72 +4,72 @@ Define the analyst's problem, supported research scope, evidence standards and a
 
 This checklist covers product and domain work, including the shared evidence needed for product acceptance. It is not a complete technical implementation checklist. The responsibility key and handoffs identify the engineers who own the supporting systems and evaluation.
 
-Document preparation and phase completion are recorded separately. A checked preparation item below means the stated document has been prepared; it does not mean the proposal has been adopted, its controls implemented, its sources independently approved or its outcomes tested. The eleven formal phase checklists remain open until their stated work, review and completion evidence are recorded. Maintain the project decision and contribution log throughout the work.
+**Status:** Final project specification v1.0.
 
-## Prepared project documents
+Checked definition items are complete. Unchecked tasks identify implementation, source eligibility, independent evaluation, domain acceptance or submission evidence still to produce. Research-plan approval, claim review and exact-note approval remain required product controls.
 
-The following documents are available on this branch for project review and implementation handoff. Their proposed requirements and teaching examples must not be presented as completed application checks or evaluation results.
+## Final project documents
 
-- [x] Prepare the [problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx): intended analyst problem, product outcome and proposed success measures. Team adoption and measured usefulness remain open.
-- [x] Prepare the [supported research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx): research tasks, company/source boundaries, limitations and required output. Reconcile the scope wording with current coverage decisions and the later policy proposals before adoption.
-- [x] Prepare [user needs and workflow](USER_NEEDS_AND_WORKFLOW.md) and [Word version](USER_NEEDS_AND_WORKFLOW.docx): practitioner-informed workflow, evidence needs and proposed benefit measures. Prototype review and baseline measurements remain open.
-- [x] Draft [bank metrics and comparison rules](BANK_METRICS_AND_COMPARISON_RULES.md) and [Word version](BANK_METRICS_AND_COMPARISON_RULES.docx): operating versus pre-tax margins, suitable comparisons, unavailable results and revised-plan choices. Company-specific source review and adoption remain pending.
-- [x] Draft [fiscal periods and units rules](FISCAL_PERIODS_AND_UNITS_RULES.md) and [Word version](FISCAL_PERIODS_AND_UNITS_RULES.docx): actual annual windows, calendar requests, unit conversion, precision and limitation messages. Implementation and verification remain pending.
-- [x] Draft the [filing version policy](FILING_VERSION_POLICY.md) and [Word version](FILING_VERSION_POLICY.docx): original and later presentations, cutoff, compatible inputs and version history. Source eligibility, adoption and implementation remain pending.
-- [x] Draft the [evidence, risk-change and uncertainty policy](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md) and [Word version](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx): claim support, comparable coverage, risk labels and incomplete-review handling. Human annotations and agreed controls remain open.
-- [x] Draft the [acceptance and publication policy](ACCEPTANCE_AND_PUBLICATION_POLICY.md) and [Word version](ACCEPTANCE_AND_PUBLICATION_POLICY.docx): blockers, exact approval, publication confirmation, retries and correction/withdrawal meaning. Adoption does not follow from document availability.
-- [x] Draft the one-page [memory and privacy policy](MEMORY_AND_PRIVACY_POLICY.md) and [Word version](MEMORY_AND_PRIVACY_POLICY.docx): what is saved, when, permitted access, correction and deletion. R2 owns memory engineering; shared adoption and implementation review remain open.
-- [x] Prepare [memory and privacy rules and examples](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md) and [Word version](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx): separate memory/playbook controls, checkpoints, private context, lifecycle and evaluation isolation. These examples do not demonstrate enforced privacy or measured memory benefit.
-- [x] Prepare [golden answers and scoring rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word version](GOLDEN_ANSWERS_AND_SCORING_RULES.docx): eight draft development cases, numerical examples, associations, scoring and freeze requirements. R1/R2/R5 review, source eligibility, validated adapters, scoring agreement and freeze remain pending; no application evaluation has been run for this pack.
-- [x] Prepare [frontend messages and trigger conditions](FRONTEND_MESSAGES_AND_CONDITIONS.md): 28 proposed messages with trigger conditions, permitted actions and implementation owners. R6 owns display; R2/R3/R4 supply and enforce backend state; R1 reviews meaning and R5 independently verifies behaviour. Adoption and implementation remain pending.
-- [x] Start the [project work and decision log](PROJECT_WORK_LOG.md). Its existence records a started artifact; bringing later deliverables and actual decisions up to date remains an open maintenance task.
+Use these specifications as the implementation and acceptance baseline. The linked Markdown and Word versions carry the same requirements and worked examples.
 
-Charles Cheng's written workflow feedback has been received and incorporated into the user-needs proposal. It does not establish that he inspected or approved a named policy, research note or prototype. Version-specific domain review and its resulting decisions remain open.
+- [x] Final [problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx): analyst problem, intended output and quality/cost/time evaluation question.
+- [x] Final [supported research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx): six task categories, 15 companies, FY2022-FY2024, source requirements and response boundaries.
+- [x] Final [user needs and workflow](USER_NEEDS_AND_WORKFLOW.md) and [Word version](USER_NEEDS_AND_WORKFLOW.docx): received practitioner input, research workflow and usefulness measures.
+- [x] Final [bank metrics and comparison rules](BANK_METRICS_AND_COMPARISON_RULES.md) and [Word version](BANK_METRICS_AND_COMPARISON_RULES.docx): operating/pre-tax definitions, compatible inputs, peer checks and revised-plan choices.
+- [x] Final [fiscal periods and units rules](FISCAL_PERIODS_AND_UNITS_RULES.md) and [Word version](FISCAL_PERIODS_AND_UNITS_RULES.docx): dates, calendar requests, currency/scale, rounding and limitations.
+- [x] Final [filing version policy](FILING_VERSION_POLICY.md) and [Word version](FILING_VERSION_POLICY.docx): original-as-reported default, later-reviewed basis, cutoff and version-compatible calculations.
+- [x] Final [evidence, risk-change and uncertainty policy](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md) and [Word version](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx): claim support, comparable coverage, labels, uncertainty and review completeness.
+- [x] Final [acceptance and publication policy](ACCEPTANCE_AND_PUBLICATION_POLICY.md) and [Word version](ACCEPTANCE_AND_PUBLICATION_POLICY.docx): eligibility blockers, exact approval, confirmed publication and recovery.
+- [x] Final one-page [memory and privacy policy](MEMORY_AND_PRIVACY_POLICY.md) and [Word version](MEMORY_AND_PRIVACY_POLICY.docx): saved records, permitted access, correction and deletion.
+- [x] Final [memory and privacy rules and examples](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md) and [Word version](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx): history, checkpoints, private context, lifecycle and reviewed lessons.
+- [x] Final [golden answers and scoring rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word version](GOLDEN_ANSWERS_AND_SCORING_RULES.docx): eight development reference cases, expected values, scoring meanings and scoring-release requirements.
+- [x] Final [frontend messages and trigger conditions](FRONTEND_MESSAGES_AND_CONDITIONS.md): 28 messages, trigger conditions, permitted actions and implementation owners.
+- [x] Update the [project work and decision log](PROJECT_WORK_LOG.md) with the completed specification milestones and execution responsibilities.
 
-The retained company list and selected FY2022-FY2024 historical window do not establish source completeness or metric availability. The scope document and work log contain earlier wording that needs reconciliation with the current decisions and policy proposals. Their maintenance is separate from the completed preparation items above.
+The specification work is complete. Record actual source eligibility checks, product tests, expert inspections and scored results under the execution tasks below. The Golden reference cases are not a frozen execution release or eight passed application tests.
 
-## Immediate review and implementation handoffs
+## Implementation responsibilities
 
-| Role | How to use the prepared documents | Next evidence or decision |
+| Role | Specification use | Required execution evidence |
 |---|---|---|
-| R1 Domain and product | Review the problem, workflow, scope, policy meaning, acceptable limitations and golden-answer conclusions. | Record scope/policy adoption decisions, actual domain review and usefulness measures; keep the work log current. |
-| R2 Knowledge and memory | Use the financial, fiscal, filing, evidence and memory rules to review source contracts, coverage, provenance and lifecycle design. | Confirm periods, units, concepts, filing versions, source eligibility and memory ownership/correction/deletion requirements. |
-| R3 Agents and orchestration | Carry approved scope, compatible inputs, claim coverage, memory settings and bounded correction through the workflow. | Acknowledge the proposed behaviour and supply implementation/trace evidence, including declared development-fixture adapters where needed. |
-| R4 Tools, control and security | Apply the acceptance and privacy requirements at the tool and write boundaries. | Verify input compatibility, review completeness, reviewer authority, exact approvals, disclosure limits and safe recovery. |
-| R5 Evaluation and red team | Independently review golden expectations and scoring; keep protected assets separate from application context and development tuning. | Resolve disagreements, freeze an agreed version, acknowledge the handoff and produce independent verification/results. The eight draft cases do not complete the evaluation suite or human labels. |
-| R6 Deployment and operations | Use the rules to display dates, units, limitations, review states, memory controls and publication outcomes consistently. | Supply UI/recovery evidence, reproducible setup and diagnostic traces; support benefit measurement and the demonstration. |
+| R1 Domain and product | Apply the problem, workflow, scope, policy meaning, acceptable limitations and golden-answer conclusions. | Domain decisions on actual research output, expert feedback, usefulness results and the demonstration narrative. |
+| R2 Knowledge and memory | Implement source contracts, coverage, provenance and memory lifecycle. | Validated periods, units, concepts, versions, source eligibility and authorised correction/deletion behaviour. |
+| R3 Agents and orchestration | Carry scope, compatible inputs, claim coverage, memory settings and bounded correction through the workflow. | State/trace evidence and validated development-fixture adapters. |
+| R4 Tools, control and security | Enforce acceptance and privacy at tool and write boundaries. | Compatibility, review completeness, authority, exact approval, privacy and recovery checks. |
+| R5 Evaluation and red team | Independently verify expectations/scoring and isolate protected assets. | Case/release verification, freeze identity, independent results and disagreement records. |
+| R6 Deployment and operations | Implement frontend messages, limitations, review states, memory controls and publication receipts. | UI/recovery evidence, reproducible setup, traces and operational demonstration evidence. |
 
-## Next work before phase closure
+## Remaining execution work
 
-- [ ] Reconcile scope and work-log wording with current decisions and prepared policies; record actual owner acknowledgements and adoption separately from drafting.
-- [ ] Complete version-specific domain review and agree representative tasks, baseline measurements and usefulness criteria.
-- [ ] Review the eight development cases with R2/R5, establish source eligibility and permitted execution boundaries, agree scoring and freeze the reviewed version before scored use.
-- [ ] Coordinate the required human risk annotations and independent evaluation handoffs with R5; do not substitute teaching examples for genuine human records.
-- [ ] Review a representative corrected note on the agreed application/source/policy version and record the exact accept, edit, reject or HOLD decision with its unresolved findings.
-- [ ] Review actual memory behaviour and genuine development lessons, then assess the owners' experiment and security evidence without claiming unmeasured benefit.
-- [ ] Prepare and rehearse the three-story demo, complete contribution/decision records and verify the presentation/submission evidence with the team.
+- [ ] Complete a version-specific domain-expert inspection and record its actual findings and resulting decisions.
+- [ ] Verify source eligibility and execution adapters for the eight reference cases with R2/R5; identify the case/policy release and freeze it before scored use.
+- [ ] Obtain the required human risk annotations and independent evaluation evidence; teaching examples do not replace actual human records.
+- [ ] Review a representative corrected note on an identified application/source/policy version and record accept, edit, reject or HOLD with reasons.
+- [ ] Verify memory behaviour and genuine lesson decisions, then interpret the experiment and security evidence.
+- [ ] Measure representative tasks against their baseline process using correction effort, quality, total research/review time and model usage/cost.
+- [ ] Prepare the three-story demo script, rehearse it and complete the report, contribution record, backup recording and viva preparation.
 
 ## Execution order: product definitions, then shared validation
 
-Prepare the domain and product proposals first. Where a phase also needs team agreement, leave that shared review open until the relevant owners participate. Preparing a proposal does not complete its adoption, implementation or evaluation.
+The product definitions and written specifications are complete. The sequence below identifies their responsibilities and the execution evidence required for product acceptance.
 
 | Order | Work to start with | Roles | Product/domain output | Related phase |
 |---|---|---|---|---|
-| 1 | Define the analyst's problem and the intended product outcome. | R1 | Problem statement and proposed success measures. | 1 |
+| 1 | Define the analyst's problem and the intended product outcome. | R1 | Problem statement and success measures. | 1 |
 | 2 | Identify a real user and describe their research workflow and needs. | R1 | User/workflow description and research scenarios. | 1 |
-| 3 | Define data, source and coverage requirements. | R1 | Requirements and justified coverage proposal, independent of existing code. | 1 |
+| 3 | Define data, source and coverage requirements. | R1 | Final coverage and evidence requirements, independent of existing code. | 1 |
 | 4 | Talk to a human domain expert and assess the feedback. | R1 | Actual feedback and domain decisions. | 2 |
-| 5 | Define written financial, research and acceptance policies. | R1 | Policy proposal with examples and unresolved questions. | 3 |
-| 6 | Define golden-answer content and domain scoring expectations for development work. | R1 | Source-grounded expectations/rubric for R5 review; no protected-case authoring. | 4 |
+| 5 | Define written financial, research and acceptance policies. | R1 | Final policy definitions with worked acceptance examples. | 3 |
+| 6 | Define golden-answer content and domain scoring expectations for development work. | R1 | Source-grounded expectations and rubric for independent R5 verification; no protected-case authoring. | 4 |
 | 7 | Prepare the demonstration narrative and script. | R1 | Three-story script and a list of evidence needed from the team. | 10 |
 | Throughout | Record actual decisions/contributions and practise the architecture and own scope. | R1 | Maintained decision/contribution log and presentation preparation. | 11 |
 
-After the product and domain proposals are prepared, coordinate shared validation with the other role owners. R1 policy review of held-out cases requires controlled access from R5.
+Use the final definitions for implementation and independent verification. R1 policy inspection of held-out cases requires controlled access from R5.
 
 | Shared work | Roles | Boundary |
 |---|---|---|
 | Validate source feasibility and adopted coverage. | R1, R2, R3 | R1 defines requirements; source/workflow owners confirm feasibility and gaps. |
-| Adopt policies, implement controls and review a corrected note. | R1, R2, R3, R4, R5 | R1 decides domain acceptance; engineers implement and R5 checks agreed regressions. |
+| Implement the specified controls and review a corrected note. | R1, R2, R3, R4, R5 | R1 decides domain acceptance; engineers implement and R5 checks agreed regressions. |
 | Review golden answers, human risk labels and protected-case policy alignment. | R1, R2, R5 | R5 controls independent evaluation and protected assets. |
 | Review memory behaviour and applicable development lessons. | R1, R2, R3, R4, R5 | R1 reviews meaning; owners implement controls and R5 measures benefit. |
 | Review independent experiments, security evidence and reported outcomes. | R1, R2, R3, R4, R5, R6 | R1 interprets product impact; execution remains with the relevant owners. |
@@ -78,7 +78,7 @@ After the product and domain proposals are prepared, coordinate shared validatio
 ## Review and recording rules
 
 - Keep repository content, deliverables, code comments, commit messages and pull-request descriptions in English.
-- Check a document-preparation item only when that document exists. Close a formal phase task only after its required work and review occur; record the evidence, actual reviewer, date, source version and decision.
+- Keep completed definitions checked. Close an execution task only after its required work occurs; record the evidence, actual reviewer, date, source version and decision.
 - Keep protected evaluation questions and answers outside the application, model context and ordinary project artifacts. R5 controls access.
 
 ## Responsibility key
@@ -94,70 +94,61 @@ After the product and domain proposals are prepared, coordinate shared validatio
 
 R1 defines and reviews domain requirements. Shared or dependent evidence below does not transfer another role's implementation responsibility to R1.
 
-## 1. Define the problem, user and supported scope
+## 1. Define the problem user and supported scope
 
-**Classification:** R1 product definition with shared scope and impact review. **Owner:** R1. **Support:** R2, R3.
+**Owner:** R1. **Support:** R2 and R3 for source/workflow feasibility. **Definition status:** Complete.
 
-**Roles:** R1, R2, R3. Prepare the product scope proposal first; coordinate source/workflow agreement afterwards.
+- [x] Define the equity-research user and document the workflow and pain points using received practitioner feedback.
+- [x] State the outcome and supported questions: financial figures, year/peer comparisons, risk disclosures and approved-note follow-ups.
+- [x] Define the 15-company, two-group, FY2022-FY2024 coverage and required Item 1A, Item 7, preserved tables, facts and company/year/Item metadata.
+- [x] Define unsupported selections, missing evidence, incompatible comparisons and investment-recommendation boundaries; separate optional extensions.
+- [x] Define usefulness measures: relevance, corrections, source-checking effort, total research/review time and model usage/cost.
 
-- [ ] Identify a real equity-research user and describe their current filing-comparison workflow and pain points.
-- [ ] State the product outcome and supported research questions: financial figures, year/peer comparisons, disclosed risk changes and follow-up research.
-- [ ] Independently define and justify data/source coverage for 10-15 companies, two sectors and three years. Require Item 1A Risk Factors, Item 7 MD&A, preserved tables, financial facts, company/year/Item metadata and cached evidence; evaluate any existing corpus against those requirements.
-- [ ] Define handling for unsupported companies/years, missing evidence, incompatible comparisons and requests for investment recommendations. Treat additional features such as quarterly charts as separate scope decisions.
-- [ ] Define measurable usefulness criteria and how they will be measured; agree the scope with the team.
+**Completed specification:** Problem Statement, Supported Research Scope and User Needs and Workflow. Source completeness and measured outcomes require execution evidence under phases 6, 8 and 9.
 
-**Completion evidence:** an adopted product-scope record with user, problem, outcomes, boundaries, acceptance questions and unresolved limitations.
+## 2. Obtain actual domain expert feedback
 
-Treat existing company, sector and year selections as candidates to assess. Retain, revise or reject them with a documented domain reason.
+**Owner:** R1. **Execution status:** Workflow feedback received; version-specific expert inspection still requires evidence.
 
-## 2. Obtain actual domain-expert feedback
+- [x] Record actual practitioner workflow feedback and incorporate its domain requirements into the workflow specification.
+- [ ] Have a suitable human domain expert inspect the identified scope, example question and note format or current prototype.
+- [ ] Record actual findings on comparability, evidence, unacceptable errors and usefulness, together with the inspected version and resulting decisions.
+- [ ] Implement the applicable resulting changes and retain evidence of that expert inspection.
 
-**Classification:** Direct R1 duty. **Owner:** R1.
+**Required evidence:** The actual expert, relevant experience, material/version inspected, date, findings and resulting decisions. Received workflow comments do not establish prototype testing or approval of a particular research note.
 
-**Roles:** R1. Domain-user feedback complements the financial/domain-expert review; retain evidence of each.
+## 3. Define financial research and publication policies
 
-- [ ] Have a suitable human domain expert inspect the problem, scope, example question and proposed note format.
-- [ ] Discuss financial comparability, useful evidence, unacceptable errors and the limits of the product.
-- [ ] Record actual feedback and the decisions to accept, change or reject it, with reasons.
-- [ ] Incorporate the agreed changes and retain evidence of the review.
+**Owner:** R1. **Implementation support:** R2, R3, R4, R5 and R6. **Definition status:** Complete.
 
-**Completion evidence:** a domain-review record identifying the reviewer, relevant experience, material/version reviewed, actual date, feedback and resulting decisions. A prepared review template is not evidence that this interaction occurred.
+- [x] Define fiscal dates, annual/quarter boundaries, currency/units, reporting perimeter and peer-comparison rules.
+- [x] Define operating margin and the separate bank pre-tax task without silent substitution.
+- [x] Define ROUND_HALF_UP display rounding, signs, percentage/percentage-point changes, invalid denominators and missing results.
+- [x] Define original-as-reported default, eligible later-reviewed presentations, version differences and historical cutoff rules.
+- [x] Define factual/causal support, risk-change labels, uncertainty, prohibited recommendations and treatment of retrieved instructions.
+- [x] Define acceptance blockers, incomplete-review handling, exact approval and confirmed publication.
+- [x] Define memory access, saved records, correction, withdrawal, deletion and reviewed-playbook requirements.
 
-## 3. Adopt financial, research and publication policies
+**Completed specification:** Final v1.0 financial, filing, evidence, acceptance and memory policies with worked examples and role responsibilities. Implement and independently verify these requirements; the 98% monitoring alert never permits publication of known errors.
 
-**Classification:** Direct R1 domain-policy duty with engineering dependencies. **Owner:** R1. **Support:** R2, R3, R4, R5.
+## 4. Define golden answers and scoring rules
 
-**Roles:** R1, R2, R3, R4, R5. Prepare domain definitions first; keep team adoption and implementation review as shared work.
+**Owner:** R1 for domain meaning. **Support:** R2 for sources and R5 for independent execution verification. **Domain specification status:** Complete; scoring release not yet frozen.
 
-- [ ] Define fiscal periods, actual dates, annual/quarterly boundaries, currency, units, reporting perimeter and suitable peer comparisons.
-- [ ] Define the supported operating-margin comparison, its operating-income/revenue inputs and clear labels. Independently assess any proposed alternative metric; do not assume that an existing bank pre-tax-margin convention satisfies an operating-margin requirement.
-- [ ] Agree rounding, percentage versus percentage-point changes, signs, invalid denominators and missing-value handling.
-- [ ] Define original-as-reported versus later-reported values, restatements and presentation changes; require traceable sources and code calculations.
-- [ ] Define sufficient evidence for factual/causal claims and added, removed, changed or unchanged risks; state when evidence is insufficient. Prohibit investment recommendations and promises of returns, and treat retrieved text as evidence rather than instructions.
-- [ ] Decide which errors block product acceptance and what happens when numerical checks fail or claim review is unavailable/incomplete. Distinguish draft review from exact-note publication approval.
-- [ ] Agree domain expectations for memory privacy, correction, withdrawal and deletion with R2/R4; record the team's effective policy version.
+- [x] Document source-linked development reference answers independently calculated from source inputs rather than the tested generator's output.
+- [x] Associate expected values with company, metric, actual period, basis, currency/scale and source location.
+- [x] Define formulas, rounding, signs and derived changes; a matching number elsewhere cannot satisfy a wrong association.
+- [x] Define Pass, Fail, Incomplete and disputed/defective-case meaning, including limitations and refusals.
+- [ ] Complete independent R2/R5 source-eligibility and expectation verification, record disagreements and validate the issuer/fixture execution adapters.
+- [ ] Identify and freeze the accepted case, evidence, policy and rubric release before scored runs; record the R5 handoff.
 
-**Completion evidence:** an adopted, versioned policy and concrete acceptance examples handed to the implementation and evaluation owners. Record the justification for precision conventions, original-as-reported defaults, any alternative bank metric and HOLD rules. Treat a 98% verified-share monitoring threshold as an alert, not permission to publish known errors.
-
-## 4. Review financial golden answers and scoring rules
-
-**Classification:** Direct R1 golden-content duty; R5 owns evaluation implementation and independent cases. **Owner:** R1 for domain correctness. **Support:** R2, R5.
-
-**Roles:** R1, R2, R5. Prepare domain expectations first; coordinate source/evaluator agreement afterwards.
-
-- [ ] Review development questions and their expected financial answers against original source evidence, independently of the tested answer generator.
-- [ ] Associate each expected value with its company, metric, fiscal period, accounting basis, units and source/table location.
-- [ ] Verify formulas, precision, signs and derived changes; prevent a matching number elsewhere in the output from passing a wrong association.
-- [ ] Agree the meaning of pass, fail, incomplete review and defective/disputed case with R5, including comparison and refusal requirements.
-- [ ] Resolve disagreements and freeze the accepted expected answers, policy and rubric before subsequent scored runs.
-
-**Completion evidence:** source-reviewed development expectations, a scoring rubric, a disagreement/decision record and an acknowledged R5 handoff. Earlier development cases remain development cases.
+**Required execution evidence:** Verified expectations, source snapshots, adapter checks, decisions and an identified frozen release. Development questions and related variants remain development questions.
 
 ## 5. Validate the required human risk-change labels for ten company-years
 
 **Classification:** Shared domain annotation and evaluation work; R1 does not personally own every label. **Owners:** R1 for domain content/review; R5 for the annotation/evaluation process. **Support:** R2.
 
-**Roles:** R1, R2, R5. Coordinate this shared annotation/review work after the domain policy and content proposal.
+**Roles:** R1, R2, R5. Coordinate this shared annotation/review work after the domain policy and reference content are defined.
 
 - [ ] Select ten target company-years and obtain the relevant earlier/later filing evidence for each comparison.
 - [ ] Ensure human reviewers inspect both periods and assign findings using agreed risk-label definitions, with a rationale and source locations. Perform or coordinate R1 domain review without compromising evaluation independence.
@@ -173,7 +164,7 @@ Treat existing company, sector and year selections as candidates to assess. Reta
 
 **Roles:** R1, R2, R3, R4, R5. Review the product against adopted requirements; do not assume existing behavior is correct.
 
-- [ ] Select a representative development request and record the code/configuration, source snapshot, scope and adopted policy used for the review.
+- [ ] Select a representative development request and record the code/configuration, source snapshot, scope and effective policy used for the review.
 - [ ] Run through the application's research and human-review gates under the applicable authorization; retain the exact plan, note, checks and trace.
 - [ ] Review every displayed financial figure and derived change, its source/calculation chain, requested coverage, fiscal disclosure and interpretation.
 - [ ] Review risk novelty, causal claims, missing evidence and claim-review completeness; record an actual accept, edit, reject or HOLD decision with reasons.
@@ -201,7 +192,7 @@ Treat existing company, sector and year selections as candidates to assess. Reta
 **Roles:** R1, R2, R3, R4, R5. R5 provides the controlled cases and evaluation evidence before R1 completes this review.
 
 - [ ] Confirm evidence of at least 60 distinct cases: about 20 development and at least 40 protected held-out cases, with expected outcomes fixed before testing and related variants kept together.
-- [ ] Check R5's held-out cases against the adopted written policy through a controlled R1 review. Preserve the independence boundaries: agent tuners do not author held-out cases, and defence builders do not author independent attacks.
+- [ ] Check R5's held-out cases against the written policy through a controlled R1 review. Preserve the independence boundaries: agent tuners do not author held-out cases, and defence builders do not author independent attacks.
 - [ ] Coordinate at least 20 genuinely human-labelled outputs for judge calibration; require agreement, Cohen's kappa and disagreement evidence for the actual judge configuration.
 - [ ] Obtain R5/R4 evidence for 30+ independent attacks, defences off/on and legitimate-work false blocks, including the project's retrieved-instruction, private-watchlist and sandbox-network scenarios.
 - [ ] Obtain R2/R5 evidence for the required retrieval comparison and FinanceBench external retrieval check; identify remaining source/label limitations.
@@ -227,7 +218,7 @@ Treat existing company, sector and year selections as candidates to assess. Reta
 
 **Classification:** Direct R1 demo-script duty; the required technical demonstrations are team work. **Owner:** R1 for script and narrative. **Support:** R2-R6.
 
-**Roles:** R1, R2, R3, R4, R5, R6. Draft the demo script first; execute and verify the full demo with the team afterwards.
+**Roles:** R1, R2, R3, R4, R5, R6. Write the required demo script, then execute and verify the full demonstration with the technical owners.
 
 - [ ] Demonstrate a margin comparison with every financial figure linked to its supporting fact or calculation.
 - [ ] Demonstrate the critic finding/correcting a planted wrong number while an injected retrieved article's investment recommendation stays out of the note.
@@ -259,12 +250,15 @@ Record this for each phase when it is completed:
 
 | Phase | Evidence and version | Actual reviewer/date | Decision | Open dependency |
 |---|---|---|---|---|
-| Not yet recorded | Pending | Pending | Pending | Pending |
+| Product definition | Final problem, scope and workflow specifications v1.0 | R1 specification finalization | Definition complete | Source execution and measured outcomes |
+| Financial and research policies | Final policy specifications v1.0 with examples | R1 specification finalization | Definition complete | Implementation and independent verification |
+| Golden content and scoring | Final domain specification v1.0 and eight reference cases | R1 specification finalization | Domain specification complete | R2/R5 eligibility, adapters, verification and scoring freeze |
+| Other execution phases | Record actual evidence when produced | Actual reviewer and date required | Open until evidence exists | See the unchecked tasks |
 
-Artifact names and document formats are organizational choices. Existing behavior does not limit what a correct requirement or expected answer can demand. Reuse drafts only after actual review; their existence does not complete a phase.
+Use the final specifications as the acceptance baseline. Update execution records only when the corresponding work and evidence exist.
 
 ## Related project documents
 
-- The prepared-document checklist above links the project proposals, policy examples and work log in their available Markdown and Word formats.
+- The final-document register above links every project specification, its available Word version and the work log.
 - [Project overview and current setup](../README.md).
-- Existing implementation references: [architecture](architecture.md), [memory design](memory_policy.md), [tools](tools.md), [development evaluation](evaluation.md), [retrieval evaluation](retrieval_eval.md) and [evaluation guide](evaluation_guide.md). Their presence does not establish conformance with the proposed product policies.
+- Existing implementation references: [architecture](architecture.md), [memory design](memory_policy.md), [tools](tools.md), [development evaluation](evaluation.md), [retrieval evaluation](retrieval_eval.md) and [evaluation guide](evaluation_guide.md). Their presence does not establish conformance with the final product policies.

@@ -1,6 +1,6 @@
 # Analyst Desk Problem Statement
 
-**Status:** Draft for team review. Team adoption and measured product outcomes remain pending.
+**Status:** Final project specification v1.0.
 
 ## Problem statement
 
@@ -18,15 +18,15 @@ A source-backed company-comparison note that an analyst can inspect, challenge, 
 
 How does coordinated research with a critic compare with fixed-workflow and single-agent baselines in research quality, cost and time under matched conditions?
 
-## Decisions and validation still required
+## Product acceptance requirements
 
-- Team review and adoption of the problem and intended outcome.
-- Validation of user needs, the research workflow and useful outcomes.
-- Assessment of domain feedback and resulting product decisions.
-- An agreed company, sector and year selection with written financial and research policies.
-- Outcome measures and evidence of quality, cost, time and limitations.
+- Use the supported company, period and source boundaries and the project's financial and research policies.
+- Make each financial figure, derived calculation and explanatory claim inspectable against its evidence.
+- Account for the requested scope and display missing evidence and material comparison limitations.
+- Measure correction count and significance, total research/review time, source-checking effort and model usage/cost on comparable tasks.
+- Compare fixed-workflow, single-agent and multi-agent results under matched conditions, reporting failures and limitations alongside successful results.
 
-A draft does not establish product adoption, measured improvement or implementation compliance. Review decisions and supporting project work will be recorded when completed.
+Record implementation evidence, current-product acceptance and measured outcomes through the product checklist and project work log.
 
 ## Project documents
 

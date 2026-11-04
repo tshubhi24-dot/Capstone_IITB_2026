@@ -1,6 +1,6 @@
 # Analyst Desk Supported Research Scope
 
-**Status:** Scope document for team review. The existing 15-company list is retained. The fiscal-year window, bank-metric policy and remaining scope decisions are open.
+**Status:** Final project specification v1.0.
 
 ## Purpose and intended user
 
@@ -33,9 +33,9 @@ The final example requires an actual relevant saved note.
 
 ## Data and evidence requirements
 
-The assessed dataset will cover **10-15 companies in two sectors over three fiscal years each**.
+The project coverage is **15 companies in two project sectors over three fiscal years each**, within the required 10-15-company range.
 
-The proposed source for this version is cached SEC annual 10-K filings and XBRL financial facts. Evidence will include:
+The source for this version is cached SEC annual 10-K filings and XBRL financial facts. Required evidence includes:
 
 - Item 1A Risk Factors.
 - Item 7 Management's Discussion and Analysis.
@@ -47,7 +47,7 @@ Evidence records will preserve company identifiers, fiscal years, filing section
 
 Section boundaries, table extraction and source completeness must be reviewed before the dataset is accepted.
 
-## Company coverage and proposed years
+## Company coverage and research period
 
 The following existing implementation list is retained for the project:
 
@@ -56,13 +56,13 @@ The following existing implementation list is retained for the project:
 | Technology | Microsoft (MSFT), Alphabet (GOOGL), Apple (AAPL), Amazon (AMZN), Meta (META), NVIDIA (NVDA), AMD (AMD), Oracle (ORCL) |
 | Finance | JPMorgan Chase (JPM), Goldman Sachs (GS), Bank of America (BAC), Visa (V), Morgan Stanley (MS), Mastercard (MA), Wells Fargo (WFC) |
 
-**Proposed period:** FY2022, FY2023 and FY2024. The period remains to be finalized.
+**Confirmed period:** FY2022, FY2023 and FY2024.
 
-For the retained 15 companies, this proposed period provides **45 company-years**. This count does not establish operating-margin availability for every company. It is a historical research window and must be described accordingly.
+For the retained 15 companies, this confirmed period provides **45 company-years**. This count does not establish operating-margin availability for every company. It is a historical research window and must be described accordingly.
 
 Consecutive periods support repeatable year-to-year comparisons. Differences in business models and fiscal calendars provide opportunities to assess financial comparability and evidence limitations.
 
-The company names are retained; the sector classification and suitable peer groups still require agreement. Companies within the same broad group are not automatically suitable peers.
+Technology and Finance are the project coverage groups. Apply the peer definitions and task-specific comparability checks in the Bank Metrics and Comparison Rules. Companies within the same broad group are not automatically suitable peers.
 
 ### Bank metric treatment
 
@@ -70,9 +70,9 @@ Operating margin and pre-tax margin are different metrics.
 
 For operating-margin questions, the system must use supported operating-income and revenue inputs. Where these inputs are unavailable, it must explain the limitation rather than substitute a different margin.
 
-A separately labelled bank pre-tax-margin task may be supported after the financial policy is agreed.
+A separately labelled bank pre-tax-margin task uses the definitions, compatible inputs and revised-plan controls in the Bank Metrics and Comparison Rules.
 
-The metric treatment of JPM, GS, BAC, MS and WFC remains open. Retaining their company names does not approve the current pre-tax-margin substitution for operating-margin requests.
+For JPM, GS, BAC, MS and WFC, support the separate pre-tax-margin task only when its required reported inputs are eligible. An operating-margin request with an unavailable operating-income input must retain the limitation; company coverage never permits a silent metric substitution.
 
 ## Request boundaries
 
@@ -88,6 +88,10 @@ The metric treatment of JPM, GS, BAC, MS and WFC remains open. Retaining their c
 | Investment recommendation request | Decline buy/sell calls, price targets, promises of returns and forecasts of adverse events. Provide supported filing analysis within scope. |
 
 New companies, years or research tasks must not be silently substituted into the agreed research plan.
+
+**Data coverage: FY2022–FY2024 (historical). Requests for other fiscal years are outside current coverage.**
+
+**Implementation responsibilities:** R6 displays the notice near company/year selection. R3 enforces supported years, with R4 guardrail support. R5 verifies both supported and unsupported requests.
 
 ## Required research output
 
@@ -105,7 +109,7 @@ The analyst must approve the exact final note before publication. An edit requir
 
 Unresolved material numerical errors or incomplete required evidence review are not acceptable as a completed research result.
 
-Detailed rules for rounding, restatements, financial comparability and publication eligibility will be documented in the financial and research policies.
+Apply the final bank-metric, fiscal-period/unit, filing-version, evidence/risk and acceptance/publication policies to every result and export.
 
 ## Outcomes to evaluate
 
@@ -139,16 +143,16 @@ Disclosure comparison remains part of the core research scope. Dedicated text-le
 
 Any such implementation must use comparable sections, reproducible calculations and source-linked differences. Increased filing length or omitted wording must not automatically be interpreted as adverse economic news.
 
-## Decisions required before scope adoption
+## Scope execution requirements
 
-| Decision | Review required |
+| Area | Required behaviour |
 |---|---|
-| Research tasks | Agree the six supported task categories and response boundaries. |
+| Research tasks | Support the six task categories and their response boundaries. |
 | Company coverage | Retain the existing 15-company list. Company selection is confirmed; source completeness and metric availability still require review. |
-| Sector and peer definitions | Agree defensible groupings and appropriate comparison sets. |
-| Historical window | Confirm FY2022-2024 or select another explicit three-year period. |
-| Bank metrics | Agree metric-dependent support or a separately labelled bank task without substituting it for operating margin. |
-| Optional features | Prioritise extensions separately from the assessed core. |
-| Useful outcome | Agree representative tasks and measures of usefulness, quality, time and cost. |
+| Sector and peer definitions | Use the defined coverage groups and metric-specific peers; check each comparison's reporting basis and business mix. |
+| Historical window | FY2022-FY2024 confirmed. Display the limitation and validate unsupported-year handling. |
+| Bank metrics | Apply metric-dependent support and the separately labelled bank task; preserve the requested metric and obtain revised-plan approval for a changed task. |
+| Optional features | Keep extensions outside the assessed core until a separate scope change defines their evidence and acceptance requirements. |
+| Useful outcome | Measure representative tasks using relevance, corrections, total research/review time, source-checking effort and model usage/cost. |
 
-Practitioner feedback and subsequent product testing may lead to revisions. Scope adoption, implementation verification and outcome validation will be recorded as separate decisions.
+Record implementation verification and measured outcomes in the product checklist. Changes to this scope require a new identifiable specification version; a changed live research task also requires the applicable plan approval.

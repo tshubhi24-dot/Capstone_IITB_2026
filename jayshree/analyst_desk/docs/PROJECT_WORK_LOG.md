@@ -1,11 +1,28 @@
 # Analyst Desk Project Work and Decision Log
 
-Record project deliverables and decisions with their review status. Include the responsible role and reviewer when recording ownership or an actual decision. Add entries only for work that has occurred.
+**Status:** Final specification record v1.0.
 
-| Date | Work item | Deliverables | Review status |
-|---|---|---|---|
-| 2026-11-03 | Define the analyst problem and intended product outcome. | [Problem statement](PROBLEM_STATEMENT.md). | Draft prepared; team adoption and outcome validation pending. |
-| 2026-11-03 | Provide a formatted problem statement for review. | [Word version](PROBLEM_STATEMENT.docx) and [Markdown version](PROBLEM_STATEMENT.md). | Document available; product and domain validation remain open. |
-| 2026-11-03 | Define supported research tasks, evidence requirements and request boundaries; retain the existing 15-company list. | [Research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx). | Company list confirmed. Fiscal-year window, bank-metric policy, sector/peer definitions and remaining scope decisions are open. Implementation and outcome validation remain pending. |
+This log records completed product-definition work and the responsibilities for execution. Use the final specifications as the implementation and acceptance baseline. Add actual product decisions, source checks, expert findings and evaluation results when that work occurs.
 
-For decisions, record the actual reviewer, date, document or policy version, decision, reason and next action. A completed document is distinct from an adopted requirement or validated outcome.
+## Completed specification work
+
+| Work item | Deliverables | Final decision |
+|---|---|---|
+| Analyst problem and product outcome | [Problem Statement](PROBLEM_STATEMENT.md) and [Word](PROBLEM_STATEMENT.docx) | Produce an inspectable, source-backed company-comparison note and compare quality, cost and time under matched conditions. |
+| User needs and current workflow | [User Needs and Workflow](USER_NEEDS_AND_WORKFLOW.md) and [Word](USER_NEEDS_AND_WORKFLOW.docx) | Use received practitioner input to define evidence preparation, relevant comparisons and usefulness measures within the analyst's wider modelling process. |
+| Supported research scope | [Supported Research Scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word](SUPPORTED_RESEARCH_SCOPE.docx) | Retain 15 companies in Technology and Finance and the FY2022-FY2024 historical window, with six supported task categories and explicit response boundaries. |
+| Bank metrics and comparisons | [Bank Metrics and Comparison Rules](BANK_METRICS_AND_COMPARISON_RULES.md) and [Word](BANK_METRICS_AND_COMPARISON_RULES.docx) | Preserve operating versus pre-tax definitions; require compatible inputs and a revised plan for a changed metric. |
+| Fiscal dates units and precision | [Fiscal Periods and Units Rules](FISCAL_PERIODS_AND_UNITS_RULES.md) and [Word](FISCAL_PERIODS_AND_UNITS_RULES.docx) | Preserve actual dates and units, calculate before rounding, use ROUND_HALF_UP and label signed percentage-point changes. |
+| Filing basis and cutoff | [Filing Version Policy](FILING_VERSION_POLICY.md) and [Word](FILING_VERSION_POLICY.docx) | Default to original-as-reported for the historical task; apply source eligibility, compatible versions and the declared cutoff. |
+| Evidence risk and uncertainty | [Evidence Risk Change and Uncertainty Policy](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md) and [Word](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx) | Support each substantive claim and risk-change label with appropriate evidence and comparable coverage; retain uncertainty. |
+| Acceptance and publication | [Acceptance and Publication Policy](ACCEPTANCE_AND_PUBLICATION_POLICY.md) and [Word](ACCEPTANCE_AND_PUBLICATION_POLICY.docx) | Block unresolved errors, complete required review, bind exact approval and confirm the matching durable save. |
+| Memory and privacy | [One-page policy](MEMORY_AND_PRIVACY_POLICY.md), [Word](MEMORY_AND_PRIVACY_POLICY.docx), [detailed rules](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md) and [Word](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx) | Separate preferences, approved history, checkpoints and reviewed lessons; enforce access and accurate correction/deletion scope. |
+| Golden content and scoring | [Golden Answers and Scoring Rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word](GOLDEN_ANSWERS_AND_SCORING_RULES.docx) | Define eight development reference cases, expected associations and Pass/Fail/Incomplete/disputed-case rules. Freeze a verified execution release separately. |
+| Frontend messages | [Frontend Messages and Trigger Conditions](FRONTEND_MESSAGES_AND_CONDITIONS.md) | Define 28 messages with trusted-state triggers, permitted actions and implementation owners. |
+| Completion tracking | [Product Checklist](PRODUCT_CHECKLIST.md) | Mark completed definitions and keep unperformed execution, verification and submission work unchecked. |
+
+## Execution records
+
+For each subsequent decision or completed task, record the actual owner/reviewer, date, code/source/policy version, evidence, result, rationale and next action. A specification finalization does not supply missing source eligibility, product tests, human risk labels, expert inspection, frozen evaluation releases or measured outcomes.
+
+R1 owns domain meaning and product acceptance. R2 supplies knowledge and memory evidence; R3 implements the workflow; R4 enforces tool/control/security boundaries; R5 independently evaluates; R6 implements serving, frontend and operations. The unchecked tasks in the product checklist identify the remaining work.

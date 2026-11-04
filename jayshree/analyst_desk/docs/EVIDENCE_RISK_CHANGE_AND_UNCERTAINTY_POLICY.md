@@ -1,6 +1,6 @@
 # Analyst Desk Evidence Risk Change and Uncertainty Policy
 
-**Status:** Proposed policy for review. Team adoption, implementation and independent verification remain pending.
+**Status:** Final project specification v1.0.
 
 ## Simple walkthrough
 
@@ -27,7 +27,7 @@ The analyst should see the supported findings, the unverified explanation and th
 
 Analyst Desk should help an analyst understand relevant financial findings and disclosure changes through inspectable evidence. Every financial quantity and substantive factual or causal research claim must have suitable support. A source identifier proves where text was found; it does not by itself establish that the text supports the claim.
 
-Apply these rules to the full note, including the title, summary, tables and conclusions. The bank-metric, fiscal-period/unit and filing-version policies continue to govern compatible inputs. This document proposes research standards; it does not establish that the application enforces them.
+Apply these rules to the full note, including the title, summary, tables and conclusions. The bank-metric, fiscal-period/unit and filing-version policies continue to govern compatible inputs. This document defines the required research standards. Application enforcement must be demonstrated through implementation and verification evidence.
 
 | Claim type | Required support |
 |---|---|
@@ -167,15 +167,17 @@ These examples illustrate expected behaviour for development review. They are no
 
 ## Implementation responsibilities
 
-The responsibilities below are proposed handoffs. This document does not establish team acknowledgement, completed controls or accepted evaluation results.
+The responsibilities below are required implementation and verification handoffs. Record completed controls and accepted evaluation evidence separately from this specification.
 
 | Role | Responsibility |
 |---|---|
-| R1 Domain and product | Review claim definitions, adequate coverage, risk labels, relevance/materiality rationale, uncertainty messages and domain acceptance examples. |
+| R1 Domain and product | Own claim definitions, adequate coverage, risk labels, relevance/materiality rationale, uncertainty messages and domain acceptance examples. |
 | R2 Knowledge and memory | Preserve filings, versions, section boundaries, tables and claim locations; supply both-period context and explicit missing/partial coverage. Keep source history identifiable. |
 | R3 Agents and orchestration | Carry requested comparison pairs, typed claims/findings, coverage and review status through researchers, risk agent, writer and critic. Preserve attribution and bounded repair/HOLD routing. |
 | R4 Tools control and security | Independently validate numerical/source contracts and review completeness; enforce failure/approval boundaries and untrusted-content/private-data controls. |
 | R5 Evaluation and red team | Independently verify examples and scoring, organise actual human risk labels and judge calibration, control protected cases and test semantic/adversarial failures. Citation presence alone is not task correctness. |
 | R6 Deployment and operations | Display evidence, review coverage, limitations, holds and failures clearly; expose trace links and separate numerical/semantic measures. Preserve review status across saved versions. |
 
-Before adoption, agree how section coverage is recorded, who can complete a claim-level human review, the wording of materiality decisions and the handoff into the final acceptance/publication policy. Record the effective policy version and actual decisions; do not infer them from document creation.
+## Execution requirements
+
+Record each finding's reviewed section/topic coverage, exclusions, paired evidence, label, rationale and evidence/review status. A human resolution of a support question requires an authorised, identifiable reviewer and a recorded claim-level evidence decision; ordinary plan or note approval is a separate action. Use the specified materiality convention and apply the Acceptance and Publication Policy before a result becomes eligible for final note approval or publication. Preserve the effective policy version and actual review decisions. Implementation, source review, human annotations and accepted evaluation results require their own evidence and must not be inferred from document publication.

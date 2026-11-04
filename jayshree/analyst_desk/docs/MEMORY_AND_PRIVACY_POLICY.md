@@ -1,8 +1,8 @@
 # Analyst Desk Memory and Privacy Policy
 
-**Status:** Proposed for review. Adoption, implementation and independent verification remain pending.
+**Status:** Final project specification v1.0.
 
-Analyst Desk may retain relevant context for follow-up research while protecting private information. Saved memory must not override source evidence, the approved research scope, checks or human approval. This policy defines intended behaviour; it does not certify the current application.
+Analyst Desk may retain relevant context for follow-up research while protecting private information. Saved memory must not override source evidence, the approved research scope, checks or human approval. This policy defines required behaviour; compliance needs implementation evidence.
 
 | Record | Save trigger and permitted use |
 |---|---|
@@ -18,6 +18,6 @@ Analyst Desk may retain relevant context for follow-up research while protecting
 
 **Correction and deletion.** Correct preferences through authorised controls. Correct published research through a linked, checked and freshly approved version. Withdrawal, deleting derived memory and deleting a run are distinct actions. Report which records/copies were removed, retained or remain pending; reconcile coverage, loaded state, indexes and restoration paths so deleted items do not silently return. Never claim complete erasure without verifying the declared scope. Portal success plus memory-sync failure remains Published; repair the derived update separately.
 
-**Retention and evidence.** Minimise stored content. Agree category-specific retention and backup/restore handling before adoption; no fixed expiry or third-party deletion guarantee is asserted. Revalidate historical figures before comparison. Isolate evaluation records from ordinary memory/lessons and later cases. Compare memory on/off separately from lesson benefit/harm; a working toggle is not proof of improvement.
+**Retention and evidence.** Minimise stored content. Configure category-specific retention, deletion triggers and backup/restore handling before private-data use; no universal expiry or third-party deletion guarantee is asserted. Revalidate historical figures before comparison. Isolate evaluation records from ordinary memory/lessons and later cases. Compare memory on/off separately from lesson benefit/harm; a working toggle is not proof of improvement.
 
 R2 owns memory engineering, with R1 domain review, R3 workflows, R4 controls, R5 verification and R6 operations. Detailed examples and implementation expectations accompany this one-page policy.

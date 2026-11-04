@@ -1,6 +1,6 @@
 # Analyst Desk User Needs and Workflow
 
-**Status:** Product proposal informed by practitioner feedback. Team adoption, baseline measurements and prototype usefulness validation remain pending.
+**Status:** Final project specification v1.0.
 
 ## Purpose and intended user
 
@@ -14,11 +14,11 @@ Reported informal input from Klemens Loeffler highlights changes in commentary, 
 
 Separate workplace input describes ticker-based financial-data refresh through a Capital IQ Excel plug-in. This vendor choice is not attributed to Charles. His feedback identifies Excel modelling, without naming a data vendor or connector.
 
-These inputs describe reported practice rather than an observed or timed workflow. They inform the proposed requirements below; prototype testing and measured benefit have not been established.
+These inputs describe reported practice and inform the product requirements below. Baseline and product measurements must use recorded task runs rather than treating practitioner comments as timing evidence.
 
-## Needs and proposed product responses
+## Analyst needs and product responses
 
-| Analyst need | Proposed product response | Validation needed |
+| Analyst need | Required product response | Verification method |
 |---|---|---|
 | Efficient information preparation | Assemble relevant evidence and findings for the analyst's existing process. | Measure total task effort, including checking and corrections. |
 | Relevant interpretation | Distinguish financial movements, disclosure changes, expectations surprises and supported explanations. | Human review of relevance, important omissions and unsupported conclusions. |
@@ -27,7 +27,7 @@ These inputs describe reported practice rather than an observed or timed workflo
 
 ## Current workflow
 
-The sequence below combines the reported broad workflow with proposed annual-filing research checkpoints. It is not a claim that every stage is automated by Analyst Desk or performed identically by every analyst.
+The sequence below combines the reported broad workflow with the annual-filing research checkpoints. It identifies the product's contribution within the analyst's wider process; forecasts, valuation and the investment thesis remain the analyst's work.
 
 | Stage | Analyst activity and product role |
 |---|---|
@@ -69,8 +69,8 @@ An expectations comparison requires an identified, dated baseline with a compati
 
 Capital IQ or another vendor can form part of an analyst's existing process. Access, licensing, source reconciliation and integration require separate decisions. Analyst Desk's research output remains informational and does not provide investment recommendations or promises of returns.
 
-## Outcomes and remaining review
+## Outcome measures
 
 Evaluate the same supported task with the existing process and Analyst Desk. Measure collection, updating and communication effort together with review time, corrections, source-checking effort and model cost. Assess relevance, important omissions and any increase in useful company coverage separately; no improvement is claimed before measurement.
 
-Actual practitioner feedback has been received. Team adoption, detailed source/workflow agreement, a version-specific document or prototype review, baseline measurements and product acceptance remain open. Feedback received does not establish that a practitioner approved or tested the application.
+Record the task, product/source version, method, corrections, total elapsed research/review time and measured cost for each comparison. Keep practitioner feedback, version-specific expert inspection and product-run evidence identifiable as different inputs to acceptance.
