@@ -101,7 +101,31 @@ def _quoted_in(number: str, text: str) -> bool:
     pattern = rf"(?<![\d.]){digits}(?![\d.]\d){_unit_pattern(number)}"
     if "$" in number:
         pattern = rf"\$\s?" + pattern
-    return re.search(pattern, plain, re.I) is not None
+    return re.search(pattern, plain, re.I) is not None or _in_millions_table(number, text)
+
+
+_IN_MILLIONS = re.compile(r"\(\s*(?:dollars\s+)?in millions", re.I)
+_CELL = re.compile(r"(?<![\d.])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,])|(?<![\d.,])\d{3,}(?:\.\d+)?(?![\d,])")
+
+
+def _in_millions_table(number: str, text: str) -> bool:
+    """A dollar amount quoted from a table whose caption says "(In millions)".
+
+    Table cells carry no unit of their own (E4 on answers, 4 Nov: "$105.362 billion" quoted
+    from "(In millions …) | Intelligent Cloud | 105,362" was unverified). The quote counts if a
+    cell equals it in millions, within the rounding the writer stated: "$105.4 billion" may be
+    any cell from 105,350 to 105,450; "$105,362 million" must be 105,362.
+    """
+    n = number.lower()
+    scale = 1000 if ("billion" in n or re.search(r"\db\b", n)) else 1 if (
+        "million" in n or re.search(r"\dm\b", n)) else None
+    if scale is None or "$" not in number or not _IN_MILLIONS.search(text):
+        return False
+    d = _digits(number).replace(",", "")
+    value = float(d) * scale
+    decimals = len(d.split(".")[1]) if "." in d else 0
+    tolerance = 0.5 * scale / 10 ** decimals
+    return any(abs(float(c.replace(",", "")) - value) <= tolerance + 1e-9 for c in _CELL.findall(text))
 
 
 def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult:

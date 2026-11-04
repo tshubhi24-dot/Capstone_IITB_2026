@@ -42,6 +42,20 @@ class CheckNoteTests(unittest.TestCase):
         bad = check_note("Revenue increased 18% on Azure [MSFT_2024_item7_017].", passage_text=texts.get)
         self.assertIn("does not appear in the passage", bad.issues[0])
 
+    def test_table_quote_in_millions(self):
+        """A table cell has no unit of its own; the caption "(In millions)" gives it one."""
+        table = {"MSFT_2024_item7_020": "SEGMENT RESULTS OF OPERATIONS\n(In millions, except percentages) "
+                 "| 2024 | 2023\nIntelligent Cloud | 105,362 | 87,907\nTotal | $245,122 | $211,915"}
+        for quote in ("$105.362 billion", "$105.4 billion", "$105,362 million", "$245.1 billion"):
+            r = check_note(f"Segment revenue was {quote} [MSFT_2024_item7_020].", passage_text=table.get)
+            self.assertTrue(r.ok, (quote, r.issues))
+        for quote in ("$105.9 billion", "$106 billion", "$105,360 million"):   # outside the stated rounding
+            r = check_note(f"Segment revenue was {quote} [MSFT_2024_item7_020].", passage_text=table.get)
+            self.assertFalse(r.ok, quote)
+        prose = {"MSFT_2024_item7_017": "Intelligent Cloud revenue increased to 105,362."}   # no caption
+        self.assertFalse(check_note("It was $105.4 billion [MSFT_2024_item7_017].", passage_text=prose.get).ok)
+        self.assertFalse(check_note("It grew 105.4% [MSFT_2024_item7_020].", passage_text=table.get).ok)
+
     def test_advice_wording_blocked(self):
         r = check_note("We recommend investors buy Microsoft.")
         self.assertFalse(r.ok)
