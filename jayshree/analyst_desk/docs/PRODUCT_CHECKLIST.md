@@ -4,7 +4,49 @@ Define the analyst's problem, supported research scope, evidence standards and a
 
 This checklist covers product and domain work, including the shared evidence needed for product acceptance. It is not a complete technical implementation checklist. The responsibility key and handoffs identify the engineers who own the supporting systems and evaluation.
 
-All tasks remain unchecked until the work and review occur. Existing drafts, controls and automated tests are inputs to review; they do not establish completed human decisions, adoption or validation. Maintain the project decision and contribution log throughout the work.
+Document preparation and phase completion are recorded separately. A checked preparation item below means the stated document has been prepared; it does not mean the proposal has been adopted, its controls implemented, its sources independently approved or its outcomes tested. The eleven formal phase checklists remain open until their stated work, review and completion evidence are recorded. Maintain the project decision and contribution log throughout the work.
+
+## Prepared project documents
+
+The following documents are available on this branch for project review and implementation handoff. Their proposed requirements and teaching examples must not be presented as completed application checks or evaluation results.
+
+- [x] Prepare the [problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx): intended analyst problem, product outcome and proposed success measures. Team adoption and measured usefulness remain open.
+- [x] Prepare the [supported research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx): research tasks, company/source boundaries, limitations and required output. Reconcile the scope wording with current coverage decisions and the later policy proposals before adoption.
+- [x] Prepare [user needs and workflow](USER_NEEDS_AND_WORKFLOW.md) and [Word version](USER_NEEDS_AND_WORKFLOW.docx): practitioner-informed workflow, evidence needs and proposed benefit measures. Prototype review and baseline measurements remain open.
+- [x] Draft [bank metrics and comparison rules](BANK_METRICS_AND_COMPARISON_RULES.md) and [Word version](BANK_METRICS_AND_COMPARISON_RULES.docx): operating versus pre-tax margins, suitable comparisons, unavailable results and revised-plan choices. Company-specific source review and adoption remain pending.
+- [x] Draft [fiscal periods and units rules](FISCAL_PERIODS_AND_UNITS_RULES.md) and [Word version](FISCAL_PERIODS_AND_UNITS_RULES.docx): actual annual windows, calendar requests, unit conversion, precision and limitation messages. Implementation and verification remain pending.
+- [x] Draft the [filing version policy](FILING_VERSION_POLICY.md) and [Word version](FILING_VERSION_POLICY.docx): original and later presentations, cutoff, compatible inputs and version history. Source eligibility, adoption and implementation remain pending.
+- [x] Draft the [evidence, risk-change and uncertainty policy](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md) and [Word version](EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx): claim support, comparable coverage, risk labels and incomplete-review handling. Human annotations and agreed controls remain open.
+- [x] Draft the [acceptance and publication policy](ACCEPTANCE_AND_PUBLICATION_POLICY.md) and [Word version](ACCEPTANCE_AND_PUBLICATION_POLICY.docx): blockers, exact approval, publication confirmation, retries and correction/withdrawal meaning. Adoption does not follow from document availability.
+- [x] Draft the one-page [memory and privacy policy](MEMORY_AND_PRIVACY_POLICY.md) and [Word version](MEMORY_AND_PRIVACY_POLICY.docx): what is saved, when, permitted access, correction and deletion. R2 owns memory engineering; shared adoption and implementation review remain open.
+- [x] Prepare [memory and privacy rules and examples](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md) and [Word version](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx): separate memory/playbook controls, checkpoints, private context, lifecycle and evaluation isolation. These examples do not demonstrate enforced privacy or measured memory benefit.
+- [x] Prepare [golden answers and scoring rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word version](GOLDEN_ANSWERS_AND_SCORING_RULES.docx): eight draft development cases, numerical examples, associations, scoring and freeze requirements. R1/R2/R5 review, source eligibility, validated adapters, scoring agreement and freeze remain pending; no application evaluation has been run for this pack.
+- [x] Start the [project work and decision log](PROJECT_WORK_LOG.md). Its existence records a started artifact; bringing later deliverables and actual decisions up to date remains an open maintenance task.
+
+Charles Cheng's written workflow feedback has been received and incorporated into the user-needs proposal. It does not establish that he inspected or approved a named policy, research note or prototype. Version-specific domain review and its resulting decisions remain open.
+
+The retained company list and selected FY2022-FY2024 historical window do not establish source completeness or metric availability. The scope document and work log contain earlier wording that needs reconciliation with the current decisions and policy proposals. Their maintenance is separate from the completed preparation items above.
+
+## Immediate review and implementation handoffs
+
+| Role | How to use the prepared documents | Next evidence or decision |
+|---|---|---|
+| R1 Domain and product | Review the problem, workflow, scope, policy meaning, acceptable limitations and golden-answer conclusions. | Record scope/policy adoption decisions, actual domain review and usefulness measures; keep the work log current. |
+| R2 Knowledge and memory | Use the financial, fiscal, filing, evidence and memory rules to review source contracts, coverage, provenance and lifecycle design. | Confirm periods, units, concepts, filing versions, source eligibility and memory ownership/correction/deletion requirements. |
+| R3 Agents and orchestration | Carry approved scope, compatible inputs, claim coverage, memory settings and bounded correction through the workflow. | Acknowledge the proposed behaviour and supply implementation/trace evidence, including declared development-fixture adapters where needed. |
+| R4 Tools, control and security | Apply the acceptance and privacy requirements at the tool and write boundaries. | Verify input compatibility, review completeness, reviewer authority, exact approvals, disclosure limits and safe recovery. |
+| R5 Evaluation and red team | Independently review golden expectations and scoring; keep protected assets separate from application context and development tuning. | Resolve disagreements, freeze an agreed version, acknowledge the handoff and produce independent verification/results. The eight draft cases do not complete the evaluation suite or human labels. |
+| R6 Deployment and operations | Use the rules to display dates, units, limitations, review states, memory controls and publication outcomes consistently. | Supply UI/recovery evidence, reproducible setup and diagnostic traces; support benefit measurement and the demonstration. |
+
+## Next work before phase closure
+
+- [ ] Reconcile scope and work-log wording with current decisions and prepared policies; record actual owner acknowledgements and adoption separately from drafting.
+- [ ] Complete version-specific domain review and agree representative tasks, baseline measurements and usefulness criteria.
+- [ ] Review the eight development cases with R2/R5, establish source eligibility and permitted execution boundaries, agree scoring and freeze the reviewed version before scored use.
+- [ ] Coordinate the required human risk annotations and independent evaluation handoffs with R5; do not substitute teaching examples for genuine human records.
+- [ ] Review a representative corrected note on the agreed application/source/policy version and record the exact accept, edit, reject or HOLD decision with its unresolved findings.
+- [ ] Review actual memory behaviour and genuine development lessons, then assess the owners' experiment and security evidence without claiming unmeasured benefit.
+- [ ] Prepare and rehearse the three-story demo, complete contribution/decision records and verify the presentation/submission evidence with the team.
 
 ## Execution order: product definitions, then shared validation
 
@@ -35,7 +77,7 @@ After the product and domain proposals are prepared, coordinate shared validatio
 ## Review and recording rules
 
 - Keep repository content, deliverables, code comments, commit messages and pull-request descriptions in English.
-- Check an item only after the work occurs. Record the evidence, actual reviewer, date, source version and decision.
+- Check a document-preparation item only when that document exists. Close a formal phase task only after its required work and review occur; record the evidence, actual reviewer, date, source version and decision.
 - Keep protected evaluation questions and answers outside the application, model context and ordinary project artifacts. R5 controls access.
 
 ## Responsibility key
@@ -222,8 +264,6 @@ Artifact names and document formats are organizational choices. Existing behavio
 
 ## Related project documents
 
-- [Problem statement](PROBLEM_STATEMENT.md) and [Word version](PROBLEM_STATEMENT.docx).
-- [Supported research scope](SUPPORTED_RESEARCH_SCOPE.md) and [Word version](SUPPORTED_RESEARCH_SCOPE.docx).
-- [Project work and decision log](PROJECT_WORK_LOG.md). Preparing an artifact does not complete its review or validation.
+- The prepared-document checklist above links the project proposals, policy examples and work log in their available Markdown and Word formats.
 - [Project overview and current setup](../README.md).
-- [Architecture](architecture.md), [memory policy](memory_policy.md), [development evaluation](evaluation.md) and [evaluation guide](evaluation_guide.md).
+- Existing implementation references: [architecture](architecture.md), [memory design](memory_policy.md), [tools](tools.md), [development evaluation](evaluation.md), [retrieval evaluation](retrieval_eval.md) and [evaluation guide](evaluation_guide.md). Their presence does not establish conformance with the proposed product policies.
