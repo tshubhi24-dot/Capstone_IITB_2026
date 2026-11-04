@@ -275,7 +275,7 @@ Tool schemas: [tools.md](tools.md).
 
 ## 9. Deployment
 
-`docker compose up` starts the services below. They all use one image (CPU-only PyTorch, models baked in, offline at run time); only the start command differs.
+`docker compose up` starts the services below. They all use one image; only the start command differs. The image is fully pinned: the base image, every Python package (`requirements.lock`), CPU-only PyTorch, the model snapshots, and a search index built from the committed passages. It runs offline. CI builds it from `main` and publishes it to `ghcr.io/tshubhi24-dot/analyst-desk`, so every teammate runs the identical build (`docker compose pull`).
 
 | Service | Role | Network |
 |---|---|---|
@@ -338,6 +338,7 @@ Outside Docker, the app runs the same MCP servers in-process over the in-memory 
 - **CI** ([.github/workflows](../../../.github/workflows)):
   - `ci.yml` runs the offline test suite and validates the Compose file on every push and pull request;
   - `evaluation-gate.yml` runs on demand: C1 on the 20 development cases, failing below 95% task success or on any policy violation.
+  - `docker-image.yml` publishes the team image on every merge to `main`, and test-builds it on pull requests.
 
 ---
 

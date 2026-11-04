@@ -829,6 +829,13 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 ### 11.4 Deployment details
 
 - **Compose health check:** the app's health check is `/readyz`. Runs, memory, portal notes and the approval key live in named volumes, so they survive restarts and image rebuilds.
+- **One team image, fully pinned** ([Dockerfile](../Dockerfile), [requirements.lock](../requirements.lock), [docker-image.yml](../../../.github/workflows/docker-image.yml)):
+  - **What's pinned:** the base image (`python:3.12.16-slim-trixie`); all 188 Python packages, frozen from a working image into `requirements.lock`; torch (`2.15.0+cpu`); the embedding and reranker model snapshots (by commit hash); and the search index, built into the image from the committed passages.
+  - **How it's shared:** CI builds it on every merge to `main` and publishes it to GitHub Container Registry as `:main` and `:sha-<commit>`. Teammates run `docker compose pull` then `docker compose up`, with no 20-minute build and nothing that can drift between machines.
+  - **Why lock and not just `requirements.txt`?** Unpinned packages resolve to whatever is newest on the day of the build. Two teammates building a week apart could get different library versions and different behaviour. The lock makes the image reproducible; `requirements.txt` stays the human-edited list.
+  - **Why bake the index?** It takes about 10 minutes to build on CPU, and it should be identical for everyone. It's named after a fingerprint of the passages, so if a checkout's passages differ from the image's, a matching index is built instead of using a stale one.
+  - **A bug found while testing it, also on main:** the `runs` and `memory` volumes were added to Compose, but the image never created those folders for the app user. Docker made them root-owned, so **every C1/C2 run failed in Docker** ("unable to open database file"). Fixed twice over: the image creates the folders, and a one-shot `volume-init` service gives the app user ownership of every data volume on start, which repairs volumes created earlier without deleting their data. Verified with a full C1 run through the API in the team image: plan gate → research → note gate, 5/5 numbers verified.
+  - **The key never enters the image:** `.env` is excluded from the build, and each person's key is read at run time.
 - **Setup:** `setup.bat` creates a project-local `.venv` and installs the requirements on Windows, with a check for Python 3.12 or newer.
 - **Windows output encoding:** `app.py` switches stdout and stderr to UTF-8, because emoji progress messages crashed the app when its output went to a file or pipe.
 
@@ -841,4 +848,6 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 5. What does CI run on every push, and what does it deliberately not run?
 6. What makes the evaluation gate fail?
 7. How do you test an alert rule without waiting for a real incident?
+8. How do you make sure every teammate runs exactly the same app? What exactly is pinned?
+9. Why bake the search index into the image, and what happens if the passages change?
 
