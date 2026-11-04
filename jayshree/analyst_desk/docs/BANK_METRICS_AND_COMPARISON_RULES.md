@@ -20,6 +20,10 @@ For bank pre-tax margin, numerator and denominator must cover the same operation
 
 Pre-tax income must retain credit-loss provisions and expenses included in the reported measure. Do not substitute pre-provision profit, net income, net interest income or EBITDA. The calculated ratio must be labelled as an Analyst Desk calculation unless the issuer explicitly reports that same ratio and basis.
 
+### Short mixed metric example
+
+Consider a fictional company with an operating margin of 20.00% and a fictional bank with a pre-tax margin of 30.00%. The arithmetic difference is 10.00 percentage points, but saying the bank's operating margin is 10.00 percentage points higher would be incorrect. The figures use different metric definitions and cannot support a common operating-margin ranking or gap. These values are hypothetical, not reported company results.
+
 ## Worked numerical example
 
 All amounts in this example are hypothetical USD millions. Technology Company A, Bank B and Bank C are fictional; these are not reported company results or evidence that the application implements the policy.
