@@ -12,9 +12,25 @@ The design follows three rules:
 2. **Outside text is data, never instructions.** Filing text and tool results are passed to the model as evidence only.
 3. **A person approves each exact change to the outside world.** Approval is a signature over the exact note; any edit invalidates it.
 
+## Quick start
+
+You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) running and your own [OpenRouter](https://openrouter.ai) API key.
+
+```powershell
+git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
+cd Capstone_IITB_2026\jayshree\analyst_desk
+Copy-Item .env.example .env      # then set OPENROUTER_API_KEY in .env (Mac/Linux: cp)
+docker compose pull              # the team image, about 3.6 GB the first time
+docker compose up -d
+```
+
+Open <http://127.0.0.1:7861> after about 5 minutes. After that you can start and stop it from Docker Desktop. Details and troubleshooting are in [5. Run it](#5-run-it).
+
 ---
 
 ## Contents
+
+- [Quick start](#quick-start)
 
 1. [Features](#1-features)
 2. [Coverage](#2-coverage)
@@ -189,15 +205,8 @@ Everyone runs **the same image**. CI builds it from `main` after every merge and
 
 **One-time setup:**
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running.
-2. If the image is private (the default for a new package), sign in to the registry once:
-   1. On GitHub, go to **Settings → Developer settings → Personal access tokens → Tokens (classic)** and create a token with only the `read:packages` scope.
-   2. Run:
-
-      ```powershell
-      docker login ghcr.io -u <your-github-username>    # paste the token as the password
-      ```
-3. Get the code and create `.env` with **your own** key:
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running. The image is public, so no registry login is needed.
+2. Get the code and create `.env` with **your own** key:
 
    ```powershell
    git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
@@ -209,10 +218,13 @@ Everyone runs **the same image**. CI builds it from `main` after every merge and
 **Every time:**
 
 ```powershell
+git checkout main         # the image is built from main; on another branch you would mix two versions
 git pull                  # same code, config and data as the image
 docker compose pull       # the exact image CI built from main
-docker compose up         # ready in about 5 minutes (models and index load once); open http://127.0.0.1:7861
+docker compose up -d      # starts in the background; ready in about 5 minutes, then open http://127.0.0.1:7861
 ```
+
+Run these again whenever someone merges to `main`. CI publishes the new image about 30–40 minutes after the merge.
 
 | Service | Address |
 |---|---|
@@ -223,7 +235,7 @@ docker compose up         # ready in about 5 minutes (models and index load once
 | Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
 - **Check it is ready:** `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
-- **Stop it** with **Ctrl+C** or `docker compose down`. Your runs, memory, published notes and approval key stay in Docker volumes. Don't use `--volumes` unless you want to delete them.
+- **Stop it** with ■ in Docker Desktop or `docker compose down`. Your runs, memory, published notes and approval key stay in Docker volumes. Don't use `--volumes` unless you want to delete them.
 - **Run a specific version**, for example to compare with a teammate or before a change: each commit on `main` has an image tagged `sha-<first 7 characters of the commit>`.
 
   ```powershell
@@ -231,6 +243,13 @@ docker compose up         # ready in about 5 minutes (models and index load once
   ```
 - **Your own code changes:** `docker compose up --build` builds the image from your folder instead. It takes about 20 minutes the first time, and the index is built on first start if your passages changed. Run `docker compose pull` to go back to the team image.
 - **Only the app is ever reachable:** it is bound to `127.0.0.1`, and the MCP servers run on an internal network with no internet access. Your API key stays in your `.env` and is never part of the image.
+
+**In Docker Desktop:** after the first `docker compose up -d`, the stack appears under **Containers** as the group **analyst_desk**.
+
+- **Start and stop** with ▶ and ■ on the group row. This reuses the image you already have; to get a newer one, run the commands above again.
+- **Open the app** with the **7861:7861** link on the **app** row. Only the app publishes a port; the MCP servers have none.
+- **Logs:** click a container, then **Logs** (or run `docker compose logs -f app`).
+- **"Exited" is normal** for `volume-init`, which sets up the data volumes and stops, and for `index`, which checks the search index and stops. The app and the four MCP servers stay running, and the app shows **(healthy)** when it is ready.
 
 **Checking the dashboard:**
 1. Run a C1 or C2 request in the app and approve the plan.
@@ -241,13 +260,13 @@ docker compose up         # ready in about 5 minutes (models and index load once
 
 | Problem | Fix |
 |---|---|
-| `docker compose pull` says *denied* or *unauthorized* | Run `docker login ghcr.io` (step 2 above), or ask the repository owner to give you access to the package |
+| `docker compose pull` says *denied* or *unauthorized* | The package has been made private. Create a GitHub token (classic) with only the `read:packages` scope, run `docker login ghcr.io -u <your-github-username>` and paste the token as the password, or ask the repository owner for **Read** access |
 | Pull is slow | The image is about 3.6 GB (PyTorch, models, index). Only the first pull is large; later pulls fetch only the layers that changed |
-| `port is already allocated` | Something else is using port 7861, often a Python `app.py`. Stop it, then run `docker compose up` again |
+| `port is already allocated` | Something else is using port 7861. Another Docker stack shows it in the **Port(s)** column in Docker Desktop: stop that group. A Python `app.py` does not appear there: `netstat -ano \| findstr :7861` gives its process ID to end in Task Manager. Then run `docker compose up -d` again |
 | C1/C2 runs failed with *unable to open database file* (Docker runs from before this image) | Fixed automatically: the `volume-init` service gives the app user ownership of its data volumes on every start, keeping their data |
 | The index service runs for about 10 minutes | Your checkout's passages differ from the image's. Run `git pull` so they match, or let it build once; it is reused afterwards |
 
-**For the repository owner (once):** after the first publish, open the package at *github.com/tshubhi24-dot → Packages → analyst-desk → Package settings*. Either make it **Public**, or under *Manage access* give each teammate **Read** access. Linking it to this repository makes repository collaborators inherit access.
+**Package visibility:** the image is public, set by the repository owner at *github.com/tshubhi24-dot → Packages → analyst-desk → Package settings*. If it is ever made private, give each teammate **Read** access there.
 
 ### Option B: Python (development and tests)
 
