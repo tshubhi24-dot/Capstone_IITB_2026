@@ -135,6 +135,7 @@ services:
     environment:
       APP_HOST: 0.0.0.0
       APP_PORT: "7861"
+      PROMETHEUS_URL: http://prometheus:9090
       SANDBOX_MODE: local
       # the agent graphs reach the tools here
       MCP_URL_FILINGS_KB: http://filings-kb:8000/mcp

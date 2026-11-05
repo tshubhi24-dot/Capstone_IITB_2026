@@ -36,6 +36,7 @@ import plotly.graph_objects as go
 
 from analystdesk.baseline import run_baseline
 from analystdesk.api import create_app
+from analystdesk.alerts import alert_panel_data
 from analystdesk.chat_chart import build_chat_chart
 from analystdesk.ingest import ingest_all, load_passages, PASSAGES_DIR
 from analystdesk.scope import COMPANIES, C0_COMPANIES, create_request
@@ -367,6 +368,18 @@ with gr.Blocks(title="Analyst Desk") as demo:
         "IIT Bombay Agentic AI Capstone"
     )
 
+    gr.Markdown("### 🚨 Monitoring alerts")
+    alerts_status = gr.Markdown()
+    alerts_table = gr.Dataframe(
+        headers=["State", "Alert", "Severity", "Summary", "Active since"],
+        datatype=["str", "str", "str", "str", "str"],
+        interactive=False,
+        label="Active Prometheus alerts",
+        value=[],
+    )
+    refresh_alerts_btn = gr.Button("🔄 Refresh alerts", size="sm")
+    alerts_timer = gr.Timer(30)
+
     # ── Tab 1: Dashboard ──────────────────────────────────────────────────────
     with gr.Tab("📈 Dashboard"):
         with gr.Row():
@@ -522,6 +535,10 @@ with gr.Blocks(title="Analyst Desk") as demo:
         inputs=[dashboard_companies],
         outputs=[rev_chart, margin_chart, income_chart, metrics_table, stats_md],
     )
+    demo.load(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+    refresh_alerts_btn.click(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+    alerts_timer.tick(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+
     # Preload the retriever in the background for baseline research.
     _try_preload_retriever()
     refresh_btn.click(

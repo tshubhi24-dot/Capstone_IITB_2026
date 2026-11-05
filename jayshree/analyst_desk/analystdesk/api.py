@@ -14,11 +14,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from .alerts import ActiveAlert, PrometheusUnavailable, fetch_active_alerts
+
 logger = logging.getLogger(__name__)
 
 EventCallback = Callable[[dict[str, Any]], Awaitable[None]]
 ResearchRunner = Callable[[str, dict[str, Any], EventCallback], Awaitable[dict[str, Any]]]
 ReadinessCheck = Callable[[], str | None]
+AlertReader = Callable[[], list[ActiveAlert]]
 
 
 class ResearchRequest(BaseModel):
@@ -85,12 +88,14 @@ def create_app(
     runner: ResearchRunner | None = None,
     run_loader: Callable[[str], Awaitable[dict[str, Any]]] | None = None,
     readiness_check: ReadinessCheck | None = None,
+    alert_reader: AlertReader | None = None,
 ) -> FastAPI:
     """Create the API service and optionally mount the existing Gradio Blocks UI."""
     app = FastAPI(title="Analyst Desk API", version="1.0.0")
     run_research = runner or _run_until_gate
     load_run = run_loader or _load_run
     check_readiness = readiness_check or (lambda: None)
+    read_alerts = alert_reader or fetch_active_alerts
 
     @app.get("/healthz", tags=["health"])
     async def health() -> dict[str, str]:
@@ -105,6 +110,21 @@ def create_app(
                 detail={"status": "not_ready", "reason": reason},
             )
         return {"status": "ready"}
+
+    @app.get("/api/alerts", tags=["monitoring"])
+    async def active_alerts() -> dict[str, Any]:
+        try:
+            alerts = await asyncio.to_thread(read_alerts)
+        except PrometheusUnavailable as exc:
+            logger.warning("Prometheus alert query unavailable: %s", exc)
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "status": "unavailable",
+                    "message": "Prometheus alerts are currently unavailable.",
+                },
+            ) from exc
+        return {"status": "available", "alerts": alerts}
 
     @app.post("/api/research", tags=["research"])
     async def research(body: ResearchRequest) -> StreamingResponse:

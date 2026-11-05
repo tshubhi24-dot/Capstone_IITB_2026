@@ -234,6 +234,7 @@ Run these again whenever someone merges to `main`. CI publishes the new image ab
 | Jaeger traces | <http://127.0.0.1:16686> |
 | Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
+- **In-app alerts:** the top of the Analyst Desk page shows active Prometheus alerts and refreshes every 30 seconds. Use **Refresh alerts** to check immediately. The panel distinguishes no active alerts from Prometheus being unavailable; `/api/alerts` provides the same status as JSON.
 - **Check it is ready:** `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
 - **Stop it** with ■ in Docker Desktop or `docker compose down`. Your runs, memory, published notes and approval key stay in Docker volumes. Don't use `--volumes` unless you want to delete them.
 - **Run a specific version**, for example to compare with a teammate or before a change: each commit on `main` has an image tagged `sha-<first 7 characters of the commit>`.
@@ -417,6 +418,7 @@ analyst_desk/
 │   ├── evaluation.py      Scoring, runner, evaluation gate
 │   ├── observability.py   Traces and metrics
 │   ├── llm_config.py      Loads and validates config/llm.toml
+│   ├── alerts.py          Prometheus alerts for the in-app panel
 │   └── api.py             FastAPI endpoints
 ├── scripts/               Evaluation, reflection, judge calibration, retrieval eval, utilities
 ├── data/                  passages/, passages_plain/, edgar_cache/, evaluation/ (all committed)
