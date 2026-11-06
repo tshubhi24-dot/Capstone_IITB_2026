@@ -4,6 +4,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from analystdesk.alerts import PrometheusUnavailable
 from analystdesk.api import ResearchRequest, create_app
 
 
@@ -65,6 +66,38 @@ class ApiTests(unittest.TestCase):
     def test_health_and_readiness(self):
         self.assertEqual(self.client.get("/healthz").json(), {"status": "ok"})
         self.assertEqual(self.client.get("/readyz").json(), {"status": "ready"})
+
+    def test_alerts_endpoint_returns_active_prometheus_alerts(self):
+        alerts = [
+            {
+                "state": "firing",
+                "name": "VerifiedShareBelow98",
+                "severity": "warning",
+                "summary": "Verified share below threshold",
+                "active_at": "2026-11-05T10:00:00Z",
+            }
+        ]
+        with TestClient(create_app(alert_reader=lambda: alerts)) as client:
+            response = client.get("/api/alerts")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "available", "alerts": alerts})
+
+    def test_alerts_endpoint_reports_monitoring_unavailable(self):
+        def unavailable():
+            raise PrometheusUnavailable("connection refused")
+
+        with TestClient(create_app(alert_reader=unavailable)) as client:
+            response = client.get("/api/alerts")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(
+            response.json()["detail"],
+            {
+                "status": "unavailable",
+                "message": "Prometheus alerts are currently unavailable.",
+            },
+        )
 
     def test_readiness_waits_for_dependencies(self):
         state = {"reason": "retriever_loading"}
