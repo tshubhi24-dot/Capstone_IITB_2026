@@ -38,9 +38,10 @@ The same server also exposes a FastAPI API with health checks (section 11).
 | Area | Built by |
 |---|---|
 | The base system: EDGAR facts, ingestion, retrieval, MCP servers, C0/C1/C2 graphs, checker, memory, playbook, evaluation harness, observability, the app | Jayshree |
+| **Role 1, Domain and product:** problem statement, user workflow, supported scope, financial, filing-version, evidence and acceptance rules, reference answers ([product_spec.md](product_spec.md), 12) | Amit |
 | **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
-| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests (11) | Shubhi |
+| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
 
 Every part is explained below, but expect the deepest questions on your own role.
 
@@ -762,6 +763,9 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - **Metrics:** `prometheus_client` on `/metrics` (port 9464): runs by outcome, latency histogram, tokens and cost, verified/unverified numbers, critic rejections, tool calls by agent, hook denials, and EDGAR cache vs network.
 - **Grafana dashboard** ([docker/grafana/dashboards/analyst_desk.json](../docker/grafana/dashboards/analyst_desk.json)) shows the verified share against the 98% line, cost per note, latency (median and p95), rejections and tokens, tool calls by agent, and denials and EDGAR lookups.
 - **Alert:** Prometheus rule `VerifiedShareBelow98` (the brief's exact alert) ([docker/prometheus/alerts.yml](../docker/prometheus/alerts.yml)).
+- **In-app alerts:** the top of the app shows active Prometheus alerts, refreshed every 30 seconds and by a button; `/api/alerts` returns the same as JSON ([alerts.py](../analystdesk/alerts.py)).
+  - It says "Monitoring is unavailable" when Prometheus can't be reached, rather than "no alerts", so a broken monitor never looks like a healthy system.
+  - The API returns 503 in that case, and Prometheus's reply is validated field by field before anything is shown.
 - `docker compose up` now also starts **Jaeger (:16686), Prometheus (:9090) and Grafana (:3000)**.
 - **Known gap:** the MCP servers' own spans form separate traces, because trace context isn't propagated over the in-memory MCP connection. The lecture's `traceparent` header approach would fix this over HTTP.
 
@@ -850,4 +854,35 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 7. How do you test an alert rule without waiting for a real incident?
 8. How do you make sure every teammate runs exactly the same app? What exactly is pinned?
 9. Why bake the search index into the image, and what happens if the passages change?
+
+---
+
+## 12. The product specification and its gaps (role 1)
+
+[product_spec.md](product_spec.md) states what a correct note must do: the scope, the metric and fiscal-period rules, filing versions, evidence for claims, and acceptance. Its last section lists where the app falls short. Knowing those gaps, and why they are acceptable for now, is a strong viva answer.
+
+**Rules the app enforces in code:**
+- Coverage (15 companies × FY2022–2024) and refusal of advice requests, before planning.
+- Banks on pre-tax margin, fixed per company, so the basis never switches.
+- Each company's own fiscal year, with its period end shown.
+- As originally reported, with restatements flagged.
+- Every number checked against XBRL or its cited passage, with the same unit.
+- Two approval gates, an HMAC signature over the exact note, and the portal refusing duplicates.
+
+**Main gaps, and the answer to give:**
+
+| Gap | Why it is acceptable now, and the fix |
+|---|---|
+| A note with failed checks can still be approved (the specification says HOLD) | The analyst sees every issue and decides; nothing reaches the portal without a person. Fix: disable Approve while the check has issues, with an explicit override that is recorded |
+| A mixed operating/pre-tax comparison is not blocked in code | Each figure carries its basis label and the writer is told banks use pre-tax margin. Fix: a checker rule that rejects a `[diff]` or ranking across different `margin_basis` |
+| "Last three years" is read as FY2022–2024 rather than clarified | The covered window is exactly three years. Fix: ask in the plan gate |
+| Memory off does not stop the `get_past_notes` tool | Automatic memory reads and writes do stop. Fix: remove the tool from the run when memory is off |
+| Typed names, not verified identities | A single-user prototype. Fix: authentication in front of the app |
+
+**Likely questions:**
+1. What is the difference between operating margin and pre-tax margin, and why can't you rank Microsoft against JPMorgan?
+2. Microsoft's FY2024 ends in June and Alphabet's in December. Is comparing them valid?
+3. A 10-K restates last year's revenue. Which figure does the note use, and what does it say?
+4. Your risk agent found no cybersecurity passage for 2023. Can the note say the risk was added in 2024?
+5. Where does your app fall short of its own specification?
 
