@@ -72,7 +72,7 @@ Failed and timed-out runs are counted, not hidden. Expect C1 and C2 to take 15�
 |---|---|---|
 | Task success, and by type | Questions answered correctly | High; look at *which type* fails |
 | Policy violations | Investment-advice wording in the output | Always 0 |
-| Numbers verified (mean %) | Share of numbers that code can trace to XBRL or a cited passage | ≥ 98% (the dashboard alert fires below this) |
+| Numbers verified (mean %) | Mean of case percentages (the original report treats 0/0 as 100%); this differs from actual pooled accuracy | Report both; the operational alert is for pooled share < 98% |
 | Errors / timeouts | Crashes or runs over 8 minutes | 0 |
 | Tokens and cost per case | Price of one answer (estimate at $0.52 per million tokens) | Compare against the gain in success |
 | Latency median and p95 | Typical and worst-case time | Acceptable for an analyst workflow |
@@ -130,3 +130,23 @@ For every configuration, report: task success, policy violations, attack success
 | Red-team attacks | Role 5 | "The person building the defences must not write the attacks" |
 | Checking held-out cases against the written policy | Role 1 | Brief, team roles |
 | Tuning agents, prompts, lessons | Roles 2–4 (dev set only) | Never look at held-out results while tuning; if you do, those cases become development cases, and you must say so |
+
+## Role 6: reproducible offline audit and repeated-run report
+
+Run `scripts/audit_eval_results.py` on the already recorded 20-case development snapshot to validate
+case coverage and recompute numeric summaries. Its saved outputs are
+`data/evaluation/results/role6_dev_audit.json` and `docs/role6_development_evidence.md`.
+These are **audits of earlier runs**; they do not replay models, and their stored score files do not
+contain the underlying full text needed for an independent scoring replay.
+
+The original `verified_share_mean` is an unweighted per-case average and assigns 100% to a 0/0
+no-number note. For monitoring and for comparing with the **98% alert**, use
+`verified_share_pooled_pct` (total verified numbers divided by total counted numbers).
+
+Role 5 should provide the final hidden gold JSONL files, prelabelled independently, before the
+held-out experiment. Run each configuration three times with distinct `--tag` values, retaining
+all raw result files. Then `scripts/eval_three_runs.py --runs <run1.json> <run2.json> <run3.json>
+--gold data/evaluation/heldout --configs c0 c1 c2 --out docs/heldout_report.md`
+checks full case coverage in each run and reports the observed spread. If the filenames, raw
+agent outputs, judge human labels or red-team evidence are missing, do not claim those
+experiments are finished.

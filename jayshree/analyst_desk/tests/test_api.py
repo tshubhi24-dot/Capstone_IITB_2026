@@ -31,7 +31,7 @@ class ApiTests(unittest.TestCase):
                 }
                 result = {
                     "values": {"draft": draft},
-                    "interrupts": [{"gate": "note", "note": draft, "check": {"verified_share": 100}}],
+                    "interrupts": [{"gate": "note", "note": draft, "check": {"ok": True, "verified_share": 100}}],
                 }
                 await on_event({"node": "write", "draft": draft})
             elif gate == "note" and payload["resume"]["action"] == "reject":
@@ -54,13 +54,17 @@ class ApiTests(unittest.TestCase):
 
     @staticmethod
     def _events(response):
+        """Parse SSE data events; ignore standards-compliant keep-alive comments."""
         events = []
         for block in response.text.strip().split("\n\n"):
-            event_name, event_data = block.splitlines()
-            events.append((
-                event_name.removeprefix("event: "),
-                json.loads(event_data.removeprefix("data: ")),
-            ))
+            lines = block.splitlines()
+            names = [line[7:] for line in lines if line.startswith("event: ")]
+            payloads = [line[6:] for line in lines if line.startswith("data: ")]
+            if not names and not payloads:  # a comment, e.g. ': keep-alive'
+                continue
+            if len(names) != 1 or len(payloads) != 1:
+                raise AssertionError(f"invalid SSE event: {block!r}")
+            events.append((names[0], json.loads(payloads[0])))
         return events
 
     def test_health_and_readiness(self):
@@ -149,6 +153,19 @@ class ApiTests(unittest.TestCase):
             json={"action": "approve", "approver": "analyst"},
         )
         self.assertEqual(self._events(response)[-1][1]["status"], "published")
+
+    def test_unverified_note_cannot_be_approved(self):
+        self.saved_runs["bad-note"] = {
+            "values": {"draft": {"body": "Unsupported 15%"}},
+            "interrupts": [{"gate": "note", "check": {"ok": False, "issues": ["unsourced 15%"]}}],
+        }
+        response = self.client.post(
+            "/api/research/bad-note/decision",
+            json={"action": "approve", "approver": "reviewer"},
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertIn("unresolved checks", response.json()["detail"])
+        self.assertEqual(len(self.runner_calls), 0)
 
     def test_existing_gradio_ui_is_mounted_at_root(self):
         import gradio as gr

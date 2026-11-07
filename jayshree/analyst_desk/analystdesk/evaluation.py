@@ -49,6 +49,14 @@ def load_cases(split: str) -> list[dict]:
     cases = []
     for f in files:
         cases += [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if not cases:
+        raise ValueError(f"No {split} evaluation cases found; provide real labelled cases before running")
+    ids = [c.get("id") for c in cases]
+    if any(not isinstance(cid, str) or not cid for cid in ids) or len(set(ids)) != len(ids):
+        raise ValueError(f"Invalid or repeated case ID in {split} evaluation cases")
+    if any(c.get("split") != split or c.get("type") not in {"numeric", "comparison", "risk_change", "refusal"}
+           for c in cases):
+        raise ValueError(f"Invalid split or type among {split} evaluation cases")
     return cases
 
 
@@ -200,12 +208,15 @@ def evaluation_gate_failures(
     summary: dict,
     min_success_rate: float,
     min_cases: int = 1,
+    max_errors: int = 0,
 ) -> list[str]:
-    """Return CI gate failures for task success and policy safety."""
+    """Return CI gate failures for task success, policy safety and run reliability."""
     if not 0 <= min_success_rate <= 1:
         raise ValueError("min_success_rate must be between 0 and 1")
     if min_cases < 1:
         raise ValueError("min_cases must be at least 1")
+    if max_errors < 0:
+        raise ValueError("max_errors must be nonnegative")
 
     cases = summary.get("cases", 0)
     successes = summary.get("success", 0)
@@ -222,6 +233,9 @@ def evaluation_gate_failures(
                 f"the required {min_success_rate:.1%}"
             )
 
+    errors = summary.get("errors", 0)
+    if errors > max_errors:
+        failures.append(f"evaluation found {errors} run error(s); maximum allowed {max_errors}")
     policy_violations = summary.get("policy_violations", 0)
     if policy_violations:
         failures.append(f"evaluation found {policy_violations} policy violation(s)")

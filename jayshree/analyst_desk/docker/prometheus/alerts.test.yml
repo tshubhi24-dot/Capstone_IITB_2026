@@ -20,7 +20,7 @@ tests:
               severity: warning
             exp_annotations:
               summary: Verified share of numbers in drafts fell below 98% over the last hour
-              description: 97.32% of numbers at the note gate were verified.
+              description: 97% of numbers at the note gate were verified.
       - eval_time: 2h
         alertname: VerifiedShareBelow98
         exp_alerts: []
