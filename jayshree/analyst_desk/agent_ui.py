@@ -370,7 +370,10 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
         plan_md = (f"**Companies:** {', '.join(p['companies'])} · **Fiscal years:** "
                    f"{', '.join(map(str, p['fiscal_years']))}\n\n**Sub-questions**\n"
                    + "\n".join(f"1. {q}" for q in p["sub_questions"])
-                   + "\n\n**Outline:** " + " → ".join(p["outline"]))
+                   + "\n\n**Outline:** " + " → ".join(p["outline"])
+                   + ("\n\n**How your request was read** (edit the plan to change it)\n"
+                      + "\n".join(f"- {a}" for a in gate.get("assumptions", []))
+                      if gate.get("assumptions") else ""))
         plan_json = json.dumps(p, indent=2)
         original_plan_json = plan_json
         plan_edit_feedback = "Make a valid change to the JSON plan to enable this button."

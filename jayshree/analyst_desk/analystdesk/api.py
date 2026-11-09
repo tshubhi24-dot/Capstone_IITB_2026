@@ -78,6 +78,7 @@ def _run_summary(run_id: str, result: dict[str, Any]) -> dict[str, Any]:
         "run_id": run_id,
         "status": status,
         "plan": gate.get("plan") or values.get("plan"),
+        "assumptions": gate.get("assumptions", []),
         "draft": gate.get("note") or values.get("draft"),
         "check": gate.get("check") or values.get("check"),
     }

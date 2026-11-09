@@ -68,6 +68,7 @@ MAX_CONTEXT_CHARS = int(os.getenv("AGENT_MAX_CONTEXT_CHARS", "60000"))
 MAX_REVISIONS = 2
 MAX_REPLANS = 1
 _TICKERS = {c.ticker for c in COMPANIES}
+_BANKS = {c.ticker for c in COMPANIES if c.margin_basis == "pretax"}
 _ASKS_FOR_CHANGES = re.compile(r"last note|previous note|since our|what changed", re.I)
 
 
@@ -153,6 +154,25 @@ def insert_changes(body: str, changed: str) -> str:
     before = body.split("{WHAT_CHANGED}")[0].rstrip().splitlines()
     has_heading = bool(before) and before[-1].lstrip().startswith("#")
     return body.replace("{WHAT_CHANGED}", changed if has_heading else section)
+
+
+_RELATIVE_YEARS = re.compile(r"\b(last|past|previous|recent|latest)\s+(two|three|2|3)\s+(fiscal\s+)?years\b", re.I)
+
+
+def plan_assumptions(request: str, plan: dict) -> list[str]:
+    """How code read the request, shown at the plan gate so the analyst can correct it."""
+    years = "–".join(f"FY{y}" for y in sorted({min(plan["fiscal_years"]), max(plan["fiscal_years"])}))
+    out = []
+    if m := _RELATIVE_YEARS.search(request):
+        out.append(f"“{m.group(0)}” is read as {years}, the latest fiscal years covered, "
+                   "each company's own fiscal year (not calendar years).")
+    elif not find_years(request):
+        out.append(f"No year was named, so the plan covers {years}.")
+    banks = [t for t in plan["companies"] if t in _BANKS]
+    if banks:
+        out.append(f"{', '.join(banks)} {'is a bank' if len(banks) == 1 else 'are banks'}: "
+                   "margins are pre-tax margin, not operating margin.")
+    return out
 
 
 def trim_context(msgs: list, max_chars: int = MAX_CONTEXT_CHARS) -> list:
@@ -249,7 +269,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 3. human gate: approve or edit the plan
     def review_plan(state: AgentState):
-        decision = interrupt({"gate": "plan", "plan": state["plan"]})
+        decision = interrupt({"gate": "plan", "plan": state["plan"],
+                              "assumptions": plan_assumptions(state["request"], state["plan"])})
         if decision.get("action") == "cancel":
             return {"outcome": "cancelled", "trace": _event("review_plan", action="cancel")}
         out = {"trace": _event("review_plan", action="approve")}
