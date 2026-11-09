@@ -32,8 +32,28 @@ Memory is read-only to the agent: no tool lets the model write, edit or delete m
 - **Run without memory:** memory is on by default for each analyst. **↻ Re-run this request without memory** (C1/C2 panel) repeats a request with memory off; that run neither reads nor writes memory. This is also how memory-on vs memory-off is compared. Through the API, send `"memory_on": false`. Evaluation runs (`AGENT_EVAL=1`) always run without memory.
 - **Forget everything:** delete `data/memory/memory.sqlite`. Published notes stay in the portal, because publishing is a separate, approved record.
 
+## Privacy and access
+
+Each kind of record has its own purpose and store. Being stored does not make a record approved or safe to reuse.
+
+| Record | Store | Purpose and boundary |
+|---|---|---|
+| Preferences, coverage, past-note memory | Memory store (above) | Follow-up research. Written only by the analyst or after an approved publication |
+| Run checkpoints | `data/runs/`, separate from memory | Resume a run and review what happened. Hold the request, plan, tool results and drafts, including failed or rejected drafts; never treated as approved history |
+| Published notes | Research portal, `data/portal/` | The approved record. Each note is stored with the approver and a hash of the exact approved text |
+| Playbook lessons | Memory store, in their own `("lessons", <status>)` namespace | Procedures learned from development failures. Pending until the analyst approves each one; frozen before held-out evaluation |
+| Filing passages and index | `data/passages/`, `data/index/` | Public SEC text only. No analyst questions, preferences or notes are added to the index |
+
+- **Memory off** stops the run from reading preferences and previous notes and from writing memory. It does not delete existing records, and the run's checkpoint is still saved. Publishing to the portal and using playbook lessons are separate settings (`AGENT_LESSONS=0` turns lessons off).
+- **A previous note is context, not a source.** Its figures are compared with freshly fetched XBRL facts; a same-year difference is reported as a restatement, not as a business change.
+- **What leaves the machine:** the request, plan, preferences and the retrieved passages and facts are sent to the model provider (OpenRouter) during a run. The API key, the memory files and published notes stay local unless they are part of that context.
+- **Secrets stay out of memory**, lessons, logs and git: the key is read from `.env` at run time.
+- **Deletion has a stated scope.** Deleting a preference or past-note memory removes it from the memory store only. It does not withdraw the published note, edit old checkpoints or change the portal; rebuilding with `backfill_memory.py` recreates past-note memory from the portal.
+
 ## Limits
 
 - Preferences are free text and are not checked; a contradictory preference is followed as written. The analyst sees which preferences were used in each run's activity log.
+- The analyst and approver are typed names, not verified identities. Preferences and coverage are kept per analyst name, but nothing stops one analyst from typing another's name, and past-note memory and published notes are shared by everyone using the app.
+- With memory off, the research agent can still call the `get_past_notes` tool, which reads published notes from the portal. Memory off therefore stops automatic memory use, not every route to earlier notes.
 - A preference cannot widen a run's scope. For example, "always include a peer table" does not add peers to the approved plan. Figures for companies outside the plan are not available to the writer, and any placeholder for them is rejected by the checker.
 - There is no automatic expiry: memory stays until it is deleted.

@@ -443,11 +443,12 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 
 | Document | Contents |
 |---|---|
+| [docs/product_spec.md](docs/product_spec.md) | The problem, user, scope and domain rules, and where the app differs from them |
 | [docs/architecture.md](docs/architecture.md) | Components, data flow, agent graphs, deployment |
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
-| [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, how to correct or delete it |
-| [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works and how to read the results |
+| [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
+| [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
 | [docs/retrieval_eval.md](docs/retrieval_eval.md) | Retrieval Recall@5 results |
 | [docs/plan.md](docs/plan.md) | Team build plan and contribution log |
