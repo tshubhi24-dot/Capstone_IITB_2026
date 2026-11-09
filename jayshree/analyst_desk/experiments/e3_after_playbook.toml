@@ -1,0 +1,8 @@
+name = "E3: did the lessons help? (with the frozen playbook)"
+question = "Held-out results with the approved, frozen playbook. Freeze it in the app before this run."
+runner = "eval"
+configs = ["c1", "c2"]
+split = "heldout"
+
+[env]
+AGENT_LESSONS = "1"

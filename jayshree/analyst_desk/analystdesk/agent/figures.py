@@ -14,11 +14,16 @@ For every company and fiscal year in the plan:
     {T_Y_revenue_growth}     15.67% [growth: revenue Y / revenue Y-1]    (when Y-1 is in the plan)
     {T_Y_income_growth}      23.62% [growth: income Y / income Y-1]
     {T_Y_margin_change}      +2.87 pp [diff: margin Y - margin Y-1]
+
+comparability_notes() states, in code, what keeps the figures from being
+like-for-like (different fiscal year-ends, 53-week years, mixed margin
+bases); the writer node adds them to every note they apply to.
 """
 
 from __future__ import annotations
 
 import re
+from datetime import date
 
 from ..edgar import get_financials
 from ..scope import COMPANIES
@@ -71,6 +76,43 @@ def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
                                 f"{pi['fact_id']} / {pr['fact_id']}]",
                         "label": f"{c.name} FY{y} margin change vs FY{y - 1} (percentage points)"}
     return figures
+
+
+def _month_day(end: str) -> str:
+    return date.fromisoformat(end).strftime("%d %B").lstrip("0")
+
+
+def comparability_notes(companies: list[str], years: list[int]) -> list[str]:
+    """What makes the figures in a note not like-for-like, stated by code.
+
+    * Fiscal years ending on different dates (Microsoft: 30 June, Alphabet: 31 December).
+    * A 53-week fiscal year (Apple FY2023), against 52-week years either side.
+    * Margins on different bases: banks on pre-tax margin, the others on operating margin.
+    """
+    notes = []
+    ends = {}
+    for t in companies:
+        c = _BY_TICKER.get(t)
+        if c is None:
+            continue
+        for y in sorted(years):
+            rev = get_financials(c.cik, y)["revenue"]
+            if not rev:
+                continue
+            ends.setdefault(t, rev["end"])
+            if rev.get("start") and (date.fromisoformat(rev["end"]) - date.fromisoformat(rev["start"])).days + 1 >= 370:
+                notes.append(f"{c.name}'s FY{y} had 53 weeks ({rev['start']} to {rev['end']}), one more than a "
+                             f"usual year, so growth involving FY{y} is not fully like-for-like.")
+    if len({_month_day(e) for e in ends.values()}) > 1:
+        notes.insert(0, "Fiscal years end on different dates: " + "; ".join(
+            f"{_BY_TICKER[t].name} on {_month_day(e)}" for t, e in ends.items())
+            + ". Each figure is for the company's own fiscal year.")
+    bases = {_BY_TICKER[t].margin_basis for t in ends}
+    if len(bases) > 1:
+        banks = ", ".join(_BY_TICKER[t].name for t in ends if _BY_TICKER[t].margin_basis == "pretax")
+        notes.append(f"Banks ({banks}) are shown on pre-tax margin and the other companies on operating margin. "
+                     "The two are not comparable, so they are not ranked against each other.")
+    return notes
 
 
 def figures_table(figures: dict[str, dict]) -> str:

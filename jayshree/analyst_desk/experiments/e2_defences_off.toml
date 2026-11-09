@@ -1,0 +1,8 @@
+name = "E2: do the defences work? (defences off)"
+question = "The same attacks and clean cases with the guardrails off (guards.py lists what that turns off)."
+runner = "redteam"
+configs = ["c1", "c2"]
+split = "dev"
+
+[env]
+AGENT_DEFENCES = "0"

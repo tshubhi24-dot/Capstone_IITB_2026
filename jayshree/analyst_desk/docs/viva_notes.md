@@ -42,6 +42,7 @@ The same server also exposes a FastAPI API with health checks (section 11).
 | **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
 | **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
+| **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Nidhi |
 
 Every part is explained below, but expect the deepest questions on your own role.
 
@@ -867,17 +868,19 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - Each company's own fiscal year, with its period end shown.
 - As originally reported, with restatements flagged.
 - Every number checked against XBRL or its cited passage, with the same unit.
-- Two approval gates, an HMAC signature over the exact note, and the portal refusing duplicates.
+- No line sets an operating margin against a pre-tax margin; a Comparability section states differing fiscal year-ends, 53-week years (Apple FY2023, AMD FY2022) and mixed bases.
+- "Last three years" and similar readings are shown at the plan gate ("How your request was read").
+- Two approval gates, an HMAC signature over the exact note, approval refused while checks fail, and the portal refusing duplicates.
+- Memory off removes the `get_past_notes` tool from the run.
 
 **Main gaps, and the answer to give:**
 
 | Gap | Why it is acceptable now, and the fix |
 |---|---|
-| A note with failed checks can still be approved (the specification says HOLD) | The analyst sees every issue and decides; nothing reaches the portal without a person. Fix: disable Approve while the check has issues, with an explicit override that is recorded |
-| A mixed operating/pre-tax comparison is not blocked in code | Each figure carries its basis label and the writer is told banks use pre-tax margin. Fix: a checker rule that rejects a `[diff]` or ranking across different `margin_basis` |
-| "Last three years" is read as FY2022–2024 rather than clarified | The covered window is exactly three years. Fix: ask in the plan gate |
-| Memory off does not stop the `get_past_notes` tool | Automatic memory reads and writes do stop. Fix: remove the tool from the run when memory is off |
 | Typed names, not verified identities | A single-user prototype. Fix: authentication in front of the app |
+| The C2 judge checks at most 10 cited claims; C1 has none | Every number is still checked by code. Fix: judge every cited line, in batches |
+| No correction or withdrawal of published notes | Publication is rare and approved by a person. Fix: a superseding-note workflow in the portal |
+| A mixed comparison spread over two lines is not caught | The Comparability section says the bases differ. Fix: a judge question about cross-basis rankings |
 
 **Likely questions:**
 1. What is the difference between operating margin and pre-tax margin, and why can't you rank Microsoft against JPMorgan?
@@ -885,4 +888,64 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 3. A 10-K restates last year's revenue. Which figure does the note use, and what does it say?
 4. Your risk agent found no cybersecurity passage for 2023. Can the note say the risk was added in 2024?
 5. Where does your app fall short of its own specification?
+
+---
+
+## 13. Security, experiments and deployment checks
+
+**Threat model:** [threat_model.md](threat_model.md). Learn its first sentence: *only notes the analyst approved, word for word, reach the portal; every number in them is true; the analyst's private data stays inside the system.*
+
+**Guardrails in code** ([guards.py](../analystdesk/agent/guards.py)), in three layers:
+
+| Layer | What it does |
+|---|---|
+| Input | The input guard refuses uncovered companies or years, advice requests, and requests that carry instructions to the system ("ignore your instructions…") |
+| Tools | The pre-tool hook checks the allow-list, and refuses any call naming a **private-watchlist** company the plan doesn't cover (`WATCHLIST_PRIVATE`). After the call, `screen()` withholds any result field that contains instructions aimed at the model |
+| Output | The note checks reject advice wording and watchlist companies; the analyst signs the exact note |
+
+- **The injection screen fires on 0 of 24,660 real filing passages** (both chunkings), so on our data it does not cost false blocks. It is a pattern list, so a paraphrased attack can pass it. That's why the output checks and the human gate stay behind it (defence in depth).
+- **The private watchlist** (🧠 Memory panel) is seen only by the planner. It can propose a watchlist company as a peer, but only an approved plan lets it into a tool call.
+- **Residual risks to name honestly:**
+  - typed identities;
+  - a planted passage with a wrong number but no instructions passes the quote check;
+  - in Compose, the sandbox guard is in-process and the sandbox shares the internal network with the app.
+
+**Experiments as config files** ([experiments/](../experiments/)): one harness and one file per arm. Each file's `[env]` sets switches the code reads at run time:
+- `AGENT_CRITIC=0`: no revisions and no judge (E4);
+- `AGENT_PASSAGES=plain`: flattened tables (E4);
+- `AGENT_DEFENCES=0`: every guardrail off (E2);
+- `AGENT_LESSONS=0`: no playbook (E3).
+
+The model, prompts, tools and budget never change between arms, so a difference comes from the switch. Every result file records which experiment and switches produced it.
+
+**E2 harness** ([redteam.py](../analystdesk/redteam.py), [run_redteam.py](../scripts/run_redteam.py)):
+- Attacks are JSONL written by Role 5. An attack can **plant passages in the filings** for one run: injection through our own data path. It is planted in keyword search and passage lookup only, so the stored vector index never holds attack text.
+- Success is decided in code, from `success_if`. A note-content attack counts only if the note **passed its checks**, because a note that fails them can't be approved.
+- The same run replays clean cases. A **false block** is an in-scope case in which any guardrail fired.
+- **First live check:** one planted "buy" article, C1.
+  - With defences on, the screen withheld it.
+  - With defences off, gpt-4.1-mini ignored it anyway.
+  - So the model resists some attacks by itself, and E2 has to measure that rather than assume it.
+
+**Role 6 additions (Nidhi):**
+- In Docker, the app calls the four MCP servers over HTTP. This was verified live: all four containers received calls, and a C1 note was published through the HTTP portal.
+- `ops_smoke.py` checks the running stack.
+- CI installs the locked dependencies and checks the Prometheus rules with `promtool`.
+- `audit_eval_results.py` recomputes the recorded development results.
+
+The audit points out that the **pooled** verified share differs from the per-case mean:
+
+| Config | Pooled | Per-case mean |
+|---|---|---|
+| C1 | 92.8% | 96.6% |
+| C2 | 71.5% | 80.2% |
+
+The pooled share matches the 98% alert's definition, because the per-case mean counts a note with no numbers as 100%.
+
+**Likely questions:**
+1. Walk through what stops an injected "buy" recommendation, layer by layer. Which layer would catch a paraphrase the regex misses?
+2. Why may the planner see the watchlist but no tool call may name it? What does the analyst's plan approval change?
+3. How do you count a false block, and why does it matter as much as attack success?
+4. Why is an experiment a config file and not a branch?
+5. What would you change before a supervised pilot? (Sign-in, a networkless sandbox per call, a classifier such as Llama Prompt Guard, a correction workflow.)
 

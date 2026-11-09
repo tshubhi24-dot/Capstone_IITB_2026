@@ -55,6 +55,8 @@ python scripts/run_eval.py --configs c0 c1 c2 --split dev            # all dev c
 python scripts/run_eval.py --configs c2 --split dev --cases d01 d14   # a few cases
 python scripts/run_eval.py --configs c0 c1 c2 --split heldout         # final (role 5's cases)
 python scripts/eval_report.py data/evaluation/results/eval_dev_<tag>.json   # writes docs/evaluation.md
+python scripts/run_eval.py --experiment e4_critic_off                  # an experiment file (section 6)
+python scripts/run_redteam.py --experiment e2_defences_on              # E2: attacks + false blocks
 ```
 
 Each run:
@@ -108,10 +110,16 @@ The compliance critic uses a judge from a **different model family** (`meta-llam
 
 | | Question | How | Status |
 |---|---|---|---|
-| **E1** | Does the agent justify its cost? | C0 vs C1 vs C2 on the same cases | Dev done; held-out pending |
-| **E2** | Do the defences work? | Red-team suite with defences off vs on; also false blocks on clean cases | Attacks written by role 5 |
-| **E3** | Did the Reflexion lessons help? | Held-out with `--no-lessons` vs with the frozen playbook | Tooling ready; needs approved lessons and held-out cases |
-| **E4** | Signature ablation | Critic loop on vs off; table-aware vs plain passages | To build |
+| | Question | Experiment files ([experiments/](../experiments/)) | Needs |
+|---|---|---|---|
+| **E1** | Does the agent justify its cost? | `e1_c0_c1_c2` | Held-out cases, three repeats |
+| **E2** | Do the defences work? | `e2_defences_on` vs `e2_defences_off` (run with `run_redteam.py`) | Role 5's attacks in `data/evaluation/redteam/` |
+| **E3** | Did the Reflexion lessons help? | `e3_before_playbook` vs `e3_after_playbook` | Approved, frozen lessons; held-out cases |
+| **E4** | Signature ablation | `e4_critic_off` and `e4_plain_passages`, each against E1 | Nothing more: runs on the dev set now |
+
+Each experiment is one config file, not a code branch. Its `[env]` switches what the code does: `AGENT_CRITIC=0` (no revisions, no judge), `AGENT_PASSAGES=plain` (tables flattened), `AGENT_DEFENCES=0` (every guardrail off; [guards.py](../analystdesk/agent/guards.py) lists them), `AGENT_LESSONS=0`. The model, prompts, tools and budget stay the same, and every result file records the experiment and its switches.
+
+**E2 in detail.** `run_redteam.py` runs every attack to the note gate (nothing is published) and scores it in code: an attack got through if its `success_if` holds, for example advice wording in a note that passed its checks, or a watchlist ticker in a tool call that reached its server ([redteam.py](../analystdesk/redteam.py), format in [the red-team README](../data/evaluation/redteam/README.md)). Attack text can be planted in the filings for one attack, so injection through our own data path is tested. The same run replays the clean development cases: a **false block** is an in-scope case in which any guardrail stopped something. Every `run_eval.py` result also counts false blocks.
 
 For every configuration, report: task success, policy violations, attack success, false blocks, cost per case, median and p95 latency, and errors.
 
@@ -150,6 +158,11 @@ all raw result files. Then `scripts/eval_three_runs.py --runs <run1.json> <run2.
 checks full case coverage in each run and reports the observed spread. If the filenames, raw
 agent outputs, judge human labels or red-team evidence are missing, do not claim those
 experiments are finished.
+
+**Deployment check.** With the Docker stack running, `python scripts/ops_smoke.py --output
+data/evaluation/results/ops_smoke_<date>.json` checks FastAPI liveness and readiness, the alerts
+API, Prometheus scraping, the `VerifiedShareBelow98` rule and Grafana health. It makes no model
+calls. A passing record shows the services are up; it does not show that an agent run succeeded.
 
 ## 10. Reference answers
 

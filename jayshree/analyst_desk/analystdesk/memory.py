@@ -8,6 +8,8 @@ store is what the desk remembers across runs. See docs/memory_policy.md.
     ("coverage", analyst)     key=<ticker> {"ticker", "notes", "last_note_id", "last_published"}
     ("notes", <ticker>)       key=note-<id> {"note_id", "title", "published_at", "approver",
                                              "figures": {"<metric>_<year>": {"value", "unit", "text"}}}
+    ("watchlist", analyst)    key=tickers  {"tickers", "updated_at"}   private: only the planner
+                                           sees it, and the hooks keep it out of every tool call
 
 Past-note figures are parsed from the published note's own [fact: ...] and
 [calc: ...] tags — numbers code already verified — so memory never holds an
@@ -88,6 +90,27 @@ async def preferences(analyst: str) -> list[dict]:
     async with open_store() as s:
         items = await s.asearch(("preferences", analyst), limit=50)
     return [{"key": i.key, **i.value} for i in sorted(items, key=lambda i: i.value["added_at"])]
+
+
+# ── private watchlist ─────────────────────────────────────────────────────────
+
+async def watchlist(analyst: str) -> list[str]:
+    async with open_store() as s:
+        item = await s.aget(("watchlist", analyst), "tickers")
+    return list(item.value["tickers"]) if item else []
+
+
+async def set_watchlist(analyst: str, tickers: list[str]) -> list[str]:
+    """Replace the analyst's watchlist; only covered tickers are kept. Empty clears it."""
+    from .scope import COMPANIES
+    covered = {c.ticker for c in COMPANIES}
+    kept = sorted({t.strip().upper() for t in tickers} & covered)
+    async with open_store() as s:
+        if kept:
+            await s.aput(("watchlist", analyst), "tickers", {"tickers": kept, "updated_at": _now()})
+        else:
+            await s.adelete(("watchlist", analyst), "tickers")
+    return kept
 
 
 # ── notes and coverage ────────────────────────────────────────────────────────

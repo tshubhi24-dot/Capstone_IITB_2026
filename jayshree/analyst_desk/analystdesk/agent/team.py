@@ -36,6 +36,7 @@ from langgraph.types import Send
 from pydantic import BaseModel, Field
 
 from .checks import PASSAGE_ID
+from .guards import screen
 from .graph import (MAX_REPLANS, TOKEN_BUDGET, AgentState, _event, add_common_tail,
                     common_nodes, tool_budget, trim_context, usage)
 from .hooks import Hooks
@@ -78,8 +79,12 @@ class HandoffMessage(BaseModel):
 # ── specialist runner ─────────────────────────────────────────────────────────
 
 async def run_specialist(agent: str, company: str | None, llm, tools_by_name: dict, system: str,
-                         hooks: Hooks, budget: int, emit=None) -> tuple[HandoffMessage, int]:
-    """A small ReAct loop for one specialist; every tool call goes through the hooks."""
+                         hooks: Hooks, budget: int, emit=None,
+                         context: dict | None = None) -> tuple[HandoffMessage, int]:
+    """A small ReAct loop for one specialist; every tool call goes through the hooks.
+
+    context: {"plan", "watchlist"} of the run, for the hooks' watchlist check.
+    """
     allowed = [tools_by_name[n] for n in sorted(hooks.allowed[agent]) if n in tools_by_name]
     bound = llm.bind_tools(allowed)
     who = f"{agent}/{company}" if company else agent
@@ -97,15 +102,19 @@ async def run_specialist(agent: str, company: str | None, llm, tools_by_name: di
             break
         for call in reply.tool_calls:
             start = time.perf_counter()
-            denial = await hooks.pre(agent, call["name"], who)
+            denial = await hooks.pre(agent, call["name"], who, args=call["args"], context=context)
+            if not denial and call["name"] not in tools_by_name:   # e.g. get_past_notes in a memory-off run
+                denial = {"ok": False, "error": {"code": "NOT_AVAILABLE",
+                                                 "message": f"{call['name']} is not available in this run"}}
+            withheld = 0
             if denial:
                 content = json.dumps(denial)
             else:
                 calls += 1
                 raw = await tools_by_name[call["name"]].ainvoke(call["args"])
-                content = raw if isinstance(raw, str) else json.dumps(raw)
+                content, withheld = screen(raw if isinstance(raw, str) else json.dumps(raw))
             event = hooks.post(who, call["name"], call["args"], content,
-                               (time.perf_counter() - start) * 1000, bool(denial))
+                               (time.perf_counter() - start) * 1000, bool(denial), withheld)
             if emit:
                 emit(event)
             if not event["ok"] and event["error"]:
@@ -185,7 +194,8 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
         if state.get("outcome") == "cancelled":
             return END
         plan = state["plan"]
-        base = {"plan": plan, "round": state.get("replans", 0), "lessons": state.get("lessons") or []}
+        base = {"plan": plan, "round": state.get("replans", 0), "lessons": state.get("lessons") or [],
+                "watchlist": state.get("watchlist") or []}
         sends = [Send("researcher", {**base, "company": t}) for t in plan["companies"]]
         sends.append(Send("quant", base))
         sends += [Send("risk_diff", {**base, "company": t}) for t in plan["companies"]]
@@ -211,12 +221,14 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
             budgeted = Hooks(max_calls_per_agent=budget, allowed=hooks.allowed,
                              calls=hooks.calls, events=hooks.events)
             handoff, tokens = await run_specialist(agent, company, llm, tools_by_name, system,
-                                                   budgeted, budget, _emit())
+                                                   budgeted, budget, _emit(),
+                                                   context={"plan": plan, "watchlist": task.get("watchlist")})
             handoff.round = task.get("round", 0)
             h = handoff.model_dump()
             who = f"{agent}/{company}" if company else agent
             # this agent's hook events, kept in the run's history (live ones only stream)
-            tools_log = [{k: e[k] for k in ("tool", "args", "ok", "error", "ms", "denied")}
+            tools_log = [{k: e.get(k) for k in ("tool", "args", "ok", "error", "ms", "denied", "withheld",
+                                                "result")}
                          for e in hooks.events if e["agent"] == who]
             return {"handoffs": [h], "tool_calls": handoff.tool_calls, "tokens": tokens,
                     "trace": _event("handoff", agent=agent, company=company, confidence=h["confidence"],

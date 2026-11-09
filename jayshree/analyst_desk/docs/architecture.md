@@ -127,12 +127,12 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
 
 | Node | What it does | Model or code |
 |---|---|---|
-| `input_guard` | Covered company named? Covered years only? No advice request? | Code |
+| `input_guard` | Covered company named? Covered years only? No advice request? No instructions aimed at the system? | Code |
 | `plan` | Sub-questions, outline, companies and years. Reads preferences, previous notes and relevant lessons. Coverage is then enforced by code. | Model (structured output) + code |
-| `review_plan` | Interrupt: approve, edit or cancel | Person |
-| `write` | Draft with figure placeholders. Code renders every figure and inserts the "what changed" section. | Model + code |
-| `check` | Every number, citation, placeholder and advice phrase is checked. C2 adds the judge. | Code (+ judge) |
-| `review_note` | Interrupt: approve (signs the exact note), edit (re-checked) or reject | Person |
+| `review_plan` | Interrupt: approve, edit or cancel. Shows how code read the request ("last three years" → FY2022–FY2024; banks on pre-tax margin) | Person |
+| `write` | Draft with figure placeholders. Code renders every figure and adds the "what changed" and Comparability sections (fiscal year-ends, 53-week years, mixed margin bases). | Model + code |
+| `check` | Every number, citation and placeholder; no operating vs pre-tax margin on one line; no advice wording; no private-watchlist company. Failed checks go back to the writer at most twice. C2 adds the judge. | Code (+ judge) |
+| `review_note` | Interrupt: approve (signs the exact note; refused while checks fail), edit (re-checked) or reject | Person |
 | `publish` | `publish_note` with the approval token. The portal re-hashes the note and verifies the token. | Code |
 
 ---
@@ -243,6 +243,11 @@ The writer has no tools: it drafts only from the hand-offs.
   - each agent is bound only to its tools (`servers.AGENT_TOOLS`);
   - the permission hook re-checks every call;
   - in Docker, the MCP servers sit on an internal network with no internet access.
+- **Guardrails** ([agent/guards.py](../analystdesk/agent/guards.py), threats in [threat_model.md](threat_model.md)):
+  - **input:** the input guard refuses uncovered companies or years, advice requests and instructions aimed at the system;
+  - **tools:** the pre-tool hook refuses a call that names a company on the analyst's private watchlist the plan does not cover (`WATCHLIST_PRIVATE`); a tool result with instructions aimed at the model is withheld from it;
+  - **output:** the note checks reject advice wording and private-watchlist companies;
+  - `AGENT_DEFENCES=0` turns all of them off, for experiment E2 only.
 - **Typed results:** every tool returns `{ok: true, …}` or `{ok: false, error: {code, message}}`, with codes such as `NOT_IN_COVERAGE`, `NOT_FOUND`, `BLOCKED`, `BUDGET_EXCEEDED`, `PERMISSION_DENIED` and `APPROVAL_INVALID`. Agents adapt instead of crashing.
 - **Approval** ([approval.py](../analystdesk/approval.py)):
   - the note gate signs SHA-256(title + body + tickers) with an HMAC key the agents never see;
@@ -335,9 +340,11 @@ The research UI and FastAPI now select MCP transport from the environment. With 
 | E3 | Did the Reflexion lessons help? | Held-out with `AGENT_LESSONS=0` vs the frozen playbook |
 | E4 | Signature ablation | Critic loop on vs off; table-aware vs plain passages |
 
+Each experiment is a config file in [experiments/](../experiments/); `run_eval.py --experiment` and `run_redteam.py --experiment` run them with one harness.
+
 - **CI** ([.github/workflows](../../../.github/workflows)):
   - `ci.yml` runs the offline test suite and validates the Compose file on every push and pull request;
-  - `evaluation-gate.yml` runs on demand: C1 on the 20 development cases, failing below 95% task success or on any policy violation.
+  - `evaluation-gate.yml` runs on pushes to `main`, on pull requests from this repository and on demand: C1 on the 20 development cases, failing below 95% task success, on any run error or on any policy violation;
   - `docker-image.yml` publishes the team image on every merge to `main`, and test-builds it on pull requests.
 
 ---
