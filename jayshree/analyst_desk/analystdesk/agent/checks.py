@@ -18,6 +18,7 @@ check_note() verifies all three in code, not with an LLM (rule 1):
     change in percentage points;
   * each quoted number occurs, with the same unit, in a passage cited on its line;
   * cited passages exist;
+  * no line sets an operating margin against a pre-tax margin (banks);
   * no investment-advice wording ("buy", "price target", ...).
 The issues it returns are fed back to the writer for a revision.
 """
@@ -27,6 +28,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from ..edgar import OPERATING_INCOME_CONCEPT, PRETAX_INCOME_CONCEPT
 from ..servers.edgar_server import get_fact
 from .figures import PLACEHOLDER
 
@@ -43,6 +45,7 @@ PASSAGE_ID = re.compile(r"\b([A-Z]{1,5}_\d{4}_item(?:1a|7)_\d{3})\b")
 MONEY = re.compile(r"\$\s?[\d,]+(?:\.\d+)?\s?(?:[MBK]\b|million|billion)?")
 PERCENT = re.compile(r"-?\d+(?:\.\d+)?\s?%")
 POINTS = re.compile(r"[+-]?\d+(?:\.\d+)?\s?(?:pp\b|percentage points?)")
+MARGIN_BASIS = {OPERATING_INCOME_CONCEPT: "operating", PRETAX_INCOME_CONCEPT: "pretax"}
 ADVICE = re.compile(
     r"\b(buy|sell|hold rating|overweight|underweight|outperform|underperform|"
     r"price target|we recommend|strong buy|investors should)\b", re.I)
@@ -198,6 +201,13 @@ def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult
     # a figure placeholder left in the note means a number is missing (e.g. a peer not in the plan)
     for key in sorted(set(PLACEHOLDER.findall(body))):
         issues.append(f"Unknown placeholder {{{key}}}.")
+
+    # Like-for-like: one line must not set an operating margin against a pre-tax margin
+    for line in body.splitlines():
+        bases = {MARGIN_BASIS.get(num.split("/")[0]) for _, num, _ in CALC.findall(line)} - {None}
+        if len(bases) > 1:
+            issues.append("This line compares an operating margin with a pre-tax margin, which are not "
+                          f"comparable; show them separately: {re.sub(r' ?\[[^\]]*\]', '', line).strip()[:120]!r}")
 
     for m in ADVICE.finditer(body):
         issues.append(f"Investment-advice wording {m.group()!r} is not allowed in a research note.")

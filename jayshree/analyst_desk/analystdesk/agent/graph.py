@@ -45,7 +45,7 @@ from ..query import find_companies, find_years
 from ..scope import COMPANIES
 from ..servers.common import COVERED_YEARS
 from .checks import ADVICE, check_note
-from .figures import build_figures, figures_table, render
+from .figures import build_figures, comparability_notes, figures_table, render
 from .hooks import Hooks, wrap_for_toolnode
 
 # Tool-call budget for one run, the SAME for C1 and C2 (brief: the single agent and the team get
@@ -293,6 +293,7 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
     async def write(state: AgentState):
         issues = state.get("check", {}).get("issues") if state.get("revisions") else None
         figures = build_figures(state["plan"]["companies"], state["plan"]["fiscal_years"])
+        notes = comparability_notes(state["plan"]["companies"], state["plan"]["fiscal_years"])
         mem = state.get("memory") or {}
         changed = _changes(state, figures)
         memory_block = ""
@@ -304,7 +305,9 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         memory_block += as_prompt(state.get("lessons") or [])
         prompt = LLM_CONFIG.format_prompt(
             "writer",
-            figures=figures_table(figures),
+            figures=figures_table(figures) + (
+                "\nCOMPARABILITY (code adds these to the note; never rank margins on different bases):\n- "
+                + "\n- ".join(notes) if notes else ""),
             memory=memory_block,
             issues=("FIX THESE ISSUES FROM THE CHECKER:\n- " + "\n- ".join(issues))
             if issues else "",
@@ -317,6 +320,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         d.body, render_issues = render(d.body, figures)   # code inserts every key figure
         if changed:   # code inserts the comparison with the last note
             d.body = insert_changes(d.body, changed)
+        if notes:     # and what keeps the figures from being like-for-like
+            d.body = d.body.rstrip() + "\n\n## Comparability\n" + "\n".join(f"- {n}" for n in notes)
         return {"draft": d.model_dump(), "render_issues": render_issues, "tokens": usage(result["raw"]),
                 "trace": _event("write", revision=state.get("revisions", 0))}
 

@@ -1,13 +1,13 @@
 import unittest
 
 from analystdesk.agent.checks import check_note
-from analystdesk.agent.figures import build_figures, render
+from analystdesk.agent.figures import build_figures, comparability_notes, render
 
 
 class FiguresTests(unittest.TestCase):
     def test_rendered_figures_always_pass_the_checker(self):
         figures = build_figures(["MSFT", "GOOGL", "JPM"], [2022, 2023, 2024])
-        body = " ".join(f"{{{k}}}" for k in figures if not k.endswith("period_end"))
+        body = "\n".join(f"{{{k}}}" for k in figures if not k.endswith("period_end"))
         rendered, issues = render(body, figures)
         self.assertEqual(issues, [])
         r = check_note(rendered)
@@ -38,6 +38,36 @@ class FiguresTests(unittest.TestCase):
         self.assertIn("Unknown placeholder {GS_2024_margin}.", r.issues)
         self.assertIn("Unknown placeholder {BAC_2024_margin}.", r.issues)
         self.assertFalse(any("item7" in i for i in r.issues))          # a passage id is not a placeholder
+
+
+class LikeForLikeTests(unittest.TestCase):
+    """Signature challenge A: fiscal years, 53-week years and margin bases differ."""
+
+    def test_one_line_must_not_set_operating_against_pretax_margin(self):
+        figures = build_figures(["MSFT", "JPM"], [2024])
+        mixed, _ = render("Microsoft {MSFT_2024_margin} is ahead of JPMorgan {JPM_2024_margin}.", figures)
+        separate, _ = render("Microsoft: {MSFT_2024_margin}\nJPMorgan (pre-tax): {JPM_2024_margin}", figures)
+        self.assertTrue(any("not comparable" in i for i in check_note(mixed).issues))
+        self.assertTrue(check_note(separate).ok)
+
+    def test_same_basis_on_one_line_is_fine(self):
+        figures = build_figures(["MSFT", "GOOGL"], [2024])
+        body, _ = render("Microsoft {MSFT_2024_margin} vs Alphabet {GOOGL_2024_margin}", figures)
+        self.assertTrue(check_note(body).ok)
+
+    def test_notes_name_different_year_ends_and_mixed_bases(self):
+        notes = comparability_notes(["MSFT", "JPM"], [2024])
+        self.assertIn("Microsoft on 30 June", notes[0])
+        self.assertIn("JPMorgan Chase on 31 December", notes[0])
+        self.assertTrue(any("pre-tax margin" in n and "not comparable" in n for n in notes))
+
+    def test_53_week_year_is_flagged(self):
+        notes = comparability_notes(["AAPL"], [2022, 2023, 2024])
+        self.assertEqual(len(notes), 1)
+        self.assertIn("FY2023 had 53 weeks (2022-09-25 to 2023-09-30)", notes[0])
+
+    def test_nothing_to_say_for_one_ordinary_company(self):
+        self.assertEqual(comparability_notes(["GOOGL"], [2023, 2024]), [])
 
 
 if __name__ == "__main__":
