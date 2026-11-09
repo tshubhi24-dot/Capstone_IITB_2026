@@ -23,6 +23,8 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 CHECKPOINTS = Path(os.getenv("AGENT_CHECKPOINTS", ROOT / "data" / "runs" / "checkpoints.sqlite"))
 RESEARCH_TOOLS = {"search_filings", "get_passage", "list_filings", "get_financials",
                   "get_fact", "run_python", "get_past_notes"}
+# Tools that read earlier notes: memory, so a memory-off run does not get them at all
+MEMORY_TOOLS = {"get_past_notes"}
 
 Event = dict[str, Any]
 
@@ -101,9 +103,11 @@ async def run_until_gate(run_id: str, payload, on_event: Callable[[Event], Await
         if isinstance(payload, dict):
             payload = {**payload, "mode": payload.get("mode", "c1")}
             mode = payload["mode"]
+            memory_on = payload.get("memory_on", True)
         else:
             mode = await _mode_of(saver, run_id)
-        research = [t for t in tools if t.name in RESEARCH_TOOLS]
+            memory_on = await _memory_on(saver, run_id)
+        research = research_tools(tools, memory_on)
         publish = next(t for t in tools if t.name == "publish_note")
         graph = _build(mode, make_llm(), research, publish, passage_text, live=True).compile(checkpointer=saver)
         config = {"configurable": {"thread_id": run_id}, "recursion_limit": 150}
@@ -144,12 +148,29 @@ def _build(mode: str, llm, research, publish, passage_text_fn, live: bool = Fals
     return build_graph(llm, research, publish, passage_text_fn)
 
 
+def research_tools(tools: list, memory_on: bool) -> list:
+    """The research tools for one run; without memory, no tool that reads earlier notes.
+
+    Evaluation runs (AGENT_EVAL=1) are always memory-off, as in graph.input_guard.
+    """
+    memory_on = memory_on and os.getenv("AGENT_EVAL") != "1"
+    return [t for t in tools if t.name in RESEARCH_TOOLS and (memory_on or t.name not in MEMORY_TOOLS)]
+
+
 async def _mode_of(saver, run_id: str) -> str:
     """The mode a saved run was started with (c1 for runs from before C2 existed)."""
     tup = await saver.aget_tuple({"configurable": {"thread_id": run_id}})
     if tup is None:
         return "c1"
     return (tup.checkpoint.get("channel_values") or {}).get("mode") or "c1"
+
+
+async def _memory_on(saver, run_id: str) -> bool:
+    """Whether a saved run uses memory (set by its input guard; on for old runs)."""
+    tup = await saver.aget_tuple({"configurable": {"thread_id": run_id}})
+    if tup is None:
+        return True
+    return (tup.checkpoint.get("channel_values") or {}).get("memory_on", True) is not False
 
 
 async def get_run(run_id: str) -> dict:

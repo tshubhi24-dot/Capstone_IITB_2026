@@ -98,6 +98,9 @@ async def run_specialist(agent: str, company: str | None, llm, tools_by_name: di
         for call in reply.tool_calls:
             start = time.perf_counter()
             denial = await hooks.pre(agent, call["name"], who)
+            if not denial and call["name"] not in tools_by_name:   # e.g. get_past_notes in a memory-off run
+                denial = {"ok": False, "error": {"code": "NOT_AVAILABLE",
+                                                 "message": f"{call['name']} is not available in this run"}}
             if denial:
                 content = json.dumps(denial)
             else:
