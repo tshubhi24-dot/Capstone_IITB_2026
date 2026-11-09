@@ -5,7 +5,7 @@ name: Analyst Desk Docker Image
 #                     ghcr.io/<owner>/analyst-desk as :main and :sha-<commit>
 #   pull request      build only (no index, nothing published), so a broken
 #                     Dockerfile or lock file fails the PR
-# Teammates then run `docker compose pull && docker compose up` (see README).
+# Teammates run the centralized start script documented in the README.
 
 on:
   push:

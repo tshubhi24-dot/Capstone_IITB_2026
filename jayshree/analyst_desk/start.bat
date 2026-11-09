@@ -35,10 +35,39 @@ goto wait_for_engine
 :engine_ready
 if not exist ".env" goto missing_env
 
-set "ANALYSTDESK_IMAGE=ghcr.io/tshubhi24-dot/analyst-desk:main"
-echo Pulling the shared team image and starting the full stack...
-docker compose pull
-if errorlevel 1 goto pull_failed
+where git >nul 2>nul
+if errorlevel 1 goto missing_git
+
+if not "%~2"=="" goto invalid_usage
+if not "%~1"=="" goto selected_commit
+
+echo Checking the latest main commit...
+git fetch --quiet origin main
+if errorlevel 1 goto git_fetch_failed
+set "MAIN_SHA="
+for /f "delims=" %%i in ('git rev-parse --short^=7 FETCH_HEAD') do set "MAIN_SHA=%%i"
+if not defined MAIN_SHA goto git_fetch_failed
+goto pull_image
+
+:selected_commit
+set "MAIN_SHA="
+for /f "delims=" %%i in ('git rev-parse --short^=7 "%~1^{commit}" 2^>nul') do set "MAIN_SHA=%%i"
+if not defined MAIN_SHA goto invalid_version
+echo Using the selected commit %MAIN_SHA%...
+
+:pull_image
+set "ANALYSTDESK_IMAGE=ghcr.io/tshubhi24-dot/analyst-desk:sha-%MAIN_SHA%"
+echo Checking for the image built from commit %MAIN_SHA%...
+docker pull "%ANALYSTDESK_IMAGE%"
+if not errorlevel 1 goto image_ready
+
+echo The image is not available yet. Retrying once in 60 seconds...
+timeout /t 60 /nobreak >nul
+docker pull "%ANALYSTDESK_IMAGE%"
+if errorlevel 1 goto image_unavailable
+
+:image_ready
+echo Starting the full stack with %ANALYSTDESK_IMAGE%...
 docker compose up -d --wait --wait-timeout 900
 if errorlevel 1 goto startup_failed
 
@@ -67,8 +96,26 @@ exit /b 0
 echo .env was not found. Copy .env.example to .env, add your OPENROUTER_API_KEY, then retry.
 exit /b 1
 
-:pull_failed
-echo Could not pull the shared team image. Check your internet connection and retry.
+:missing_git
+echo Git is required to check the latest main commit. Install Git, then retry.
+exit /b 1
+
+:invalid_usage
+echo Usage: start.bat [commit-sha]
+exit /b 1
+
+:invalid_version
+echo Could not resolve "%~1" to a commit in this checkout.
+echo Fetch the commit first, or run start.bat without an argument for the latest main image.
+exit /b 1
+
+:git_fetch_failed
+echo Could not fetch origin/main or determine its commit. Check the Git remote and network, then retry.
+exit /b 1
+
+:image_unavailable
+echo The image for commit %MAIN_SHA% was not available after 2 attempts.
+echo Check that the commit has a published image, then run start.bat again.
 exit /b 1
 
 :outdated_image
