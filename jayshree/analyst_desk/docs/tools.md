@@ -137,7 +137,9 @@ Output fields: `ok`, `error`, `notes`
 WRITE — publish a research note to the portal.
 
 Refused unless approval_token was issued for exactly this title, body and
-ticker list. Any edit after approval requires a new approval.
+ticker list. Any edit after approval requires a new approval. Once an
+approver public key is registered, also refused without that approver's
+own signature over the note digest.
 
 Annotations: readOnlyHint=False, destructiveHint=False
 
@@ -147,5 +149,6 @@ Annotations: readOnlyHint=False, destructiveHint=False
 | `body` | string | yes | Note body, exactly as approved  |
 | `tickers` | array | yes | Tickers the note covers, as approved  |
 | `approval_token` | string | yes | Token issued when the analyst approved this exact note  |
+| `approver_signature` | string or null | no | The approver's own Ed25519 signature over the note's sha256 digest, base64url. Required once an approver public key is registered (see servers/signing.py) (default null) |
 
 Output fields: `ok`, `error`, `note_id`, `note_sha256`, `published_at`

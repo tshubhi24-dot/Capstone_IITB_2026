@@ -15,6 +15,10 @@ langchain-mcp-adapters==0.3.2
 langgraph>=1.2,<2
 langgraph-checkpoint-sqlite>=3.1,<4
 langchain-openai>=1.7,<2
+# Fix for Module 4 - Security (Fix 2, servers/signing.py): approver signatures.
+# The stdlib has no asymmetric signatures; this is the only direct use of the
+# library in the project, and the only dependency Module 4 adds.
+cryptography>=42
 # Observability (Phase 8)
 prometheus-client>=0.22
 opentelemetry-sdk>=1.30

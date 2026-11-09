@@ -6,7 +6,14 @@ MCP tool schema into a LangChain tool an agent can call.
 
 load_agent_tools("quant") returns only the quant agent's tools (see
 AGENT_TOOLS), so an agent cannot even see a tool it is not allowed to use.
-Hooks (Phase 6) attach here as tool_interceptors and check each call again.
+Hooks (Phase 6) attach in the graph, not here: agent/hooks.py is called
+explicitly inside C2's specialist loop and wraps C1's ToolNode.
+
+What does attach here is the Fix 1 guardrail (guardrails.py): every tool is
+built with the UNSOURCED_ADVICE interceptor, so a write whose text recommends
+without citing anything is refused before the tool runs. Build tools with
+load_guarded_tools() rather than langchain-mcp-adapters' load_mcp_tools()
+directly, or that guardrail is simply not installed.
 
 Note: by default the adapter starts a fresh server process for every tool
 call. filings-kb takes ~30 s to load its index, so agent runs (Phase 4)
@@ -22,7 +29,7 @@ from pathlib import Path
 
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
-from . import AGENT_TOOLS, SERVERS
+from . import AGENT_TOOLS, SERVERS, guardrails
 
 PROJECT_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -63,8 +70,27 @@ def connections(servers: list[str] | None = None) -> dict:
     return out
 
 
+# Fix for Module 4 - Security (Fix 1 - use case 3, injected recommendation).
+# Default, not opt-in: a guardrail you have to remember to pass is a guardrail
+# that is missing from the run where it mattered.
 def make_client(servers: list[str] | None = None, interceptors: list | None = None) -> MultiServerMCPClient:
-    return MultiServerMCPClient(connections(servers), tool_interceptors=interceptors or [])
+    """The MCP client, with the Fix 1 guardrail installed unless replaced.
+
+    interceptors=[] switches the guardrail off — only tests do that, to show
+    what the unguarded call returns.
+    """
+    chain = guardrails.interceptors() if interceptors is None else list(interceptors)
+    return MultiServerMCPClient(connections(servers), tool_interceptors=chain)
+
+
+# Fix for Module 4 - Security (Fix 1 - use case 3). The adapter's
+# load_mcp_tools() takes its interceptors per call, so a tool loaded straight
+# from a session carries no guardrail at all.
+async def load_guarded_tools(session, interceptors: list | None = None, **kwargs) -> list:
+    """Every tool on one MCP session, each wrapped in the Fix 1 guardrail."""
+    from langchain_mcp_adapters.tools import load_mcp_tools
+    chain = guardrails.interceptors() if interceptors is None else list(interceptors)
+    return await load_mcp_tools(session, tool_interceptors=chain, **kwargs)
 
 
 async def load_agent_tools(agent: str, client: MultiServerMCPClient | None = None) -> list:

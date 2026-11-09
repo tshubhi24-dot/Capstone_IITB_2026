@@ -95,6 +95,114 @@ Built locally on first use (not in git): the Chroma vector index
 (`data/edgar_cache/filings/`, only needed to re-chunk:
 `python -c "from analystdesk.ingest import ingest_all; ingest_all()"`).
 
+## Security fixes (branch `pranoti-security`)
+
+Numbered fixes made against the gaps in `docs/security_summary.md`. Every line
+this module touches carries `# Fix for Module 4 - Security`, and each fix also
+carries its own number, so the module as a whole and any single fix are both
+greppable:
+
+```bash
+grep -rn 'Fix for Module 4 - Security' analystdesk/ tests/ --include='*.py'
+grep -rn 'Fix 1 -' analystdesk/ --include='*.py'
+```
+
+The first is the one to run before a merge: it lists every change this module
+made, including the four files in `analystdesk/agent/` that sit outside this
+branch's `servers/ docs/ tests/` remit and the one line it adds to
+`requirements.txt`.
+
+**Fix 1 — `UNSOURCED_ADVICE`, a guardrail on every write tool.** A
+`wrap_tool_call`-style middleware (`analystdesk/servers/guardrails.py`) reads
+`publish_note`'s own arguments and refuses the call when a sentence takes a
+position on the security and cites nothing — the tool never runs, and the
+agent gets an ordinary `ok: false` result it can read. It answers use case 3
+(injected recommendation), where a recommendation reworded out of
+`check_note`'s eleven-word filter passed every automated layer.
+
+One part of it sits **outside** this branch's `servers/ docs/ tests/` remit
+and is worth knowing about if you own the agent package: `agent/runtime.py:42-58`
+now calls `servers.client.load_guarded_tools` instead of langchain-mcp-adapters'
+`load_mcp_tools`. The adapter takes its interceptors per call, so without that
+change the guardrail would be installed on `make_client()` and still missing
+from every real run. Three lines and an import, all marked `# Fix 1 - use case
+3`; reverting them disables Fix 1 and nothing else.
+
+The guardrail is **author-blind on purpose**: it refuses a sentence the analyst
+typed at the gate exactly as it refuses the writer's, because `publish_note`
+carries no author and the one authenticated name in the call is bound by hash to
+the text being judged. Ordinary commentary is untouched — only a position on the
+security with nothing cited is refused. If a desk needs it softer while it
+adopts the citation rule, `ADVICE_GUARD_MODE=warn` lets the write through and
+returns the same finding under `warnings` on the result instead; `enforce` is
+the default, and an unset or misspelt value enforces. One thing for whoever owns
+the UI:
+`agent_ui.py:109` reports every failed publish as *"refused by the portal"*,
+which is wrong for this one — it comes from the interceptor, before the portal
+is reached.
+
+**Fix 2 — `APPROVAL_UNSIGNED`, the approver's own signature.** The approval
+token is an HMAC, and HMAC is symmetric: `research-portal` must hold
+`APPROVAL_SECRET` to *check* a token, so it can also *mint* one, and the app
+holds it because the note gate is where it signs. Fix 2 keeps that token and
+adds the half it cannot give — an Ed25519 signature from a key this project
+only ever holds the public half of (`analystdesk/servers/signing.py`). It
+answers use case 2 (forced approval injection).
+
+**It is off until a public key is registered, and the repo registers none**, so
+nothing changes on a fresh checkout. To turn it on, the approver runs this on
+their own machine and sends only the `.pub`:
+
+```bash
+python -m analystdesk.servers.signing keygen jayshree --out ~/keys
+# copy ~/keys/jayshree.pub into data/approval/approvers/ (or APPROVER_KEYS_DIR)
+# the .key never leaves their device
+python -m analystdesk.servers.signing sign --key ~/keys/jayshree.key --note note.json
+python -m analystdesk.agent resume RUN_ID --approve --approver jayshree --signature <sig>
+```
+
+Once any key is registered every publish needs a valid signature, including
+from approvers with no key — so there is no unregistered name to hide behind.
+Two things it touches outside the remit: `agent/graph.py` and
+`agent/__main__.py` carry the signature from the gate to the tool call (marked
+`# Fix 2 - use case 2`), and `cryptography` is a new direct dependency — the
+stdlib has no asymmetric signatures. The Gradio gate in `app.py` has no
+signature field yet, so register keys only after that is added.
+
+**Fix 3 — only typed fields cross the C2 hand-off.** A specialist used to hand
+the writer up to 6,000 characters of its own prose, so anything it read could
+arrive in the specialist's voice — an injection never had to survive as a
+quote, it only had to be obeyed once. The hand-off now carries spans copied
+verbatim out of a passage the specialist cites, each checked against that
+passage by code, plus `fact_id`s whose values code looks up. No sentence a
+specialist wrote reaches the writer (`analystdesk/servers/quarantine.py`). It
+answers use cases 3 and 4. Each claim is checked on its own, so one that fails —
+not verbatim, too long, past the twelve-claim cap — is dropped with a counted
+reason while its neighbours still cross, and the limits are in the prompt the
+specialist is given rather than being rules it can only find by breaking.
+
+**This one changes behaviour, not just defences.** It is the only fix that is
+not a guardrail beside the pipeline: most of its diff is in `agent/team.py` and
+`agent/graph.py` (marked `# Fix 3 - use cases 3 and 4`), and because it changes
+what C2's writer is given, **C2's numbers in `docs/evaluation.md` need
+re-measuring** — `CLAUDE.md` makes C0/C1/C2 sharing retrieval an invariant so
+E1 measures orchestration, and quoted spans may read worse than a fluent
+summary. That trade was taken deliberately.
+
+Verify all three, offline and in about twenty seconds:
+
+```bash
+python -m tests.security.test_injected_recommendation          # verdict matrix, 58 tests
+python -m unittest tests.security.test_forced_approval_injection   # 35 tests
+python -m unittest tests.security.test_quarantined_handoff     # 35 tests
+python -m unittest discover -s tests                           # whole suite: 279 tests
+```
+
+Full reasoning for all three, what they deliberately do *not* claim, and the
+list of gaps still open: `docs/security_summary.md` — section **Fixes made** at the end.
+The slide deck is `docs/presentation.pptx`, section **Additional guardrails**
+(rebuild: `cd docs/presentation && node build.js`).
+
 ## Next phase
 
 Phase 4: C1 single agent in LangGraph over the MCP tools (plan shown to the

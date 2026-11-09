@@ -288,11 +288,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
     def _findings(state) -> str:
         if state.get("handoffs"):
             latest = max(h.get("round", 0) for h in state["handoffs"])   # after a replan, the new round only
-            return "\n\n".join(
-                f"[{h['agent']}{'/' + h['company'] if h.get('company') else ''}] "
-                f"(confidence {h['confidence']}; passages {', '.join(h['passage_ids'][:12])}; "
-                f"facts {len(h['fact_ids'])})\n{h['findings']}"
-                for h in state["handoffs"] if h.get("round", 0) == latest)
+            # Fix for Module 4 - Security (Fix 3 - use cases 3 and 4): quoted spans
+            # and code-read values, not the specialist's prose. quarantine.render
+            # decides what crosses.
+            from ..servers import quarantine
+            return "\n\n".join(quarantine.render(h)
+                                for h in state["handoffs"] if h.get("round", 0) == latest)
         return "\n".join(
             f"[{type(m).__name__}] {m.content if isinstance(m.content, str) else json.dumps(m.content)}"[:2500]
             for m in state.get("messages", []) if isinstance(m, (ToolMessage, AIMessage)) and m.content)
@@ -377,7 +378,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                                                            reason=decision.get("reason", ""))}
         d = state["draft"]
         token = approval.sign(d["title"], d["body"], d["tickers"], decision.get("approver", "analyst"))
-        return {"outcome": "approved", "published": {"approval_token": token},
+        # Fix for Module 4 - Security (Fix 2 - use case 2): the approver's signature
+        # is made on their own device and arrives with the resume payload; nothing
+        # here can produce it.
+        return {"outcome": "approved",
+                "published": {"approval_token": token,
+                              "approver_signature": decision.get("approver_signature")},
                 "trace": _event("review_note", action="approve", approver=decision.get("approver", "analyst"))}
 
     def after_review(state) -> Literal["check", "publish", "__end__"]:
@@ -390,7 +396,11 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
     # 8. publish — the only write; the portal verifies the token itself
     async def publish(state: AgentState):
         d = state["draft"]
-        raw = await publish_tool.ainvoke({**d, "approval_token": state["published"]["approval_token"]})
+        args = {**d, "approval_token": state["published"]["approval_token"]}
+        # Fix for Module 4 - Security (Fix 2 - use case 2)
+        if state["published"].get("approver_signature"):
+            args["approver_signature"] = state["published"]["approver_signature"]
+        raw = await publish_tool.ainvoke(args)
         result = tool_json(raw)
         ok = result.get("ok") is True
         remembered = False

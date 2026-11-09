@@ -65,6 +65,19 @@ So a skipped gate, a forged token, or an injected "publish this" all fail at the
 server, not only in the graph. Any edit after approval invalidates the token
 (`approval.py:verify` → `ApprovalError`).
 
+Two guardrails stand in front of that, both wrapping every write tool
+(`servers/guardrails.py`). Fix 1's `UNSOURCED_ADVICE` refuses a note whose text
+recommends without citing anything, before `publish_note` runs at all — the
+portal database file is not even opened. Fix 2's `APPROVAL_UNSIGNED` refuses one
+the named approver has not signed with their own Ed25519 private key.
+
+Fix 2 is also the honest answer to a question this section invites: the HMAC is
+symmetric, so *this server can forge what it verifies*. It must hold
+`APPROVAL_SECRET` to check a token, and the app holds it because the gate is
+where `approval.sign` is called. The signature cannot be forged that way,
+because no private key exists anywhere in the project. See *"Fixes made"* at the
+end.
+
 ## 3. Budget and rate limiting
 
 All in `agent/hooks.py:Hooks.pre`, before the call reaches the tool:
@@ -79,7 +92,8 @@ All in `agent/hooks.py:Hooks.pre`, before the call reaches the tool:
 
 Every tool returns `ok` plus a stable code from `servers/common.py`
 (`BAD_INPUT`, `NOT_IN_COVERAGE`, `NOT_FOUND`, `APPROVAL_INVALID`,
-`ALREADY_EXISTS`, `BLOCKED`, `TIMEOUT`, `EXEC_ERROR`, `INTERNAL`).
+`ALREADY_EXISTS`, `BLOCKED`, `UNSOURCED_ADVICE`, `APPROVAL_UNSIGNED`, `TIMEOUT`,
+`EXEC_ERROR`, `INTERNAL`).
 
 `@structured_errors` is the safety net: an unexpected exception becomes an
 `INTERNAL` result instead of crashing the run. Hook denials are returned as
@@ -324,6 +338,9 @@ are the same compiled regex, so a term added to one is added to both.
 | A person approves the exact text | `review_note`, `interrupt()` | human |
 | An analyst *edit* is re-checked, not trusted | `after_review` → `check` | code |
 | Approval signed over `note_hash(title, body, tickers)` + approver | `approval.sign` | code |
+| An uncited sentence taking a position on the security → `UNSOURCED_ADVICE` | `guardrails.py`, Fix 1 middleware | code |
+| The approver's own Ed25519 signature over the note digest | `guardrails.py` + `signing.py`, Fix 2 | code |
+| A specialist hands back verified spans and `fact_id`s, never prose | `quarantine.py`, Fix 3 (C2) | code |
 | The portal re-hashes and verifies the token itself | `portal.py:publish_note` | code |
 | One note published once | `note_sha256 TEXT NOT NULL UNIQUE` | code |
 | Only approved, published notes enter memory | `publish` node | code |
@@ -341,7 +358,8 @@ invented because the model never types one.
 |  | numbers | prose |
 |---|---|---|
 | **going in** | typed, bounded, coverage-checked | *nothing inspects incoming filing text* |
-| **going out** | five code rules, plus code-written figures | 11 advice terms; a model judge for *cited* claims only |
+| **going out** | five code rules, plus code-written figures | 11 advice terms, then Fix 1's wider stance list at the write; a model judge for *cited* claims only |
+| **between agents** (C2) | `fact_id`s only; code reads every value | verbatim spans of a cited passage, or nothing (Fix 3) |
 
 Two asymmetries follow, and both are better said plainly than discovered:
 
@@ -352,10 +370,12 @@ Two asymmetries follow, and both are better said plainly than discovered:
   injection is defended at the prompt layer only"*.
 * **The outbound side is thick for numbers and thin for prose.** A wrong figure
   meets code that recomputes it from XBRL. Wrong *wording* meets an eleven-term
-  keyword list, and a judge only if the line happens to carry a citation.
-  Numberless uncited prose meets nothing at all, and is reported as `0/0`
-  numbers verified (100.0%). See *"Claims are not verified against the passages
-  they cite"* and *"A poisoned tool result can supply the wording"*.
+  keyword list in `check_note`, and a judge only if the line happens to carry a
+  citation. Numberless uncited prose still passes every one of those, and is
+  reported as `0/0` numbers verified (100.0%); what it now meets is Fix 1, one
+  layer later, at the write. See *"Claims are not verified against the passages
+  they cite"*, *"A poisoned tool result can supply the wording"* and *"Fix 1 — a
+  guardrail on the write"*.
 
 Stated as one sentence for a viva: **every number in a published note has been
 re-derived by code from a source the model cannot reach, and every sentence has
@@ -378,6 +398,14 @@ are recorded for whoever owns those files.
 permissions — 0644 under a typical umask. Anyone who can read it can mint an
 approval token for any note. It only exists when `APPROVAL_SECRET` is unset, so
 setting that variable avoids the file entirely.
+
+The deeper half of that is not a file-permission problem at all: an HMAC key
+*mints as well as verifies*, so every process that checks a token can forge one,
+and no permission on the file changes that. **Fix 2** addresses it — the
+approver's Ed25519 private key is never written by this project, and
+`servers/signing.py:keygen` creates one 0600 through `os.open` with `O_EXCL`
+rather than chmod-ing after the write, which is the pattern recommended just
+below. The file-permission fix for `approval.key` is still open.
 
 *Fix:* create it 0600 atomically rather than chmod after the write, so there is
 no window where it is readable —
@@ -556,7 +584,8 @@ specialist prompts say so explicitly. A prompt is not a control, so the question
 is what an injection would actually have to defeat.
 
 For the **write path** the answer is five independent links, each pinned by
-`tests/security/test_forced_approval_injection.py` (14 tests): `publish_note` is
+`tests/security/test_forced_approval_injection.py` (35 tests, 21 of them
+Fix 2): `publish_note` is
 in no research agent's allow-list; `hooks.pre` denies the call anyway; the
 signing key is withheld from `python-sandbox`; the import guard blocks `os`,
 `os.path` and relative imports; and the HMAC is over
@@ -621,15 +650,127 @@ are real. The claim *not* being made is that the prose is sound.
 `verification_pct: 100` measures arithmetic traceability, not editorial
 integrity, and the two should not be conflated.
 
-*Fix:* no cheap one. Extending the keyword list is mostly theatre — a
-recommendation cannot be enumerated. The write path is enforced in code; the
-note's prose is not, and the control there is **the note gate**: a person reads
-the exact text before `approval.sign` is called. That is rule 3 doing work rule 1
-cannot. Narrowing it further would mean a judge model scoring the draft for
-advisory framing (C2 already runs one for claim-vs-passage, so the hook exists),
-or checking the draft's claims against its cited passages rather than only its
-numbers. Both live in `analystdesk/agent/checks.py`, outside the MCP server
-layer.
+*Fix (implemented, Fix 1):* extending the keyword list is mostly theatre — a
+recommendation cannot be enumerated — so the fix does not do that. It changes
+the question and moves it to the tool call. See below. What it does **not**
+cover remains the note gate's job: a person reads the exact text before
+`approval.sign` is called, which is rule 3 doing work rule 1 cannot. The
+remaining narrowing is still a judge model scoring the draft for advisory
+framing (C2 already runs one for claim-vs-passage, so the hook exists), or
+checking the draft's claims against their cited passages rather than only its
+numbers — both in `analystdesk/agent/checks.py`, outside the MCP server layer.
+
+#### Fix 1 — a guardrail on the write
+
+`servers/guardrails.py`. `check_note` asks *"does this note use a forbidden
+word?"*. The guardrail asks *"does this sentence take a position on the security
+without citing anything?"*, and refuses the write when the answer is yes:
+
+```
+sentence matches STANCE   and   sentence carries no [fact:/calc:/growth:/diff:]
+                                tag and no passage id   →   UNSOURCED_ADVICE
+```
+
+The paraphrase that beat all five rules — *"Microsoft shares appear attractively
+valued at current levels and warrant accumulation by long-term holders."* — is
+refused on `attractively valued`, with a valid approval token in hand. The
+portal database file is never created, because `portal._connect()` is what
+creates it.
+
+**Why a middleware and not a sixth rule.** `check_note` advises: its issues go
+back to the writer and the draft is revised. A middleware refuses — the tool
+does not run, and what returns is an ordinary tool result (`ok: false`,
+`UNSOURCED_ADVICE`) that the agent can read and `hooks.post` records as a denied
+call. That is the L14 point: a callback fails open, its exception is logged and
+the call proceeds anyway, so a control that must *stop* something belongs in the
+wrapper around the call.
+
+**Where it binds.** This project has no `langchain.agents`, so there is no
+`langchain.agents.middleware.wrap_tool_call` to decorate. The same onion is
+reproduced over the two dispatchers it does have, with the guardrail body
+written once:
+
+| Binding | Used by | Where it is installed |
+|---|---|---|
+| `ToolCallGuard.interceptor` | every MCP tool an agent loads | `client.make_client()`, `client.load_guarded_tools()` |
+| `ToolCallGuard.toolnode_wrapper` | C1's `ToolNode` | same shape as `hooks.wrap_for_toolnode`; bound and tested, not wired |
+
+`load_guarded_tools()` exists because the adapter takes its interceptors per
+call: `load_mcp_tools(session)` on its own builds tools with no guardrail at
+all. `agent/runtime.py:open_tools` calls `load_guarded_tools` for both
+transports, which is the one line that puts the guardrail in a real run.
+`GUARDED_TOOLS` is built from `WRITE_TOOLS`, so a second write tool is covered
+the day it is added.
+
+**What it does not claim.** `STANCE` is still a vocabulary — wider than
+`check_note`'s eleven words, and a strict superset of them, but finite, and the
+next phrasing can walk around it. Only the second half is enforceable: a
+sentence the vocabulary *does* catch must cite its evidence, whoever wrote it.
+This narrows the gap; it does not close it. A recommendation nobody anticipated
+still reaches the note gate, and the gate is still the control for it.
+
+**It is author-blind, and that is the decision rather than an oversight.** The
+guardrail refuses the analyst's own sentence exactly as it refuses the writer's,
+and it cannot tell the two apart. `publish_note` carries no author, and the
+analyst's edits arrive through the same call: the gate sends `{"action":
+"edit", "note": {"body": …}}` (`agent_ui.py:533`, or `agent/__main__.py:101`
+reading a file), `graph.py:372` merges it into `state["draft"]`, and
+`graph.py:397` publishes that draft. The only authenticated name anywhere in
+the call is the approver claim inside the token, and `approval.sign` binds that
+name by hash to the very text being judged — so an exemption keyed on it would
+exempt precisely the sentence an injection talked the analyst into approving.
+*"A person wrote this"* is what a successful injection looks like from inside
+the system. The rule is therefore the desk's rather than the model's: a
+published note cites what it asserts, whoever typed it. The analyst's voice is
+not the target — *"I am less convinced by the cloud capex guidance than the
+filing's tone suggests"* takes no position on the security and publishes
+untouched, and a position they do want to take publishes as soon as it cites
+something.
+
+The cost lands in one place worth naming: `get_past_notes` returns note bodies,
+which are not filing passages, so a recommendation quoted out of a past note has
+nothing it can cite and is refused. Attributing it rather than restating it
+works, as does tagging the sentence. After Fix 3 that sentence cannot reach C2's
+writer in any case — a quote is verified against `data/passages` — but C1 holds
+`get_past_notes` itself and can echo one.
+
+**Soft validation, if a desk needs it.** `ADVICE_GUARD_MODE=warn` turns the
+refusal into a finding carried back on the result: the write runs, and the same
+code and sentence arrive under `warnings` on the `PublishResult`, where the
+trace, the gate and the dashboards all still see them. It exists for the
+friction above — a desk still adopting the citation rule can run the guardrail
+as validation while it adapts. **It is not the default and should not become
+one.** A guardrail that records and proceeds is the callback L14 warns about: in
+`warn` the injected recommendation reaches the portal, and
+`test_warn_publishes_the_note_it_warns_about` asserts exactly that rather than
+leaving it implied. An unset, empty or misspelt value enforces and logs what it
+rejected, because a typo in a deployment variable must not be the thing that
+turns a control off. Neither mode rewrites a note to make it pass:
+`approval.sign` binds the token to the exact bytes, so editing the text would
+invalidate the sign-off it was approved under. The mode belongs to this check
+alone — Fix 2 has no soft form, since a signature either verifies or it does
+not.
+
+Two deliberate holes, both tested rather than assumed:
+
+- **Read tools are not inspected.** A filing passage may well contain "strong
+  buy"; quoting it is not advising, and the guardrail stands only in front of
+  writes.
+- **A cited recommendation passes the guardrail.** The sourcing rule is what it
+  enforces, not the vocabulary. `check_note` rule 5 still rejects that note, and
+  rule 5 has no sourcing escape — the two are deliberately different shapes.
+
+*Pinned by* `tests/security/test_injected_recommendation.py` (58 tests, 38 of
+them Fix 1). Teeth: emptying `check_note`'s `ADVICE` regex fails 24 assertions
+across 7 tests; emptying `guardrails.STANCE` fails 29 across 19 — one drift
+test is in both lists, which is its job, since it holds the two regexes against
+each other; `test_without_the_guardrail_the_same_note_publishes` publishes the
+paraphrase with the interceptor removed, so the refusal is demonstrably the
+guardrail's doing. Drift tests pin `STANCE` as a superset of `ADVICE`, `SOURCE`
+against every evidence form `check_note` accepts, and `GUARDED_TOOLS` against
+`WRITE_TOOLS` — `guardrails.py` is imported by the servers, so it cannot import
+the agent package and keeps its own copies of those patterns.
+
 
 #### What the analyst actually sees at the gate
 
@@ -669,8 +810,9 @@ approver's name, and `note_sha256` is `UNIQUE` in the portal, so an approved
 note is bound to one person and one exact text. A silent model failure becomes
 an attributable human decision — a different claim from "the gap is covered".
 
-*Pinned by* `tests/security/test_injected_recommendation.py` (20 tests). Four
-guards are asserted: the tool surface holds nothing that fetches outside text
+*Pinned by* `tests/security/test_injected_recommendation.py` (58 tests, 38 of
+them Fix 1). Four guards are asserted: the tool surface holds nothing that
+fetches outside text
 (an exact-set assertion on `AGENT_TOOLS`), `input_guard` refuses an advice
 request before the planner, the advice filter rejects the obeyed wording, and an
 invented figure has no source even with a genuine citation attached.
@@ -799,11 +941,13 @@ Only the allow-list differed. Deleting the check at `hooks.py:47` fails 6 of the
 
 Two related observations from the same reading:
 
-- **`load_agent_tools` is dead code.** `servers/client.py:70` is referenced only
-  by its own docstring; `make_client()` is called with no interceptors
-  (`runtime.py:53`), and `client.py:9`'s claim that hooks attach there as
-  `tool_interceptors` describes wiring that does not exist. The enforcement is
-  real, one layer up from where that docstring puts it.
+- **`load_agent_tools` is dead code.** `servers/client.py:95` is referenced only
+  by its own docstring. Nothing calls it: `runtime.py` filters by name against
+  `RESEARCH_TOOLS` instead. Its sibling `load_guarded_tools` *is* called, by
+  `runtime.py:52` and `:58`. The permission enforcement is real, one layer up
+  from where that docstring puts it — the hooks attach in the graph, not at the
+  client, and `client.py`'s docstring now says so rather than claiming they are
+  `tool_interceptors`. That slot is occupied, but by Fix 1's guardrail.
 - **`RESEARCH_TOOLS` is a second source of truth.** `runtime.py:22-23` hardcodes
   the seven research tools rather than reading `AGENT_TOOLS["single_agent"]`.
   They are equal today; `tests/security/test_tool_poisoning.py` now asserts
@@ -815,3 +959,253 @@ forbidden name into a `KeyError` the hook has already converted to a tool
 result. It is in `agent/team.py`, outside this scope, so it is recorded here and
 pinned by test instead. The claim to make meanwhile is "least privilege is
 enforced in code, at one audited point", not "enforced twice, independently".
+
+---
+
+## Fixes made
+
+Everything above this line describes what the code already did, including the
+gaps it does not cover. This section is the other list: changes made **because**
+of a gap, in the order they were made.
+
+Two numbering schemes meet here and they are not the same sequence:
+
+- A **use case** is an attack walked through in `docs/presentation.pptx`. The
+  number is stamped top right of its slides: 1 securing secrets, 2 forced
+  approval injection, 3 injected recommendation, 4 poisoned tool arguments.
+- A **fix** is a change to the code. Fix *N* is the *N*th fix made, and it names
+  the use case it answers — so Fix 1 answers use case 3, and a later fix may
+  answer a use case already numbered 1 or 2.
+
+Every place in the code that implements a fix carries the same comment, so the
+whole of a fix can be found without this document:
+
+```bash
+grep -rn 'Fix 1 -' analystdesk/ --include='*.py'
+```
+
+| Fix | Use case | What it refuses | Error code | Pinned by |
+|---|---|---|---|---|
+| 1 | 3 — injected recommendation | a write whose text takes a position on the security and cites nothing | `UNSOURCED_ADVICE` | `tests/security/test_injected_recommendation.py`, 38 of 58 tests |
+| 2 | 2 — forced approval injection | a write the named approver has not signed with their own private key | `APPROVAL_UNSIGNED` | `tests/security/test_forced_approval_injection.py`, 21 of 35 tests |
+| 3 | 3 and 4 | a specialist's own prose reaching the writer at all | *(nothing crosses)* | `tests/security/test_quarantined_handoff.py`, 35 tests |
+
+Each fix also has a slide, in the deck's **Additional guardrails** section — a
+separate section from the use cases, because a fix is a change made rather than
+an attack walked through. Fix 1 is slide 6, Fix 2 slide 7 and Fix 3 slide 8.
+
+### Fix 1 — a `wrap_tool_call` guardrail on every write tool
+
+Full reasoning, the honest limit and the teeth measurements are under *"Fix 1 —
+a guardrail on the write"* in **Known gaps**, beside the gap it narrows. What
+follows is only where it lives.
+
+| File | What changed | In scope? |
+|---|---|---|
+| `servers/guardrails.py` | **new.** The policy (`STANCE`, `SOURCE`, `unsourced_advice`), the `wrap_tool_call` decorator, and the two bindings | yes |
+| `servers/client.py` | `make_client()` installs the guardrail by default; new `load_guarded_tools()`; the stale `tool_interceptors` docstring corrected | yes |
+| `servers/common.py` | `UNSOURCED_ADVICE` added to `ErrorCode` and the code list | yes |
+| `tests/security/test_injected_recommendation.py` | 38 tests across 7 classes, plus the printed report's new line | yes |
+| `agent/runtime.py` | `open_tools()` calls `load_guarded_tools` instead of the adapter's `load_mcp_tools`, for both transports | **no — see below** |
+
+**The one change outside the MCP-security scope.** This branch's remit is
+`servers/`, `docs/` and `tests/`. `agent/runtime.py:42-58` is none of those, and
+it was changed anyway, deliberately: langchain-mcp-adapters takes its
+interceptors **per call**, so `load_mcp_tools(session)` builds tools carrying no
+guardrail at all. Without that edit Fix 1 would be installed on `make_client()`
+and still absent from every real run — a guardrail that exists only in its own
+tests. It is three lines and an import, all marked `# Fix 1 - use case 3`, and
+reverting them disables the fix without breaking anything else. Whoever owns
+`analystdesk/agent/` should know it is there.
+
+
+### Fix 2 — the approver's own signature
+
+The gap it answers is in section 2, and it is structural rather than
+accidental. `approval.py` binds a sign-off to one exact note with an HMAC over
+`note_hash(title, body, tickers)` — a real control, which Fix 2 keeps. But HMAC
+is symmetric:
+
+- the key that **verifies** also **mints**. `research-portal` must hold
+  `APPROVAL_SECRET` to check a token, so the verifier can forge one;
+- the app holds it too, because the note gate is where `approval.sign` is
+  called — so the process running the model can mint an approval for any text;
+- `approver: "jayshree"` is therefore a *string*, not a claim. One secret
+  writes any name.
+
+Fix 2 splits that in two with Ed25519. The approver generates a keypair on
+their own device and copies only the public half into the deployment:
+
+| | holds | can verify a sign-off | can produce one |
+|---|---|---|---|
+| app / agent process | nothing | no | **no** |
+| `research-portal` | `<name>.pub` | yes | **no** |
+| the approver's device | `<name>.key` | — | yes |
+
+What is signed is the note's sha256 digest — a 64-character hex string the
+approver can be shown in full beside the text it stands for, which is the
+lecture's "show the literal action". Replaying a signature publishes the same
+note twice, which `note_sha256 TEXT NOT NULL UNIQUE` already refuses.
+
+Enforced twice, for the same reason the HMAC is. The guardrail middleware
+refuses early, reading the approver name from the *unverified* token — safe,
+because the name only selects which public key must verify, so a forged name
+picks a key whose holder did not sign. `publish_note` then checks again against
+the claims `approval.verify` has authenticated, so by then both the name and
+the digest are trustworthy. Order matters for the message the analyst reads: a
+token that was never issued is `APPROVAL_INVALID`, not `APPROVAL_UNSIGNED`.
+
+| File | What changed | In scope? |
+|---|---|---|
+| `servers/signing.py` | **new.** The registry, `verify`, the approver-side `keygen`/`sign` and their CLI | yes |
+| `servers/guardrails.py` | the `require_approver_signature` middleware; `interceptors()` now returns both | yes |
+| `servers/portal.py` | `publish_note` takes `approver_signature` and verifies it against the authenticated claims | yes |
+| `servers/common.py` | `APPROVAL_UNSIGNED` added to `ErrorCode` | yes |
+| `tests/security/test_forced_approval_injection.py` | 21 tests across 4 classes | yes |
+| `docs/tools.md` | regenerated — the new parameter is published in the tool schema | yes (generated) |
+| `requirements.txt` | `cryptography>=42` | **no** |
+| `agent/graph.py` | the gate's `approver_signature` is carried into the publish call | **no** |
+| `agent/__main__.py` | `resume … --approve --signature <sig>` | **no** |
+
+**What it does not claim.** Two limits, both pinned by tests rather than left
+to be found:
+
+- **It is off until a public key is registered**, and the repo registers none,
+  so today the desk behaves exactly as before — an HMAC token alone publishes
+  (`test_with_no_key_registered_the_old_path_is_unchanged`). Register one and
+  the rule is fail-closed for *every* publish, including approvers with no key,
+  so the obvious attack — naming someone unregistered — is refused rather than
+  waved through (`test_naming_an_unregistered_approver_does_not_get_round_it`).
+- **The registry sits in the `approval` volume the app and the portal share.** A
+  deployment wanting "the portal can verify and nothing else can edit the
+  registry" mounts `APPROVER_KEYS_DIR` read-only into `research-portal` alone —
+  one line in `compose.yaml`, outside this scope, recorded here. What holds
+  without it is the part that matters: no private key exists anywhere in the
+  project, so no process here can produce a signature, whatever it can read.
+
+`cryptography` is a new direct dependency and the only one in the project. The
+stdlib has no asymmetric signatures, and hand-rolling Ed25519 to preserve
+`approval.py`'s stdlib-only style rule would be the wrong trade; the library is
+confined to `servers/signing.py`, and `approval.py` is untouched.
+
+*Pinned by* `tests/security/test_forced_approval_injection.py` (35 tests, 21 of
+them Fix 2). The two that carry the claim:
+`test_verification_needs_only_the_public_half` deletes every private key and
+shows the deployment still verifies and still cannot sign;
+`test_holding_everything_this_deployment_holds_is_not_enough_to_mint` forges a
+perfectly valid HMAC token using `APPROVAL_SECRET` and the whole approvers
+directory, and is still refused.
+
+
+### Fix 3 — the hand-off carries fields, not prose
+
+The channel. A C2 specialist reads untrusted text — a filing passage, or
+whatever `run_python` chose to return — and handed the research lead
+`findings: str`, up to 6,000 characters of its own prose (`team.py:137`).
+Everything it read could therefore reach the writer **in the specialist's
+voice**, which the writer has every reason to treat as verified research. An
+injected instruction did not have to survive as a quote; it only had to be
+obeyed once, by an agent whose summary nothing checked.
+
+Both paraphrase attacks pinned elsewhere ride that channel: use case 3's
+*"Microsoft shares appear attractively valued …"*, and use case 4's
+`run_python` returning a string the quant then repeats.
+
+What crosses now:
+
+| Specialist | Hands back | Checked by |
+|---|---|---|
+| `researcher`, `risk_diff` | spans copied verbatim out of a passage they cite | the span must occur in that passage, whitespace-normalised |
+| `quant` | `fact_id`s only — **no numbers** | each must resolve to an XBRL fact; code reads the value |
+| anything else | nothing | — |
+
+So **no sentence written by a specialist reaches the writer.** The model's job
+becomes selection; code decides what the words are. That is rule 1 applied to
+prose, where it had only ever been applied to figures — `figures.py` does
+exactly this for the KEY FIGURES table, which is why the quant does not need to
+hand numbers across at all.
+
+`Handoff` has two fields, `claims` and `facts`, and that is the whole schema —
+not even a confidence word, which code computes from what survived rather than
+taking the model's opinion of it. `test_the_handoff_schema_has_no_free_text_field`
+asserts exactly that, because the claim is structural.
+
+**One bad claim costs that claim.** Every rule about *content* — is the quote
+verbatim, is it a sensible length, are there too many claims — is checked in
+`verify_passages` and `verify_facts`, one claim at a time: a claim that breaks
+one is dropped with a counted reason while its neighbours cross. The schema
+constrains shape only, and deliberately. The length bounds and the twelve-claim
+cap used to sit on the fields, where pydantic rejects the whole object, so one
+9-character quote among nine good ones — or a thirteenth claim, or a quote over
+300 characters, which is easy when quoting a long filing sentence — raised
+`ValidationError`, `run_specialist` recorded *"hand-off could not be typed"* and
+the **entire** hand-off was lost. That failed in the safe direction, so it was
+never a hole: it cost a specialist's whole contribution for a rule it had never
+been told, and it would have arrived in C2's re-measured numbers looking like an
+orchestration result. All three limits are in `ASK` now, pinned against the
+constants by `test_ask_tells_the_model_the_limits_it_will_be_held_to`, and
+`run_specialist`'s `except` stays as a backstop for output that cannot be parsed
+at all. Nothing crosses now that did not cross before — the guarantee is
+unchanged, only the blast radius of a mistake.
+
+This is the pattern in `docs/notes/quarantine-text.png` — untrusted text read on
+one side of a boundary, only typed fields crossing it. It is not the whole
+pattern: here the reader still holds tools, because it is the reader that has to
+fetch. What Fix 3 removes is the **re-voicing**, not the reading.
+
+| File | What changed | In scope? |
+|---|---|---|
+| `servers/quarantine.py` | **new.** The models (shape only), `verify_passages`, `verify_facts`, `render`, and what each specialist is asked for | yes |
+| `tests/security/test_quarantined_handoff.py` | **new.** 35 tests across 6 classes | yes |
+| `agent/team.py` | `HandoffMessage` loses `findings`; `run_specialist` asks for the typed shape and verifies it; three `FORMAT` slots rewritten | **no** |
+| `agent/graph.py` | `_findings` renders verified claims instead of prose | **no** |
+
+**What it does not claim**, in the order the questions get asked:
+
+1. **Selection is still the model's.** It can pick a misleading span, or leave
+   out the one that mattered. Omission is untouched by this and by everything
+   else here.
+2. **An injection genuinely written into a filing still crosses**, as a quote —
+   attributed to a passage id and visible as a quotation rather than as a
+   finding, with Fix 1 refusing advisory wording at the write. Arbitrary framing
+   gets through. `test_a_span_that_really_is_in_the_filing_still_crosses` pins
+   this rather than hiding it.
+3. **The writer still composes freely.** Everything under *"Claims are not
+   verified against the passages they cite"* is unchanged: Fix 3 narrows what
+   goes *into* the writer, not what comes out of it.
+4. **C2 only.** C1 pours raw tool output into the writer's prompt
+   (`graph.py:296-298`), so none of this applies there.
+
+**It will move the E1 numbers.** `CLAUDE.md` makes C0/C1/C2 sharing retrieval an
+invariant so that E1 measures orchestration rather than retrieval. Fix 3 changes
+what C2's writer is given, so C2's quality in `docs/evaluation.md` should be
+re-measured — quoted spans may well read worse than a fluent summary. This is a
+change to the thing being measured, not a guardrail bolted beside it, and that
+was accepted deliberately.
+
+A structured-output failure hands back nothing rather than falling back to
+prose. An empty hand-off starves the writer, which is the safe direction, and
+the failure is recorded in `dropped` instead of being swallowed.
+
+*Pinned by* `tests/security/test_quarantined_handoff.py` (35 tests). Teeth:
+disabling the quote check fails 5 of them; removing the claim cap fails 3, and
+removing the length bounds another 3. The loop tests drive the real
+`run_specialist` rather than a reimplementation, so what they pin is what runs.
+
+### Gaps deliberately left open
+
+For the avoidance of doubt at a viva: **Known gaps** above is still the current
+list. Fix 1 narrows one of them and closes none; Fix 2 answers the symmetric-key
+half of *"Secrets at rest are not permission-protected"* and leaves the
+file-permission half open; Fix 3 closes the specialist-to-writer prose channel
+and leaves *"Claims are not verified against the passages they cite"* exactly
+where it was — that gap is about the writer's own output, which no fix here
+touches. The hand-off items recorded
+there — `team.py:124` indexing `tools_by_name`, `verified_share` returning
+`100.0` on `0/0`, `_last_edgar` being per-instance, the judge scraping JSON and
+failing open — are all still open and all live in `analystdesk/agent/`. One more
+joined them with Fix 1: `agent_ui.py:109` renders every failed publish as
+*"Publish refused by the portal"*, so an analyst whose own edit trips
+`UNSOURCED_ADVICE` is told the portal rejected it when the refusal came from the
+interceptor, before the portal was reached. The message itself is right — it
+names the sentence and the term — only the attribution is wrong.

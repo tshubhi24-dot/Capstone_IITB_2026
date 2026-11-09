@@ -39,7 +39,11 @@ def make_llm():
 @contextlib.asynccontextmanager
 async def open_tools(transport: str = "auto"):
     """All MCP tools, over the chosen transport, for the length of one run."""
-    from langchain_mcp_adapters.tools import load_mcp_tools
+    # Fix for Module 4 - Security (Fix 1 - use case 3): load_guarded_tools, not
+    # the adapter's load_mcp_tools, so every tool carries the UNSOURCED_ADVICE
+    # interceptor (servers/guardrails.py). These lines are the whole of Module 4
+    # in this file; reverting them disables Fix 1 and nothing else.
+    from ..servers.client import load_guarded_tools
     async with contextlib.AsyncExitStack() as stack:
         tools = []
         if transport == "inprocess":
@@ -47,13 +51,13 @@ async def open_tools(transport: str = "auto"):
             from ..servers import edgar_server, filings_kb, portal, sandbox
             for module in (filings_kb, edgar_server, sandbox, portal):
                 client = await stack.enter_async_context(Client(module.mcp))
-                tools += await load_mcp_tools(client.session)
+                tools += await load_guarded_tools(client.session)
         else:
             from ..servers.client import make_client
             client = make_client()
             for name in client.connections:
                 session = await stack.enter_async_context(client.session(name))
-                tools += await load_mcp_tools(session)
+                tools += await load_guarded_tools(session)
         yield tools
 
 

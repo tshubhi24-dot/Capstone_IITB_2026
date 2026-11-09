@@ -22,19 +22,47 @@ links in that chain, and breaking any one of them stops the attack:
 
 Each test below pins one link. `tests/test_tools.py` already covers the happy
 path and the plain forged token through a live MCP client; this module is about
-the injection chain specifically, and uses stdlib only so it runs without the
-Phase 3-8 dependencies installed.
+the injection chain specifically.
+
+The last four classes are **Fix 2**, which replaces what link 5 is made of: an
+HMAC is symmetric, so every process that checks a token can also mint one, and
+the approver name on it is a string rather than a claim. Fix 2 adds the
+approver's own Ed25519 signature, of which this project holds only the public
+half. See `analystdesk/servers/signing.py` and the "Fixes made" section of
+`docs/security_summary.md`.
+
+Links 1-5 are stdlib only, so they run without the Phase 3-8 dependencies
+installed; the Fix 2 classes skip without `cryptography` and `fastmcp`.
 """
+
+# Fix for Module 4 - Security — Module 4 adds the Fix 2 classes to this file.
 
 import asyncio
 import os
+import pathlib
+import sqlite3
+import tempfile
 import unittest
 from unittest.mock import patch
 
 from analystdesk import approval
 from analystdesk.agent.hooks import Hooks
 from analystdesk.servers import AGENT_TOOLS, WRITE_TOOLS
-from analystdesk.servers import sandbox_runner
+from analystdesk.servers import guardrails, sandbox_runner, signing
+
+try:   # Fix 2 is the one place in the project that needs asymmetric crypto
+    import cryptography  # noqa: F401
+    HAVE_CRYPTO = True
+except ModuleNotFoundError:   # pragma: no cover - exercised by a bare install
+    HAVE_CRYPTO = False
+
+try:   # the server-side class drives the real portal over a live MCP client
+    from fastmcp import Client as FastMCPClient
+
+    from analystdesk.servers import portal
+    HAVE_FASTMCP = True
+except ModuleNotFoundError:   # pragma: no cover
+    HAVE_FASTMCP = False
 
 # What a passage would have to talk an agent into doing.
 INJECTED_INSTRUCTION = (
@@ -165,6 +193,273 @@ class ForgedApprovalTests(unittest.TestCase):
         ):
             with self.subTest(field=label):
                 self.assertNotEqual(approval.note_hash(*args), base)
+
+
+# ── Fix 2: the approver's own signature ──────────────────────────────────────
+# Link 5 above is an HMAC, and HMAC is symmetric: the key that verifies also
+# mints. research-portal must hold APPROVAL_SECRET to check a token, and the
+# app holds it because the gate is where approval.sign is called — so every
+# process in the chain can forge the thing it is checking, and the approver
+# name on a token is a string rather than a claim. Fix 2 keeps the HMAC (it
+# binds the token to the exact text) and adds the half it cannot provide: an
+# Ed25519 signature from a key this project only ever holds the public half of.
+
+NOTE = {"title": "Microsoft FY2024 margin review",
+        "body": "Operating margin was 44.64% [MSFT_2024_item7_016].",
+        "tickers": ["MSFT"]}
+
+
+def _digest(**over):
+    note = {**NOTE, **over}
+    return approval.note_hash(note["title"], note["body"], note["tickers"])
+
+
+class _Registry:
+    """A temporary approvers directory, with keypairs in it."""
+
+    def __init__(self, case, *names):
+        tmp = tempfile.TemporaryDirectory()
+        case.addCleanup(tmp.cleanup)
+        self.dir = pathlib.Path(tmp.name)
+        env = patch.dict(os.environ, {"APPROVER_KEYS_DIR": str(self.dir),
+                                      "APPROVAL_SECRET": "test-secret"})
+        env.start()
+        case.addCleanup(env.stop)
+        self.private = {}
+        for name in names:
+            self.private[name], _pub = signing.keygen(name, self.dir)
+
+    def sign(self, name, digest):
+        return signing.sign(self.private[name], digest)
+
+    def token(self, approver, **over):
+        note = {**NOTE, **over}
+        return approval.sign(note["title"], note["body"], note["tickers"], approver=approver)
+
+    def args(self, approver="jayshree", signature=None, **over):
+        """signature=False omits it; a string is passed through verbatim (so an
+        empty one can be tested); the default signs honestly."""
+        note = {**NOTE, **over}
+        out = {**note, "approval_token": self.token(approver, **over)}
+        if signature is not False:
+            out["approver_signature"] = (signature if isinstance(signature, str)
+                                         else self.sign(approver, _digest(**over)))
+        return out
+
+
+@unittest.skipUnless(HAVE_CRYPTO, "needs cryptography")
+class Fix2RegistryTests(unittest.TestCase):
+    """The registry is the switch, and it is a deployment act, not a call option."""
+
+    def test_the_repo_ships_with_no_approver_registered(self):
+        """So nothing changes until a deployment registers a key — which is the
+        limit this fix is honest about, not a bug."""
+        with patch.dict(os.environ, {"APPROVER_KEYS_DIR": tempfile.mkdtemp()}):
+            self.assertEqual(signing.approvers(), {})
+            self.assertFalse(signing.enabled())
+            self.assertIsNone(signing.check({"title": "t", "body": "b", "tickers": ["MSFT"],
+                                             "approval_token": "anything"}))
+
+    def test_keygen_writes_a_private_key_only_its_owner_can_read(self):
+        reg = _Registry(self, "jayshree")
+        private = reg.private["jayshree"]
+        self.assertEqual(private.stat().st_mode & 0o777, 0o600)
+        self.assertTrue((reg.dir / "jayshree.pub").exists())
+
+    def test_keygen_refuses_to_overwrite_an_existing_key(self):
+        reg = _Registry(self, "jayshree")
+        with self.assertRaises(FileExistsError):
+            signing.keygen("jayshree", reg.dir)
+
+    def test_an_approver_name_is_constrained(self):
+        reg = _Registry(self)
+        for bad in ("../escape", "Has Space", "", "a" * 70):
+            with self.subTest(name=bad):
+                with self.assertRaises(ValueError):
+                    signing.keygen(bad, reg.dir)
+
+    def test_a_file_that_is_not_an_ed25519_public_key_is_ignored(self):
+        """A 32-byte key or nothing: a truncated or corrupt file must not
+        register an approver whose signature can never verify."""
+        reg = _Registry(self, "jayshree")
+        (reg.dir / "broken.pub").write_text("not base64 at all !!", encoding="utf-8")
+        (reg.dir / "short.pub").write_text("AAAA", encoding="utf-8")
+        self.assertEqual(sorted(signing.approvers()), ["jayshree"])
+
+    def test_verification_needs_only_the_public_half(self):
+        """The whole claim in one test: delete every private key and the
+        deployment can still check a sign-off, and still cannot produce one."""
+        reg = _Registry(self, "jayshree")
+        signature = reg.sign("jayshree", _digest())
+        reg.private["jayshree"].unlink()
+        signing.verify("jayshree", signature, _digest())          # still verifies
+        with self.assertRaises(FileNotFoundError):
+            signing.sign(reg.dir / "jayshree.key", _digest())     # cannot sign
+
+
+@unittest.skipUnless(HAVE_CRYPTO, "needs cryptography")
+class Fix2SignatureTests(unittest.TestCase):
+    """What the signature does and does not cover."""
+
+    def test_the_approver_s_own_signature_is_accepted(self):
+        reg = _Registry(self, "jayshree")
+        self.assertIsNone(signing.check(reg.args()))
+
+    def test_an_unsigned_publish_is_refused_once_a_key_is_registered(self):
+        reg = _Registry(self, "jayshree")
+        reason = signing.check(reg.args(signature=False))
+        self.assertIn("must sign", reason)
+
+    def test_editing_the_note_after_signing_invalidates_the_signature(self):
+        """The same property the HMAC has, now held by a key the agent cannot
+        reach: the signature is over the digest of the exact note."""
+        reg = _Registry(self, "jayshree")
+        args = reg.args()
+        args["body"] = NOTE["body"] + "\n" + INJECTED_INSTRUCTION
+        self.assertIn("does not verify", signing.check(args))
+
+    def test_naming_an_unregistered_approver_does_not_get_round_it(self):
+        """The obvious attack on a per-approver registry. Once any key is
+        registered the rule is fail-closed for everyone, so there is no
+        unregistered name to hide behind."""
+        reg = _Registry(self, "jayshree")
+        args = reg.args(approver="mallory", signature=False)
+        self.assertIn("no registered public key", signing.check(args))
+
+    def test_another_approver_s_signature_does_not_count(self):
+        """The name selects the key, which is what makes it a claim rather than
+        a label: a second real approver cannot sign in the first one's name."""
+        reg = _Registry(self, "jayshree", "shubhi")
+        args = reg.args(approver="jayshree")
+        args["approver_signature"] = reg.sign("shubhi", _digest())
+        self.assertIn("does not verify", signing.check(args))
+
+    def test_junk_is_refused_rather_than_raised(self):
+        """common.py's contract reaches this layer too: the run must not end
+        because a tool argument was malformed."""
+        reg = _Registry(self, "jayshree")
+        for junk in ("", "trust-me", "!!!!", "AAAA"):
+            with self.subTest(signature=junk):
+                self.assertIsNotNone(signing.check(reg.args(signature=junk)))
+
+    def test_holding_everything_this_deployment_holds_is_not_enough_to_mint(self):
+        """The point of the fix, as one assertion. With APPROVAL_SECRET and the
+        whole approvers directory, an attacker mints a perfectly valid HMAC
+        token — and still cannot produce the signature that goes with it."""
+        reg = _Registry(self, "jayshree")
+        forged_token = approval.sign(NOTE["title"], NOTE["body"], NOTE["tickers"],
+                                     approver="jayshree")
+        approval.verify(forged_token, NOTE["title"], NOTE["body"], NOTE["tickers"])   # valid
+        args = {**NOTE, "approval_token": forged_token}
+        self.assertIn("must sign", signing.check(args))
+
+
+@unittest.skipUnless(HAVE_CRYPTO, "needs cryptography")
+class Fix2GuardrailTests(unittest.TestCase):
+    """The middleware binding, as with Fix 1: refuse, do not annotate."""
+
+    class _Dispatcher:
+        def __init__(self):
+            self.calls = []
+
+        async def __call__(self, call):
+            self.calls.append(call.name)
+            return {"ok": True, "note_id": 1}
+
+    def _decide(self, name, args):
+        run = self._Dispatcher()
+        call = guardrails.ToolCall(name=name, args=args, id="call-1")
+        out = asyncio.run(guardrails.require_approver_signature.decide(call, run))
+        return out, run
+
+    def test_an_unsigned_publish_never_reaches_the_tool(self):
+        reg = _Registry(self, "jayshree")
+        out, run = self._decide("publish_note", reg.args(signature=False))
+        self.assertEqual(run.calls, [])
+        self.assertEqual(out["error"]["code"], "APPROVAL_UNSIGNED")
+
+    def test_a_signed_publish_passes_through(self):
+        reg = _Registry(self, "jayshree")
+        out, run = self._decide("publish_note", reg.args())
+        self.assertEqual(run.calls, ["publish_note"])
+        self.assertTrue(out["ok"])
+
+    def test_a_read_tool_is_not_inspected(self):
+        reg = _Registry(self, "jayshree")
+        out, run = self._decide("get_past_notes", {"ticker": "MSFT"})
+        self.assertEqual(run.calls, ["get_past_notes"])
+        self.assertTrue(out["ok"])
+
+    def test_both_guardrails_are_installed(self):
+        """Fix 1 and Fix 2 are separate middlewares on the same onion; neither
+        replaces the other."""
+        names = {getattr(g, "__name__", "") for g in
+                 (guardrails.block_unsourced_advice.fn, guardrails.require_approver_signature.fn)}
+        self.assertEqual(names, {"block_unsourced_advice", "require_approver_signature"})
+        self.assertEqual(len(guardrails.interceptors()), 2)
+
+
+@unittest.skipUnless(HAVE_CRYPTO and HAVE_FASTMCP, "needs cryptography and fastmcp")
+class Fix2PortalTests(unittest.TestCase):
+    """Enforced in the server as well, for the same reason the HMAC is."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.db = pathlib.Path(tmp.name) / "portal.db"
+        env = patch.dict(os.environ, {"PORTAL_DB": str(self.db)})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def _publish(self, **args):
+        async def go():
+            async with FastMCPClient(portal.mcp) as client:
+                return (await client.call_tool("publish_note", args,
+                                               raise_on_error=False)).structured_content
+        return asyncio.run(go())
+
+    def _rows(self):
+        if not self.db.exists():
+            return []
+        con = sqlite3.connect(self.db)
+        try:
+            return [r[0] for r in con.execute("SELECT title FROM notes").fetchall()]
+        except sqlite3.OperationalError:
+            return []
+        finally:
+            con.close()
+
+    def test_a_signed_note_publishes(self):
+        reg = _Registry(self, "jayshree")
+        r = self._publish(**reg.args())
+        self.assertTrue(r["ok"], r)
+        self.assertEqual(self._rows(), [NOTE["title"]])
+
+    def test_an_unsigned_note_is_refused_by_the_server(self):
+        reg = _Registry(self, "jayshree")
+        r = self._publish(**reg.args(signature=False))
+        self.assertFalse(r["ok"])
+        self.assertEqual(r["error"]["code"], "APPROVAL_UNSIGNED")
+        self.assertEqual(self._rows(), [], "the note was written to the portal anyway")
+
+    def test_a_forged_hmac_still_fails_as_an_invalid_approval_first(self):
+        """Ordering matters for the error the analyst reads: a token that was
+        never issued is an approval problem, not a signature problem."""
+        reg = _Registry(self, "jayshree")
+        args = reg.args()
+        args["approval_token"] = args["approval_token"].split(".")[0] + ".forged"
+        r = self._publish(**args)
+        self.assertEqual(r["error"]["code"], "APPROVAL_INVALID")
+
+    def test_with_no_key_registered_the_old_path_is_unchanged(self):
+        """The limit, pinned: an empty registry means an HMAC token alone still
+        publishes. Registering a key is what turns this fix on."""
+        empty = tempfile.mkdtemp()
+        with patch.dict(os.environ, {"APPROVER_KEYS_DIR": empty,
+                                     "APPROVAL_SECRET": "test-secret"}):
+            token = approval.sign(NOTE["title"], NOTE["body"], NOTE["tickers"], approver="analyst")
+            r = self._publish(**NOTE, approval_token=token)
+        self.assertTrue(r["ok"], r)
 
 
 if __name__ == "__main__":

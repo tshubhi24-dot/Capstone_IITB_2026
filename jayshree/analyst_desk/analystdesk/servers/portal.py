@@ -30,6 +30,7 @@ from pydantic import BaseModel, Field
 
 from .. import approval
 from ..scope import COMPANIES
+from . import signing
 from .common import READ_ONLY, WRITE, ToolResult, fail, serve, structured_errors
 
 DEFAULT_DB = Path(__file__).resolve().parent.parent.parent / "data" / "portal" / "portal.db"
@@ -133,11 +134,17 @@ def publish_note(
     tickers: Annotated[list[str], Field(description="Tickers the note covers, as approved")],
     approval_token: Annotated[str, Field(description="Token issued when the analyst approved "
                                          "this exact note")],
+    approver_signature: Annotated[str | None, Field(
+        description="The approver's own Ed25519 signature over the note's sha256 digest, "
+                    "base64url. Required once an approver public key is registered "
+                    "(see servers/signing.py)")] = None,
 ) -> PublishResult:
     """WRITE — publish a research note to the portal.
 
     Refused unless approval_token was issued for exactly this title, body and
-    ticker list. Any edit after approval requires a new approval.
+    ticker list. Any edit after approval requires a new approval. Once an
+    approver public key is registered, also refused without that approver's
+    own signature over the note digest.
     """
     unknown = [t for t in tickers if t.strip().upper() not in _TICKERS]
     if not tickers or unknown:
@@ -148,6 +155,17 @@ def publish_note(
         claims = approval.verify(approval_token, title, body, tickers)
     except approval.ApprovalError as exc:
         return fail(PublishResult, "APPROVAL_INVALID", str(exc))
+
+    # Fix for Module 4 - Security (Fix 2 - use case 2): enforced in the server,
+    # not only in the graph, for the same reason the HMAC is. Checked against
+    # the *verified* claims rather than the raw token, so the approver name and
+    # the digest are both authenticated by the time the signature is held
+    # against them.
+    if signing.enabled():
+        try:
+            signing.verify(claims["approver"], approver_signature or "", claims["note_sha256"])
+        except signing.SignatureError as exc:
+            return fail(PublishResult, signing.CODE, str(exc))
 
     published_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     canonical_tickers = sorted({t.strip().upper() for t in tickers})

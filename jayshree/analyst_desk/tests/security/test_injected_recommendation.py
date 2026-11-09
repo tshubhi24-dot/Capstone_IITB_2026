@@ -45,14 +45,34 @@ the real check and guard code, so it needs fastmcp (via checks -> edgar_server)
 and, for the input-guard and judge classes, langgraph.
 """
 
+# Fix for Module 4 - Security — Module 4 adds the Fix 1 classes to this file.
+
 import asyncio
+import inspect
+import json
+import os
+import pathlib
 import re
+import sqlite3
 import sys
+import tempfile
 import unittest
+import unittest.mock
 
 from analystdesk.agent import checks
 from analystdesk.agent.checks import ADVICE, check_note
-from analystdesk.servers import AGENT_TOOLS
+from analystdesk.servers import AGENT_TOOLS, WRITE_TOOLS
+from analystdesk.servers import guardrails
+
+try:   # the adapter is needed only for the Fix 1 end-to-end class
+    from fastmcp import Client as FastMCPClient
+
+    from analystdesk import approval
+    from analystdesk.servers import portal
+    from analystdesk.servers.client import load_guarded_tools, make_client
+    HAVE_ADAPTERS = True
+except ModuleNotFoundError:   # pragma: no cover - exercised by a bare install
+    HAVE_ADAPTERS = False
 
 try:   # langgraph is a Phase 4 dependency; the checks above work without it
     from analystdesk.agent.graph import RESEARCHER, WRITER, common_nodes
@@ -324,7 +344,12 @@ class KnownGapTests(unittest.TestCase):
     """The same instruction, phrased without any word in ADVICE and without a
     number, passes every layer above. These tests assert today's behaviour, not
     desired behaviour — see "Prompt injection is defended at the prompt layer
-    only" in docs/security_summary.md. Closing the gap should break them.
+    only" in docs/security_summary.md.
+
+    Fix 1 does not change any of them. It is a guardrail one layer further
+    down, on the write itself (servers/guardrails.py), so check_note, the input
+    guard and the judge still behave exactly as pinned here — and the next
+    class shows what now happens when the note reaches publish_note.
     """
 
     def test_a_paraphrased_recommendation_passes_the_note_check(self):
@@ -371,6 +396,484 @@ class KnownGapTests(unittest.TestCase):
         self.assertEqual(out["issues"], [])
         self.assertIsNone(out["supported"])
         self.assertIn("judge unavailable", out["error"])
+
+
+# ── Fix 1: the guardrail on the write, in code ───────────────────────────────
+# The gap above is a gap in check_note, and it stays one: a keyword list cannot
+# be completed. Fix 1 moves the control to the tool call, where a refusal is
+# possible rather than advice to a writer, and changes the question asked.
+# check_note asks "does this note use a forbidden word?". The guardrail asks
+# "does this sentence take a position on the security without citing anything?"
+# — and the second half of that is enforceable whatever the wording.
+
+ALLOWED_PROSE = (
+    "Microsoft's operating margin improved in fiscal 2024, driven by Azure.",
+    "Risks include competition in cloud services and currency movements.",
+    "Management cited strong commercial bookings [MSFT_2024_item7_016].",
+    "The company repurchased shares during the year [MSFT_2024_item7_016].",
+    "Investments are carried at fair value and sell-side estimates vary.",
+    "Buy-side demand for the notes was strong.",
+    "Operating margin was 44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / "
+    "RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843].",
+)
+
+CLEAN_NOTE = "Microsoft's operating margin improved in fiscal 2024 [MSFT_2024_item7_016]."
+
+
+class Fix1PolicyTests(unittest.TestCase):
+    """What the guardrail decides, before any dispatcher is involved."""
+
+    def test_the_paraphrase_that_beat_every_rule_is_refused(self):
+        offending = guardrails.unsourced_advice(PARAPHRASED)
+        self.assertEqual(len(offending), 1)
+        sentence, term = offending[0]
+        self.assertEqual(sentence, PARAPHRASED)
+        self.assertEqual(term.lower(), "attractively valued")
+
+    def test_the_instruction_said_plainly_is_refused_as_well(self):
+        """Defence in depth: check_note already rejects this one. The guardrail
+        does not depend on that, and does not replace it."""
+        self.assertTrue(guardrails.unsourced_advice(OBEYED))
+
+    def test_a_cited_recommendation_is_not_the_guardrail_s_business(self):
+        """The enforceable half is the sourcing, not the vocabulary. A
+        recommendation that cites a passage passes here — and is still rejected
+        by check_note's advice filter, which has no sourcing escape."""
+        cited = PARAPHRASED[:-1] + " [MSFT_2024_item7_016]."
+        self.assertEqual(guardrails.unsourced_advice(cited), [])
+        self.assertTrue(guardrails.STANCE.search(cited))
+
+    def test_ordinary_note_prose_is_left_alone(self):
+        for line in ALLOWED_PROSE:
+            with self.subTest(line=line[:40]):
+                self.assertEqual(guardrails.unsourced_advice(line), [],
+                                 "a legitimate note sentence was refused")
+
+    def test_only_the_offending_sentence_is_named(self):
+        body = ALLOWED_PROSE[0] + " " + PARAPHRASED
+        offending = guardrails.unsourced_advice(body)
+        self.assertEqual([s for s, _t in offending], [PARAPHRASED])
+
+    def test_the_refusal_names_the_sentence_and_the_term(self):
+        message = guardrails.denial(guardrails.unsourced_advice(PARAPHRASED))["error"]["message"]
+        self.assertIn("attractively valued", message)
+        self.assertIn("warrant accumulation", message)
+
+    def test_only_note_prose_arguments_are_read(self):
+        """An approval token or a ticker list is not note text and is not scanned."""
+        args = {"title": "MSFT FY2024", "body": CLEAN_NOTE,
+                "tickers": ["MSFT"], "approval_token": "buy.sell.accumulate"}
+        self.assertEqual(guardrails.prose(args), "MSFT FY2024\n" + CLEAN_NOTE)
+        self.assertEqual(guardrails.unsourced_advice(guardrails.prose(args)), [])
+
+
+class Fix1DriftTests(unittest.TestCase):
+    """guardrails.py is imported by the servers, so it cannot import the agent
+    package and keeps its own copies of checks.py's patterns. These pin the
+    copies against the originals, so the two cannot drift apart in silence."""
+
+    def test_every_advice_word_is_also_a_stance_term(self):
+        for word in ("buy", "sell", "hold rating", "overweight", "underweight",
+                     "outperform", "underperform", "price target", "we recommend",
+                     "strong buy", "investors should"):
+            with self.subTest(word=word):
+                self.assertTrue(ADVICE.search(f"we {word} here"),
+                                "this list is meant to be ADVICE's own eleven terms")
+                self.assertTrue(guardrails.STANCE.search(f"we {word} here"),
+                                f"STANCE must stay a superset of ADVICE; {word!r} is missing")
+
+    def test_the_source_pattern_accepts_what_check_note_accepts(self):
+        sourced = (
+            "$245,122.0M [fact: RevenueFromContractWithCustomerExcludingAssessedTax/2024/"
+            "0000950170-24-087843]",
+            "44.64% [calc: OperatingIncomeLoss/2024/0000950170-24-087843 / "
+            "RevenueFromContractWithCustomerExcludingAssessedTax/2024/0000950170-24-087843]",
+            "15.67% [growth: Revenue/2024/0000950170-24-087843 / Revenue/2023/0000950170-23-087843]",
+            "+2.87 pp [diff: OpInc/2024/0000950170-24-087843 / Rev/2024/0000950170-24-087843 - "
+            "OpInc/2023/0000950170-23-087843 / Rev/2023/0000950170-23-087843]",
+            "quoted from the filing [MSFT_2024_item7_016]",
+        )
+        for text in sourced:
+            with self.subTest(text=text[:40]):
+                self.assertTrue(guardrails.SOURCE.search(text),
+                                "check_note would accept this evidence; the guardrail must too")
+
+    def test_an_invented_passage_id_shape_is_not_a_source(self):
+        self.assertIsNone(guardrails.SOURCE.search("see [MARKETWIRE_2024_top_pick]"))
+
+    def test_the_guardrail_covers_every_write_tool(self):
+        self.assertEqual(set(guardrails.GUARDED_TOOLS), set(WRITE_TOOLS))
+        self.assertEqual(set(WRITE_TOOLS), {"publish_note"},
+                         "a new write tool needs a line in docs/security_summary.md too")
+
+
+class _Dispatcher:
+    """Stands in for the real tool: records whether it was ever reached."""
+
+    def __init__(self):
+        self.calls = []
+
+    async def __call__(self, call):
+        self.calls.append((call.name, dict(call.args)))
+        return {"ok": True, "note_id": 1}
+
+
+def _decide(name, args):
+    """Run the guardrail over one call; returns (result, dispatcher)."""
+    run = _Dispatcher()
+    call = guardrails.ToolCall(name=name, args=args, id="call-1")
+    out = asyncio.run(guardrails.block_unsourced_advice.decide(call, run))
+    return out, run
+
+
+class Fix1MiddlewareTests(unittest.TestCase):
+    """The onion itself: what reaches the tool, and what comes back instead."""
+
+    NOTE = {"title": "MSFT FY2024", "tickers": ["MSFT"], "approval_token": "t"}
+
+    def test_the_write_tool_is_never_reached(self):
+        out, run = _decide("publish_note", {**self.NOTE, "body": PARAPHRASED})
+        self.assertEqual(run.calls, [], "publish_note ran despite the refusal")
+        self.assertFalse(out["ok"])
+        self.assertEqual(out["error"]["code"], "UNSOURCED_ADVICE")
+
+    def test_a_clean_note_reaches_the_tool_unchanged(self):
+        out, run = _decide("publish_note", {**self.NOTE, "body": CLEAN_NOTE})
+        self.assertEqual(len(run.calls), 1)
+        self.assertEqual(run.calls[0][1]["body"], CLEAN_NOTE)
+        self.assertTrue(out["ok"])
+
+    def test_a_read_tool_is_not_inspected_at_all(self):
+        """The guardrail stands in front of writes. A filing passage may well
+        contain 'strong buy' — it is data, and quoting it is not advising."""
+        out, run = _decide("get_passage", {"passage_id": "MSFT_2024_item7_016",
+                                           "body": PARAPHRASED})
+        self.assertEqual(len(run.calls), 1)
+        self.assertTrue(out["ok"])
+
+    def test_the_refusal_is_returned_not_raised(self):
+        """common.py's contract: tools return, never raise, so the agent reads
+        the code and adapts instead of the run ending."""
+        try:
+            out, _ = _decide("publish_note", {**self.NOTE, "body": PARAPHRASED})
+        except Exception as exc:   # noqa: BLE001 - the point of the test
+            self.fail(f"the guardrail raised {type(exc).__name__}: {exc}")
+        self.assertEqual(set(out), {"ok", "error"})
+        self.assertEqual(set(out["error"]), {"code", "message"})
+
+    def test_the_trace_records_it_as_a_denied_call(self):
+        """hooks.post parses the same envelope, so a refusal shows up in the
+        run trace as a failed publish rather than vanishing."""
+        from analystdesk.agent.hooks import Hooks
+        out, _ = _decide("publish_note", {**self.NOTE, "body": PARAPHRASED})
+        event = Hooks().post("publisher", "publish_note", {}, json.dumps(out), 1.0)
+        self.assertFalse(event["ok"])
+        self.assertEqual(event["error"], "UNSOURCED_ADVICE")
+
+
+@unittest.skipIf(common_nodes is None, "langgraph is not installed")
+class Fix1ToolNodeBindingTests(unittest.TestCase):
+    """C2 is the final architecture, but C1's ToolNode is still in the graph, and
+    the guardrail body binds to it unchanged — the same (request, execute) shape
+    agent/hooks.py already uses. Untested bindings rot, so this exercises it."""
+
+    class _Request:
+        def __init__(self, body):
+            self.tool_call = {"name": "publish_note", "id": "call-1",
+                              "args": {"title": "MSFT FY2024", "body": body}}
+
+    def _run(self, body):
+        ran = []
+
+        async def execute(request):
+            ran.append(request)
+            return "executed"
+
+        wrapper = guardrails.block_unsourced_advice.toolnode_wrapper
+        return asyncio.run(wrapper(self._Request(body), execute)), ran
+
+    def test_a_refusal_comes_back_as_a_tool_message(self):
+        from langchain_core.messages import ToolMessage
+        out, ran = self._run(PARAPHRASED)
+        self.assertEqual(ran, [], "the tool ran despite the refusal")
+        self.assertIsInstance(out, ToolMessage)
+        self.assertEqual(out.tool_call_id, "call-1")
+        self.assertEqual(json.loads(out.content)["error"]["code"], "UNSOURCED_ADVICE")
+
+    def test_a_clean_note_is_passed_straight_through(self):
+        out, ran = self._run(CLEAN_NOTE)
+        self.assertEqual(len(ran), 1)
+        self.assertEqual(out, "executed")
+
+
+class _PortalCase:
+    """One approved publish through the real portal server, and the rows it left.
+
+    A plain mixin, not a TestCase: inheriting a TestCase would collect and run
+    every test in it once per subclass.
+    """
+
+    NOTE = {"title": "MSFT FY2024", "tickers": ["MSFT"]}
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        env = unittest.mock.patch.dict(
+            os.environ, {"PORTAL_DB": str(pathlib.Path(tmp.name) / "portal.db"),
+                         "APPROVAL_SECRET": "test-secret"})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def _publish(self, body, interceptors=None):
+        """Publish one approved note through the portal; returns the parsed result."""
+        note = {**self.NOTE, "body": body}
+        token = approval.sign(note["title"], note["body"], note["tickers"], approver="analyst")
+
+        async def go():
+            async with FastMCPClient(portal.mcp) as client:
+                tools = await load_guarded_tools(client.session, interceptors=interceptors)
+                tool = next(t for t in tools if t.name == "publish_note")
+                raw = await tool.ainvoke({**note, "approval_token": token})
+                return raw if isinstance(raw, str) else json.dumps(raw)
+
+        text = asyncio.run(go())
+        try:   # the adapter returns [{"type": "text", "text": "<json>"}]
+            blocks = json.loads(text)
+            if isinstance(blocks, list) and blocks and isinstance(blocks[0], dict):
+                text = blocks[0].get("text", text)
+        except (ValueError, TypeError):
+            pass
+        return json.loads(text)
+
+    def _rows(self):
+        """The note bodies in the portal. No file and no table both mean the
+        tool never ran: portal._connect() is what creates them."""
+        if not pathlib.Path(os.environ["PORTAL_DB"]).exists():
+            return []
+        con = sqlite3.connect(os.environ["PORTAL_DB"])
+        try:
+            return [r[0] for r in con.execute("SELECT body FROM notes").fetchall()]
+        except sqlite3.OperationalError:
+            return []
+        finally:
+            con.close()
+
+@unittest.skipUnless(HAVE_ADAPTERS, "needs fastmcp and langchain-mcp-adapters")
+class Fix1EndToEndTests(_PortalCase, unittest.TestCase):
+    """The real portal server, reached the way a run reaches it."""
+
+    def test_the_recommendation_never_reaches_the_portal(self):
+        result = self._publish(PARAPHRASED)
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["error"]["code"], "UNSOURCED_ADVICE")
+        self.assertFalse(pathlib.Path(os.environ["PORTAL_DB"]).exists(),
+                         "publish_note ran far enough to open the database")
+        self.assertEqual(self._rows(), [], "the note was written to the portal anyway")
+
+    def test_a_clean_note_still_publishes(self):
+        result = self._publish(CLEAN_NOTE)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(self._rows(), [CLEAN_NOTE])
+
+    def test_without_the_guardrail_the_same_note_publishes(self):
+        """Teeth. Remove the interceptor and the paraphrase is published with a
+        valid approval token and no complaint from any layer — which is the gap
+        this fix exists for."""
+        result = self._publish(PARAPHRASED, interceptors=[])
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(self._rows(), [PARAPHRASED])
+
+    def test_make_client_installs_the_guardrails_by_default(self):
+        """A guardrail you have to remember to pass is one that will be missing
+        from the run where it mattered. Counted against guardrails.interceptors()
+        rather than a literal, so adding a fix does not fail this test."""
+        installed = make_client().tool_interceptors
+        self.assertTrue(installed, "make_client() installed no guardrail at all")
+        self.assertEqual(len(installed), len(guardrails.interceptors()))
+        self.assertEqual(make_client(interceptors=[]).tool_interceptors, [])
+
+
+# ── Fix 1 is author-blind, and that is the decision ──────────────────────────
+# Worth pinning before someone reads it as an oversight: the guardrail refuses
+# the analyst's own sentence exactly as it refuses the writer's, and it cannot
+# tell the two apart. publish_note carries no author, and by the time a call
+# reaches the interceptor the only authenticated name is the approver claim
+# inside the token — which approval.sign binds by hash to the very text being
+# judged. An exemption keyed on that name would therefore exempt precisely the
+# sentence an injection talked the analyst into approving. So the rule belongs
+# to the desk rather than to the model: a published note cites what it asserts,
+# whoever typed it.
+#
+# The analyst's edits do reach this same call. The gate sends
+# {"action": "edit", "note": {"body": ...}} (agent_ui.py:533, or
+# __main__.py:101 reading a file), graph.py:372 merges it into state["draft"],
+# and graph.py:397 publishes that draft. That routing is not pinned here —
+# driving the gate needs a live model call — but the enforcement point is.
+
+ANALYST_STANCE = ("Having covered this name for nine years, I think the shares are "
+                  "attractively valued.")
+ANALYST_COMMENT = ("I am less convinced by the cloud capex guidance than the filing's "
+                   "tone suggests.")
+ANALYST_CITED = ("The shares look attractively valued on this margin trend "
+                 "[MSFT_2024_item7_016].")
+PAST_NOTE_QUOTE = 'Our March note said: "we recommend accumulating on weakness".'
+
+
+@unittest.skipUnless(HAVE_ADAPTERS, "needs fastmcp and langchain-mcp-adapters")
+class Fix1AuthorBlindTests(_PortalCase, unittest.TestCase):
+    """The analyst's own text, properly approved, through the real portal."""
+
+    def test_nothing_in_the_call_says_who_wrote_the_text(self):
+        """No author reaches the tool, so no exemption can be keyed on one."""
+        params = set(inspect.signature(portal.publish_note).parameters)
+        self.assertEqual(params, {"title", "body", "tickers", "approval_token",
+                                  "approver_signature"})
+        self.assertEqual(guardrails.PROSE_ARGS, ("title", "body"))
+
+    def test_the_analyst_s_own_recommendation_is_refused_like_the_writer_s(self):
+        mine = self._publish(ANALYST_STANCE)
+        theirs = self._publish(PARAPHRASED)
+        self.assertEqual(mine["error"]["code"], "UNSOURCED_ADVICE")
+        self.assertEqual(mine["error"]["code"], theirs["error"]["code"])
+        self.assertEqual(self._rows(), [])
+
+    def test_a_valid_approval_does_not_exempt_the_text_it_approves(self):
+        """The note is approved properly — the token verifies against this exact
+        text — and is still refused. Approval authorises the change; it does not
+        waive the format rule."""
+        self.assertFalse(self._publish(ANALYST_STANCE)["ok"])
+        token = approval.sign(self.NOTE["title"], ANALYST_STANCE, self.NOTE["tickers"],
+                              approver="analyst")
+        claims = approval.verify(token, self.NOTE["title"], ANALYST_STANCE,
+                                 self.NOTE["tickers"])
+        self.assertEqual(claims["approver"], "analyst")
+
+    def test_the_analyst_can_still_say_what_they_think(self):
+        """Judgement about the business is not a position on the security. The
+        guardrail is not a gag on the analyst's voice."""
+        self.assertTrue(self._publish(ANALYST_COMMENT)["ok"])
+        self.assertEqual(self._rows(), [ANALYST_COMMENT])
+
+    def test_the_analyst_can_take_a_position_by_citing_it(self):
+        self.assertTrue(self._publish(ANALYST_CITED)["ok"])
+        self.assertEqual(self._rows(), [ANALYST_CITED])
+
+    def test_restating_a_past_note_s_recommendation_is_refused_too(self):
+        """A cost of the rule, recorded rather than hidden: get_past_notes
+        returns note bodies, which are not filing passages, so a recommendation
+        quoted out of one has nothing it can cite. Attribute it instead of
+        restating it, or tag the sentence."""
+        self.assertEqual(self._publish(PAST_NOTE_QUOTE)["error"]["code"],
+                         "UNSOURCED_ADVICE")
+        self.assertEqual(self._rows(), [])
+
+
+# ── Fix 1: soft validation, for a desk still adopting the rule ───────────────
+# ADVICE_GUARD_MODE=warn turns the refusal into a finding carried back on the
+# result. The default is enforce, and these tests are as much about that default
+# as about the mode: a control that softens itself when a deployment variable is
+# missing or misspelt is not a control. The cost of warn is asserted out loud —
+# test_warn_publishes_the_note_it_warns_about puts the recommendation in the
+# portal, which is the thing enforce exists to prevent.
+
+
+class Fix1ModeTests(_PortalCase, unittest.TestCase):
+    """enforce refuses; warn publishes and reports. Both through the real portal."""
+
+    def _mode(self, value):
+        env = unittest.mock.patch.dict(os.environ, {"ADVICE_GUARD_MODE": value})
+        env.start()
+        self.addCleanup(env.stop)
+
+    def setUp(self):
+        super().setUp()
+        clear = unittest.mock.patch.dict(os.environ, {}, clear=False)
+        clear.start()
+        os.environ.pop("ADVICE_GUARD_MODE", None)   # the repo default, whatever the shell has
+        self.addCleanup(clear.stop)
+
+    def test_enforce_is_the_default(self):
+        self.assertEqual(guardrails.mode(), "enforce")
+        self.assertEqual(self._publish(PARAPHRASED)["error"]["code"], "UNSOURCED_ADVICE")
+        self.assertEqual(self._rows(), [])
+
+    def test_warn_publishes_the_note_it_warns_about(self):
+        """The cost of soft validation, in one assertion: the paraphrase that
+        enforce refuses is in the portal."""
+        self._mode("warn")
+        result = self._publish(PARAPHRASED)
+        self.assertTrue(result["ok"], result)
+        self.assertEqual(self._rows(), [PARAPHRASED])
+
+    def test_warn_carries_the_same_finding_back_on_the_result(self):
+        """A warning nobody can read is not validation. It travels with the
+        result, so the trace and the gate both still see it."""
+        self._mode("warn")
+        [found] = self._publish(PARAPHRASED)["warnings"]
+        self.assertEqual(found["code"], "UNSOURCED_ADVICE")
+        self.assertEqual(found["mode"], "warn")
+        self.assertIn("attractively valued", found["message"])
+        self.assertIn(PARAPHRASED, found["message"])
+
+    def test_a_clean_note_gets_no_warning(self):
+        self._mode("warn")
+        result = self._publish(CLEAN_NOTE)
+        self.assertTrue(result["ok"], result)
+        self.assertNotIn("warnings", result)
+
+    def test_a_warning_rides_along_with_the_tool_s_own_error(self):
+        """Publishing the same note twice: the portal's ALREADY_EXISTS comes back
+        with the guardrail's warning still attached, because warn annotates
+        whatever the tool returned rather than replacing it."""
+        self._mode("warn")
+        self.assertTrue(self._publish(PARAPHRASED)["ok"])
+        again = self._publish(PARAPHRASED)
+        self.assertEqual(again["error"]["code"], "ALREADY_EXISTS")
+        self.assertEqual(again["warnings"][0]["code"], "UNSOURCED_ADVICE")
+
+    def test_a_misspelt_mode_enforces(self):
+        """"soft" is not a mode. A typo in a deployment variable must not be the
+        thing that turns the guardrail off."""
+        self._mode("soft")
+        with self.assertLogs("analystdesk.servers", level="WARNING") as captured:
+            self.assertEqual(guardrails.mode(), "enforce")
+            self.assertFalse(self._publish(PARAPHRASED)["ok"])
+        self.assertEqual(self._rows(), [])
+        self.assertTrue(any("ADVICE_GUARD_MODE" in line for line in captured.output),
+                        "the operator is not told the value was rejected")
+
+    def test_the_mode_is_case_and_space_insensitive(self):
+        self._mode("  WARN ")
+        self.assertEqual(guardrails.mode(), "warn")
+
+    def test_an_empty_mode_enforces(self):
+        self._mode("")
+        self.assertEqual(guardrails.mode(), "enforce")
+
+    def test_warn_does_not_soften_the_signature_guardrail(self):
+        """The mode belongs to the advice check alone. Fix 2 has no soft form:
+        a signature either verifies or it does not."""
+        self._mode("warn")
+
+        async def never(_call):
+            self.fail("the write tool ran despite an unsigned note")
+
+        with unittest.mock.patch.object(guardrails.signing, "check", return_value="no key"):
+            out = asyncio.run(guardrails.require_approver_signature.fn(
+                guardrails.ToolCall(name="publish_note",
+                                    args={"title": "MSFT FY2024", "body": CLEAN_NOTE}),
+                never))
+        self.assertFalse(out["ok"])
+        self.assertEqual(out["error"]["code"], "APPROVAL_UNSIGNED")
+
+    def test_the_mode_is_read_per_call(self):
+        """Captured at import, the mode would be whatever the first importer's
+        environment happened to say."""
+        self._mode("warn")
+        self.assertTrue(self._publish(PARAPHRASED)["ok"])
+        os.environ["ADVICE_GUARD_MODE"] = "enforce"
+        self.assertFalse(self._publish(ANALYST_STANCE)["ok"])
+        self.assertEqual(self._rows(), [PARAPHRASED])
 
 
 # ── printed evidence: python -m tests.security.test_injected_recommendation ───
@@ -420,8 +923,13 @@ def report():
         out = asyncio.run(make_judge(_JudgeMustNotBeCalled(), PASSAGES.get)(PARAPHRASED))
         print(f"  {'C2 judge (team.py, claims with a citation)':46}  "
               f"{out['checked']} items collected, model not called")
+
+    offending = guardrails.unsourced_advice(PARAPHRASED)
+    print(f"  {'Fix 1 guardrail (servers/guardrails.py, on the write)':46}  "
+          f"refuses: {guardrails.CODE} ({', '.join(t for _s, t in offending)})")
     print("\nTwo rules fire on the obeyed note, and either one alone rejects it."
-          "\nThe paraphrase triggers none \u2014 see docs/security_summary.md.\n")
+          "\nThe paraphrase triggers none of the five \u2014 check_note still returns ok."
+          "\nFix 1 stops it one layer later: publish_note never runs.\n")
     sys.stdout.flush()   # unittest writes to stderr; keep the report above the dots
 
 
