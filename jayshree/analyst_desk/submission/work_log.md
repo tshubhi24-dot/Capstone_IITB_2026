@@ -4,6 +4,7 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 
 | Date | Who | What | Where |
 |---|---|---|---|
+| 2026-11-09 | Jayshree | FinanceBench external retrieval check (`scripts/eval_financebench.py`): 9 of the 150 open-sample questions are about a 10-K we cover; the evidence for 4 is in our Item 1A/7 corpus (the rest is in the financial statements or Item 1). Search found 1 of 4 in the top 5. Cause: "FY22" was not read as a year. Fixed `find_years` (two-digit fiscal years) → 2 of 4. No development case uses two-digit years, so the E1/E4 runs are unaffected | `scripts/eval_financebench.py`, `query.py`, `results/financebench_check.json` |
 | 2026-11-09 | Jayshree | Judge strictness fixed: figures code already verified are shown to the judge as "[code-verified figure]", so it judges the wording against the passage, not numbers the passage never states. Test added (289 pass). Done before the E4 runs so their C2 numbers use the final judge | PR #14, `team.claim_lines`, `llm.toml` judge |
 | 2026-11-09 | Jayshree | PR #14 review requested from Shubhi (GitHub review request and comment) | PR #14 |
 | 2026-11-09 | Jayshree | Started the submission folder: deliverables checklist against the brief, evaluation report draft, experiment log, demo script, slides outline, failed-CI explanation, request to Role 5 | `submission/` |
@@ -21,4 +22,4 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 |---|---|---|
 | 2026-11-09 | The C2 judge marks lines with code-verified figures as unsupported when the cited passage doesn't state that figure. Notes are held for the analyst more often than they should be | **Fixed** the same day (see above); measured in the E1/E4 development runs |
 | 2026-11-09 | The writer sometimes types its own numbers (growth rates, segment amounts) instead of using placeholders; the checker catches them, but the note needs an edit | Tighten the writer prompt; count it in the report as a known failure mode |
-| 2026-11-09 | No FinanceBench external retrieval check | Small run on the open sample, or a stated limit |
+| 2026-11-09 | No FinanceBench external retrieval check | **Done** the same day: 2 of 4 findable questions in the top 5 (see above) |

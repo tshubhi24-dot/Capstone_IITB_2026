@@ -58,7 +58,7 @@ Status key: ✅ done · 🟡 partly done · ⬜ not started · 🔴 blocked on s
 | Signature B: parallel fan-out, critic loop, token budget; compared with a single agent | ✅ Built; held-out comparison to run |
 | Security tests: injected "buy" article, watchlist in a search query, sandbox reaching the network | 🟡 Defences built and unit-tested; attack runs from Role 5 |
 | 60 research questions, including risk changes labelled by hand for 10 company-years | 🔴 20 development cases; 40+ held-out and the 10 hand labels from Role 5 |
-| FinanceBench open sample as an external retrieval check | ⬜ Not done: add a small run, or state it as a limit in the report |
+| FinanceBench open sample as an external retrieval check | ✅ `scripts/eval_financebench.py`: 2 of 4 findable in-coverage questions in the top 5 (report §2) |
 | Dashboard: verified share, critic rejections, tokens and cost per note, EDGAR cache hits, latency; alert below 98% verified | ✅ |
 | E4 ablation: critic loop on and off; table-aware vs plain chunks | 🟡 Configs ready (`experiments/e4_*`); runs to do |
 | Demo: (1) margin comparison with linked facts (2) critic fixing a planted wrong number while the injected "buy" stays out (3) "What changed since our last note?" | 🟡 [demo_script.md](demo_script.md) |

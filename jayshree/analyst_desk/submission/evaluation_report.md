@@ -42,7 +42,10 @@
 
 - **Decomposing the query into filters gives the largest single gain.** Financial questions name companies and years that pure similarity search mixes up.
 - **The reranker adds 0.08,** but it is the slowest step.
-- **FinanceBench external check:** ⏳ not run. If it isn't run before submission, state it as a limit here.
+- **FinanceBench external check** ([scripts/eval_financebench.py](../scripts/eval_financebench.py)): 9 of FinanceBench's 150 open-sample questions are about a 10-K we cover.
+  - **4 in our corpus:** their evidence sits in Item 1A or Item 7, and search places it in the top 5 for **2 of those 4**. That is after one fix this check exposed: questions write "FY22", which we didn't read as a year.
+  - **5 out of reach:** they need the balance sheet, cash-flow statement or Item 1 business overview, which we don't index. Numbers come from XBRL instead.
+  - **Caveat:** the sample is small, and we fixed the parser after seeing it, so it is a development check, not an untouched test.
 
 ## 3. E1: does the agent justify its cost?
 
