@@ -451,6 +451,7 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
 | [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
+| [docs/security_summary.md](docs/security_summary.md) | MCP tool security layer by layer, the gaps still open, and the three fixes made against them |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |

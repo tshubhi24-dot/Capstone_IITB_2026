@@ -11,6 +11,12 @@ Codes:
     APPROVAL_INVALID  publish without a valid approval for this exact note
     ALREADY_EXISTS    the same note was already published
     BLOCKED           the sandbox refused an operation (network, files, imports)
+    UNSOURCED_ADVICE  a write was refused because the text takes a position on
+                      the security and cites nothing (guardrails.py, Fix 1).
+                      Under ADVICE_GUARD_MODE=warn the same finding arrives as
+                      an entry in `warnings` on a successful result instead
+    APPROVAL_UNSIGNED the named approver has not signed this note with their
+                      own private key (signing.py, Fix 2)
     TIMEOUT           the sandbox ran past its time limit
     EXEC_ERROR        sandbox code raised an exception
     INTERNAL          unexpected failure inside the tool (bug), reported not raised
@@ -34,6 +40,8 @@ log = logging.getLogger("analystdesk.servers")
 ErrorCode = Literal[
     "BAD_INPUT", "NOT_IN_COVERAGE", "NOT_FOUND", "APPROVAL_INVALID",
     "ALREADY_EXISTS", "BLOCKED", "TIMEOUT", "EXEC_ERROR", "INTERNAL",
+    # Fix for Module 4 - Security (Fix 1 and Fix 2): the two codes Module 4 adds
+    "UNSOURCED_ADVICE", "APPROVAL_UNSIGNED",
 ]
 
 # Data the tools cover; requests outside it get NOT_IN_COVERAGE
