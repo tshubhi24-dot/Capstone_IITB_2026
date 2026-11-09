@@ -427,11 +427,10 @@ A development scoring result is not a research-publication decision. If evaluati
 
 Keep correctness, completion and case validity separate. An established mandatory failure remains aggregate Fail even if a later timeout also makes completion incomplete. If no definite failure is established but required work did not complete, the aggregate is Incomplete. A disputed expectation requires documented adjudication, not a convenient pass or silent exclusion.
 
-Before scoring any of the eight development cases, complete the required human/source review, scoring agreement, adapter validation and version freeze. Synthetic fixture correctness is separate from issuer-source retrieval and end-to-end performance; a legitimate production refusal of a fictional company is not a financial-calculation failure. The hypothetical ten-attempt example of six Pass, two Fail and two Incomplete means 60%, 20% and 20% of all attempts, not an observed result for the eight-case pack.
+Before scoring any public development case or supplementary boundary fixture, complete the required human/source review, scoring agreement, adapter validation and version freeze. Synthetic fixture correctness is separate from issuer-source retrieval and end-to-end performance; a legitimate production refusal of a fictional company is not a financial-calculation failure. The hypothetical ten-attempt example of six Pass, two Fail and two Incomplete means 60%, 20% and 20% of all attempts, not an observed result for the golden pack.
 
 Do not expose expected answers, protected records or evaluator files to the evaluated application's prompts, tools, retrieval or analyst memory merely to display a scoring panel. A case Pass never supplies exact-note approval or proof of portal persistence.
 
 ## Implementation and verification responsibilities
 
 R1 reviews the copy and domain distinctions; R2 confirms metadata and lifecycle inputs; R3 specifies state transitions and allowed recovery; R4 enforces authority and boundaries; R5 independently verifies negative and legitimate-use cases; R6 implements the visible messages and conditional controls. Implement against this versioned contract and retain configuration and execution evidence before claiming a message is implemented.
-

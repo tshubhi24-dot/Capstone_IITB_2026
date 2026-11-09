@@ -22,11 +22,11 @@ Use these specifications as the implementation and acceptance baseline. The link
 - [x] Final [acceptance and publication policy](ACCEPTANCE_AND_PUBLICATION_POLICY.md) and [Word version](ACCEPTANCE_AND_PUBLICATION_POLICY.docx): eligibility blockers, exact approval, confirmed publication and recovery.
 - [x] Final one-page [memory and privacy policy](MEMORY_AND_PRIVACY_POLICY.md) and [Word version](MEMORY_AND_PRIVACY_POLICY.docx): saved records, permitted access, correction and deletion.
 - [x] Final [memory and privacy rules and examples](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md) and [Word version](MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx): history, checkpoints, private context, lifecycle and reviewed lessons.
-- [x] Final [golden answers and scoring rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word version](GOLDEN_ANSWERS_AND_SCORING_RULES.docx): eight development reference cases, expected values, scoring meanings and scoring-release requirements.
+- [x] Final [golden answers and scoring rules](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Word version](GOLDEN_ANSWERS_AND_SCORING_RULES.docx): twenty core development cases with expected answers, acceptable interpretations, limitations and scoring-release requirements; eight supplementary examples remain outside the core count.
 - [x] Final [frontend messages and trigger conditions](FRONTEND_MESSAGES_AND_CONDITIONS.md): 28 messages, trigger conditions, permitted actions and implementation owners.
 - [x] Update the [project work and decision log](PROJECT_WORK_LOG.md) with the completed specification milestones and execution responsibilities.
 
-The specification work is complete. Record actual source eligibility checks, product tests, expert inspections and scored results under the execution tasks below. The Golden reference cases are not a frozen execution release or eight passed application tests.
+The specification work is complete. Record actual source eligibility checks, product tests, expert inspections and scored results under the execution tasks below. The twenty Golden reference contracts are not a validated scored execution release or twenty passed application tests.
 
 ## Implementation responsibilities
 
@@ -42,12 +42,13 @@ The specification work is complete. Record actual source eligibility checks, pro
 ## Remaining execution work
 
 - [ ] Complete a version-specific domain-expert inspection and record its actual findings and resulting decisions.
-- [ ] Verify source eligibility and execution adapters for the eight reference cases with R2/R5; identify the case/policy release and freeze it before scored use.
+- [ ] Verify source eligibility and execution adapters for the twenty core reference cases with R2/R5; identify the case/policy release and freeze it before scored use.
 - [ ] Obtain the required human risk annotations and independent evaluation evidence; teaching examples do not replace actual human records.
-- [ ] Review a representative corrected note on an identified application/source/policy version and record accept, edit, reject or HOLD with reasons.
+- [x] Assess one identified historical note against the policies and record its final disposition in [Product Acceptance Review](PRODUCT_ACCEPTANCE_REVIEW.md): not accepted for publication as submitted. No corrected-current-release acceptance is claimed.
 - [ ] Verify memory behaviour and genuine lesson decisions, then interpret the experiment and security evidence.
 - [ ] Measure representative tasks against their baseline process using correction effort, quality, total research/review time and model usage/cost.
-- [ ] Prepare the three-story demo script, rehearse it and complete the report, contribution record, backup recording and viva preparation.
+- [x] Prepare the [three-story demo script](THREE_STORY_DEMO_SCRIPT.md), [evidence index](DEMO_EVIDENCE_INDEX.md) and [project contribution record](PROJECT_CONTRIBUTIONS.md).
+- [ ] Complete and verify the full live rehearsal, shared evaluation report and backup recording; prepared material is not execution evidence.
 
 ## Execution order: product definitions, then shared validation
 
@@ -252,7 +253,7 @@ Record this for each phase when it is completed:
 |---|---|---|---|---|
 | Product definition | Final problem, scope and workflow specifications v1.0 | R1 specification finalization | Definition complete | Source execution and measured outcomes |
 | Financial and research policies | Final policy specifications v1.0 with examples | R1 specification finalization | Definition complete | Implementation and independent verification |
-| Golden content and scoring | Final domain specification v1.0 and eight reference cases | R1 specification finalization | Domain specification complete | R2/R5 eligibility, adapters, verification and scoring freeze |
+| Golden content and scoring | Final domain specification v2.1 and twenty core reference cases | R1 specification finalization | Domain specification complete | R2/R5 eligibility, adapters, verification and scoring freeze |
 | Other execution phases | Record actual evidence when produced | Actual reviewer and date required | Open until evidence exists | See the unchecked tasks |
 
 Use the final specifications as the acceptance baseline. Update execution records only when the corresponding work and evidence exist.
@@ -262,3 +263,15 @@ Use the final specifications as the acceptance baseline. Update execution record
 - The final-document register above links every project specification, its available Word version and the work log.
 - [Project overview and current setup](../README.md).
 - Existing implementation references: [architecture](architecture.md), [memory design](memory_policy.md), [tools](tools.md), [development evaluation](evaluation.md), [retrieval evaluation](retrieval_eval.md) and [evaluation guide](evaluation_guide.md). Their presence does not establish conformance with the final product policies.
+
+## Completed project assessments and presentation records
+
+Use the [document index](PRODUCT_DOMAIN_INDEX.md) for the final project records and Word files.
+
+- [x] Define all twenty public development contracts and verify bounded source/arithmetic content in [Golden Answers](GOLDEN_ANSWERS_AND_SCORING_RULES.md) and [Domain Review](DEVELOPMENT_CASE_DOMAIN_REVIEW.md). Independent scoring remains separate.
+- [x] Complete the pinned Main33fef7f [implementation review](CONSOLIDATED_SPECIFICATION_REVIEW.md): six Open and five Partially resolved findings, with working safeguards retained separately.
+- [x] Complete the historical MSFT/Alphabet [note assessment](PRODUCT_ACCEPTANCE_REVIEW.md). Six ratios match; full note is not accepted for publication as submitted.
+- [x] Interpret the observed [C0 C1 C2 comparison](C0_C1_C2_COMPARISON.md) without a matched-benchmark or overall-winner claim.
+- [x] Record the [final product assessment](FINAL_PRODUCT_ASSESSMENT.md), [overview](FINAL_SUBMISSION_OVERVIEW.md), project contributions and demonstration route with explicit evidence limits.
+
+Shared source eligibility, actual human annotations, independent R5 review, protected repeated experiments, workflow-benefit measurement and full live/recorded demo outcomes remain distinct evidence requirements. No unchecked execution item is closed by a document or commit alone.
