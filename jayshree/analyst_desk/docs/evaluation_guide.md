@@ -131,7 +131,7 @@ For every configuration, report: task success, policy violations, attack success
 | Checking held-out cases against the written policy | Role 1 | Brief, team roles |
 | Tuning agents, prompts, lessons | Roles 2–4 (dev set only) | Never look at held-out results while tuning; if you do, those cases become development cases, and you must say so |
 
-## Role 6: reproducible offline audit and repeated-run report
+## 9. Auditing recorded results and repeated runs
 
 Run `scripts/audit_eval_results.py` on the already recorded 20-case development snapshot to validate
 case coverage and recompute numeric summaries. Its saved outputs are
@@ -150,3 +150,41 @@ all raw result files. Then `scripts/eval_three_runs.py --runs <run1.json> <run2.
 checks full case coverage in each run and reports the observed spread. If the filenames, raw
 agent outputs, judge human labels or red-team evidence are missing, do not claim those
 experiments are finished.
+
+## 10. Reference answers
+
+Role 1's reference answers, fixed from the filings before looking at any system output. They define what a correct answer must contain beyond a matching number: the right company, metric, actual period, units, reporting basis and source.
+
+**Outcomes.** *Pass*: every mandatory requirement holds. *Fail*: a definite wrong result or rule violation, such as a wrong value, the wrong company, a silent metric substitution or an unwarranted refusal. *Incomplete*: the run or a required review did not finish and no failure was established. A known wrong answer stays a Fail even if the run also timed out. Report all attempts, including failed and incomplete ones: 6 passes out of 10 attempts with 2 timeouts is 60%, not 6 / 8 = 75%. The evaluation harness records errors and timeouts separately from task success ([evaluation.py](../analystdesk/evaluation.py)).
+
+### Issuer cases (FY2024, original 10-K filings)
+
+| Field | Microsoft (MSFT) | Alphabet (GOOGL) |
+|---|---|---|
+| Fiscal period | 1 July 2023 to 30 June 2024 | 1 January to 31 December 2024 |
+| Revenue, $M | 245,122 | 350,018 |
+| Operating income, $M | 109,433 | 112,390 |
+| Operating margin | 44.64% | 32.11% |
+| Accession, filing date | 0000950170-24-087843, 30 July 2024 | 0001652044-25-000014, 5 February 2025 |
+
+The app's XBRL data gives exactly these values, accessions and filing dates.
+
+| Case | Question | Expected |
+|---|---|---|
+| DG001 | Microsoft's FY2024 operating margin, with period, revenue, operating income and source | 44.64%, for July 2023 to June 2024 (dev case d01) |
+| DG002 | Alphabet's FY2024 operating margin, likewise | 32.11%, consolidated group |
+| DG003 | Microsoft minus Alphabet, FY2024, in percentage points | 44.64% and 32.11%, **+12.53 pp**, with both reporting windows stated; not "12.53% growth", no cause, no ranking for investment (dev case d09 checks the two margins) |
+| DG004 | Both margins for calendar 2024, from the annual filings only | Alphabet 32.11%; Microsoft **unavailable** for that window (its year ends in June), with the reason; no estimated months |
+
+### Boundary cases (synthetic inputs)
+
+These use invented companies, so they test rules rather than live retrieval. The live app correctly refuses a fictional company as out of scope; that refusal is not a calculation failure.
+
+| Case | Inputs | Expected |
+|---|---|---|
+| DG005 Scale | Revenue 100 in a table headed USD millions; operating income 20,000 in USD thousands | 20.00% after converting both to dollars, not 20,000.00% |
+| DG006 Bank metric | Tech company: revenue 100, operating income 30. Bank: net revenue 100, pre-tax income 35, no operating income | Tech 30.00%; bank operating margin unavailable. The bank's 35.00% is a pre-tax margin and gives no "5-point" operating gap |
+| DG007 Filing version | FY2023 original filing: 100 and 20; a later presentation: 95 and 18; as of 31 December 2024 | 20.00% from the original pair. Mixing original income with later revenue (20 / 95 = 21.05%) is wrong |
+| DG008 Missing risk evidence | A FY2024 cybersecurity passage; the FY2023 search failed | Describe the FY2024 disclosure; the change cannot be classified. "A new risk was added" fails |
+
+Keep these as development cases. They and close variants cannot later be presented as unseen held-out tests.
