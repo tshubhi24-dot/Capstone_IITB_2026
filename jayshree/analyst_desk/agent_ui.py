@@ -335,7 +335,7 @@ async def _drive(run_id: str, payload):
     async def on_event(ev):
         await queue.put(ev)
 
-    task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="inprocess"))
+    task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="auto"))
     try:
         while not (task.done() and queue.empty()):
             try:
@@ -376,7 +376,11 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
         plan_edit_feedback = "Make a valid change to the JSON plan to enable this button."
         show_plan = True
     elif gate and gate["gate"] == "note":
-        status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
+        if gate.get("check", {}).get("ok", False):
+            status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
+        else:
+            status = (f"### ⛔ Note failed verification. Edit and re-check it, or reject it. "
+                      f"Approval is blocked.\nRun `{run_id}` · {usage}")
         note_md = f"# {gate['note']['title']}\n\n" + _note_display(gate["note"]["body"])
         check_md = _check_display(gate["check"])
         note_body = gate["note"]["body"]
@@ -405,7 +409,9 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             gr.update(value=note_md), gr.update(value=check_md), gr.update(value=note_body),
             gr.update(visible=show_note), _past_notes(), board,
             gr.update(value=plan_edit_feedback), original_plan_json,
-            gr.update(interactive=False))
+            gr.update(interactive=False),
+            gr.update(interactive=bool(gate and gate.get("gate") == "note"
+                                       and gate.get("check", {}).get("ok", False))))
 
 
 def _log_from_trace(values: dict) -> list[str]:
@@ -536,7 +542,7 @@ def build_agent_panel(workflow_mode):
 
         outputs = [run_id, status, activity, plan_md, plan_json, plan_box,
                    note_md, check_md, note_body, note_box, past, board,
-                   plan_edit_feedback, plan_json_baseline, edit_plan_btn]
+                   plan_edit_feedback, plan_json_baseline, edit_plan_btn, approve_note_btn]
 
         def start_control_updates(req, mode, running, current_run_id):
             return (
@@ -555,7 +561,7 @@ def build_agent_panel(workflow_mode):
                 gr.update(), gr.update(), gr.update(visible=False),
                 gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                 _board(events, mode), gr.update(value=""), gr.update(),
-                gr.update(interactive=False),
+                gr.update(interactive=False), gr.update(interactive=False),
                 *start_control_updates(request_text, mode, True, rid),
             )
             try:
@@ -568,7 +574,7 @@ def build_agent_panel(workflow_mode):
                             gr.update(), gr.update(), gr.update(visible=False),
                             gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                             _board(events, mode), gr.update(value=""), gr.update(),
-                            gr.update(interactive=False),
+                            gr.update(interactive=False), gr.update(interactive=False),
                             *start_control_updates(request_text, mode, True, rid),
                         )
                     else:
@@ -580,7 +586,8 @@ def build_agent_panel(workflow_mode):
                 failure_updates[1] = "### Run failed; check the server logs for details"
                 failure_updates[5] = gr.update(visible=False)
                 failure_updates[9] = gr.update(visible=False)
-                failure_updates[-3] = gr.update(value="")
+                failure_updates[12] = gr.update(value="")
+                failure_updates[-2] = gr.update(interactive=False)
                 failure_updates[-1] = gr.update(interactive=False)
                 yield (
                     *failure_updates,
@@ -777,6 +784,7 @@ def build_agent_panel(workflow_mode):
             updates = [gr.update() for _ in outputs]
             updates[1] = status_text
             if running:
+                updates[-2] = gr.update(interactive=False)
                 updates[-1] = gr.update(interactive=False)
             return (*updates, *start_control_updates(req, agents, running, rid))
 

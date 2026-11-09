@@ -22,6 +22,7 @@ import argparse
 import asyncio
 import json
 import os
+import re
 import statistics
 import sys
 import time
@@ -59,9 +60,19 @@ async def main() -> None:
         help="fail if fewer than this many cases were evaluated",
     )
     args = ap.parse_args()
+    if not re.fullmatch(r"[a-zA-Z0-9_-]+", args.tag):
+        ap.error("--tag must contain only letters, digits, '-' or '_'")
     if args.no_lessons:
         os.environ["AGENT_LESSONS"] = "0"
-    cases = [c for c in load_cases(args.split) if not args.cases or c["id"] in args.cases]
+    all_cases = load_cases(args.split)
+    if args.cases:
+        known = {c["id"] for c in all_cases}
+        missing = set(args.cases) - known
+        if missing:
+            ap.error(f"unknown case IDs for {args.split}: {', '.join(sorted(missing))}")
+    cases = [c for c in all_cases if not args.cases or c["id"] in args.cases]
+    if len(cases) < args.min_cases:
+        ap.error(f"selected {len(cases)} cases, but --min-cases requires {args.min_cases}")
     RESULTS.mkdir(parents=True, exist_ok=True)
     path = RESULTS / f"eval_{args.split}_{args.tag}.json"
     all_rows: dict[str, list] = {}
@@ -74,11 +85,14 @@ async def main() -> None:
                   f"tokens {r.get('tokens') or 0:6}  verified {r.get('verified', '-'):>6}  {r['reason'][:70]}",
                   flush=True)
             all_rows[config] = rows
-            path.write_text(json.dumps({"split": args.split, "tag": args.tag, "price_per_m": PRICE_PER_M,
-                                        "lessons": not args.no_lessons,
-                                        "rows": all_rows,
-                                        "summary": {c: summarise(rs) for c, rs in all_rows.items()}},
-                                       indent=1), encoding="utf-8")
+            snapshot = json.dumps({"split": args.split, "tag": args.tag, "price_per_m": PRICE_PER_M,
+                                   "lessons": not args.no_lessons,
+                                   "rows": all_rows,
+                                   "summary": {c: summarise(rs) for c, rs in all_rows.items()}},
+                                  indent=1)
+            temporary = path.with_suffix(".tmp")
+            temporary.write_text(snapshot, encoding="utf-8")
+            temporary.replace(path)   # maintain a valid checkpoint if interrupted mid-run
     summary = {c: summarise(rs) for c, rs in all_rows.items()}
     keys = ["cases", "success", "by_type", "policy_violations", "verified_share_mean", "errors", "timeouts",
             "tokens_mean", "cost_per_case_usd", "latency_median_s", "latency_p95_s"]
