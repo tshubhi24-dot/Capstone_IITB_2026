@@ -289,7 +289,7 @@ Tool schemas: [tools.md](tools.md).
 - Only the app container receives the OpenRouter key.
 - All ports are bound to 127.0.0.1.
 
-Outside Docker, the app runs the same MCP servers in-process over the in-memory transport: the same protocol and schemas, with no subprocesses. The CLI can use stdio.
+The research UI and FastAPI now select MCP transport from the environment. With `MCP_URL_*` variables (Docker Compose), they use the separate MCP servers over HTTP. Without those variables, they launch local stdio MCP subprocesses; tests and the offline evaluation harness may use in-process MCP explicitly. These transports expose the same tool schemas, but do not provide equivalent process isolation.
 
 ---
 

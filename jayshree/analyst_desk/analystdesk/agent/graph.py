@@ -355,6 +355,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         if action == "reject":
             return {"outcome": "rejected", "trace": _event("review_note", action="reject",
                                                            reason=decision.get("reason", ""))}
+        if action != "approve":
+            raise ValueError("Note decision must be approve, edit, or reject.")
+        # Policy: a human approval cannot override known failed number/source
+        # checks or unresolved critic findings. Revisions must be re-checked.
+        if not state.get("check", {}).get("ok", False):
+            raise ValueError("Cannot approve note with unresolved verification or critic issues; edit or reject it.")
         d = state["draft"]
         token = approval.sign(d["title"], d["body"], d["tickers"], decision.get("approver", "analyst"))
         return {"outcome": "approved", "published": {"approval_token": token},

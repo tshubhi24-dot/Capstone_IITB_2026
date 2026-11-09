@@ -1,6 +1,18 @@
 name: Analyst Desk Evaluation Gate
 
+# Run the live development-set gate automatically for trusted PRs and main.
+# Fork PRs cannot access the OpenRouter secret and are handled by the offline
+# ci.yml job; their live evaluation must be run by a maintainer.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "jayshree/analyst_desk/**"
+      - ".github/workflows/evaluation-gate.yml"
+  pull_request:
+    paths:
+      - "jayshree/analyst_desk/**"
+      - ".github/workflows/evaluation-gate.yml"
   workflow_dispatch:
 
 permissions:
@@ -12,6 +24,8 @@ concurrency:
 
 jobs:
   c1-development-evaluation:
+    # Do not request credentials or execute LLMs for code from outside forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 90
     defaults:
@@ -26,13 +40,14 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: jayshree/analyst_desk/requirements.txt
+          cache-dependency-path: jayshree/analyst_desk/requirements.lock
 
       - name: Install CPU-only PyTorch and project dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
-          python -m pip install -r requirements.txt
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.15.0+cpu"
+          python -m pip install -r requirements.lock
+          python -m pip check
 
       - name: Require OpenRouter API key
         env:
@@ -54,11 +69,24 @@ jobs:
             --min-success-rate 0.95 \
             --tag "ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 
+      - name: Independently audit this run's recorded scores
+        if: success()
+        run: |
+          python scripts/audit_eval_results.py \
+            --input "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json" \
+            --cases data/evaluation/dev_cases.jsonl \
+            --configs c1 --min-cases 20 \
+            --out-json "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.json" \
+            --out-md "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.md"
+
       - name: Upload evaluation results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: analyst-desk-evaluation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}.json
+          path: |
+            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}.json
+            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.json
+            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.md
           if-no-files-found: warn
           retention-days: 14
