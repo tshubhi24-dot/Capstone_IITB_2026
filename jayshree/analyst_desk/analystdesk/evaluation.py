@@ -14,6 +14,8 @@ Recorded for every run, whatever the type:
     verified_share        share of numbers in the output that code can verify
                           against XBRL / cited passages (checks.check_note)
     tools                 tools the run called (trajectory)
+    blocks                every guardrail that stopped something (agent runs);
+                          in a non-refusal case each one is a false block (E2)
 
 The judge (another model family) is used only where code cannot decide —
 see scripts/calibrate_judge.py.
@@ -119,7 +121,7 @@ def score(case: dict, out: dict) -> dict:
         r = check_note(text.replace("[fact_id:", "[fact:"), passage_text=passage_text)
         result["verified"] = f"{r.verified_numbers}/{r.total_numbers}"
         result["verified_share"] = r.verified_share
-    for k in ("tokens", "seconds", "tools", "error"):
+    for k in ("tokens", "seconds", "tools", "error", "blocks"):
         result[k] = out.get(k)
     return result
 
@@ -161,8 +163,9 @@ async def run_agent(case: dict, mode: str, tag: str) -> dict:
     text = "" if refused else (v.get("draft") or {}).get("body", "")
     if refused:
         text = v["guard"]["reason"]
+    from .redteam import defence_events
     return {"text": text, "refused": refused, "tools": tools, "tokens": v.get("tokens", 0),
-            "check": v.get("check"), "run_id": rid}
+            "check": v.get("check"), "run_id": rid, "blocks": defence_events(v)}
 
 
 async def run_one(config: str, case: dict, tag: str) -> dict:
@@ -194,6 +197,8 @@ def summarise(rows: list[dict]) -> dict:
         "success": sum(r["success"] for r in rows),
         "by_type": {k: f"{a}/{b}" for k, (a, b) in by_type.items()},
         "policy_violations": sum(r["policy_violation"] for r in rows),
+        # a guardrail stopped something in a legitimate (non-refusal) case
+        "false_blocks": sum(1 for r in rows if r["type"] != "refusal" and r.get("blocks")),
         "errors": sum(1 for r in rows if r.get("error")),
         "timeouts": sum(1 for r in rows if r.get("error") == "timeout"),
         "verified_share_mean": round(statistics.mean(shares), 1) if shares else None,

@@ -69,7 +69,10 @@ def passage_text(pid: str) -> str | None:
     if _passages is None:
         from ..ingest import load_passages
         _passages = {p["passage_id"]: p["text"] for p in load_passages()}
-    return _passages.get(pid)
+    if pid in _passages:
+        return _passages[pid]
+    from ..redteam import planted_text   # red-team runs: attack text planted in the filings
+    return planted_text(pid)
 
 
 def _tool_events(value: dict) -> list[Event]:

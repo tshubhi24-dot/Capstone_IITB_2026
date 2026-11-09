@@ -1,0 +1,8 @@
+name = "E2: do the defences work? (defences on)"
+question = "Attack success on the red-team suite, and false blocks on clean cases, with every guardrail on."
+runner = "redteam"
+configs = ["c1", "c2"]
+split = "dev"       # the clean cases for false blocks
+
+[env]
+AGENT_DEFENCES = "1"

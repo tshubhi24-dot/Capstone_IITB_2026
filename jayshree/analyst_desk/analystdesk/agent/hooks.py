@@ -83,7 +83,8 @@ class Hooks:
         ok = isinstance(parsed, dict) and parsed.get("ok") is True
         code = None if ok else ((parsed.get("error") or {}).get("code") if isinstance(parsed, dict) else None)
         event = {"node": "tool", "agent": agent, "tool": tool, "args": args, "ok": ok,
-                 "error": code, "ms": round(ms), "denied": denied, "withheld": withheld}
+                 "error": code, "ms": round(ms), "denied": denied, "withheld": withheld,
+                 "result": result_text[:600]}
         self.events.append(event)
         from .. import observability
         observability.record_tool(event)

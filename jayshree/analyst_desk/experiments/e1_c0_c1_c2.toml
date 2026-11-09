@@ -1,0 +1,5 @@
+name = "E1: does the agent justify its cost?"
+question = "C0 (fixed pipeline) vs C1 (one agent, all tools) vs C2 (the team), same model, tools and budget."
+runner = "eval"
+configs = ["c0", "c1", "c2"]
+split = "heldout"   # repeat 3 times; use --split dev while developing

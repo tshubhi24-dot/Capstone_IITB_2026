@@ -67,12 +67,10 @@ class HybridRetriever:
         import chromadb
         from sentence_transformers import SentenceTransformer, CrossEncoder
 
-        self.passages = passages
-        self.pid_to_passage = {p["passage_id"]: p for p in passages}
-        self.pids = [p["passage_id"] for p in passages]
-
-        # BM25 over tokenised passage texts
-        self.bm25 = BM25Okapi([_tokenize(p["text"]) for p in passages])
+        self._bm25_class = BM25Okapi
+        self.base_passages = passages
+        self._planted: list[dict] = []
+        self._index_keyword(passages)
 
         # Chroma vector store with local MiniLM embeddings (no API cost)
         print("  Loading embedding model (first run downloads ~90MB)...")
@@ -103,6 +101,25 @@ class HybridRetriever:
                     } for p in batch_p],
                 )
             print(f"  ✓ Index built: {len(passages)} passages")
+
+    def _index_keyword(self, passages: list[dict]) -> None:
+        self.passages = passages
+        self.pid_to_passage = {p["passage_id"]: p for p in passages}
+        self.pids = [p["passage_id"] for p in passages]
+        # BM25 over tokenised passage texts
+        self.bm25 = self._bm25_class([_tokenize(p["text"]) for p in passages])
+
+    def plant(self, planted: list[dict]) -> None:
+        """Red-team runs only: add planted passages (attack text) to the data path.
+
+        They join BM25 and passage lookup, then compete in the reranker like any
+        filing passage. The vector index on disk is never changed, so an
+        experiment cannot leave attack text behind. plant([]) removes them.
+        """
+        if planted == self._planted:
+            return
+        self._planted = list(planted)
+        self._index_keyword(self.base_passages + self._planted)
 
     def _matches(self, passage: dict, company: str | None, year: int | None,
                  item: str | None = None) -> bool:
@@ -199,6 +216,8 @@ def get_retriever(passages: list[dict] | None = None) -> HybridRetriever:
             )
         print(f"Building retriever over {len(passages)} passages...")
         _retriever = HybridRetriever(passages)
+        from .redteam import planted_passages
+        _retriever.plant(planted_passages())   # none, except in red-team runs and demos
     return _retriever
 
 

@@ -63,6 +63,7 @@ RUN useradd --create-home --uid 1000 desk \
 COPY analystdesk/ analystdesk/
 COPY config/ config/
 COPY scripts/ scripts/
+COPY experiments/ experiments/
 COPY app.py agent_ui.py eval_ui.py ./
 
 # Bake the search index (Chroma) into the image, built from the committed
