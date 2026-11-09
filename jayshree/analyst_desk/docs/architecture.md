@@ -344,7 +344,7 @@ Each experiment is a config file in [experiments/](../experiments/); `run_eval.p
 
 - **CI** ([.github/workflows](../../../.github/workflows)):
   - `ci.yml` runs the offline test suite and validates the Compose file on every push and pull request;
-  - `evaluation-gate.yml` runs on pushes to `main`, on pull requests from this repository and on demand: C1 on the 20 development cases, failing below 95% task success, on any run error or on any policy violation;
+  - `evaluation-gate.yml` runs when a maintainer starts it (it calls OpenRouter, using a repository secret): C1 on the 20 development cases, failing below 95% task success, on any run error or on any policy violation;
   - `docker-image.yml` publishes the team image on every merge to `main`, and test-builds it on pull requests.
 
 ---
