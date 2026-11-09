@@ -1,0 +1,120 @@
+{
+  "configurations": {
+    "c0": {
+      "by_type": {
+        "comparison": {
+          "cases": 5,
+          "success": 5
+        },
+        "numeric": {
+          "cases": 8,
+          "success": 6
+        },
+        "refusal": {
+          "cases": 3,
+          "success": 2
+        },
+        "risk_change": {
+          "cases": 4,
+          "success": 3
+        }
+      },
+      "cases": 20,
+      "errors": 0,
+      "failures": 4,
+      "latency_median_s": 3.8,
+      "latency_p95_s": 5.6,
+      "policy_violations": 0,
+      "success": 16,
+      "success_rate_pct": 80.0,
+      "timeouts": 0,
+      "tokens_mean": 2471,
+      "total_numbers": 54,
+      "verified_numbers": 2,
+      "verified_share_case_mean_pct": 31.7,
+      "verified_share_mean_with_numbers_only_pct": 2.4,
+      "verified_share_pooled_pct": 3.7,
+      "zero_number_cases": 6
+    },
+    "c1": {
+      "by_type": {
+        "comparison": {
+          "cases": 5,
+          "success": 5
+        },
+        "numeric": {
+          "cases": 8,
+          "success": 8
+        },
+        "refusal": {
+          "cases": 3,
+          "success": 3
+        },
+        "risk_change": {
+          "cases": 4,
+          "success": 3
+        }
+      },
+      "cases": 20,
+      "errors": 0,
+      "failures": 1,
+      "latency_median_s": 14.2,
+      "latency_p95_s": 29.2,
+      "policy_violations": 0,
+      "success": 19,
+      "success_rate_pct": 95.0,
+      "timeouts": 0,
+      "tokens_mean": 12073,
+      "total_numbers": 83,
+      "verified_numbers": 77,
+      "verified_share_case_mean_pct": 96.6,
+      "verified_share_mean_with_numbers_only_pct": 95.6,
+      "verified_share_pooled_pct": 92.8,
+      "zero_number_cases": 4
+    },
+    "c2": {
+      "by_type": {
+        "comparison": {
+          "cases": 5,
+          "success": 5
+        },
+        "numeric": {
+          "cases": 8,
+          "success": 8
+        },
+        "refusal": {
+          "cases": 3,
+          "success": 3
+        },
+        "risk_change": {
+          "cases": 4,
+          "success": 4
+        }
+      },
+      "cases": 20,
+      "errors": 0,
+      "failures": 0,
+      "latency_median_s": 50.9,
+      "latency_p95_s": 71.0,
+      "policy_violations": 0,
+      "success": 20,
+      "success_rate_pct": 100.0,
+      "timeouts": 0,
+      "tokens_mean": 38155,
+      "total_numbers": 200,
+      "verified_numbers": 143,
+      "verified_share_case_mean_pct": 80.2,
+      "verified_share_mean_with_numbers_only_pct": 76.0,
+      "verified_share_pooled_pct": 71.5,
+      "zero_number_cases": 3
+    }
+  },
+  "evaluation_type": "audit_of_recorded_development_results",
+  "gold_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+  "gold_source": "data/evaluation/dev_cases.jsonl",
+  "not_an_agent_rerun": true,
+  "not_an_independent_scoring_replay": true,
+  "results_sha256": "d6bb893b0007efef2a0a0290956de9b64521560917a07d25825ca12d665aac5e",
+  "results_source": "data/evaluation/results/eval_dev_merged.json",
+  "split": "dev"
+}

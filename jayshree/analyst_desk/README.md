@@ -136,8 +136,8 @@ All three use the same model, the same tools and the same tool-call budget. The 
 - **One team image:** CI publishes a fully pinned image (base image, `requirements.lock`, torch, model snapshots, prebuilt search index) to GitHub Container Registry on every merge to `main`, so every teammate runs exactly the same build.
 - **Versioned LLM configuration:** all prompts and model IDs live in `config/llm.toml`, validated at start-up.
 - **GitHub Actions CI:**
-  - offline tests and Compose validation on every push and pull request;
-  - an on-demand evaluation gate: at least 95% task success and zero policy violations.
+  - offline tests, Compose validation and Prometheus rule tests on every push and pull request, using the same dependency lock as Docker;
+  - a live C1 development evaluation gate for same-repository pull requests and `main` pushes (also manually runnable): at least 95% task success and zero policy violations; an OpenRouter repository secret is required;
   - the team Docker image, published on every merge to `main` (test-built on pull requests).
 
 ---
@@ -243,7 +243,7 @@ Run these again whenever someone merges to `main`. CI publishes the new image ab
   $env:ANALYSTDESK_IMAGE = "ghcr.io/tshubhi24-dot/analyst-desk:sha-1a2b3c4"; docker compose up
   ```
 - **Your own code changes:** `docker compose up --build` builds the image from your folder instead. It takes about 20 minutes the first time, and the index is built on first start if your passages changed. Run `docker compose pull` to go back to the team image.
-- **Only the app is ever reachable:** it is bound to `127.0.0.1`, and the MCP servers run on an internal network with no internet access. Your API key stays in your `.env` and is never part of the image.
+- **Only host-loopback ports are published:** the app and monitoring UIs are bound to `127.0.0.1`; MCP servers have no published ports. The MCP servers share an internal Docker network. The model-created Python runs in a restricted subprocess inside the sandbox MCP service, but `SANDBOX_MODE=local` is not a full no-network sandbox; this is a remaining security limitation for Role 4. Your API key stays in `.env` and is not baked into the image.
 
 **In Docker Desktop:** after the first `docker compose up -d`, the stack appears under **Containers** as the group **analyst_desk**.
 
@@ -251,6 +251,14 @@ Run these again whenever someone merges to `main`. CI publishes the new image ab
 - **Open the app** with the **7861:7861** link on the **app** row. Only the app publishes a port; the MCP servers have none.
 - **Logs:** click a container, then **Logs** (or run `docker compose logs -f app`).
 - **"Exited" is normal** for `volume-init`, which sets up the data volumes and stops, and for `index`, which checks the search index and stops. The app and the four MCP servers stay running, and the app shows **(healthy)** when it is ready.
+
+**Deployment smoke check:** Once Compose reports the app as healthy, run the read-only check below. It verifies the HTTP service, readiness, Prometheus scraping, the 98% alert rule and Grafana without making any model calls.
+
+```powershell
+python scripts/ops_smoke.py
+```
+
+A successful smoke check is not proof that a research note is correct. For an actual note, confirm the final verification status before approval. The Approve button is disabled when checks fail, and the backend also rejects that approval.
 
 **Checking the dashboard:**
 1. Run a C1 or C2 request in the app and approve the plan.
@@ -363,7 +371,7 @@ Optional environment variables:
 ## 9. Tests, evaluation and CI
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests          # 184 tests, no API key needed
+.\.venv\Scripts\python.exe -m unittest discover -s tests          # offline tests; no API key needed
 .\.venv\Scripts\python.exe scripts\run_eval.py --configs c0 c1 c2 --split dev
 .\.venv\Scripts\python.exe scripts\eval_report.py data\evaluation\results\eval_dev_<tag>.json   # writes docs/evaluation.md
 .\.venv\Scripts\python.exe scripts\eval_retrieval.py                # Recall@5 report
@@ -374,12 +382,9 @@ Optional environment variables:
 Evaluation runs use memory off, auto-approve the plan, stop at the note gate (nothing is published), and count failures and timeouts rather than hiding them.
 
 **GitHub Actions:**
-- **Analyst Desk CI** runs on every push and pull request. It runs the full offline test suite and validates the Docker Compose file, with no API calls.
+- **Analyst Desk CI** runs on every push and pull request. It runs the offline test suite, validates Docker Compose, and executes `promtool` rule tests without model API calls. Both this workflow and the live gate use the pinned `requirements.lock` and CPU-only torch to match the Docker image.
 - **Analyst Desk Docker Image** runs on every merge to `main`. It builds the pinned image with the search index baked in and publishes it as `ghcr.io/tshubhi24-dot/analyst-desk:main` and `:sha-<commit>`. On pull requests it only test-builds the image, without the index and without publishing.
-- **Analyst Desk Evaluation Gate** runs on demand:
-  1. Add the repository secret `OPENROUTER_API_KEY`.
-  2. Go to **Actions → Analyst Desk Evaluation Gate → Run workflow**.
-  3. It runs C1 on the 20 development cases and fails unless task success is at least 95% with zero policy violations. The results JSON is attached to the workflow run.
+- **Analyst Desk Evaluation Gate** runs automatically for same-repository pull requests and changes to `main`. A maintainer can also launch it from **Actions → Analyst Desk Evaluation Gate → Run workflow**. Add the repository secret `OPENROUTER_API_KEY` first. It runs C1 on 20 development cases and fails below 95% task success or if any policy violation occurs; results are attached as an artifact. Fork pull requests cannot access this secret, so they run the offline CI only and need a maintainer to perform a separate live evaluation. This is a development-set gate, not a held-out/generalisation result.
 
 **Alert rule test** (with Compose running):
 

@@ -48,7 +48,7 @@ async def _run_until_gate(
         from langgraph.types import Command
 
         payload = Command(resume=payload["resume"])
-    return await run_until_gate(run_id, payload, on_event, transport="inprocess")
+    return await run_until_gate(run_id, payload, on_event, transport="auto")
 
 
 async def _load_run(run_id: str) -> dict[str, Any]:
@@ -174,6 +174,11 @@ def create_app(
             elif body.action == "approve":
                 if not body.approver.strip():
                     raise HTTPException(status_code=422, detail="approver must not be blank")
+                if not interrupts[0].get("check", {}).get("ok", False):
+                    raise HTTPException(
+                        status_code=409,
+                        detail="note has unresolved checks; edit and re-check or reject before approval",
+                    )
                 decision["approver"] = body.approver.strip()
             else:
                 decision["reason"] = body.reason or "no reason given"
