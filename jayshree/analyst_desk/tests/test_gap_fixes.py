@@ -160,6 +160,14 @@ class JudgeCoverageTests(unittest.TestCase):   # AE02, AE03, E03
         self.assertEqual((out["reviewed"], out["supported"]), (1, 1))
         self.assertTrue(out["issues"][-1].startswith("Review incomplete: the judge gave no valid verdict for 1 of 2"))
 
+    def test_code_verified_figures_are_masked_for_the_judge(self):
+        line = ("Revenue rose from $307,394.0M [fact: Revenues/2023/0001652044-24-000022] to "
+                "$350,018.0M [fact: Revenues/2024/0001652044-25-000014] on cloud growth [GOOGL_2024_item7_044].")
+        (text, _), = claim_lines(line)[0]
+        self.assertNotIn("307,394", text)
+        self.assertEqual(text.count("[code-verified figure]"), 2)
+        self.assertIn("on cloud growth", text)
+
     def test_uncited_lines_are_counted_and_code_sections_skipped(self):
         body = ("# Title\nThe company is expected to keep growing strongly across all of its markets.\n"
                 "Cited claim about the cloud segment growing fast [MSFT_2024_item7_001].\n"

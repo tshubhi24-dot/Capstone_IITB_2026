@@ -4,6 +4,8 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 
 | Date | Who | What | Where |
 |---|---|---|---|
+| 2026-11-09 | Jayshree | Judge strictness fixed: figures code already verified are shown to the judge as "[code-verified figure]", so it judges the wording against the passage, not numbers the passage never states. Test added (289 pass). Done before the E4 runs so their C2 numbers use the final judge | PR #14, `team.claim_lines`, `llm.toml` judge |
+| 2026-11-09 | Jayshree | PR #14 review requested from Shubhi (GitHub review request and comment) | PR #14 |
 | 2026-11-09 | Jayshree | Started the submission folder: deliverables checklist against the brief, evaluation report draft, experiment log, demo script, slides outline, failed-CI explanation, request to Role 5 | `submission/` |
 | 2026-11-09 | Jayshree | Live check of the running app (image `a71f887`): one C2 request passed every number check (18/18). The judge flagged 2 lines that combine code-verified figures with a passage that doesn't state them, so approval was refused (409) and the note rejected. Logged as a judge-strictness issue to fix | experiment log, 2026-11-09 |
 | 2026-11-09 | Jayshree | Closed the gap-analysis items code can close: complete claim review that blocks when incomplete; number edge cases (rounding, sign, scale, denominators, company/year mixing); plan-gate scope; Limitations section; truthful publish outcomes; deletion that stays deleted; versioned frozen playbook; stricter scorer. Status of every ID in `docs/gap_closure.md`. 288 tests; live smoke C1/C2 on d01, d09, d14 | PR #14 |
@@ -17,6 +19,6 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 
 | Found | Issue | Plan |
 |---|---|---|
-| 2026-11-09 | The C2 judge marks lines with code-verified figures as unsupported when the cited passage doesn't state that figure. Notes are held for the analyst more often than they should be | Strip code-rendered figures from the claim before judging, or tell the judge that tagged figures are already verified; re-run d09/d14 |
+| 2026-11-09 | The C2 judge marks lines with code-verified figures as unsupported when the cited passage doesn't state that figure. Notes are held for the analyst more often than they should be | **Fixed** the same day (see above); measured in the E1/E4 development runs |
 | 2026-11-09 | The writer sometimes types its own numbers (growth rates, segment amounts) instead of using placeholders; the checker catches them, but the note needs an edit | Tighten the writer prompt; count it in the report as a known failure mode |
 | 2026-11-09 | No FinanceBench external retrieval check | Small run on the open sample, or a stated limit |

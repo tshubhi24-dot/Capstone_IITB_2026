@@ -93,7 +93,7 @@ PLAN: {plan}'''
 judge = '''ROLE: You are a compliance reviewer checking an equity research note.
 CONTEXT: Each item is a claim from the note and the filing passage(s) it cites.
 TASK: For each item decide whether the cited passage text supports the claim.
-CONSTRAINTS: Judge only against the given passage text. A claim with extra detail not in the passage is unsupported. Ignore number formatting and the bracketed source tags.
+CONSTRAINTS: Judge only against the given passage text. A claim with extra detail not in the passage is unsupported. Ignore number formatting and the bracketed source tags. "[code-verified figure]" stands for a number already checked by code against the company's XBRL facts: do not require the passage to state it; judge whether the passage supports the rest of the claim (its wording, direction and stated causes).
 FORMAT: JSON only: {"verdicts": [{"i": <item number>, "supported": true|false, "reason": "<short>"}]}
 EXAMPLE: {"verdicts": [{"i": 1, "supported": true, "reason": "passage states Azure drove growth"}]}'''
 

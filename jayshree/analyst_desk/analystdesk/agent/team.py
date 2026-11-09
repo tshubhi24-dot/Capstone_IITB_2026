@@ -136,6 +136,11 @@ async def run_specialist(agent: str, company: str | None, llm, tools_by_name: di
 
 JUDGE_BATCH = 10
 _TAGS = re.compile(r"\[(fact|calc|growth|diff):[^\]]*\]")
+# A figure code rendered and verified against XBRL ($245,122.0M [fact: ...], 44.64% [calc: ...]).
+# The judge sees a marker instead: it judges the wording against the passage, not a number
+# the passage was never meant to state.
+_VERIFIED_FIGURE = re.compile(r"-?\$?\s?[\d,]+(?:\.\d+)?\s?(?:[MB]|%|pp)?\s*\[(?:fact|calc|growth|diff):[^\]]*\]")
+VERIFIED_MARK = "[code-verified figure]"
 # sections code writes itself (no model claims in them)
 _CODE_SECTIONS = re.compile(r"^#+\s*(comparability|limitations|what changed)", re.I)
 
@@ -157,7 +162,7 @@ def claim_lines(body: str) -> tuple[list[tuple[str, list[str]]], int]:
         if in_code or not s or s.startswith("|"):
             continue
         pids = PASSAGE_ID.findall(s)
-        text = _TAGS.sub("", s).strip(" -*")
+        text = _TAGS.sub("", _VERIFIED_FIGURE.sub(VERIFIED_MARK, s)).strip(" -*")
         if pids and len(text) > 30:
             cited.append((text[:500], pids))
         elif not pids and len(re.findall(r"[A-Za-z]{2,}", text)) >= 8:
