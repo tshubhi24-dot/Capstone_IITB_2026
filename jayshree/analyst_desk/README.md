@@ -137,7 +137,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 - **Versioned LLM configuration:** all prompts and model IDs live in `config/llm.toml`, validated at start-up.
 - **GitHub Actions CI:**
   - offline tests, Compose validation and Prometheus rule tests on every push and pull request, using the same dependency lock as Docker;
-  - a live C1 development evaluation gate for same-repository pull requests and `main` pushes (also manually runnable): at least 95% task success and zero policy violations; an OpenRouter repository secret is required;
+  - a live C1 development evaluation gate, started by a maintainer: at least 95% task success, no run errors and zero policy violations; it needs an OpenRouter repository secret;
   - the team Docker image, published on every merge to `main` (test-built on pull requests).
 
 ---
@@ -386,7 +386,7 @@ Evaluation runs use memory off, auto-approve the plan, stop at the note gate (no
 **GitHub Actions:**
 - **Analyst Desk CI** runs on every push and pull request. It runs the offline test suite, validates Docker Compose, and executes `promtool` rule tests without model API calls. Both this workflow and the live gate use the pinned `requirements.lock` and CPU-only torch to match the Docker image.
 - **Analyst Desk Docker Image** runs on every merge to `main`. It builds the pinned image with the search index baked in and publishes it as `ghcr.io/tshubhi24-dot/analyst-desk:main` and `:sha-<commit>`. On pull requests it only test-builds the image, without the index and without publishing.
-- **Analyst Desk Evaluation Gate** runs automatically for same-repository pull requests and changes to `main`. A maintainer can also launch it from **Actions → Analyst Desk Evaluation Gate → Run workflow**. Add the repository secret `OPENROUTER_API_KEY` first. It runs C1 on 20 development cases and fails below 95% task success or if any policy violation occurs; results are attached as an artifact. Fork pull requests cannot access this secret, so they run the offline CI only and need a maintainer to perform a separate live evaluation. This is a development-set gate, not a held-out/generalisation result.
+- **Analyst Desk Evaluation Gate** runs only when a maintainer starts it: **Actions → Analyst Desk Evaluation Gate → Run workflow**. It calls OpenRouter, so it needs the repository secret `OPENROUTER_API_KEY`; use a separate key with a low spending limit, never the key from your `.env`. It runs C1 on 20 development cases and fails below 95% task success, on any run error or on any policy violation; results are attached as an artifact. This is a development-set gate, not a held-out result.
 
 **Alert rule test** (with Compose running):
 

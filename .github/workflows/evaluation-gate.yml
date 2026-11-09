@@ -1,18 +1,10 @@
 name: Analyst Desk Evaluation Gate
 
-# Run the live development-set gate automatically for trusted PRs and main.
-# Fork PRs cannot access the OpenRouter secret and are handled by the offline
-# ci.yml job; their live evaluation must be run by a maintainer.
+# The live development-set gate calls OpenRouter, so it runs only when a
+# maintainer starts it (Actions -> Analyst Desk Evaluation Gate -> Run workflow),
+# using the OPENROUTER_API_KEY repository secret. Use a separate key with a low
+# spending limit. The offline tests in ci.yml run on every push and pull request.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "jayshree/analyst_desk/**"
-      - ".github/workflows/evaluation-gate.yml"
-  pull_request:
-    paths:
-      - "jayshree/analyst_desk/**"
-      - ".github/workflows/evaluation-gate.yml"
   workflow_dispatch:
 
 permissions:
@@ -24,8 +16,6 @@ concurrency:
 
 jobs:
   c1-development-evaluation:
-    # Do not request credentials or execute LLMs for code from outside forks.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 90
     defaults:
