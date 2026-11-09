@@ -87,16 +87,17 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 | Growth | (later amount ÷ earlier amount − 1) × 100 | Same company, same metric |
 
 - **Banks use pre-tax margin, fixed per company** (`margin_basis` in [scope.py](../analystdesk/scope.py)). Banks do not report an operating-income line in XBRL, so the basis cannot switch between years and an operating margin is never invented for a bank. The figure is labelled "pretax margin" and the bank's revenue "net revenue".
-- **Operating and pre-tax margins are different metrics.** A gap, ranking or average across them is not valid even though the subtraction is correct: a company at 20.00% operating margin and a bank at 30.00% pre-tax margin are not "10 points apart".
+- **Operating and pre-tax margins are different metrics.** A gap, ranking or average across them is not valid even though the subtraction is correct: a company at 20.00% operating margin and a bank at 30.00% pre-tax margin are not "10 points apart". The checker rejects any line that sets one against the other, and the plan gate says which companies are banks.
 - **Inputs come from consolidated U.S. GAAP reported figures**; segment, managed or adjusted figures are not used. Other bank ratios (net interest margin, return on equity, capital ratios) are out of scope.
 - **Percentage points are not percent growth.** A margin rising from 30.00% to 32.00% is +2.00 pp, not 6.67% growth.
 
 ### Fiscal periods
 
-- **"FY2024" means each company's own reported fiscal year 2024.** Microsoft's runs July 2023 to June 2024; Alphabet's is the calendar year. Different year ends are not a reason to stop. The note states each company's period end next to its figures (`{T_Y_period_end}`), and the writer is told to say that the fiscal years differ.
+- **"FY2024" means each company's own reported fiscal year 2024.** Microsoft's runs July 2023 to June 2024; Alphabet's is the calendar year. Different year ends are not a reason to stop. Code adds a **Comparability** section to the note whenever it applies: the fiscal year-end of each company when they differ, any 53-week fiscal year (Apple FY2023, AMD FY2022), and a statement that bank pre-tax margins are not comparable with operating margins ([figures.py](../analystdesk/agent/figures.py)).
 - **Only full-year facts are used** (about 365 days), so quarter-only or year-to-date values cannot enter an annual margin ([edgar.py](../analystdesk/edgar.py)).
 - **A fiscal year is the year the period ends,** checked against the filing rather than assumed from the filing date.
 - A fiscal year is not relabelled as a calendar year, and missing months are not estimated.
+- **Relative periods are shown, not guessed silently.** "Last three years" is read as FY2022–FY2024, the covered years, and the plan gate says so under "How your request was read", so the analyst can edit the plan before any research runs.
 
 ### Units and precision
 
@@ -126,13 +127,13 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 
 **Causes.** Correct arithmetic establishes a movement, not its cause. "Revenue grew 12.50%" can be verified; "because prices rose" needs its own source, or must be presented as management's explanation or left out.
 
-**Retrieved text is data.** Filing passages and tool results are passed to the model as evidence, never as instructions, so an injected "buy this stock" cannot reach the note.
+**Retrieved text is data.** Filing passages and tool results are passed to the model as evidence, never as instructions. A passage that contains instructions aimed at the model is withheld from it, and advice wording in a note fails the checks, so an injected "buy this stock" cannot reach a signable note ([threat_model.md](threat_model.md)).
 
 ## 6. Acceptance and publication
 
 1. **Plan gate.** The analyst approves, edits or cancels the plan. Approving the plan authorises the research, not the result.
 2. **Checks.** Code checks every number; in C2 the judge also checks cited claims. Issues go back to the writer for **at most two automated revisions**.
-3. **Note gate.** The analyst sees the full note and the check result, including any remaining issues, and approves, edits or rejects it. An edited note is checked again and must be approved again.
+3. **Note gate.** The analyst sees the full note and the check result. A note with remaining issues **cannot be approved** (the button is disabled, the API returns 409 and the graph refuses it): the analyst edits it, which re-runs the checks, or rejects it. An edited note must be approved again.
 4. **Exact-note approval.** Approval is an HMAC signature over the exact title, body and companies ([approval.py](../analystdesk/approval.py)). Any edit invalidates it.
 5. **Publication.** The portal verifies the signature itself before writing and refuses a second copy of the same note (`ALREADY_EXISTS`). Only a confirmed publication is written to memory.
 
@@ -153,6 +154,10 @@ The specification defines short status messages for each situation. These are th
 | Number without a source, or wrong | The check panel lists each issue, e.g. "Number '$46.2 billion' has no source" or "44.10% is wrong: … = 44.64%" |
 | Judge unavailable (C2) | "Judge: judge unavailable", shown with the check result |
 | Waiting for a decision | "⏸ Waiting for you: approve, edit or reject the note" |
+| Note failed its checks | "⛔ Note failed verification. Edit and re-check it, or reject it. Approval is blocked." |
+| Request carries instructions to the system | "The request contains instructions aimed at the system rather than a research question." |
+| How the request was read | Plan gate: "How your request was read", e.g. "“last three years” is read as FY2022–FY2024…" or "JPM is a bank: margins are pre-tax margin" |
+| Private watchlist | A tool call naming a watchlist company outside the plan is refused (`WATCHLIST_PRIVATE`); a note naming one fails its checks |
 | Published / rejected / cancelled | "✅ Published", with the note id; "🛑 Rejected by the analyst"; "🚫 Plan cancelled" |
 | Publication refused | The team board shows "❌ refused" (invalid signature, or the note is already published), and the run ends as `publish_failed` |
 | Memory used | The plan step shows "🧠 memory used: 1 preference(s); previous notes on MSFT"; with memory off it shows nothing, because nothing was read |
@@ -166,16 +171,12 @@ The specification sets a higher bar than the app meets in some places. These are
 
 | Specification | The app today |
 |---|---|
-| A note with a known error is on **HOLD** and cannot be approved | The analyst sees every issue at the note gate and decides: the approve button stays available |
-| "Latest" or "last three years" is clarified with the analyst | It is read as FY2022–2024, the covered window |
-| An ambiguous bank or mixed-company margin request is clarified first; a mixed operating/pre-tax ranking or gap is declined | Each figure is labelled with its basis and the writer is told banks use pre-tax margin, but code does not block a mixed comparison |
 | Explicit "Insufficient evidence" label and coverage record for each risk comparison | The risk specialist reports Added / Removed / Changed with passages from both years; there is no coverage record |
 | Every substantive claim is reviewed; a judge failure leaves the review incomplete | The C2 judge checks up to 10 cited claims; uncited narrative is not judged; a judge failure is shown but does not block the note; C1 has no judge |
-| Calendar-period requests, 52/53-week years and filing as-of cutoffs handled explicitly | The note shows each period end, but code does not flag a longer year (Apple's FY2023 spanned 53 weeks, against 52 in FY2022) or apply an as-of cutoff |
+| Calendar-period requests and filing as-of cutoffs handled explicitly | Fiscal year-ends and 53-week years are stated in the note, but a calendar-period request is not converted and no as-of cutoff is applied |
 | Decimal `ROUND_HALF_UP` display rounding | Python number formatting, which can differ from `ROUND_HALF_UP` only on an exact half-way value |
 | Verified reviewer identity, per-analyst access and audiences | The approver and analyst are typed names, not verified identities. Preferences and coverage are kept per analyst name; past-note memory and published notes are shared by everyone using the app |
 | Publication outcome unknown, corrections, supersession and withdrawal of published notes | Publication either succeeds or is refused; there is no correction or withdrawal workflow |
-| Memory off also closes indirect routes to earlier notes | Memory off stops automatic reads and writes, but the agent can still call `get_past_notes` on the portal |
 | Retention periods per record type | No automatic expiry; memory stays until it is deleted |
 
 None of these affects the guarantee that every number in a published note was checked against its source before the analyst saw it.

@@ -374,6 +374,8 @@ Optional environment variables:
 .\.venv\Scripts\python.exe -m unittest discover -s tests          # offline tests; no API key needed
 .\.venv\Scripts\python.exe scripts\run_eval.py --configs c0 c1 c2 --split dev
 .\.venv\Scripts\python.exe scripts\eval_report.py data\evaluation\results\eval_dev_<tag>.json   # writes docs/evaluation.md
+.\.venv\Scripts\python.exe scripts\run_eval.py --experiment e4_critic_off     # an experiment file (experiments/)
+.\.venv\Scripts\python.exe scripts\run_redteam.py --experiment e2_defences_on  # E2: attacks and false blocks
 .\.venv\Scripts\python.exe scripts\eval_retrieval.py                # Recall@5 report
 .\.venv\Scripts\python.exe scripts\reflect.py data\evaluation\results\eval_dev_merged.json      # pending lessons
 .\.venv\Scripts\python.exe scripts\calibrate_judge.py sample        # judge calibration items
@@ -425,7 +427,8 @@ analyst_desk/
 │   ├── llm_config.py      Loads and validates config/llm.toml
 │   ├── alerts.py          Prometheus alerts for the in-app panel
 │   └── api.py             FastAPI endpoints
-├── scripts/               Evaluation, reflection, judge calibration, retrieval eval, utilities
+├── scripts/               Evaluation, red team, reflection, judge calibration, retrieval eval, utilities
+├── experiments/           One config file per experiment (E1-E4)
 ├── data/                  passages/, passages_plain/, edgar_cache/, evaluation/ (all committed)
 ├── docker/                Sandbox image, Prometheus rules and tests, Grafana dashboard
 ├── tests/                 Unit, integration and offline end-to-end tests
@@ -447,6 +450,7 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 | [docs/architecture.md](docs/architecture.md) | Components, data flow, agent graphs, deployment |
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
+| [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
