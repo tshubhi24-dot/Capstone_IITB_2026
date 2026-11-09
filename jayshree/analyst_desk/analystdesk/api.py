@@ -166,6 +166,9 @@ def create_app(
             if body.action == "edit":
                 if body.plan is None:
                     raise HTTPException(status_code=422, detail="an edited plan is required")
+                from .agent.graph import plan_scope_errors
+                if errors := plan_scope_errors({**interrupts[0].get("plan", {}), **body.plan}):
+                    raise HTTPException(status_code=422, detail=" ".join(errors))
                 decision["plan"] = body.plan
         elif gate == "note":
             if body.action == "edit":

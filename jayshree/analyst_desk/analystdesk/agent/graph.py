@@ -108,7 +108,7 @@ class AgentState(TypedDict, total=False):
     render_issues: list
     check: dict
     revisions: int
-    outcome: str                      # approved | published | rejected | publish_failed
+    outcome: str                      # approved | published | rejected | publish_failed | publish_unconfirmed
     published: dict
     analyst: str
     memory_on: bool
@@ -164,22 +164,56 @@ def insert_changes(body: str, changed: str) -> str:
 
 
 _RELATIVE_YEARS = re.compile(r"\b(last|past|previous|recent|latest)\s+(two|three|2|3)\s+(fiscal\s+)?years\b", re.I)
+_LATEST = re.compile(r"\b(latest|most recent|current|this year)\b", re.I)
 
 
 def plan_assumptions(request: str, plan: dict) -> list[str]:
-    """How code read the request, shown at the plan gate so the analyst can correct it."""
+    """How code read the request, shown at the plan gate so the analyst can correct it.
+
+    Includes every requested company or year the plan leaves out, so a narrower plan
+    is never approved without the analyst seeing what was dropped.
+    """
     years = "–".join(f"FY{y}" for y in sorted({min(plan["fiscal_years"]), max(plan["fiscal_years"])}))
     out = []
     if m := _RELATIVE_YEARS.search(request):
         out.append(f"“{m.group(0)}” is read as {years}, the latest fiscal years covered, "
                    "each company's own fiscal year (not calendar years).")
+    elif m := _LATEST.search(request):
+        out.append(f"“{m.group(0)}” is read as FY{COVERED_YEARS[-1]}, the most recent fiscal year covered: "
+                   "the data is historical annual 10-K filings, not the current period.")
     elif not find_years(request):
         out.append(f"No year was named, so the plan covers {years}.")
+    dropped = [t for t in find_companies(request) if t not in plan["companies"]]
+    if dropped:
+        out.append(f"Requested but NOT in this plan: {', '.join(dropped)}. Edit the plan to add "
+                   f"{'it' if len(dropped) == 1 else 'them'} back, or the note will not cover "
+                   f"{'it' if len(dropped) == 1 else 'them'}.")
+    missing_years = [y for y in find_years(request) if y in COVERED_YEARS and y not in plan["fiscal_years"]]
+    if missing_years:
+        out.append(f"Requested but NOT in this plan: FY{', FY'.join(map(str, missing_years))}.")
     banks = [t for t in plan["companies"] if t in _BANKS]
     if banks:
+        asks_operating = re.search(r"operating\s+margin", request, re.I)
         out.append(f"{', '.join(banks)} {'is a bank' if len(banks) == 1 else 'are banks'}: "
-                   "margins are pre-tax margin, not operating margin.")
+                   "margins are pre-tax margin, not operating margin"
+                   + (" (you asked for operating margin, which banks do not report; approve to use "
+                      "pre-tax margin instead, or edit the plan)" if asks_operating else "") + ".")
     return out
+
+
+def plan_scope_errors(plan: dict) -> list[str]:
+    """Why an analyst-edited plan is outside coverage (the planner's output is filtered in code;
+    an edit must meet the same rule)."""
+    errors = []
+    bad = [t for t in plan.get("companies", []) if str(t).upper() not in _TICKERS]
+    if bad:
+        errors.append(f"Not covered: {', '.join(map(str, bad))}. Covered: {', '.join(sorted(_TICKERS))}.")
+    bad_years = [y for y in plan.get("fiscal_years", []) if y not in COVERED_YEARS]
+    if bad_years:
+        errors.append(f"Fiscal years {bad_years} are not covered; only {list(COVERED_YEARS)}.")
+    if not plan.get("companies") or not plan.get("fiscal_years"):
+        errors.append("A plan needs at least one company and one fiscal year.")
+    return errors
 
 
 def trim_context(msgs: list, max_chars: int = MAX_CONTEXT_CHARS) -> list:
@@ -297,6 +331,9 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         out = {"trace": _event("review_plan", action="approve")}
         if decision.get("action") == "edit":
             edited = Plan(**{**state["plan"], **decision.get("plan", {})}).model_dump()
+            if errors := plan_scope_errors(edited):
+                raise ValueError("Edited plan is outside coverage: " + " ".join(errors))
+            edited["companies"] = [t.upper() for t in edited["companies"]]
             out = {"plan": edited, "trace": _event("review_plan", action="edit", plan=edited)}
         elif decision.get("action") != "approve":
             raise ValueError("Plan decision must be approve, edit, or cancel.")
@@ -332,10 +369,54 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
             lines += [f"No previous note on {t} in memory, so there is nothing to compare against." for t in missing]
         return "\n".join(f"- {ln}" for ln in lines)
 
+    def unresolved(calls: list[tuple[str, str | None]]) -> list[str]:
+        """Error codes of tool calls that no later successful call of the same tool recovered.
+        calls: (tool, error code or None) in call order."""
+        return sorted({err for i, (tool, err) in enumerate(calls)
+                       if err and not any(t == tool and e is None for t, e in calls[i + 1:])})
+
+    def limitations(state) -> list[str]:
+        """Evidence gaps the note must state, found by code: tool errors that were not recovered
+        by a later successful call, and risk comparisons missing Item 1A evidence for a year."""
+        out = []
+        handoffs = state.get("handoffs") or []
+        if handoffs:
+            latest = max(h.get("round", 0) for h in handoffs)
+            years = sorted(state["plan"]["fiscal_years"])
+            tools = {(e["agent"], e.get("company")): e.get("tools") or [] for e in state.get("trace", [])
+                     if e.get("node") == "handoff"}
+            for h in (h for h in handoffs if h.get("round", 0) == latest):
+                who = f"{h['agent'].replace('_', '-')}{' for ' + h['company'] if h.get('company') else ''}"
+                log = tools.get((h["agent"], h.get("company")))
+                errors = (unresolved([(t["tool"], None if t["ok"] else (t.get("error") or "ERROR")) for t in log])
+                          if log else h.get("errors"))
+                if errors:
+                    out.append(f"The {who} step ended with {', '.join(errors)}; its part of the "
+                               "note may be incomplete.")
+                if h["agent"] == "risk_diff" and len(years) > 1:
+                    pair = (max(y for y in years if y < years[-1]), years[-1])
+                    lacking = [y for y in pair if not any(p.startswith(f"{h['company']}_{y}_item1a")
+                                                          for p in h.get("passage_ids", []))]
+                    if lacking:
+                        out.append(f"No Item 1A risk-factor passage for {h['company']} FY"
+                                   f"{', FY'.join(map(str, lacking))} was retrieved, so added or removed risks "
+                                   f"between FY{pair[0]} and FY{pair[1]} are not established.")
+        else:
+            calls = []
+            for m in state.get("messages", []):
+                if isinstance(m, ToolMessage):
+                    code = re.search(r'"ok":\s*false.*?"code":\s*"([A-Z_]+)"', str(m.content))
+                    calls.append((m.name, code.group(1) if code else None))
+            if codes := unresolved(calls):
+                out.append(f"Some research steps ended with {', '.join(codes)}; the note may be "
+                           "incomplete where they applied.")
+        return out
+
     async def write(state: AgentState):
         issues = state.get("check", {}).get("issues") if state.get("revisions") else None
         figures = build_figures(state["plan"]["companies"], state["plan"]["fiscal_years"])
         notes = comparability_notes(state["plan"]["companies"], state["plan"]["fiscal_years"])
+        gaps = limitations(state)
         mem = state.get("memory") or {}
         changed = _changes(state, figures)
         memory_block = ""
@@ -349,7 +430,9 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
             "writer",
             figures=figures_table(figures) + (
                 "\nCOMPARABILITY (code adds these to the note; never rank margins on different bases):\n- "
-                + "\n- ".join(notes) if notes else ""),
+                + "\n- ".join(notes) if notes else "") + (
+                "\nLIMITATIONS (code adds these to the note; do not claim what they rule out):\n- "
+                + "\n- ".join(gaps) if gaps else ""),
             memory=memory_block,
             issues=("FIX THESE ISSUES FROM THE CHECKER:\n- " + "\n- ".join(issues))
             if issues else "",
@@ -362,8 +445,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         d.body, render_issues = render(d.body, figures)   # code inserts every key figure
         if changed:   # code inserts the comparison with the last note
             d.body = insert_changes(d.body, changed)
+        else:         # nothing to compare: never leave the template token in the note
+            d.body = d.body.replace("{WHAT_CHANGED}", "No earlier note was available to compare against.")
         if notes:     # and what keeps the figures from being like-for-like
             d.body = d.body.rstrip() + "\n\n## Comparability\n" + "\n".join(f"- {n}" for n in notes)
+        if gaps:      # and what evidence the note could not establish
+            d.body = d.body.rstrip() + "\n\n## Limitations\n" + "\n".join(f"- {g}" for g in gaps)
         return {"draft": d.model_dump(), "render_issues": render_issues, "tokens": usage(result["raw"]),
                 "trace": _event("write", revision=state.get("revisions", 0))}
 
@@ -425,22 +512,41 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 8. publish — the only write; the portal verifies the token itself
     async def publish(state: AgentState):
+        """Published only on a receipt naming the saved note. If the call itself fails (e.g. a
+        timeout) the portal may or may not have saved it: 'publish_unconfirmed', never a retry
+        here. A memory update that fails after a confirmed save leaves the note Published and
+        says so; it never republishes."""
         d = state["draft"]
-        raw = await publish_tool.ainvoke({**d, "approval_token": state["published"]["approval_token"]})
+        try:
+            raw = await publish_tool.ainvoke({**d, "approval_token": state["published"]["approval_token"]})
+        except Exception as exc:   # noqa: BLE001 — the save outcome is unknown, not failed
+            msg = f"{type(exc).__name__}: {exc}"[:200]
+            return {"outcome": "publish_unconfirmed",
+                    "published": {**state["published"], "error": msg},
+                    "trace": _event("publish", ok=None, error=msg)}
         result = tool_json(raw)
-        ok = result.get("ok") is True
-        remembered = False
+        ok = result.get("ok") is True and isinstance(result.get("note_id"), int)
+        error = (result.get("error") or {}).get("message")
+        if result.get("ok") is True and not ok:
+            error = "the portal reported success without a note id; check the portal before retrying"
+        remembered, memory_error = False, None
         if ok and state.get("memory_on", True):   # only approved, published notes are remembered
             from ..memory import remember_published_note
             approver = next((e.get("approver") for e in reversed(state.get("trace", []))
                              if e.get("node") == "review_note" and e.get("action") == "approve"), "analyst")
-            await remember_published_note(result["note_id"], d["title"], d["body"], d["tickers"],
-                                          approver, state.get("analyst", "analyst"), result.get("published_at"))
-            remembered = True
-        return {"outcome": "published" if ok else "publish_failed",
-                "published": {"result": json.dumps(result)[:500], "note_id": result.get("note_id")},
+            try:
+                await remember_published_note(result["note_id"], d["title"], d["body"], d["tickers"],
+                                              approver, state.get("analyst", "analyst"),
+                                              result.get("published_at"))
+                remembered = True
+            except Exception as exc:   # noqa: BLE001 — the note is saved; only memory is behind
+                memory_error = f"{type(exc).__name__}: {exc}"[:200]
+        outcome = "published" if ok else ("publish_unconfirmed" if result.get("ok") is True else "publish_failed")
+        return {"outcome": outcome,
+                "published": {"result": json.dumps(result)[:500], "note_id": result.get("note_id"),
+                              "memory_error": memory_error},
                 "trace": _event("publish", ok=ok, note_id=result.get("note_id"), remembered=remembered,
-                                error=(result.get("error") or {}).get("message"))}
+                                memory_error=memory_error, error=error)}
 
     return dict(input_guard=input_guard, after_guard=after_guard, plan=plan, review_plan=review_plan,
                 write=write, check=check, after_check=after_check, count_revision=count_revision,

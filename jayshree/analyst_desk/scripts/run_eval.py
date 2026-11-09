@@ -87,6 +87,12 @@ async def main() -> None:
     cases = [c for c in all_cases if not args.cases or c["id"] in args.cases]
     if len(cases) < args.min_cases:
         ap.error(f"selected {len(cases)} cases, but --min-cases requires {args.min_cases}")
+    from analystdesk.lessons import frozen_playbook
+    frozen = await frozen_playbook()
+    playbook = ({"frozen": True, "version": frozen.get("version"), "lessons": len(frozen.get("lessons") or [])}
+                if frozen else {"frozen": False})
+    if args.split == "heldout" and os.getenv("AGENT_LESSONS", "1") != "0" and not frozen:
+        ap.error("freeze the playbook before a held-out run (Research tab -> Playbook -> Freeze)")
     RESULTS.mkdir(parents=True, exist_ok=True)
     path = RESULTS / f"eval_{args.split}_{args.tag}.json"
     all_rows: dict[str, list] = {}
@@ -101,6 +107,7 @@ async def main() -> None:
             all_rows[config] = rows
             snapshot = json.dumps({"split": args.split, "tag": args.tag, "price_per_m": PRICE_PER_M,
                                    "lessons": os.getenv("AGENT_LESSONS", "1") != "0",
+                                   "playbook": playbook,
                                    "experiment": {"file": experiment["file"], "name": experiment["name"],
                                                   "env": experiment["env"]} if experiment else None,
                                    "rows": all_rows,

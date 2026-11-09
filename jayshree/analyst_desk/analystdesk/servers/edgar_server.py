@@ -58,7 +58,9 @@ class Fact(BaseModel):
     filed: str
     fact_id: str = Field(description="Cite this next to the number: concept/fiscal_year/accession")
     restated_value_usd: int | None = Field(
-        None, description="Value a later 10-K restated this to, if any (not used in notes)")
+        None, description="A different value a later 10-K reports for this year, if any (not used in "
+                          "notes). It may be a restatement, recast or reclassification; the data does "
+                          "not say which.")
 
 
 class FilingsResult(ToolResult):
@@ -136,8 +138,8 @@ def get_financials(
 ) -> FinancialsResult:
     """Revenue, operating income and pre-tax income for one company and fiscal year.
 
-    Values are as originally reported in that year's own 10-K. A later
-    restatement is shown in restated_value_usd and in warnings.
+    Values are as originally reported in that year's own 10-K. A different
+    value in a later 10-K is shown in restated_value_usd and in warnings.
     """
     company, err = _ticker_or_error(ticker, FinancialsResult)
     if err:
@@ -152,8 +154,8 @@ def get_financials(
         return fail(FinancialsResult, "NOT_FOUND",
                     f"No revenue fact for {company.ticker} FY{fiscal_year}")
     warnings = [
-        f"{name} as reported {f.value_usd:,} was restated to {f.restated_value_usd:,} "
-        f"in a later 10-K; use the as-reported value"
+        f"{name} as reported {f.value_usd:,}; a later 10-K reports {f.restated_value_usd:,} for the same "
+        f"year (reason not established: do not call it a restatement); use the as-reported value"
         for name, f in facts.items() if f and f.restated_value_usd is not None
     ]
     return FinancialsResult(

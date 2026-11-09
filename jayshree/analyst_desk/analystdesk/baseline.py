@@ -18,6 +18,7 @@ from __future__ import annotations
 
 from .edgar import get_financials
 from .note import MetricRow, ResearchNote
+from .agent.figures import half_up
 from .scope import ResearchRequest
 
 
@@ -32,15 +33,15 @@ def _to_millions(val: int | None) -> float | None:
     return round(val / 1_000_000, 1)
 
 
-def _operating_margin(revenue_m: float | None, op_income_m: float | None) -> float | None:
-    """Operating margin = operating_income / revenue × 100.
+def _operating_margin(revenue: float | None, income: float | None) -> float | None:
+    """Margin = income / revenue x 100, from the raw reported dollars (never rounded inputs).
 
-    Computed in Python code, never by an LLM.
-    Returns None if either input is missing or revenue is zero.
+    Computed in Python code, never by an LLM. Rounded only for display, halves
+    away from zero. None if either input is missing or revenue is not positive.
     """
-    if revenue_m is None or op_income_m is None or revenue_m == 0:
+    if revenue is None or income is None or revenue <= 0:
         return None
-    return round((op_income_m / revenue_m) * 100, 2)
+    return float(half_up(income / revenue * 100))
 
 
 def run_baseline(request: ResearchRequest) -> ResearchNote:
@@ -66,9 +67,9 @@ def run_baseline(request: ResearchRequest) -> ResearchNote:
             rev_m = _to_millions(rev["val"] if rev else None)
             op_m = _to_millions(op["val"] if op else None)
             pretax_m = _to_millions(pretax["val"] if pretax else None)
-            margin = _operating_margin(rev_m, op_m)
+            margin = _operating_margin(rev and rev["val"], op and op["val"])
             # Same ratio, different income line: pre-tax income / net revenue
-            pretax_margin = _operating_margin(rev_m, pretax_m)
+            pretax_margin = _operating_margin(rev and rev["val"], pretax and pretax["val"])
 
             if rev is None:
                 warnings.append(
@@ -79,9 +80,9 @@ def run_baseline(request: ResearchRequest) -> ResearchNote:
                     later = fact["restated"]
                     warnings.append(
                         f"{company.name} FY{year}: {label} as reported "
-                        f"{_to_millions(fact['val']):,.1f}M was restated to "
-                        f"{_to_millions(later['val']):,.1f}M in a later 10-K "
-                        f"({later['accn']}); the note uses the as-reported figure"
+                        f"{_to_millions(fact['val']):,.1f}M; a later 10-K ({later['accn']}) reports "
+                        f"{_to_millions(later['val']):,.1f}M for the same year (reason not "
+                        f"established); the note uses the as-reported figure"
                     )
             # Only the headline income line is required for this company
             if company.margin_basis == "pretax" and pretax is None:

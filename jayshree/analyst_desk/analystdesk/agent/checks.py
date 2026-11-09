@@ -13,11 +13,14 @@ Every number in a note must be traceable, in one of three ways:
 
 check_note() verifies all three in code, not with an LLM (rule 1):
   * each [fact: ...] value equals the XBRL fact, in $ millions to 1 decimal;
-  * each [calc: A / B] percentage equals A / B x 100, to 2 decimals;
+  * each [calc: A / B] percentage equals A / B x 100, to 2 decimals, with A and
+    B from the same company and fiscal year (growth: the same item, an earlier year);
   * each [growth: A / B] equals (A / B - 1) x 100 and each [diff: ...] the margin
     change in percentage points;
-  * each quoted number occurs, with the same unit, in a passage cited on its line;
-  * cited passages exist;
+  * a margin needs positive revenue and a growth rate a positive earlier amount;
+  * each quoted number occurs, with the same unit and scale, in a passage cited
+    on its line ($2.2K never matches $2.2 billion);
+  * cited passages exist, and no template token such as {WHAT_CHANGED} is left;
   * no line sets an operating margin against a pre-tax margin (banks);
   * no investment-advice wording ("buy", "price target", ...), and no company
     from the analyst's private watchlist that the plan does not cover.
@@ -31,22 +34,25 @@ from dataclasses import dataclass, field
 
 from ..edgar import OPERATING_INCOME_CONCEPT, PRETAX_INCOME_CONCEPT
 from ..servers.edgar_server import get_fact
-from .figures import PLACEHOLDER
+from .figures import PLACEHOLDER, half_up
 from .guards import defences_on, mentions
 
 # A fact_id has its own slashes (Concept/2024/0000950170-24-087843), so the
 # division in [calc: A / B] is the " / " between two complete fact_ids
 FACT_ID = r"[A-Za-z]+/\d{4}/\d{10}-\d{2}-\d{6}"
-FACT = re.compile(r"\$\s?([\d,]+(?:\.\d+)?)\s?([MB])\s*\[fact:\s*([^\]]+?)\s*\]")
+FACT = re.compile(r"(-)?\$\s?([\d,]+(?:\.\d+)?)\s?([MB])\s*\[fact:\s*([^\]]+?)\s*\]")
 CALC = re.compile(rf"(-?[\d.]+)\s?%\s*\[calc:\s*({FACT_ID})\s*/\s*({FACT_ID})\s*\]")
 GROWTH = re.compile(rf"(-?[\d.]+)\s?%\s*\[growth:\s*({FACT_ID})\s*/\s*({FACT_ID})\s*\]")
 DIFF = re.compile(rf"([+-]?[\d.]+)\s?pp\s*\[diff:\s*({FACT_ID})\s*/\s*({FACT_ID})\s*-\s*"
                   rf"({FACT_ID})\s*/\s*({FACT_ID})\s*\]")
 PASSAGE_ID = re.compile(r"\b([A-Z]{1,5}_\d{4}_item(?:1a|7)_\d{3})\b")
 # Any money amount or percentage, to catch numbers with no source
-MONEY = re.compile(r"\$\s?[\d,]+(?:\.\d+)?\s?(?:[MBK]\b|million|billion)?")
+MONEY = re.compile(r"-?\$\s?[\d,]+(?:\.\d+)?\s?(?:[MBK]\b|million|billion|thousand)?")
 PERCENT = re.compile(r"-?\d+(?:\.\d+)?\s?%")
 POINTS = re.compile(r"[+-]?\d+(?:\.\d+)?\s?(?:pp\b|percentage points?)")
+# A writer template token left in the note, e.g. {WHAT_CHANGED}: the note is unfinished
+TEMPLATE_TOKEN = re.compile(r"\{([A-Z][A-Z_]{2,})\}")
+_SCALE_AFTER = r"(?!\s?(?:thousand|million|billion|[KMB]\b|bn\b|mn\b))"
 MARGIN_BASIS = {OPERATING_INCOME_CONCEPT: "operating", PRETAX_INCOME_CONCEPT: "pretax"}
 ADVICE = re.compile(
     r"\b(buy|sell|hold rating|overweight|underweight|outperform|underperform|"
@@ -69,7 +75,20 @@ def _fact_value(fact_id: str, cache: dict) -> float | None:
     if fact_id not in cache:
         r = get_fact(fact_id)
         cache[fact_id] = r.fact.value_usd if r.ok else None
+        cache[("ticker", fact_id)] = r.ticker if r.ok else None
     return cache[fact_id]
+
+
+def _mismatch(pairs: list[tuple[str, str]], cache: dict, same_year: bool = True) -> str | None:
+    """Why two facts in one calculation do not belong together, or None.
+    Each (a, b) pair must be the same company and, for a ratio, the same fiscal year."""
+    for a, b in pairs:
+        ta, tb = cache.get(("ticker", a)), cache.get(("ticker", b))
+        if ta and tb and ta != tb:
+            return f"mixes {ta} and {tb}"
+        if same_year and a.split("/")[1] != b.split("/")[1]:
+            return f"mixes FY{a.split('/')[1]} and FY{b.split('/')[1]}"
+    return None
 
 
 def _digits(number: str) -> str:
@@ -88,7 +107,9 @@ def _unit_pattern(number: str) -> str:
         return r"\s?(?:billion|b\b|bn\b)"
     if "million" in n or re.search(r"\dm\b", n):
         return r"\s?(?:million|m\b|mn\b)"
-    return ""
+    if "thousand" in n or re.search(r"\dk\b", n):
+        return r"\s?(?:thousand|k\b)"
+    return _SCALE_AFTER   # no scale in the note: the passage must not give one either
 
 
 def _quoted_in(number: str, text: str) -> bool:
@@ -125,25 +146,33 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
     for m in FACT.finditer(body):
         total += 1
         covered.append(m.span())
-        shown = float(m.group(1).replace(",", "")) * (1000 if m.group(2) == "B" else 1)
-        actual = _fact_value(m.group(3), cache)
+        sign, number, scale, fid = m.groups()
+        shown = float(number.replace(",", "")) * (1000 if scale == "B" else 1) * (-1 if sign else 1)
+        actual = _fact_value(fid, cache)
         if actual is None:
-            issues.append(f"Unknown fact_id {m.group(3)!r} for ${m.group(1)}{m.group(2)}.")
-        elif abs(shown - round(actual / 1e6, 1)) > (50 if m.group(2) == "B" else 0.05):
-            issues.append(f"${m.group(1)}{m.group(2)} does not match {m.group(3)} "
+            issues.append(f"Unknown fact_id {fid!r} for {m.group(0).split(' [')[0]}.")
+        elif abs(shown - float(half_up(actual / 1e6, 1))) > (50 if scale == "B" else 0.05):
+            issues.append(f"{m.group(0).split(' [')[0]} does not match {fid} "
                           f"(reported ${actual / 1e6:,.1f}M).")
         else:
             verified += 1
+
+    def two_dp_matches(shown: str, value: float) -> bool:
+        return abs(float(shown) - float(half_up(value))) < 0.005
 
     for m in CALC.finditer(body):
         total += 1
         covered.append(m.span())
         num, den = _fact_value(m.group(2), cache), _fact_value(m.group(3), cache)
-        if num is None or den is None or den == 0:
+        if num is None or den is None:
             issues.append(f"{m.group(1)}% cites an unknown fact in [calc: {m.group(2)} / {m.group(3)}].")
-        elif abs(float(m.group(1)) - round(num / den * 100, 2)) > 0.01:
+        elif bad := _mismatch([(m.group(2), m.group(3))], cache):
+            issues.append(f"{m.group(1)}% [calc] {bad}: a ratio needs one company and one fiscal year.")
+        elif den <= 0:
+            issues.append(f"{m.group(1)}% divides by revenue that is not positive; a margin is not meaningful.")
+        elif not two_dp_matches(m.group(1), num / den * 100):
             issues.append(f"{m.group(1)}% is wrong: {m.group(2)} / {m.group(3)} = "
-                          f"{num / den * 100:.2f}%.")
+                          f"{half_up(num / den * 100)}%.")
         else:
             verified += 1
 
@@ -151,10 +180,16 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
         total += 1
         covered.append(m.span())
         a, b = _fact_value(m.group(2), cache), _fact_value(m.group(3), cache)
-        if a is None or b in (None, 0):
+        if a is None or b is None:
             issues.append(f"{m.group(1)}% cites an unknown fact in [growth: {m.group(2)} / {m.group(3)}].")
-        elif abs(float(m.group(1)) - round((a / b - 1) * 100, 2)) > 0.01:
-            issues.append(f"{m.group(1)}% growth is wrong: should be {(a / b - 1) * 100:.2f}%.")
+        elif (bad := _mismatch([(m.group(2), m.group(3))], cache, same_year=False)) or                 m.group(2).split("/")[0] != m.group(3).split("/")[0] or                 m.group(2).split("/")[1] <= m.group(3).split("/")[1]:
+            issues.append(f"{m.group(1)}% [growth] must compare one company's same item with an earlier year"
+                          f"{': ' + bad if bad else ''}.")
+        elif b <= 0:
+            issues.append(f"{m.group(1)}% growth starts from a zero or negative amount, so a growth rate is "
+                          "not meaningful: state both amounts instead.")
+        elif not two_dp_matches(m.group(1), (a / b - 1) * 100):
+            issues.append(f"{m.group(1)}% growth is wrong: should be {half_up((a / b - 1) * 100)}%.")
         else:
             verified += 1
 
@@ -162,10 +197,16 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
         total += 1
         covered.append(m.span())
         a, b, c, d = (_fact_value(m.group(i), cache) for i in (2, 3, 4, 5))
-        if None in (a, b, c, d) or 0 in (b, d):
+        if None in (a, b, c, d):
             issues.append(f"{m.group(1)} pp cites an unknown fact in its [diff: ...].")
-        elif abs(float(m.group(1)) - round((a / b - c / d) * 100, 2)) > 0.01:
-            issues.append(f"{m.group(1)} pp is wrong: should be {(a / b - c / d) * 100:+.2f} pp.")
+        elif bad := (_mismatch([(m.group(2), m.group(3)), (m.group(4), m.group(5))], cache)
+                     or _mismatch([(m.group(2), m.group(4))], cache, same_year=False)):
+            issues.append(f"{m.group(1)} pp [diff] {bad}: it must compare one company's margins.")
+        elif b <= 0 or d <= 0:
+            issues.append(f"{m.group(1)} pp uses revenue that is not positive; a margin change is not meaningful.")
+        elif not two_dp_matches(m.group(1), (a / b - c / d) * 100):
+            change = half_up((a / b - c / d) * 100)
+            issues.append(f"{m.group(1)} pp is wrong: should be {'+' if change >= 0 else ''}{change} pp.")
         else:
             verified += 1
 
@@ -204,6 +245,8 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
     # a figure placeholder left in the note means a number is missing (e.g. a peer not in the plan)
     for key in sorted(set(PLACEHOLDER.findall(body))):
         issues.append(f"Unknown placeholder {{{key}}}.")
+    for key in sorted(set(TEMPLATE_TOKEN.findall(body))):
+        issues.append(f"The note still contains the template token {{{key}}}: it is unfinished.")
 
     # Like-for-like: one line must not set an operating margin against a pre-tax margin
     for line in body.splitlines():
