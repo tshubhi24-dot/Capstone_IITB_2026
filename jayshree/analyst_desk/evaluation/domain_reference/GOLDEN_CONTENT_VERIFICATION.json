@@ -1,0 +1,160 @@
+{
+  "artifact": "Development golden content verification",
+  "release_id": "analyst-desk-domain-gold-2.1-20261109",
+  "status": "Content verification complete; no application case execution",
+  "core_case_count": 20,
+  "type_counts": {
+    "numeric": 8,
+    "comparison": 5,
+    "risk_change": 4,
+    "refusal": 3
+  },
+  "original_questions_and_expectations_unchanged": true,
+  "all_twenty_have_question_expected_answer_interpretations_limitations": true,
+  "stored_financial_expectations_checked": 19,
+  "exact_display_matches": 19,
+  "annual_contexts_independently_recomputed": [
+    {
+      "period_key": "MSFT_2024",
+      "revenue_usd": "245122000000",
+      "income_usd": "109433000000",
+      "unrounded_margin_percent": "44.6442995732737167614494007065869240623036691932996630249427",
+      "display_margin": "44.64%"
+    },
+    {
+      "period_key": "AAPL_2024",
+      "revenue_usd": "391035000000",
+      "income_usd": "123216000000",
+      "unrounded_margin_percent": "31.5102228700755686831102075261805209252368713797997621696268",
+      "display_margin": "31.51%"
+    },
+    {
+      "period_key": "NVDA_2023",
+      "revenue_usd": "26974000000",
+      "calculation_scope": "Revenue-only source context; no margin requested or invented."
+    },
+    {
+      "period_key": "NVDA_2024",
+      "revenue_usd": "60922000000",
+      "calculation_scope": "Revenue-only source context; no margin requested or invented."
+    },
+    {
+      "period_key": "JPM_2023",
+      "revenue_usd": "158104000000",
+      "income_usd": "61612000000",
+      "unrounded_margin_percent": "38.9692860395688913626473713505034660729646308758791681424885",
+      "display_margin": "38.97%"
+    },
+    {
+      "period_key": "JPM_2024",
+      "revenue_usd": "177556000000",
+      "income_usd": "75081000000",
+      "unrounded_margin_percent": "42.2858140530311563675685417558404109126134853229403681092162",
+      "display_margin": "42.29%"
+    },
+    {
+      "period_key": "V_2023",
+      "revenue_usd": "32653000000",
+      "income_usd": "21000000000",
+      "unrounded_margin_percent": "64.3126205861635990567482314029338805010259394236364193182862",
+      "display_margin": "64.31%"
+    },
+    {
+      "period_key": "V_2024",
+      "revenue_usd": "35926000000",
+      "income_usd": "23595000000",
+      "unrounded_margin_percent": "65.6766687078995713410900183710961420698101653398652786282915",
+      "display_margin": "65.68%"
+    },
+    {
+      "period_key": "WFC_2023",
+      "revenue_usd": "82597000000",
+      "income_usd": "21636000000",
+      "unrounded_margin_percent": "26.1946559802414131263847355230819521290119495865467268787002",
+      "display_margin": "26.19%"
+    },
+    {
+      "period_key": "META_2022",
+      "revenue_usd": "116609000000",
+      "income_usd": "28944000000",
+      "unrounded_margin_percent": "24.8214117263676045588247905393237228687322590880635285441089",
+      "display_margin": "24.82%"
+    },
+    {
+      "period_key": "META_2023",
+      "revenue_usd": "134902000000",
+      "income_usd": "46751000000",
+      "unrounded_margin_percent": "34.6555277164163615068716549791700641947487805962847103823516",
+      "display_margin": "34.66%"
+    },
+    {
+      "period_key": "GS_2023",
+      "revenue_usd": "46254000000",
+      "calculation_scope": "Revenue-only source context; no margin requested or invented."
+    },
+    {
+      "period_key": "GS_2024",
+      "revenue_usd": "53512000000",
+      "calculation_scope": "Revenue-only source context; no margin requested or invented."
+    },
+    {
+      "period_key": "GOOGL_2024",
+      "revenue_usd": "350018000000",
+      "income_usd": "112390000000",
+      "unrounded_margin_percent": "32.1097772114576964613248461507693890028512819340719620133822",
+      "display_margin": "32.11%"
+    },
+    {
+      "period_key": "MA_2024",
+      "revenue_usd": "28167000000",
+      "income_usd": "15582000000",
+      "unrounded_margin_percent": "55.3200553839599531366492704228352327191394184684204920651827",
+      "display_margin": "55.32%"
+    },
+    {
+      "period_key": "BAC_2023",
+      "revenue_usd": "98581000000",
+      "income_usd": "28342000000",
+      "unrounded_margin_percent": "28.7499619602154573396496282245057363995090331808360637445350",
+      "display_margin": "28.75%"
+    },
+    {
+      "period_key": "AMD_2024",
+      "revenue_usd": "25785000000",
+      "calculation_scope": "Revenue-only source context; no margin requested or invented."
+    },
+    {
+      "period_key": "AMZN_2023",
+      "revenue_usd": "574785000000",
+      "income_usd": "36852000000",
+      "unrounded_margin_percent": "6.41144079960332994076045825830527936532790521673321328844698",
+      "display_margin": "6.41%"
+    },
+    {
+      "period_key": "ORCL_2023",
+      "revenue_usd": "49954000000",
+      "income_usd": "13093000000",
+      "unrounded_margin_percent": "26.2101133042399007086519598030187772750930856387876846698963",
+      "display_margin": "26.21%"
+    }
+  ],
+  "cached_fact_records": 55,
+  "risk_cases_with_reference_answers": 4,
+  "selected_risk_topic_pairs": 8,
+  "refusal_contracts": 3,
+  "supplementary_DG_examples_outside_core_count": 8,
+  "scorer_diagnostics": "Twelve expected source-expression observations reproduced (six counterexamples and six controls); diagnostic assertions are not accuracy, app cases or independent risk labels.",
+  "BAC_corroboration": "Original SEC parent consolidated statement corroborated; contradictory cache header remains a metadata issue. No whole-source reliability certification.",
+  "golden_content_sha256": "b5cbba8b7813e4517eb57c17d692e94acf90df7e72e8983b6236e259a99ca949",
+  "application_cases_executed": 0,
+  "independent_R5_or_human_review_claimed": false,
+  "protected_cases_opened": 0,
+  "limits": [
+    "Cached context matching does not certify full source eligibility or current reliability.",
+    "Selected risk topics are not exhaustive company-year human annotations.",
+    "Legacy harness scores and new domain dispositions must be reported separately.",
+    "No old evaluation result has been changed by this content version."
+  ],
+  "supplementary_examples_sha256": "e364f7663d3848db9ca10cc547c73e77a8be9fdc9db4e71de217cb8a60d51275",
+  "publication_note": "Content checks retained from the unchanged domain contracts; portable paths and source hashes verified separately. No new application run."
+}

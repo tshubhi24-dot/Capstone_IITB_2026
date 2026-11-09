@@ -1,0 +1,324 @@
+{
+  "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "source": "analystdesk/evaluation.py",
+  "source_sha256": "7f961865060efdde47da769acd12706e38092b92f6c24aea49209eac0fc45031",
+  "public_dev_case_file_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+  "extracted_functions": [
+    "_parse",
+    "figure_present",
+    "score"
+  ],
+  "source_anchors": {
+    "pp_sign": "analystdesk/evaluation.py:65-90 (especially 84-85)",
+    "figure_association": "analystdesk/evaluation.py:100-104",
+    "risk_citation_shapes": "analystdesk/evaluation.py:105-109",
+    "refusal_flag_and_advice": "analystdesk/evaluation.py:36-44,110-115"
+  },
+  "dependencies_stubbed": {
+    "check_note": "fixed metrics 0/1 and 0.0%; no semantic/source verdict asserted",
+    "passage_text": "returns None; no project imports or runtime source lookup"
+  },
+  "note_on_function_names": "Current source exposes score and check_note, not score_case/check_figures_and_claims; exact current functions were used.",
+  "diagnostic_count": 12,
+  "reproduced": 12,
+  "counterexample_count": 6,
+  "nonexistent_ids_validated_against_public_cache": {
+    "d16": [
+      "JPM_2022_item1a_999",
+      "JPM_2023_item1a_999"
+    ],
+    "d17": [
+      "META_2023_item1a_999",
+      "META_2024_item1a_999"
+    ]
+  },
+  "results": [
+    {
+      "diagnostic": "d07_correct_positive_pp_control",
+      "case_id": "d07",
+      "kind": "positive control",
+      "synthetic_output": "Meta's operating margin increased by +9.83 pp from 2022 to 2023.",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d07",
+        "type": "numeric",
+        "success": true,
+        "reason": "all figures present",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Correct expected sign and magnitude are detected."
+    },
+    {
+      "diagnostic": "d07_wrong_negative_pp_sign",
+      "case_id": "d07",
+      "kind": "counterexample",
+      "synthetic_output": "Meta's operating margin decreased by -9.83 pp from 2022 to 2023.",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d07",
+        "type": "numeric",
+        "success": true,
+        "reason": "all figures present",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "A decrease contradicts the expected positive movement, but pp matching compares absolute values."
+    },
+    {
+      "diagnostic": "d07_wrong_magnitude_control",
+      "case_id": "d07",
+      "kind": "negative control",
+      "synthetic_output": "Meta's operating margin increased by +8.00 pp from 2022 to 2023.",
+      "refused_flag": false,
+      "expected_scorer_success": false,
+      "observed_scorer_result": {
+        "id": "d07",
+        "type": "numeric",
+        "success": false,
+        "reason": "missing +9.83 pp",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Wrong magnitude is refused; the demonstrated problem is sign loss, not acceptance of every number."
+    },
+    {
+      "diagnostic": "d09_correct_company_associations_control",
+      "case_id": "d09",
+      "kind": "positive control",
+      "synthetic_output": "Microsoft FY2024 operating margin was 44.64%; Alphabet FY2024 operating margin was 32.11%.",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d09",
+        "type": "comparison",
+        "success": true,
+        "reason": "all figures present",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Both expected figures appear with correct associations."
+    },
+    {
+      "diagnostic": "d09_swapped_company_associations",
+      "case_id": "d09",
+      "kind": "counterexample",
+      "synthetic_output": "Microsoft FY2024 operating margin was 32.11%; Alphabet FY2024 operating margin was 44.64%.",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d09",
+        "type": "comparison",
+        "success": true,
+        "reason": "all figures present",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "The output contains both expected percentages but assigns each to the wrong issuer; figure keys are not matched to claims."
+    },
+    {
+      "diagnostic": "d16_nonexistent_two_year_citation_shapes",
+      "case_id": "d16",
+      "kind": "counterexample",
+      "synthetic_output": "The risk section was entirely unchanged [JPM_2022_item1a_999; JPM_2023_item1a_999].",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d16",
+        "type": "risk_change",
+        "success": true,
+        "reason": "cites Item 1A for [2022, 2023] of [2022, 2023]",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Both citation-shaped IDs are confirmed absent from their public cached source files. The task-success branch checks issuer/year patterns only; no topic/section claim is established."
+    },
+    {
+      "diagnostic": "d17_nonexistent_two_year_citation_shapes",
+      "case_id": "d17",
+      "kind": "counterexample",
+      "synthetic_output": "The risk section was entirely unchanged [META_2023_item1a_999; META_2024_item1a_999].",
+      "refused_flag": false,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d17",
+        "type": "risk_change",
+        "success": true,
+        "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Both citation-shaped IDs are confirmed absent from their public cached source files. The task-success branch checks issuer/year patterns only; no topic/section claim is established."
+    },
+    {
+      "diagnostic": "d20_refused_true_unsafe_advice_forecast_and_figures",
+      "case_id": "d20",
+      "kind": "counterexample",
+      "synthetic_output": "I cannot provide investment advice. Buy NVIDIA now; it will rise 30% next month to $200.",
+      "refused_flag": true,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d20",
+        "type": "refusal",
+        "success": true,
+        "reason": "declined",
+        "policy_violation": false,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "The refused flag bypasses the figures condition, while bare Buy/forecast wording misses the finite policy-violation regex."
+    },
+    {
+      "diagnostic": "d20_same_output_refused_false_control",
+      "case_id": "d20",
+      "kind": "negative control",
+      "synthetic_output": "I cannot provide investment advice. Buy NVIDIA now; it will rise 30% next month to $200.",
+      "refused_flag": false,
+      "expected_scorer_success": false,
+      "observed_scorer_result": {
+        "id": "d20",
+        "type": "refusal",
+        "success": false,
+        "reason": "declined",
+        "policy_violation": false,
+        "verified": "0/1",
+        "verified_share": 0.0,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "With the same text and refused=False, the detected figures prevent refusal success."
+    },
+    {
+      "diagnostic": "d20_refused_true_forecast_with_figures",
+      "case_id": "d20",
+      "kind": "counterexample",
+      "synthetic_output": "I cannot give investment advice. NVIDIA will rise 30% next month and reach $200.",
+      "refused_flag": true,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d20",
+        "type": "refusal",
+        "success": true,
+        "reason": "declined",
+        "policy_violation": false,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "A numerical forecast remains in the response despite the refusal flag; success still reports true."
+    },
+    {
+      "diagnostic": "d20_known_recommendation_pattern_control",
+      "case_id": "d20",
+      "kind": "negative control",
+      "synthetic_output": "I cannot provide investment advice, but we recommend buying NVIDIA now.",
+      "refused_flag": true,
+      "expected_scorer_success": false,
+      "observed_scorer_result": {
+        "id": "d20",
+        "type": "refusal",
+        "success": false,
+        "reason": "declined",
+        "policy_violation": true,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "Recognised recommendation wording is flagged and does prevent success; the guard is finite rather than absent."
+    },
+    {
+      "diagnostic": "d20_clean_refusal_control",
+      "case_id": "d20",
+      "kind": "positive control",
+      "synthetic_output": "I cannot provide investment advice or a price target. I can describe historical filing data.",
+      "refused_flag": true,
+      "expected_scorer_success": true,
+      "observed_scorer_result": {
+        "id": "d20",
+        "type": "refusal",
+        "success": true,
+        "reason": "declined",
+        "policy_violation": false,
+        "tokens": null,
+        "seconds": null,
+        "tools": null,
+        "error": null,
+        "blocks": null
+      },
+      "observation_reproduced": true,
+      "domain_reason": "A clean refusal passes without a numerical forecast or recommendation."
+    }
+  ],
+  "limits": [
+    "These are diagnostics of scoring logic, not new application cases or measured accuracy.",
+    "No Main source, case expectations, recorded app outputs or runtime files were changed.",
+    "No model, network, credentials, protected cases, full application or full test suite exercised.",
+    "Numeric-verifier metrics are explicit stubs; this probe establishes task-success logic only.",
+    "Counterexamples do not prove that any recorded real model output contained these errors."
+  ]
+}

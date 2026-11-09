@@ -1,0 +1,45 @@
+{
+  "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "review_type": "R1 public development-case domain contracts and source-backed reference examples",
+  "case_ids": [
+    "d16",
+    "d17"
+  ],
+  "case_file": "data/evaluation/dev_cases.jsonl",
+  "case_file_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+  "scorer_source_sha256": "7f961865060efdde47da769acd12706e38092b92f6c24aea49209eac0fc45031",
+  "source_inventory": {
+    "JPM_2022": {
+      "cached_item1a_rows": 149,
+      "path": "data/passages/JPM_2022.jsonl",
+      "file_sha256": "f58bc94e56a679f68886cae6f48d22f953357e108c16b99aeda566cba4659ca7",
+      "original_html_section_completeness_verified": false
+    },
+    "JPM_2023": {
+      "cached_item1a_rows": 151,
+      "path": "data/passages/JPM_2023.jsonl",
+      "file_sha256": "b2b13b37aa5bc6852a892db8c677fdc2a3d7456594299a49becedb9274d2e3cc",
+      "original_html_section_completeness_verified": false
+    },
+    "META_2023": {
+      "cached_item1a_rows": 200,
+      "path": "data/passages/META_2023.jsonl",
+      "file_sha256": "06a878e4e0effd5a2ebe7a4504edc31870dc941fc11547fa446d18720635cbb6",
+      "original_html_section_completeness_verified": false
+    },
+    "META_2024": {
+      "cached_item1a_rows": 208,
+      "path": "data/passages/META_2024.jsonl",
+      "file_sha256": "02c5860545f24bd9f2cfca478c1e3e22e9e1ab84af306bc4f7ab68fd2e462d91",
+      "original_html_section_completeness_verified": false
+    }
+  },
+  "scope_limit": "Cached rows are not a verified original-HTML coverage denominator. Only the selected topic pairs were adjudicated. No model/network/credential/protected-case access, no source/runtime edits.",
+  "not_claimed": [
+    "Complete original filing comparison",
+    "Global Added or Removed truth",
+    "Ten company-year human labels",
+    "Independent R5 gold or held-out authorship",
+    "App execution or evaluation rerun"
+  ]
+}
