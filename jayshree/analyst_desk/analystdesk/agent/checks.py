@@ -19,7 +19,8 @@ check_note() verifies all three in code, not with an LLM (rule 1):
   * each quoted number occurs, with the same unit, in a passage cited on its line;
   * cited passages exist;
   * no line sets an operating margin against a pre-tax margin (banks);
-  * no investment-advice wording ("buy", "price target", ...).
+  * no investment-advice wording ("buy", "price target", ...), and no company
+    from the analyst's private watchlist that the plan does not cover.
 The issues it returns are fed back to the writer for a revision.
 """
 
@@ -31,6 +32,7 @@ from dataclasses import dataclass, field
 from ..edgar import OPERATING_INCOME_CONCEPT, PRETAX_INCOME_CONCEPT
 from ..servers.edgar_server import get_fact
 from .figures import PLACEHOLDER
+from .guards import defences_on, mentions
 
 # A fact_id has its own slashes (Concept/2024/0000950170-24-087843), so the
 # division in [calc: A / B] is the " / " between two complete fact_ids
@@ -106,11 +108,12 @@ def _quoted_in(number: str, text: str) -> bool:
     return re.search(pattern, plain, re.I) is not None
 
 
-def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult:
+def check_note(body: str, passage_exists=None, passage_text=None, private: list[str] | None = None) -> CheckResult:
     """Verify every number and citation in a draft note body.
 
     passage_text(pid) -> str | None enables checking quoted numbers against
     the cited passage; passage_exists(pid) -> bool only checks citations.
+    private: watchlist tickers outside the plan, which the note must not name.
     """
     if passage_exists is None and passage_text is not None:
         passage_exists = lambda pid: passage_text(pid) is not None   # noqa: E731
@@ -209,7 +212,11 @@ def check_note(body: str, passage_exists=None, passage_text=None) -> CheckResult
             issues.append("This line compares an operating margin with a pre-tax margin, which are not "
                           f"comparable; show them separately: {re.sub(r' ?\[[^\]]*\]', '', line).strip()[:120]!r}")
 
-    for m in ADVICE.finditer(body):
-        issues.append(f"Investment-advice wording {m.group()!r} is not allowed in a research note.")
+    if defences_on():   # output guardrails (off only for experiment E2)
+        for m in ADVICE.finditer(body):
+            issues.append(f"Investment-advice wording {m.group()!r} is not allowed in a research note.")
+        for t in mentions(body, private or []):
+            issues.append(f"The note names {t}, which is on the analyst's private watchlist and not in the "
+                          "approved plan. Remove it.")
 
     return CheckResult(ok=not issues, issues=issues, verified_numbers=verified, total_numbers=total)

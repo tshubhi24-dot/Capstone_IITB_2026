@@ -46,6 +46,7 @@ from ..scope import COMPANIES
 from ..servers.common import COVERED_YEARS
 from .checks import ADVICE, check_note
 from .figures import build_figures, comparability_notes, figures_table, render
+from .guards import INJECTION, defences_on, private_names
 from .hooks import Hooks, wrap_for_toolnode
 
 # Tool-call budget for one run, the SAME for C1 and C2 (brief: the single agent and the team get
@@ -54,6 +55,11 @@ from .hooks import Hooks, wrap_for_toolnode
 # C2 splits this same total across its specialists (team.specialist_budgets).
 CALLS_BASE = int(os.getenv("AGENT_CALLS_BASE", "12"))
 CALLS_PER_COMPANY = int(os.getenv("AGENT_CALLS_PER_COMPANY", "12"))
+
+
+def critic_loop_on() -> bool:
+    """The critic loop: revisions after failed checks and, in C2, the judge. Off for E4."""
+    return os.getenv("AGENT_CRITIC", "1") != "0"
 
 
 def tool_budget(n_companies: int) -> int:
@@ -107,6 +113,7 @@ class AgentState(TypedDict, total=False):
     analyst: str
     memory_on: bool
     memory: dict                      # what memory contributed to this run
+    watchlist: list                   # the analyst's private watchlist (never leaves the system)
     lessons: list                     # approved playbook lessons used in this run
     trace: Annotated[list, operator.add]
 
@@ -218,6 +225,10 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
             reason = f"Only fiscal years {COVERED_YEARS} are covered."
         elif ADVICE.search(req):
             reason = "Requests for investment advice (buy/sell/price targets) are out of scope."
+        elif INJECTION.search(req):
+            reason = "The request contains instructions aimed at the system rather than a research question."
+        if not defences_on():   # E2, defences off: every request goes through
+            reason = None
         guard = {"ok": reason is None, "reason": reason, "companies": companies, "years": years}
         # evaluation runs never use memory, so results stay reproducible
         memory_on = state.get("memory_on", True) and os.getenv("AGENT_EVAL") != "1"
@@ -235,7 +246,17 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
             prefs = [p["text"] for p in await ltm.preferences(state.get("analyst", "analyst"))]
             previous = {t: n for t in state["guard"]["companies"] if (n := await ltm.last_note(t))}
             mem = {"preferences": prefs, "previous_notes": previous}
+        watchlist = state.get("watchlist")
+        if watchlist is None:
+            watchlist = []
+            if state.get("memory_on", True):
+                from .. import memory as ltm
+                watchlist = await ltm.watchlist(state.get("analyst", "analyst"))
         context = ""
+        if watchlist:
+            context += ("\nPRIVATE WATCHLIST (confidential): " + ", ".join(watchlist)
+                        + ". Add one to the plan's companies only if the request asks for peers. Never name a "
+                          "watchlist company in a sub-question unless it is in the plan's companies.")
         if mem.get("preferences"):
             context += "\nANALYST PREFERENCES: " + "; ".join(mem["preferences"])
         if mem.get("previous_notes"):
@@ -260,7 +281,7 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         # code, not the model, enforces coverage
         p.companies = [c.upper() for c in p.companies if c.upper() in _TICKERS] or state["guard"]["companies"]
         p.fiscal_years = [y for y in p.fiscal_years if y in COVERED_YEARS] or list(COVERED_YEARS)
-        return {"plan": p.model_dump(), "plan_feedback": "", "memory": mem, "lessons": used,
+        return {"plan": p.model_dump(), "plan_feedback": "", "memory": mem, "lessons": used, "watchlist": watchlist,
                 "tokens": usage(result["raw"]),
                 "trace": _event("plan", plan=p.model_dump(), replan=bool(state.get("plan_feedback")),
                                 lessons_used=[les["key"] for les in used],
@@ -348,7 +369,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 6. code checks every number and citation; C2 adds the critic's judge
     async def check(state: AgentState):
-        r = check_note(state["draft"]["body"], passage_text=passage_text)
+        r = check_note(state["draft"]["body"], passage_text=passage_text,
+                       private=private_names(state.get("watchlist"), state.get("plan")))
         issues = list(dict.fromkeys((state.get("render_issues") or []) + r.issues))   # no repeats
         result = {"ok": not issues, "issues": issues, "verified": r.verified_numbers,
                   "total": r.total_numbers, "verified_share": r.verified_share}
@@ -363,7 +385,9 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                 "trace": _event("critic" if critic else "check", **result)}
 
     def after_check(state) -> Literal["write", "review_note"]:
-        if not state["check"]["ok"] and state.get("revisions", 0) < MAX_REVISIONS:
+        # AGENT_CRITIC=0 (E4 ablation): the note still gets checked, but is never sent back
+        if (not state["check"]["ok"] and state.get("revisions", 0) < MAX_REVISIONS
+                and critic_loop_on()):
             return "write"
         return "review_note"
 

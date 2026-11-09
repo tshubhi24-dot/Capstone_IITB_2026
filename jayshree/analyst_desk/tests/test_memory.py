@@ -39,6 +39,14 @@ class MemoryTests(TempMemory):
         cov = asyncio.run(memory.coverage("desk"))
         self.assertEqual([(c["ticker"], c["notes"]) for c in cov], [("MSFT", [7])])
 
+    def test_watchlist_keeps_covered_tickers_and_clears(self):
+        kept = asyncio.run(memory.set_watchlist("desk", ["nvda", "TSLA", " amd "]))
+        self.assertEqual(kept, ["AMD", "NVDA"])                       # TSLA is not covered
+        self.assertEqual(asyncio.run(memory.watchlist("desk")), ["AMD", "NVDA"])
+        self.assertEqual(asyncio.run(memory.watchlist("someone else")), [])   # per analyst
+        asyncio.run(memory.set_watchlist("desk", []))
+        self.assertEqual(asyncio.run(memory.watchlist("desk")), [])
+
     def test_preferences_add_and_forget(self):
         key = asyncio.run(memory.add_preference("desk", "Always include a peer table"))
         self.assertEqual([p["text"] for p in asyncio.run(memory.preferences("desk"))],

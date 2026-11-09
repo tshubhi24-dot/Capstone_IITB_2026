@@ -496,6 +496,13 @@ def build_agent_panel(workflow_mode):
                 new_pref = gr.Textbox(label="Add a standing preference", scale=4,
                                       placeholder="e.g. Always include a peer comparison table")
                 add_pref_btn = gr.Button("Add", scale=1, interactive=False)
+            with gr.Row():
+                watchlist_box = gr.Textbox(
+                    label="🔒 Private watchlist (tickers, comma-separated)", scale=4,
+                    info="Only the planner sees it. It never goes into a tool call, a search or a note "
+                         "unless you approve a plan that covers the company.")
+                save_watchlist_btn = gr.Button("Save watchlist", scale=1)
+            watchlist_status = gr.Markdown()
             prefs_table = gr.Dataframe(headers=["key", "preference", "added (UTC)"],
                                        interactive=False, wrap=True)
             coverage_table = gr.Dataframe(headers=["ticker", "notes", "last published"],
@@ -620,6 +627,20 @@ def build_agent_panel(workflow_mode):
             from analystdesk import memory as ltm
             await ltm.add_preference((name or "analyst").strip(), text)
             yield ("", *await memory_tables(name), gr.update(interactive=False))
+
+        async def watchlist_text(name):
+            from analystdesk import memory as ltm
+            return ", ".join(await ltm.watchlist((name or "analyst").strip()))
+
+        async def on_save_watchlist(name, text):
+            from analystdesk import memory as ltm
+            asked = [t for t in re.split(r"[,\s]+", text or "") if t]
+            kept = await ltm.set_watchlist((name or "analyst").strip(), asked)
+            dropped = sorted({t.upper() for t in asked} - set(kept))
+            status = f"_Saved: {', '.join(kept)}._" if kept else "_Watchlist cleared._"
+            if dropped:
+                status += f" _Not covered, so not kept: {', '.join(dropped)}._"
+            return ", ".join(kept), status
 
         def update_add_preference_button(text):
             return gr.update(interactive=_can_add_preference(text))
@@ -911,6 +932,8 @@ def build_agent_panel(workflow_mode):
         new_pref.input(update_add_preference_button, [new_pref], add_pref_btn)
         new_pref.change(update_add_preference_button, [new_pref], add_pref_btn)
         add_pref_btn.click(on_add_pref, [approver, new_pref], [new_pref, *mem_outputs, add_pref_btn])
+        save_watchlist_btn.click(on_save_watchlist, [approver, watchlist_box], [watchlist_box, watchlist_status])
+        approver.blur(watchlist_text, [approver], watchlist_box)
         prefs_table.select(
             on_pick_pref, [prefs_table, approver], [selected_mem, selected_label, delete_mem_btn]
         )
@@ -1039,6 +1062,7 @@ def build_agent_panel(workflow_mode):
         )
 
         async def on_page_load(name):
-            return (await refresh_runs(), *await memory_tables(name), *await playbook_tables())
+            return (await refresh_runs(), *await memory_tables(name), *await playbook_tables(),
+                    await watchlist_text(name))
 
-        return on_page_load, [approver], [runs_table, *mem_outputs, *pb_outputs]
+        return on_page_load, [approver], [runs_table, *mem_outputs, *pb_outputs, watchlist_box]

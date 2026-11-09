@@ -141,9 +141,10 @@ async def _stream(graph, payload, config, on_event) -> dict:
 
 def _build(mode: str, llm, research, publish, passage_text_fn, live: bool = False):
     if mode == "c2":
+        from .graph import critic_loop_on
         from .team import build_team_graph, make_judge_llm
         return build_team_graph(llm, research, publish, passage_text_fn,
-                                judge_llm=make_judge_llm() if live else None)
+                                judge_llm=make_judge_llm() if live and critic_loop_on() else None)
     from .graph import build_graph
     return build_graph(llm, research, publish, passage_text_fn)
 
