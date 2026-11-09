@@ -1,0 +1,14 @@
+{
+  "checked_at_utc": "2026-11-09T11:24:33.526405+00:00",
+  "main_revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "spec_baseline": "c64091276fea80140dd664c637c863b871c0b0e1",
+  "running_main_image": "sha-8754386",
+  "initial_report_sha256": "b2bc9c959a95c96a9291eaf504cc63618435b56f953d31825bca8a6cd7f432c0",
+  "constraints": [
+    "no paid model calls",
+    "no app rebuild or publication",
+    "no source edits",
+    "no protected held-out content inspected",
+    "no git push"
+  ]
+}

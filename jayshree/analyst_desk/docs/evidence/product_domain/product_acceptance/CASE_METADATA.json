@@ -1,0 +1,31 @@
+{
+  "run_id": "comparison-20261109-c2",
+  "request": "Compare Microsoft and Alphabet operating margins for FY2022-FY2024 and explain supported changes in risk disclosures.",
+  "run_revision": "42e2298a26bffb918ac8320543f6bc0d9591405c",
+  "current_main_review_reference": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "note_canonical_sha256": "93ec0a18e89bff4b2ff51a4f70ecd1f7c9c5b017e2a25ca9a7c987e0b0b8f992",
+  "body_sha256": "d906bcee993b16fb3431e2428c17591d596a9c3d10ca3bb4862f6ea3f1b3dc51",
+  "source_packet_sha256": {
+    "c2_research_result.json": "3b118380f4c17aed0d1cd6640ab387fcae0497c2a7786f382088bd2e80daa12e",
+    "c2_cited_passages.json": "fcc6c0bac5f67db03afedf041a9bdfa35298dadefa48bb6aec6d5c360c6f5414",
+    "c2_plan_approval.json": "edafaf44ec0582511e8c2be4d7831f59d3a8abe21c5a940c7132329177efdc07",
+    "run_metadata.json": "d5750a6621c6f57bac20050838416dfc626d3b6f49e9be922b5c460ac0110625"
+  },
+  "recorded_state": {
+    "status": "waiting_note",
+    "next": [
+      "review_note"
+    ],
+    "revisions": 2,
+    "check_ok": false,
+    "verified": 7,
+    "total": 7,
+    "judge_checked": 8,
+    "judge_supported": 2,
+    "memory_on": false,
+    "has_outcome_field": false,
+    "has_published_field": false
+  },
+  "assessment_scope": "One historical development draft; policy review and acceptance recommendation only; no human final approval or publication recorded by this review.",
+  "final_submission_assessment": "Not accepted for publication as submitted; assessment complete"
+}

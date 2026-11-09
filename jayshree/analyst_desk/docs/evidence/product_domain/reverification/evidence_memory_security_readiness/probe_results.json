@@ -1,0 +1,237 @@
+{
+  "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "harness": "offline_probes.py",
+  "method": "AST-extracted project functions; dependency stubs and synthetic data. No project imports or live stores.",
+  "assertions": 18,
+  "passed": 18,
+  "results": [
+    {
+      "name": "F10_known_injection_text_withheld",
+      "passed": true,
+      "actual": 1,
+      "expected": 1,
+      "scope": "Extracted screen; synthetic text field, defences on."
+    },
+    {
+      "name": "F10_clean_text_untouched",
+      "passed": true,
+      "actual": [
+        "{\"ok\": true, \"passages\": [{\"passage_id\": \"MSFT_2024_item7_901\", \"text\": \"Cloud revenue grew in the period.\"}]}",
+        0
+      ],
+      "expected": [
+        "{\"ok\": true, \"passages\": [{\"passage_id\": \"MSFT_2024_item7_901\", \"text\": \"Cloud revenue grew in the period.\"}]}",
+        0
+      ],
+      "scope": "One synthetic clean payload only; not a false-block rate."
+    },
+    {
+      "name": "F10_paraphrase_not_detected",
+      "passed": true,
+      "actual": 0,
+      "expected": 0,
+      "scope": "Demonstrates finite-pattern coverage, not an end-to-end successful attack."
+    },
+    {
+      "name": "F10_instruction_in_non_text_JSON_field_not_screened",
+      "passed": true,
+      "actual": 0,
+      "expected": 0,
+      "scope": "JSON field-name limit of extracted screen; actual adapters may use text fields."
+    },
+    {
+      "name": "F10_output_advice_pattern_detects_literal_buy",
+      "passed": true,
+      "actual": true,
+      "expected": true,
+      "scope": "Extracted output advice regex only."
+    },
+    {
+      "name": "F10_output_advice_pattern_misses_same_paraphrase",
+      "passed": true,
+      "actual": false,
+      "expected": false,
+      "scope": "Output regex only; no claim about AI critic or human decision."
+    },
+    {
+      "name": "F08_unapproved_watchlist_ticker_detected",
+      "passed": true,
+      "actual": [
+        "NVDA"
+      ],
+      "expected": [
+        "NVDA"
+      ],
+      "scope": "Synthetic watchlist; name is outside approved plan."
+    },
+    {
+      "name": "F08_approved_public_ticker_query_allowed",
+      "passed": true,
+      "actual": [],
+      "expected": [],
+      "scope": "The code protects unapproved names; it does not ban all queries naming an approved ticker."
+    },
+    {
+      "name": "F08_watchlist_context_enters_planner_prompt",
+      "passed": true,
+      "actual": true,
+      "expected": true,
+      "scope": "Actual extracted plan node; synthetic watchlist and in-process fake LLM recorder. No provider called."
+    },
+    {
+      "name": "F09_valid_exact_approval_publishes",
+      "passed": true,
+      "actual": true,
+      "expected": true,
+      "scope": "Extracted actual portal function, synthetic key and local fixture DB only."
+    },
+    {
+      "name": "F09_duplicate_is_refused",
+      "passed": true,
+      "actual": "ALREADY_EXISTS",
+      "expected": "ALREADY_EXISTS",
+      "scope": "Positive duplicate-protection probe."
+    },
+    {
+      "name": "F09_changed_body_old_approval_refused",
+      "passed": true,
+      "actual": "APPROVAL_INVALID",
+      "expected": "APPROVAL_INVALID",
+      "scope": "Positive exact-content binding probe."
+    },
+    {
+      "name": "F09_changed_body_fresh_approval_publishes",
+      "passed": true,
+      "actual": true,
+      "expected": true,
+      "scope": "Fresh approval for exact B payload succeeds in fixture."
+    },
+    {
+      "name": "F09_portal_persists_two_receipts_with_hash_and_times",
+      "passed": true,
+      "actual": [
+        2,
+        64,
+        1,
+        1,
+        1
+      ],
+      "expected": [
+        2,
+        64,
+        1,
+        1,
+        1
+      ],
+      "scope": "Receipt fields and duplicate protection verified in synthetic SQLite only."
+    },
+    {
+      "name": "F09_lost_response_propagates_after_persisted_note",
+      "passed": true,
+      "actual": [
+        true,
+        1
+      ],
+      "expected": [
+        true,
+        1
+      ],
+      "scope": "Synthetic fault after actual fixture commit + extracted publish node. Does not reproduce a live network failure."
+    },
+    {
+      "name": "F09_history_sync_error_propagates_after_confirmed_publication",
+      "passed": true,
+      "actual": [
+        true,
+        1
+      ],
+      "expected": [
+        true,
+        1
+      ],
+      "scope": "Extracted publish node with relative memory import replaced by a failing synthetic stub; portal response was delivered."
+    },
+    {
+      "name": "F09_memory_delete_does_not_change_separate_checkpoint_or_portal",
+      "passed": true,
+      "actual": [
+        true,
+        true,
+        4
+      ],
+      "expected": [
+        true,
+        true,
+        4
+      ],
+      "scope": "Extracted forget uses a synthetic store; separate checkpoint is a sentinel, not the live checkpointer."
+    },
+    {
+      "name": "F09_backfill_recreates_deleted_past_note_memory",
+      "passed": true,
+      "actual": [
+        true,
+        4
+      ],
+      "expected": [
+        true,
+        4
+      ],
+      "scope": "Actual backfill main reads only synthetic portal DB; remember function is a synthetic in-memory stub. No production backfill run."
+    }
+  ],
+  "inventory": {
+    "scope": "Tracked-file names at pinned commit plus selected public documentation and tests; no protected case or answer content opened.",
+    "tracked_inventory": {
+      "data/evaluation/heldout/": [
+        "data/evaluation/heldout/README.md"
+      ],
+      "data/evaluation/redteam/": [
+        "data/evaluation/redteam/README.md"
+      ],
+      "data/evaluation/results/": [
+        "data/evaluation/results/eval_dev_dev-baseline-c2rest.json",
+        "data/evaluation/results/eval_dev_dev-baseline.json",
+        "data/evaluation/results/eval_dev_merged.json",
+        "data/evaluation/results/memory_compare_20261025-112601.json",
+        "data/evaluation/results/retrieval_20261024-095420.json",
+        "data/evaluation/results/retrieval_20261024-100431.json",
+        "data/evaluation/results/retrieval_queries_v1.jsonl",
+        "data/evaluation/results/role6_dev_audit.json"
+      ]
+    },
+    "completion_filename_candidates": [
+      "scripts/calibrate_judge.py"
+    ],
+    "interpretation": "Existing development report and offline aggregate audit are present. Docs still describe required final repeats, calibration, independently authored tests and approved/frozen lessons. Filename inventory is not proof those activities never occurred outside this checkout."
+  },
+  "source_sha256": {
+    "analystdesk/agent/guards.py": "460ef525b7682109bd1262385c804e23512298fe8fec96ddfdb0dc79761e46b9",
+    "analystdesk/agent/checks.py": "c4da2f3ce07d0e0531c7738de87a4089db2f62bbe1bcf89abed3895a37424c49",
+    "analystdesk/agent/graph.py": "8a81f40230974c8358eb2c237360380b4f22e90a210fef96738b15997d805f35",
+    "analystdesk/approval.py": "1a0afe048586ea614b0622f64cb3880e708a944d674f4cf0371723d11f3f454c",
+    "analystdesk/servers/portal.py": "daedeb96a9fdd4ea8627a06ba8d046155270c2be0ec702a3d78a185506cff225",
+    "analystdesk/memory.py": "ddf0cb71237181102fe36d9c009896a4e45f02b62e5d7094992b31ee83006ab4",
+    "scripts/backfill_memory.py": "0e5a85439690ac59ee4576ec4812ecfae5b8b3bb997bfabe2d057fdc2312d462",
+    "docs/evaluation_guide.md": "1c2d1613c1e220823a6f14ff61bfb4f181fbc98e65046d313f9a1202a4315918",
+    "docs/evaluation.md": "3e51dd25ab8d6e1061300c25f9406de95aff7eacbf8f0ce3bcf2825b0ab1365d",
+    "docs/role6_development_evidence.md": "d0dba9884cd7b85d93cd10caa45adb269ef50e3b94947139a6410b0f37c2e5a2",
+    "docs/product_spec.md": "31fbe4c1ea51684f2169ddd19fec7238def9d80ae67434a216861e4d9a472e4f",
+    "docs/memory_policy.md": "1662269f7ae3c53f5d63e68558c6cb5dc52347709a23eaf232ad97d49054cc8d",
+    "docs/viva_notes.md": "e50e3a8783a1b9ba47e5804622a11ae81f318f57b4b02b7edafea5feab278dea",
+    "docs/threat_model.md": "b6e6619044d41ba24dea52d88b7e2fcd6645c36c62928d2c6681b89613170ad8",
+    "data/evaluation/heldout/README.md": "2a17eeadd74e5a4c440d0972e83acbd345c960d9b0a115ce15303126c2e77e8f",
+    "tests/test_guards.py": "c2774ea13c70dd74b4fd7e47264a306acfdbb00f7973c9e6e91c86c25472abdd",
+    "tests/test_memory.py": "d795dc222598d34c3d528aa16ee33148b4d06aeb50c979d7593035cb669a4fc9",
+    "tests/test_memory_off.py": "88eeb5c33b4610dfcd3fe166b4616e1bf72f3a484be5669a625ae2ad1b329ffc",
+    "tests/test_tools.py": "133c4bde2a466962342521bc4a2b4a927c5b4f2c560e16e718cfcf8f9b553770",
+    "tests/test_redteam.py": "73cf1dae8c234027062bcd3ddea39a1fd5eaa9224e07cb1074df73823caaf1b4"
+  },
+  "limits": [
+    "Not the full repository test suite.",
+    "No model, provider, network, container or live UI exercised.",
+    "No real watchlist, memory, checkpoints, portal, credentials or protected evaluation case contents read.",
+    "Synthetic bypass probes establish finite pattern coverage, not an end-to-end attack outcome.",
+    "Publication failure is deliberately simulated after a fixture commit; no live failure is claimed."
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "test_modules": [
+    "test_checks",
+    "test_graph",
+    "test_memory_off",
+    "test_plan_assumptions",
+    "test_memory",
+    "test_figures",
+    "test_edgar",
+    "test_query",
+    "test_scope",
+    "test_guards",
+    "test_tools"
+  ],
+  "public_cache_files": 101,
+  "source_path": "local evidence archive",
+  "execution": "temporary network-disabled container with source mounted read-only; no live volumes or credentials",
+  "dependency_image": "analystdesk-role6:42e2298",
+  "scope": "Current source tested using existing image dependencies; not a rebuilt release image"
+}

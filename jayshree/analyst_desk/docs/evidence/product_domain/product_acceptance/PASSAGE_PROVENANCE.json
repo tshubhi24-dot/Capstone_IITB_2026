@@ -1,0 +1,152 @@
+{
+  "GOOGL_2022_item7_023": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "GOOGL_2022_item7_023",
+      "company": "GOOGL",
+      "fiscal_year": 2022,
+      "item": "item7",
+      "item_label": "Management Discussion and Analysis",
+      "accession": "0001652044-23-000016",
+      "kind": "table"
+    },
+    "local_file": "data/passages/GOOGL_2022.jsonl",
+    "line": 111,
+    "file_sha256": "0fedda7ae05a51fa2020eccfbb4cb6ef3cc06e67c84c451e6793e21cefdf7111"
+  },
+  "GOOGL_2023_item1a_000": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "GOOGL_2023_item1a_000",
+      "company": "GOOGL",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001652044-24-000022",
+      "kind": "text"
+    },
+    "local_file": "data/passages/GOOGL_2023.jsonl",
+    "line": 1,
+    "file_sha256": "8f8f7ac865d5747809aac27d0cf42212f65a84f6eefa109a02071e13c3905612"
+  },
+  "GOOGL_2023_item7_000": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "GOOGL_2023_item7_000",
+      "company": "GOOGL",
+      "fiscal_year": 2023,
+      "item": "item7",
+      "item_label": "Management Discussion and Analysis",
+      "accession": "0001652044-24-000022",
+      "kind": "text"
+    },
+    "local_file": "data/passages/GOOGL_2023.jsonl",
+    "line": 90,
+    "file_sha256": "8f8f7ac865d5747809aac27d0cf42212f65a84f6eefa109a02071e13c3905612"
+  },
+  "GOOGL_2024_item1a_020": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "GOOGL_2024_item1a_020",
+      "company": "GOOGL",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001652044-25-000014",
+      "kind": "text"
+    },
+    "local_file": "data/passages/GOOGL_2024.jsonl",
+    "line": 21,
+    "file_sha256": "f32f5f5d4c089e99d44655ced5f523707834ad8ff5496c5485bc6cf4c56e3de0"
+  },
+  "GOOGL_2024_item7_048": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "GOOGL_2024_item7_048",
+      "company": "GOOGL",
+      "fiscal_year": 2024,
+      "item": "item7",
+      "item_label": "Management Discussion and Analysis",
+      "accession": "0001652044-25-000014",
+      "kind": "text"
+    },
+    "local_file": "data/passages/GOOGL_2024.jsonl",
+    "line": 144,
+    "file_sha256": "f32f5f5d4c089e99d44655ced5f523707834ad8ff5496c5485bc6cf4c56e3de0"
+  },
+  "MSFT_2023_item1a_000": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "MSFT_2023_item1a_000",
+      "company": "MSFT",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000950170-23-035122",
+      "kind": "text"
+    },
+    "local_file": "data/passages/MSFT_2023.jsonl",
+    "line": 1,
+    "file_sha256": "b7a33659b74494c541c1278ff0fec3f53bc9d484393c207f68bfa7cf3f788042"
+  },
+  "MSFT_2023_item7_020": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "MSFT_2023_item7_020",
+      "company": "MSFT",
+      "fiscal_year": 2023,
+      "item": "item7",
+      "item_label": "Management Discussion and Analysis",
+      "accession": "0000950170-23-035122",
+      "kind": "text"
+    },
+    "local_file": "data/passages/MSFT_2023.jsonl",
+    "line": 106,
+    "file_sha256": "b7a33659b74494c541c1278ff0fec3f53bc9d484393c207f68bfa7cf3f788042"
+  },
+  "MSFT_2024_item1a_081": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "MSFT_2024_item1a_081",
+      "company": "MSFT",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000950170-24-087843",
+      "kind": "text"
+    },
+    "local_file": "data/passages/MSFT_2024.jsonl",
+    "line": 82,
+    "file_sha256": "e9136c75f3f41e54a9556e9bba09a16d8426b16e64fd0f2bf1b6b59efe0dddb3"
+  },
+  "MSFT_2024_item1a_090": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "MSFT_2024_item1a_090",
+      "company": "MSFT",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000950170-24-087843",
+      "kind": "text"
+    },
+    "local_file": "data/passages/MSFT_2024.jsonl",
+    "line": 91,
+    "file_sha256": "e9136c75f3f41e54a9556e9bba09a16d8426b16e64fd0f2bf1b6b59efe0dddb3"
+  },
+  "MSFT_2024_item7_017": {
+    "matches_captured_text": true,
+    "metadata": {
+      "passage_id": "MSFT_2024_item7_017",
+      "company": "MSFT",
+      "fiscal_year": 2024,
+      "item": "item7",
+      "item_label": "Management Discussion and Analysis",
+      "accession": "0000950170-24-087843",
+      "kind": "text"
+    },
+    "local_file": "data/passages/MSFT_2024.jsonl",
+    "line": 114,
+    "file_sha256": "e9136c75f3f41e54a9556e9bba09a16d8426b16e64fd0f2bf1b6b59efe0dddb3"
+  }
+}

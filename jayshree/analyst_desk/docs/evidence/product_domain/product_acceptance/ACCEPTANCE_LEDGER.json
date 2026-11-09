@@ -1,0 +1,96 @@
+{
+  "reviewed_at_utc": "2026-11-09T12:11:27.257767+00:00",
+  "run_id": "comparison-20261109-c2",
+  "historical_revision": "42e2298a26bffb918ac8320543f6bc0d9591405c",
+  "selected_note_canonical_sha256": "93ec0a18e89bff4b2ff51a4f70ecd1f7c9c5b017e2a25ca9a7c987e0b0b8f992",
+  "recommendation": "Not accepted for publication as submitted",
+  "ready_for_final_approval": false,
+  "approval_or_publication_action_performed": false,
+  "original_note_unchanged": true,
+  "approved_plan_matches_saved_plan": true,
+  "criteria": [
+    {
+      "id": "A01",
+      "criterion": "Companies and financial years",
+      "result": "Pass",
+      "reason": "Both issuers and six margin rows present; risk-year accounting tracked separately"
+    },
+    {
+      "id": "A02",
+      "criterion": "Facts and arithmetic",
+      "result": "Pass within scope",
+      "reason": "Six exact cached source pairs and Decimal ratios match; full footnotes/current eligibility not verified"
+    },
+    {
+      "id": "A03",
+      "criterion": "Period disclosure",
+      "result": "Partial",
+      "reason": "Inputs have valid issuer fiscal windows; originalnote needs complete date/crosscompany qualification"
+    },
+    {
+      "id": "A04",
+      "criterion": "Source provenance and versions",
+      "result": "Partial",
+      "reason": "10/10 captured texts mapped to public dataset record+accession; complete boundaries/reliability not reviewed"
+    },
+    {
+      "id": "A05",
+      "criterion": "Business explanations",
+      "result": "Needs fixing",
+      "reason": "Scope causal bridges, compensation offsets and missing workforce/G&A evidence"
+    },
+    {
+      "id": "A06",
+      "criterion": "Risk change and coverage",
+      "result": "Needs fixing",
+      "reason": "Current-year presence supported; novelty/comparative FY2022 coverage unverified"
+    },
+    {
+      "id": "A07",
+      "criterion": "Uncertainty and limits",
+      "result": "Needs fixing",
+      "reason": "State missing comparative evidence and bound absenceclaims to reviewed excerpts"
+    },
+    {
+      "id": "A08",
+      "criterion": "Investment advice wording",
+      "result": "Pass within note",
+      "reason": "No explicit recommendation, target or return promise identified; injection resistance not tested"
+    },
+    {
+      "id": "A09",
+      "criterion": "Automaticcritic readiness",
+      "result": "Needs fixing",
+      "reason": "Original failed aggregate after two revisions preserved; reviewer adjudication is not a new automatic pass"
+    },
+    {
+      "id": "A10",
+      "criterion": "Approval/publication state",
+      "result": "Historical unapproved state",
+      "reason": "Research approval only; no final-note approval or receipt in packet; live portal not queried"
+    }
+  ],
+  "not_exercised": [
+    "Bank pre-tax alternatives",
+    "Memory and private-watchlist behavior",
+    "Injection resistance",
+    "CurrentMain live release acceptance"
+  ],
+  "evidence_files": {
+    "CASE_METADATA.json": "19b55a60a8872e7e78d97983a90c0a07862cb05eea35fa82dcc1d0acec52f539",
+    "PASSAGE_PROVENANCE.json": "2ea2903431eac14f043367da045a2cc884450efeeb493a9a8870ea7ada406319",
+    "evidence_financial/financial_checks.json": "7f2e43f48e3c476ab0b6864875d7d7bc7e9cac6b9be4befda60458f86d16c150",
+    "evidence_claims/CLAIM_REVIEW.json": "14fe7c3cf74f2b99a93cc7fc23f7b8441fb140df5fe5442ff4b4e8aeddf4a3fb",
+    "evidence_risk_scope/RISK_SCOPE_REVIEW.json": "0becd4af09b063aaf749140ad6fe3de1eae7c9b053352b2852d360f74dcbd675"
+  },
+  "limits": [
+    "Assisted product-review recommendation, not verified human final approval",
+    "No new AnalystDesk/OpenRouter request",
+    "No source or original note edits",
+    "No Git commit/push",
+    "Historical development case, not current release certification"
+  ],
+  "assessment_status": "Final and complete",
+  "submission_disposition": "Not accepted for publication as submitted; assessment complete",
+  "application_human_note_approval": null
+}

@@ -1,0 +1,50 @@
+{
+  "verified_at_utc": "2026-11-09T11:36:12.366865+00:00",
+  "main_revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "finding_statuses": {
+    "F01": "Open",
+    "F02": "Open",
+    "F03": "Partially resolved",
+    "F04": "Partially resolved",
+    "F05": "Partially resolved",
+    "F06": "Partially resolved",
+    "F07": "Open",
+    "F08": "Open",
+    "F09": "Open",
+    "F10": "Open",
+    "F11": "Partially resolved"
+  },
+  "whole_finding_counts": {
+    "Open": 6,
+    "Partially resolved": 5,
+    "Implemented but unverified": 0,
+    "Closed and verified": 0
+  },
+  "verified_component_history_count": 10,
+  "selected_unit_tests": {
+    "considered": 121,
+    "passed": 117,
+    "skipped": 4,
+    "failures": 0,
+    "scope": "current-source selected modules, isolated container; four Docker-mode sandbox skips"
+  },
+  "targeted_assertions": {
+    "P37": 37,
+    "P28": 28,
+    "P18": 18,
+    "total": 83,
+    "interpretation": "positive and counterexample observations reproduced, not product acceptance score"
+  },
+  "evidence_sha256": {
+    "P37": "34933887543e1eba001b6a6506b254658ea44b1183a518394a6cbf55b8c5f9ac",
+    "P28": "9c1b73b9412018dfa3e74391cb38a959a0f67e8cefd33dbe6afbb2630952fee3",
+    "P18": "a57680a8b0038721d9327cc8ec2a23c5253dee47d5a9db09683d4c76e0a973d3"
+  },
+  "limits": [
+    "No latest Main image build or live UI retest",
+    "No paid model calls",
+    "No real approval or publication",
+    "No protected questions or answers inspected",
+    "Not full repository suite"
+  ]
+}
