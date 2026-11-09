@@ -73,7 +73,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 ### Human in control
 
-- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs.
+- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs. Relative or unspecified fiscal years must be explicitly confirmed or edited and confirmed before research starts.
 - **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval.
 - **Signed approval:** the gate signs the exact note with an HMAC key. The publishing server verifies the signature, so a skipped or forged approval is refused at the server.
 - **Stop and resume:** every run is checkpointed in SQLite. Any run can be reopened from the run list, even after a restart.
@@ -339,7 +339,7 @@ The app is a FastAPI server with the Gradio UI mounted at `/`. Interactive docs 
 | `GET /healthz` | Liveness: `{"status": "ok"}` |
 | `GET /readyz` | Readiness: returns 503 until the retriever and index are loaded |
 | `POST /api/research` | Start a C1 or C2 run (`request`, `mode`, `analyst`, `memory_on`). Streams events (server-sent events) until the plan gate. |
-| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. Streams until the next gate or the end. |
+| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. For relative or unspecified years, plan decisions also require `"confirm_years": true`. Streams until the next gate or the end. |
 
 The API runs the same graph and gates as the UI, so publishing still requires a signed approval of the exact note.
 

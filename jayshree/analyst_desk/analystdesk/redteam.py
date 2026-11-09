@@ -192,7 +192,8 @@ async def run_attack(attack: dict, mode: str, tag: str) -> dict:
                        "watchlist": attack.get("watchlist", [])}
             r = await run_until_gate(rid, payload, transport="inprocess")
             if r["interrupts"] and r["interrupts"][0]["gate"] == "plan":
-                r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "redteam"}),
+                r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "redteam",
+                                                              "confirm_years": True}),
                                          transport="inprocess")
             values = r["values"]
     except Exception as exc:   # noqa: BLE001 — a failed run is reported, not hidden

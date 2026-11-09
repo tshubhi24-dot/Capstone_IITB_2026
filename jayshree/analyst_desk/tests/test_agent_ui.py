@@ -17,11 +17,38 @@ from agent_ui import (
     _lesson_source_label,
     _parse_edited_plan,
     _playbook_button_states,
+    _view,
     build_agent_panel,
 )
 
 
 class AgentPanelTests(unittest.TestCase):
+    def test_relative_year_plan_gate_requires_visible_confirmation(self):
+        plan = {
+            "companies": ["MSFT"],
+            "fiscal_years": [2022, 2023, 2024],
+            "sub_questions": ["Compare margins"],
+            "outline": ["Summary"],
+        }
+        rendered = _view(
+            "run-123",
+            {
+                "values": {},
+                "interrupts": [{
+                    "gate": "plan",
+                    "plan": plan,
+                    "assumptions": ["The latest three covered years are proposed."],
+                    "requires_year_confirmation": True,
+                }],
+            },
+            [],
+        )
+
+        self.assertIn("confirm the fiscal years", rendered[1])
+        self.assertTrue(rendered[-2]["visible"])
+        self.assertFalse(rendered[-2]["value"])
+        self.assertTrue(rendered[-1])
+
     def test_start_enabled_only_for_nonblank_c1_or_c2_when_idle(self):
         self.assertFalse(_can_start_agent_run("", "c1"))
         self.assertFalse(_can_start_agent_run("   ", "c2"))
@@ -142,6 +169,12 @@ class AgentPanelTests(unittest.TestCase):
             component for component in config["components"]
             if component["type"] == "button"
             and component["props"].get("value") == "Approve the edited plan"
+        )
+        confirm_years_checkbox = next(
+            component for component in config["components"]
+            if component["type"] == "checkbox"
+            and component["props"].get("label")
+            == "I confirm the fiscal years shown above and want research to proceed."
         )
         plan_editor = next(
             component for component in config["components"]
@@ -330,7 +363,13 @@ class AgentPanelTests(unittest.TestCase):
             if event.get("api_name") == "on_edit_plan"
         )
         self.assertIn(edit_plan_button["id"], edit_submit_event["outputs"])
-        self.assertEqual(len(edit_submit_event["inputs"]), 6)
+        self.assertIn(confirm_years_checkbox["id"], edit_submit_event["inputs"])
+        self.assertEqual(len(edit_submit_event["inputs"]), 8)
+        approve_submit_event = next(
+            event for event in config["dependencies"]
+            if event.get("api_name") == "on_approve_plan"
+        )
+        self.assertIn(confirm_years_checkbox["id"], approve_submit_event["inputs"])
 
     def test_cancel_plan_button_is_connected_to_plan_resume_handler(self):
         with gr.Blocks() as demo:

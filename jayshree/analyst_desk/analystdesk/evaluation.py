@@ -150,7 +150,8 @@ async def run_agent(case: dict, mode: str, tag: str) -> dict:
     r = await run_until_gate(rid, {"request": case["request"], "mode": mode, "memory_on": False},
                              transport="inprocess")
     if r["interrupts"] and r["interrupts"][0]["gate"] == "plan":
-        r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "eval"}),
+        r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "eval",
+                                                      "confirm_years": True}),
                                  transport="inprocess")
     v = r["values"]
     refused = bool(v.get("guard")) and not v["guard"].get("ok")

@@ -49,7 +49,8 @@ async def run(memory_on: bool, request: str) -> dict:
     t = time.time()
     r = await run_until_gate(rid, {"request": request, "analyst": "analyst", "memory_on": memory_on},
                              transport="inprocess")
-    r = await run_until_gate(rid, Command(resume={"action": "approve"}), transport="inprocess")
+    r = await run_until_gate(rid, Command(resume={"action": "approve", "confirm_years": True}),
+                             transport="inprocess")
     v = r["values"]
     body = v.get("draft", {}).get("body", "")
     return {"run_id": rid, "memory_on": memory_on, "seconds": round(time.time() - t),

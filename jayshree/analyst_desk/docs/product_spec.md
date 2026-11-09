@@ -97,7 +97,7 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 - **Only full-year facts are used** (about 365 days), so quarter-only or year-to-date values cannot enter an annual margin ([edgar.py](../analystdesk/edgar.py)).
 - **A fiscal year is the year the period ends,** checked against the filing rather than assumed from the filing date.
 - A fiscal year is not relabelled as a calendar year, and missing months are not estimated.
-- **Relative periods are shown, not guessed silently.** "Last three years" is read as FY2022–FY2024, the covered years, and the plan gate says so under "How your request was read", so the analyst can edit the plan before any research runs.
+- **Relative periods require explicit confirmation.** "Last three years" proposes the latest three covered years (currently FY2022–FY2024). The analyst must confirm that range or edit and confirm it at the plan gate before research runs. Unspecified years also require confirmation of the proposed default.
 
 ### Units and precision
 

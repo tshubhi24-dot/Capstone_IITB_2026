@@ -35,6 +35,7 @@ class ResearchDecision(BaseModel):
     action: Literal["approve", "edit", "reject"]
     plan: dict[str, Any] | None = None
     note: dict[str, Any] | None = None
+    confirm_years: bool = False
     approver: str = Field(default="analyst", min_length=1, max_length=80)
     reason: str = Field(default="", max_length=1000)
 
@@ -61,6 +62,14 @@ def _event(name: str, data: dict[str, Any]) -> str:
     return f"event: {name}\ndata: {json.dumps(data)}\n\n"
 
 
+def _requires_year_confirmation(gate: dict[str, Any], values: dict[str, Any]) -> bool:
+    if "requires_year_confirmation" in gate:
+        return bool(gate["requires_year_confirmation"])
+    from .agent.graph import year_confirmation_required
+
+    return year_confirmation_required(values.get("request", ""))
+
+
 def _run_summary(run_id: str, result: dict[str, Any]) -> dict[str, Any]:
     values = result.get("values", {})
     interrupts = result.get("interrupts", [])
@@ -79,6 +88,7 @@ def _run_summary(run_id: str, result: dict[str, Any]) -> dict[str, Any]:
         "status": status,
         "plan": gate.get("plan") or values.get("plan"),
         "assumptions": gate.get("assumptions", []),
+        "requires_year_confirmation": _requires_year_confirmation(gate, values),
         "draft": gate.get("note") or values.get("draft"),
         "check": gate.get("check") or values.get("check"),
     }
@@ -159,13 +169,19 @@ def create_app(
             raise HTTPException(status_code=409, detail="research run is not waiting for approval")
 
         gate = interrupts[0].get("gate")
-        decision = body.model_dump(exclude={"plan", "note", "approver", "reason"})
+        decision = body.model_dump(exclude={"plan", "note", "confirm_years", "approver", "reason"})
         if gate == "plan":
             if body.action == "reject":
                 raise HTTPException(status_code=422, detail="the plan gate supports approve or edit")
+            if body.action == "edit" and body.plan is None:
+                raise HTTPException(status_code=422, detail="an edited plan is required")
+            if _requires_year_confirmation(interrupts[0], snapshot["values"]) and not body.confirm_years:
+                raise HTTPException(
+                    status_code=422,
+                    detail="confirm the proposed fiscal years or edit and confirm them before continuing",
+                )
+            decision["confirm_years"] = body.confirm_years
             if body.action == "edit":
-                if body.plan is None:
-                    raise HTTPException(status_code=422, detail="an edited plan is required")
                 decision["plan"] = body.plan
         elif gate == "note":
             if body.action == "edit":

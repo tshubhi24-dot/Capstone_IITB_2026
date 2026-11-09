@@ -139,6 +139,9 @@ def _event_line(ev: dict) -> str:
     if n == "review_plan":
         if ev["action"] == "cancel":
             return "🚫 **Plan cancelled** — research did not start"
+        if ev["action"] == "confirm_years":
+            years = ", ".join(f"FY{year}" for year in ev["year_confirmation"]["fiscal_years"])
+            return f"👤 **Fiscal years confirmed** — {years} by the analyst"
         return f"👤 **Plan {'edited and approved' if ev['action'] == 'edit' else 'approved'}** by the analyst"
     if n == "research":
         calls = ev.get("tool_calls") or []
@@ -364,8 +367,15 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     plan_edit_feedback = ""
     original_plan_json = ""
     show_plan = show_note = False
+    requires_year_confirmation = False
     if gate and gate["gate"] == "plan":
-        status = f"### ⏸ Waiting for you: approve, edit, or cancel the plan\nRun `{run_id}` · {usage}"
+        requires_year_confirmation = gate.get("requires_year_confirmation")
+        if requires_year_confirmation is None:
+            from analystdesk.agent.graph import year_confirmation_required
+            requires_year_confirmation = year_confirmation_required(v.get("request", ""))
+        next_step = ("confirm the fiscal years, edit the plan, or cancel"
+                     if requires_year_confirmation else "approve, edit, or cancel the plan")
+        status = f"### ⏸ Waiting for you: {next_step}\nRun `{run_id}` · {usage}"
         p = gate["plan"]
         plan_md = (f"**Companies:** {', '.join(p['companies'])} · **Fiscal years:** "
                    f"{', '.join(map(str, p['fiscal_years']))}\n\n**Sub-questions**\n"
@@ -374,6 +384,8 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
                    + ("\n\n**How your request was read** (edit the plan to change it)\n"
                       + "\n".join(f"- {a}" for a in gate.get("assumptions", []))
                       if gate.get("assumptions") else ""))
+        if requires_year_confirmation:
+            plan_md += "\n\n**Confirm the fiscal-year range below before research starts.**"
         plan_json = json.dumps(p, indent=2)
         original_plan_json = plan_json
         plan_edit_feedback = "Make a valid change to the JSON plan to enable this button."
@@ -414,7 +426,9 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             gr.update(value=plan_edit_feedback), original_plan_json,
             gr.update(interactive=False),
             gr.update(interactive=bool(gate and gate.get("gate") == "note"
-                                       and gate.get("check", {}).get("ok", False))))
+                                       and gate.get("check", {}).get("ok", False))),
+            gr.update(visible=requires_year_confirmation, value=False),
+            requires_year_confirmation)
 
 
 def _log_from_trace(values: dict) -> list[str]:
@@ -460,6 +474,12 @@ def build_agent_panel(workflow_mode):
         with gr.Group(visible=False) as plan_box:
             gr.Markdown("## 📝 Plan — your approval is needed")
             plan_md = gr.Markdown()
+            confirm_years_checkbox = gr.Checkbox(
+                label="I confirm the fiscal years shown above and want research to proceed.",
+                visible=False,
+                value=False,
+            )
+            year_confirmation_required = gr.State(False)
             with gr.Accordion("✏️ Edit the plan (JSON)", open=False):
                 plan_json = gr.Code(language="json", label="Plan")
                 plan_edit_feedback = gr.Markdown()
@@ -552,7 +572,8 @@ def build_agent_panel(workflow_mode):
 
         outputs = [run_id, status, activity, plan_md, plan_json, plan_box,
                    note_md, check_md, note_body, note_box, past, board,
-                   plan_edit_feedback, plan_json_baseline, edit_plan_btn, approve_note_btn]
+                   plan_edit_feedback, plan_json_baseline, edit_plan_btn, approve_note_btn,
+                   confirm_years_checkbox, year_confirmation_required]
 
         def start_control_updates(req, mode, running, current_run_id):
             return (
@@ -572,6 +593,7 @@ def build_agent_panel(workflow_mode):
                 gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                 _board(events, mode), gr.update(value=""), gr.update(),
                 gr.update(interactive=False), gr.update(interactive=False),
+                gr.update(visible=False, value=False), False,
                 *start_control_updates(request_text, mode, True, rid),
             )
             try:
@@ -585,6 +607,7 @@ def build_agent_panel(workflow_mode):
                             gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                             _board(events, mode), gr.update(value=""), gr.update(),
                             gr.update(interactive=False), gr.update(interactive=False),
+                            gr.update(visible=False, value=False), False,
                             *start_control_updates(request_text, mode, True, rid),
                         )
                     else:
@@ -597,8 +620,10 @@ def build_agent_panel(workflow_mode):
                 failure_updates[5] = gr.update(visible=False)
                 failure_updates[9] = gr.update(visible=False)
                 failure_updates[12] = gr.update(value="")
-                failure_updates[-2] = gr.update(interactive=False)
-                failure_updates[-1] = gr.update(interactive=False)
+                failure_updates[14] = gr.update(interactive=False)
+                failure_updates[15] = gr.update(interactive=False)
+                failure_updates[16] = gr.update(visible=False, value=False)
+                failure_updates[17] = False
                 yield (
                     *failure_updates,
                     *start_control_updates(request_text, mode, False, rid),
@@ -768,8 +793,17 @@ def build_agent_panel(workflow_mode):
             ):
                 yield out
 
-        async def on_approve_plan(rid):
-            async for out in resume_with(rid, {"action": "approve"}):
+        async def on_approve_plan(rid, confirm_years, confirmation_required, req, agents, busy):
+            if confirmation_required and not confirm_years:
+                response = run_action_response(
+                    "### Confirm the fiscal-year range, edit the plan, or cancel before research starts.",
+                    req, agents, rid, busy,
+                )
+                response = list(response)
+                response[12] = gr.update(value="Fiscal-year confirmation is required to continue.")
+                yield tuple(response)
+                return
+            async for out in resume_with(rid, {"action": "approve", "confirm_years": bool(confirm_years)}):
                 yield out
 
         async def on_cancel_plan(rid):
@@ -780,7 +814,17 @@ def build_agent_panel(workflow_mode):
             edited_plan, feedback = _parse_edited_plan(text, original_plan)
             return gr.update(interactive=edited_plan is not None), feedback
 
-        async def on_edit_plan(rid, text, req, agents, busy, original_plan):
+        async def on_edit_plan(rid, text, req, agents, busy, original_plan,
+                               confirm_years, confirmation_required):
+            if confirmation_required and not confirm_years:
+                response = run_action_response(
+                    "### Confirm the fiscal-year range before approving the edited plan.",
+                    req, agents, rid, busy,
+                )
+                response = list(response)
+                response[12] = gr.update(value="Fiscal-year confirmation is required to continue.")
+                yield tuple(response)
+                return
             plan, feedback = _parse_edited_plan(text, original_plan)
             if plan is None:
                 updates = [gr.update() for _ in outputs]
@@ -789,7 +833,9 @@ def build_agent_panel(workflow_mode):
                 updates[-1] = gr.update(interactive=False)
                 yield (*updates, *start_control_updates(req, agents, busy, rid))
                 return
-            async for out in resume_with(rid, {"action": "edit", "plan": plan}):
+            async for out in resume_with(
+                rid, {"action": "edit", "plan": plan, "confirm_years": bool(confirm_years)}
+            ):
                 yield out
 
         async def on_approve_note(rid, name):
@@ -902,10 +948,13 @@ def build_agent_panel(workflow_mode):
 
         # every action refreshes the runs list afterwards
         for trigger, fn, inputs in (
-                (approve_plan_btn.click, on_approve_plan, [run_id]),
+                (approve_plan_btn.click, on_approve_plan,
+                 [run_id, confirm_years_checkbox, year_confirmation_required,
+                  request, workflow_mode, start_busy]),
                 (cancel_plan_btn.click, on_cancel_plan, [run_id]),
                 (edit_plan_btn.click, on_edit_plan,
-                 [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline]),
+                 [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline,
+                  confirm_years_checkbox, year_confirmation_required]),
                 (approve_note_btn.click, on_approve_note, [run_id, approver]),
                 (edit_note_btn.click, on_edit_note, [run_id, note_body]),
                 (reject_btn.click, on_reject, [run_id, reject_reason])):

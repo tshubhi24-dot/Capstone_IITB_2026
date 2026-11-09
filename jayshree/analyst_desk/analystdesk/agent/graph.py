@@ -99,6 +99,7 @@ class AgentState(TypedDict, total=False):
     guard: dict
     plan: dict
     plan_feedback: str
+    year_confirmation: dict
     replans: int
     messages: Annotated[list, add_messages]          # C1 research conversation
     handoffs: Annotated[list, operator.add]          # C2 specialists' typed hand-offs
@@ -163,18 +164,50 @@ def insert_changes(body: str, changed: str) -> str:
     return body.replace("{WHAT_CHANGED}", changed if has_heading else section)
 
 
-_RELATIVE_YEARS = re.compile(r"\b(last|past|previous|recent|latest)\s+(two|three|2|3)\s+(fiscal\s+)?years\b", re.I)
+_RELATIVE_YEARS = re.compile(
+    r"\b(most\s+recent|last|past|previous|recent|latest)\s+(two|three|2|3)\s+(fiscal\s+)?years\b",
+    re.I,
+)
+_YEAR_COUNTS = {"two": 2, "three": 3}
+
+
+def _relative_year_count(request: str) -> int | None:
+    match = _RELATIVE_YEARS.search(request)
+    if not match:
+        return None
+    count = match.group(2)
+    return int(count) if count.isdigit() else _YEAR_COUNTS[count.lower()]
+
+
+def year_confirmation_required(request: str) -> bool:
+    """Relative and unspecified periods need an explicit choice at the plan gate."""
+    return _relative_year_count(request) is not None or not find_years(request)
+
+
+def _format_years(years: list[int]) -> str:
+    ordered = sorted(set(years))
+    if not ordered:
+        return "no covered fiscal years"
+    if ordered == list(range(ordered[0], ordered[-1] + 1)):
+        return f"FY{ordered[0]}–FY{ordered[-1]}" if len(ordered) > 1 else f"FY{ordered[0]}"
+    return ", ".join(f"FY{year}" for year in ordered)
 
 
 def plan_assumptions(request: str, plan: dict) -> list[str]:
     """How code read the request, shown at the plan gate so the analyst can correct it."""
-    years = "–".join(f"FY{y}" for y in sorted({min(plan["fiscal_years"]), max(plan["fiscal_years"])}))
+    years = _format_years(plan["fiscal_years"])
     out = []
     if m := _RELATIVE_YEARS.search(request):
-        out.append(f"“{m.group(0)}” is read as {years}, the latest fiscal years covered, "
-                   "each company's own fiscal year (not calendar years).")
+        count = _relative_year_count(request)
+        covered = sorted(COVERED_YEARS)[-count:]
+        years = _format_years(covered)
+        out.append(f"“{m.group(0)}” proposes {years}, the latest covered fiscal years, "
+                   "using each company's own fiscal year (not calendar years).")
+        if len(covered) < count:
+            out.append(f"The data covers only {len(covered)} of the requested {count} fiscal years; "
+                       "edit the plan or cancel if that range is insufficient.")
     elif not find_years(request):
-        out.append(f"No year was named, so the plan covers {years}.")
+        out.append(f"No year was named, so the proposed default covers {years}.")
     banks = [t for t in plan["companies"] if t in _BANKS]
     if banks:
         out.append(f"{', '.join(banks)} {'is a bank' if len(banks) == 1 else 'are banks'}: "
@@ -280,7 +313,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         p: Plan = result["parsed"]
         # code, not the model, enforces coverage
         p.companies = [c.upper() for c in p.companies if c.upper() in _TICKERS] or state["guard"]["companies"]
-        p.fiscal_years = [y for y in p.fiscal_years if y in COVERED_YEARS] or list(COVERED_YEARS)
+        p.fiscal_years = sorted({y for y in p.fiscal_years if y in COVERED_YEARS}) or list(COVERED_YEARS)
+        relative_count = _relative_year_count(state["request"])
+        if relative_count is not None:
+            p.fiscal_years = sorted(COVERED_YEARS)[-relative_count:]
+        elif not find_years(state["request"]):
+            p.fiscal_years = sorted(COVERED_YEARS)
         return {"plan": p.model_dump(), "plan_feedback": "", "memory": mem, "lessons": used, "watchlist": watchlist,
                 "tokens": usage(result["raw"]),
                 "trace": _event("plan", plan=p.model_dump(), replan=bool(state.get("plan_feedback")),
@@ -290,19 +328,47 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 3. human gate: approve or edit the plan
     def review_plan(state: AgentState):
+        requires_confirmation = year_confirmation_required(state["request"])
         decision = interrupt({"gate": "plan", "plan": state["plan"],
-                              "assumptions": plan_assumptions(state["request"], state["plan"])})
+                              "assumptions": plan_assumptions(state["request"], state["plan"]),
+                              "requires_year_confirmation": requires_confirmation})
         if decision.get("action") == "cancel":
             return {"outcome": "cancelled", "trace": _event("review_plan", action="cancel")}
-        out = {"trace": _event("review_plan", action="approve")}
-        if decision.get("action") == "edit":
-            edited = Plan(**{**state["plan"], **decision.get("plan", {})}).model_dump()
-            out = {"plan": edited, "trace": _event("review_plan", action="edit", plan=edited)}
-        elif decision.get("action") != "approve":
+        if decision.get("action") not in ("approve", "edit"):
             raise ValueError("Plan decision must be approve, edit, or cancel.")
+        if requires_confirmation and decision.get("confirm_years") is not True:
+            raise ValueError("Confirm the fiscal-year range or edit the plan and confirm it before research.")
+
+        edited_plan = state["plan"]
+        if decision.get("action") == "edit":
+            edited = Plan(**{**state["plan"], **decision.get("plan", {})})
+            invalid_years = [year for year in edited.fiscal_years if year not in COVERED_YEARS]
+            if invalid_years:
+                raise ValueError(f"Only fiscal years {COVERED_YEARS} are covered.")
+            if not edited.fiscal_years:
+                raise ValueError("The plan must include at least one covered fiscal year.")
+            edited.fiscal_years = sorted(set(edited.fiscal_years))
+            edited_plan = edited.model_dump()
+
+        action = ("edit" if decision.get("action") == "edit"
+                  else "confirm_years" if requires_confirmation else "approve")
+        confirmation = {
+            "required": requires_confirmation,
+            "confirmed": True if requires_confirmation else None,
+            "fiscal_years": edited_plan["fiscal_years"],
+            "edited": decision.get("action") == "edit",
+        }
+        out = {
+            "plan": edited_plan,
+            "year_confirmation": confirmation,
+            "trace": _event("review_plan", action=action, year_confirmation=confirmation),
+        }
+        if decision.get("action") == "edit":
+            out["trace"] = _event("review_plan", action=action, plan=edited_plan,
+                                  year_confirmation=confirmation)
         if state.get("messages"):   # resuming after a replan: tell the researcher
             out["messages"] = [HumanMessage("REVISED APPROVED PLAN (follow this one):\n"
-                                            + json.dumps(out.get("plan", state["plan"]), indent=1))]
+                                            + json.dumps(edited_plan, indent=1))]
         return out
 
     # 5. writer — from the C1 conversation or the C2 hand-offs

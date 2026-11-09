@@ -869,7 +869,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - As originally reported, with restatements flagged.
 - Every number checked against XBRL or its cited passage, with the same unit.
 - No line sets an operating margin against a pre-tax margin; a Comparability section states differing fiscal year-ends, 53-week years (Apple FY2023, AMD FY2022) and mixed bases.
-- "Last three years" and similar readings are shown at the plan gate ("How your request was read").
+- "Last three years" and unspecified-year defaults are proposed at the plan gate; the analyst must confirm or edit and confirm the range before research starts.
 - Two approval gates, an HMAC signature over the exact note, approval refused while checks fail, and the portal refusing duplicates.
 - Memory off removes the `get_past_notes` tool from the run.
 
@@ -948,4 +948,3 @@ The pooled share matches the 98% alert's definition, because the per-case mean c
 3. How do you count a false block, and why does it matter as much as attack success?
 4. Why is an experiment a config file and not a branch?
 5. What would you change before a supervised pilot? (Sign-in, a networkless sandbox per call, a classifier such as Llama Prompt Guard, a correction workflow.)
-

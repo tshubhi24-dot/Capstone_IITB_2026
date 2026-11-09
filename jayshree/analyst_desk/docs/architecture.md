@@ -129,7 +129,7 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
 |---|---|---|
 | `input_guard` | Covered company named? Covered years only? No advice request? No instructions aimed at the system? | Code |
 | `plan` | Sub-questions, outline, companies and years. Reads preferences, previous notes and relevant lessons. Coverage is then enforced by code. | Model (structured output) + code |
-| `review_plan` | Interrupt: approve, edit or cancel. Shows how code read the request ("last three years" → FY2022–FY2024; banks on pre-tax margin) | Person |
+| `review_plan` | Interrupt: approve, edit or cancel. Relative or unspecified years require explicit confirmation; shows the proposed covered range ("last three years" → FY2022–FY2024) and records the confirmed range | Person + code |
 | `write` | Draft with figure placeholders. Code renders every figure and adds the "what changed" and Comparability sections (fiscal year-ends, 53-week years, mixed margin bases). | Model + code |
 | `check` | Every number, citation and placeholder; no operating vs pre-tax margin on one line; no advice wording; no private-watchlist company. Failed checks go back to the writer at most twice. C2 adds the judge. | Code (+ judge) |
 | `review_note` | Interrupt: approve (signs the exact note; refused while checks fail), edit (re-checked) or reject | Person |
