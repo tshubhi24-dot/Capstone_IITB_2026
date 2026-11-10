@@ -22,7 +22,7 @@ This is a reproducible offline audit of **pre-existing saved results**, not a ne
 | Notes with 0 counted numbers | 6 | 4 | 3 |
 | Case-mean share, numeric-content notes only (%) | 2.4 | 95.6 | 76.0 |
 | Verified share, average per scored case (%) | 31.7 | 96.6 | 80.2 |
-| Tokens per case (mean) | 2471 | 12073 | 38155 |
+| Recorded-token contribution per evaluated case (incomplete if counts are missing) | 2471 | 12073 | 38155 |
 | Latency median (seconds) | 3.8 | 14.2 | 50.9 |
 | Latency p95 (seconds) | 5.6 | 29.2 | 71.0 |
 
