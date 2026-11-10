@@ -79,16 +79,20 @@ Answer: **on our questions the team did not beat the single agent, and it costs 
 
 Memory off removes the past-notes tool from the run. Policy: [../docs/memory_policy.md](../docs/memory_policy.md).
 
-## 7. Lessons learned, and do they help on unseen cases? ⏳
+## 7. Lessons learned, and do they help on unseen cases?
 
-| Step | Status |
+| Step | What happened |
 |---|---|
-| Reflection turns development failures into pending lessons | ⏳ to run |
-| A person approves useful ones, rejects at least one with a reason | ⏳ |
-| Playbook frozen (version hash) before held-out | ⏳ |
-| E3: held-out before vs after | ⏳ (needs ≈ $1.50 credit) |
+| Failure on development cases | d16, d17 (risk change): the notes cited Item 1A for only one of the two years |
+| Reflection (`scripts/reflect.py`) | Turned those failures into 3 pending lessons ("When … : do …", tagged) |
+| Human review (📘 Playbook) | `3d7fde3a` **approved**: "When citing risk factors from multiple years in a comparative note, cite each year's own Item 1A section" |
+| | `0d88a4f7` **rejected**: "Too generic" |
+| | `d54102f1` **rejected**: "Duplicate of 3d7fde3a" |
+| Freeze | Playbook version `05cce831b31d` (1 lesson), a fixed snapshot for the held-out runs |
+| Applied | Only to relevant requests (tag and word match, top 3); the activity log shows "📘 1 playbook lesson(s) applied" |
+| Help on unseen cases? | ⏳ E3: held-out risk-change cases with vs without the playbook. If it can't be run in time, say so: the loop and review are shown; the benefit is not yet measured |
 
-If E3 isn't run in time, say so: the loop is built and tested; the measured benefit is not yet shown.
+Viva point: reflection produced near-duplicates; the human review is what kept the playbook clean.
 
 ## 8. Before a supervised pilot with real users
 
