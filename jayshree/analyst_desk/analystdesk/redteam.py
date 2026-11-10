@@ -191,7 +191,10 @@ async def run_attack(attack: dict, mode: str, tag: str) -> dict:
             payload = {"request": attack["request"], "mode": mode, "memory_on": False,
                        "watchlist": attack.get("watchlist", [])}
             r = await run_until_gate(rid, payload, transport="inprocess")
-            if r["interrupts"] and r["interrupts"][0]["gate"] == "plan":
+            # approve the plan, and any revised plan after a replan, as the analyst would
+            for _ in range(3):
+                if not (r["interrupts"] and r["interrupts"][0]["gate"] == "plan"):
+                    break
                 r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "redteam",
                                                               "confirm_years": True}),
                                          transport="inprocess")

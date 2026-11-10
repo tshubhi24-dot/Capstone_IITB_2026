@@ -1,0 +1,1277 @@
+{
+ "split": "heldout",
+ "tag": "e1-heldout-run2",
+ "price_per_m": 0.52,
+ "system": {
+  "commit": "0ffa7ba",
+  "uncommitted_changes": false,
+  "llm_config_version": 1,
+  "models": {
+   "reflection": "openai/gpt-4.1-mini",
+   "judge": "meta-llama/llama-3.3-70b-instruct",
+   "c0": "openai/gpt-4.1-mini",
+   "agent": "openai/gpt-4.1-mini"
+  },
+  "max_output_tokens": 4096
+ },
+ "lessons": false,
+ "playbook": {
+  "frozen": false
+ },
+ "experiment": {
+  "file": "e1_c0_c1_c2.toml",
+  "name": "E1: does the agent justify its cost?",
+  "env": {}
+ },
+ "rows": {
+  "c0": [
+   {
+    "id": "h01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2432,
+    "seconds": 21.5,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h02",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2015,
+    "seconds": 3.3,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h03",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/3",
+    "verified_share": 0.0,
+    "tokens": 2122,
+    "seconds": 3.2,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h04",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/3",
+    "verified_share": 0.0,
+    "tokens": 1973,
+    "seconds": 3.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h05",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "1/5",
+    "verified_share": 20.0,
+    "tokens": 2368,
+    "seconds": 4.0,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h06",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2319,
+    "seconds": 2.8,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h07",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2147,
+    "seconds": 2.5,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h08",
+    "type": "numeric",
+    "success": false,
+    "reason": "missing +0.66 pp",
+    "policy_violation": false,
+    "verified": "0/5",
+    "verified_share": 0.0,
+    "tokens": 2506,
+    "seconds": 3.7,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h09",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2299,
+    "seconds": 2.8,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h10",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2444,
+    "seconds": 2.3,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h11",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/6",
+    "verified_share": 0.0,
+    "tokens": 3235,
+    "seconds": 4.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h12",
+    "type": "comparison",
+    "success": false,
+    "reason": "missing -2.80%",
+    "policy_violation": false,
+    "verified": "0/6",
+    "verified_share": 0.0,
+    "tokens": 3361,
+    "seconds": 5.7,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h13",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/6",
+    "verified_share": 0.0,
+    "tokens": 3419,
+    "seconds": 6.3,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h14",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/7",
+    "verified_share": 0.0,
+    "tokens": 3508,
+    "seconds": 5.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h15",
+    "type": "comparison",
+    "success": false,
+    "reason": "missing 15.67%",
+    "policy_violation": false,
+    "verified": "0/8",
+    "verified_share": 0.0,
+    "tokens": 3403,
+    "seconds": 5.9,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h16",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/6",
+    "verified_share": 0.0,
+    "tokens": 3442,
+    "seconds": 4.4,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h17",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 2386,
+    "seconds": 5.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h18",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2022, 2023] of [2022, 2023]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 1952,
+    "seconds": 3.6,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h19",
+    "type": "risk_change",
+    "success": false,
+    "reason": "cites Item 1A for [2022] of [2022, 2023]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 2298,
+    "seconds": 3.6,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h20",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 2281,
+    "seconds": 4.5,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h21",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 3177,
+    "seconds": 2.0,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h22",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 1232,
+    "seconds": 1.6,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h23",
+    "type": "refusal",
+    "success": false,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "0/7",
+    "verified_share": 0.0,
+    "tokens": 2116,
+    "seconds": 4.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "h24",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 3162,
+    "seconds": 2.2,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "blocks": null,
+    "config": "c0",
+    "run_id": null
+   }
+  ],
+  "c1": [
+   {
+    "id": "h01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "6/6",
+    "verified_share": 100.0,
+    "tokens": 4297,
+    "seconds": 7.8,
+    "tools": [
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h01"
+   },
+   {
+    "id": "h02",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 6401,
+    "seconds": 8.9,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h02"
+   },
+   {
+    "id": "h03",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "5/5",
+    "verified_share": 100.0,
+    "tokens": 6647,
+    "seconds": 10.3,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h03"
+   },
+   {
+    "id": "h04",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 7092,
+    "seconds": 8.9,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h04"
+   },
+   {
+    "id": "h05",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/4",
+    "verified_share": 100.0,
+    "tokens": 9778,
+    "seconds": 15.5,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h05"
+   },
+   {
+    "id": "h06",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 3930,
+    "seconds": 6.9,
+    "tools": [
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h06"
+   },
+   {
+    "id": "h07",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 4259,
+    "seconds": 7.8,
+    "tools": [
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h07"
+   },
+   {
+    "id": "h08",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "10/10",
+    "verified_share": 100.0,
+    "tokens": 7737,
+    "seconds": 11.3,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h08"
+   },
+   {
+    "id": "h09",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 3722,
+    "seconds": 5.8,
+    "tools": [
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h09"
+   },
+   {
+    "id": "h10",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 3802,
+    "seconds": 6.7,
+    "tools": [
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h10"
+   },
+   {
+    "id": "h11",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "8/8",
+    "verified_share": 100.0,
+    "tokens": 9733,
+    "seconds": 14.3,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h11"
+   },
+   {
+    "id": "h12",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "12/12",
+    "verified_share": 100.0,
+    "tokens": 20342,
+    "seconds": 21.6,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h12"
+   },
+   {
+    "id": "h13",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "10/11",
+    "verified_share": 90.9,
+    "tokens": 22773,
+    "seconds": 25.5,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "run_python",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h13"
+   },
+   {
+    "id": "h14",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "6/7",
+    "verified_share": 85.7,
+    "tokens": 28525,
+    "seconds": 30.7,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h14"
+   },
+   {
+    "id": "h15",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "10/25",
+    "verified_share": 40.0,
+    "tokens": 32215,
+    "seconds": 34.6,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h15"
+   },
+   {
+    "id": "h16",
+    "type": "comparison",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "6/6",
+    "verified_share": 100.0,
+    "tokens": 7688,
+    "seconds": 13.0,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h16"
+   },
+   {
+    "id": "h17",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 45852,
+    "seconds": 21.1,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h17"
+   },
+   {
+    "id": "h18",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2022, 2023] of [2022, 2023]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 96512,
+    "seconds": 31.1,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h18"
+   },
+   {
+    "id": "h19",
+    "type": "risk_change",
+    "success": true,
+    "reason": "cites Item 1A for [2022, 2023] of [2022, 2023]",
+    "policy_violation": false,
+    "verified": "2/2",
+    "verified_share": 100.0,
+    "tokens": 35406,
+    "seconds": 24.0,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "search_filings",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h19"
+   },
+   {
+    "id": "h20",
+    "type": "risk_change",
+    "success": false,
+    "reason": "cites Item 1A for [2024] of [2023, 2024]",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 24448,
+    "seconds": 16.9,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h20"
+   },
+   {
+    "id": "h21",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "blocks": [
+     "input guard: No covered company named. Covered: AAPL, AMD, AMZN, BAC, GOOGL, GS, JPM, MA, META, MS, MSFT, NVDA, ORCL, V, WFC."
+    ],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h21"
+   },
+   {
+    "id": "h22",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "blocks": [
+     "input guard: Only fiscal years (2022, 2023, 2024) are covered."
+    ],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h22"
+   },
+   {
+    "id": "h23",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "blocks": [
+     "input guard: Requests for investment advice (buy/sell/price targets) are out of scope."
+    ],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h23"
+   },
+   {
+    "id": "h24",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "blocks": [
+     "input guard: No covered company named. Covered: AAPL, AMD, AMZN, BAC, GOOGL, GS, JPM, MA, META, MS, MSFT, NVDA, ORCL, V, WFC."
+    ],
+    "config": "c1",
+    "run_id": "eval-e1-heldout-run2-c1-h24"
+   }
+  ],
+  "c2": [
+   {
+    "id": "h01",
+    "type": "numeric",
+    "success": false,
+    "reason": "missing $128,695.0M",
+    "policy_violation": false,
+    "tokens": 67228,
+    "seconds": 35.0,
+    "tools": [
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "search_filings",
+     "get_financials",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h01"
+   },
+   {
+    "id": "h02",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/6",
+    "verified_share": 66.7,
+    "tokens": 32789,
+    "seconds": 43.2,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h02"
+   },
+   {
+    "id": "h03",
+    "type": "numeric",
+    "success": false,
+    "reason": "missing 23.22%",
+    "policy_violation": false,
+    "tokens": 17470,
+    "seconds": 20.3,
+    "tools": [
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h03"
+   },
+   {
+    "id": "h04",
+    "type": "numeric",
+    "success": false,
+    "reason": "missing 20.29%",
+    "policy_violation": false,
+    "tokens": 12211,
+    "seconds": 15.2,
+    "tools": [
+     "search_filings",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h04"
+   },
+   {
+    "id": "h05",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/4",
+    "verified_share": 100.0,
+    "tokens": 18459,
+    "seconds": 22.5,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h05"
+   },
+   {
+    "id": "h06",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "7/7",
+    "verified_share": 100.0,
+    "tokens": 15185,
+    "seconds": 26.4,
+    "tools": [
+     "search_filings",
+     "get_financials",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h06"
+   },
+   {
+    "id": "h07",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "1/2",
+    "verified_share": 50.0,
+    "tokens": 35324,
+    "seconds": 37.1,
+    "tools": [
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h07"
+   },
+   {
+    "id": "h08",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "10/10",
+    "verified_share": 100.0,
+    "tokens": 24740,
+    "seconds": 34.9,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h08"
+   },
+   {
+    "id": "h09",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/4",
+    "verified_share": 100.0,
+    "tokens": 45371,
+    "seconds": 29.0,
+    "tools": [
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_financials",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h09"
+   },
+   {
+    "id": "h10",
+    "type": "numeric",
+    "success": false,
+    "reason": "missing $42,440.0M",
+    "policy_violation": false,
+    "tokens": 8221,
+    "seconds": 16.6,
+    "tools": [
+     "search_filings",
+     "get_financials",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-run2-c2-h10"
+   }
+  ]
+ },
+ "summary": {
+  "c0": {
+   "cases": 24,
+   "success": 19,
+   "by_type": {
+    "numeric": "9/10",
+    "comparison": "4/6",
+    "risk_change": "3/4",
+    "refusal": "3/4"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 30.0,
+   "tokens_mean": 2567,
+   "cost_per_case_usd": 0.0013,
+   "latency_median_s": 3.7,
+   "latency_p95_s": 6.3
+  },
+  "c1": {
+   "cases": 24,
+   "success": 23,
+   "by_type": {
+    "numeric": "10/10",
+    "comparison": "6/6",
+    "risk_change": "3/4",
+    "refusal": "4/4"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 95.8,
+   "tokens_mean": 15882,
+   "cost_per_case_usd": 0.0083,
+   "latency_median_s": 10.8,
+   "latency_p95_s": 31.1
+  },
+  "c2": {
+   "cases": 10,
+   "success": 6,
+   "by_type": {
+    "numeric": "6/10"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 86.1,
+   "tokens_mean": 27700,
+   "cost_per_case_usd": 0.0144,
+   "latency_median_s": 27.7,
+   "latency_p95_s": 43.2
+  }
+ }
+}
