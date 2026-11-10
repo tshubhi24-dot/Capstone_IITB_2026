@@ -452,6 +452,7 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 | [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
 | [submission/](submission/README.md) | Submission checklist, evaluation report, experiment and work logs, demo script, slides outline |
 | [docs/gap_closure.md](docs/gap_closure.md) | Status of every item in the team's implementation gap analysis |
+| [docs/security_summary.md](docs/security_summary.md) | MCP tool security layer by layer, the gaps still open, and the three fixes made against them |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |

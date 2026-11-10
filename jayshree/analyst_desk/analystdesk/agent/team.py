@@ -31,11 +31,12 @@ import re
 import time
 from typing import Literal
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 from pydantic import BaseModel, Field
 
+from ..servers import quarantine   # Fix for Module 4 - Security (Fix 3)
 from .checks import PASSAGE_ID
 from .guards import screen
 from .graph import (MAX_REPLANS, TOKEN_BUDGET, AgentState, _event, add_common_tail,
@@ -61,10 +62,22 @@ _FACT_ID = re.compile(r"[A-Za-z]+/\d{4}/\d{10}-\d{2}-\d{6}")
 
 
 class HandoffMessage(BaseModel):
-    """What every specialist hands back to the research lead."""
+    """What every specialist hands back to the research lead.
+
+    Fix for Module 4 - Security (Fix 3 - use cases 3 and 4): there is no
+    free-text field. `claims` are spans copied out of the passage each cites
+    and checked against it by code; `facts` carry values code read from XBRL,
+    never numbers the model typed. Nothing a specialist wrote in its own words
+    reaches the writer.
+    """
     agent: str
     company: str | None = None
-    findings: str = Field(description="The specialist's summary, citing ids")
+    claims: list[dict] = Field(default_factory=list,
+                               description="Verified filing spans (quarantine.PassageClaim)")
+    facts: list[dict] = Field(default_factory=list,
+                              description="fact_id plus the value code looked up")
+    dropped: list[str] = Field(default_factory=list,
+                               description="Claims code refused, counted at the gate")
     passage_ids: list[str] = Field(default_factory=list, description="Passages it read (from tool results)")
     fact_ids: list[str] = Field(default_factory=list, description="XBRL facts it used (from tool results)")
     confidence: Literal["high", "medium", "low"] = "medium"
@@ -79,9 +92,12 @@ class HandoffMessage(BaseModel):
 
 # ── specialist runner ─────────────────────────────────────────────────────────
 
+# Fix for Module 4 - Security (Fix 3 - use cases 3 and 4): passage_text is injected
+# the way check_note takes it, so verifying a quote needs no Chroma index.
 async def run_specialist(agent: str, company: str | None, llm, tools_by_name: dict, system: str,
                          hooks: Hooks, budget: int, emit=None,
-                         context: dict | None = None) -> tuple[HandoffMessage, int]:
+                         context: dict | None = None,
+                         passage_text=None) -> tuple[HandoffMessage, int]:
     """A small ReAct loop for one specialist; every tool call goes through the hooks.
 
     context: {"plan", "watchlist"} of the run, for the hooks' watchlist check.
@@ -123,11 +139,31 @@ async def run_specialist(agent: str, company: str | None, llm, tools_by_name: di
             passages += PASSAGE_ID.findall(content)
             facts += _FACT_ID.findall(content)
             msgs.append(ToolMessage(content, tool_call_id=call["id"], name=call["name"]))
-    findings = msgs[-1].content if isinstance(msgs[-1], AIMessage) else ""
-    confidence = "high" if not errors and (passages or facts) else ("low" if not (passages or facts) else "medium")
-    handoff = HandoffMessage(agent=agent, company=company, findings=str(findings)[:6000],
-                             passage_ids=sorted(set(passages)), fact_ids=sorted(set(facts)),
-                             confidence=confidence, tool_calls=calls, errors=sorted(set(errors)),
+    # Fix for Module 4 - Security (Fix 3 - use cases 3 and 4): one more turn, for
+    # fields instead of prose. Whatever the model says here is checked before any
+    # of it crosses, and a failure to produce the typed shape hands back nothing —
+    # the safe direction, because an empty hand-off starves the writer rather than
+    # feeding it unchecked text.
+    claims, verified_facts, dropped = [], [], []
+    ask = quarantine.ask_for(agent)
+    if ask:
+        try:
+            out = await llm.with_structured_output(quarantine.Handoff).ainvoke(
+                trim_context(msgs) + [HumanMessage(ask)])
+            kept, dropped = quarantine.verify_passages(out.claims, passage_text)
+            claims = [c.model_dump() for c in kept]
+            pairs, fact_drops = quarantine.verify_facts(out.facts)
+            verified_facts = [{"fact_id": f, "value_usd": v} for f, v in pairs]
+            dropped += fact_drops
+        except Exception as exc:   # noqa: BLE001 — recorded, and nothing crosses
+            dropped.append(f"hand-off could not be typed: {type(exc).__name__}")
+
+    survived = len(claims) + len(verified_facts)
+    confidence = "high" if not errors and survived else ("low" if not survived else "medium")
+    handoff = HandoffMessage(agent=agent, company=company, claims=claims, facts=verified_facts,
+                             dropped=dropped, passage_ids=sorted(set(passages)),
+                             fact_ids=sorted(set(facts)), confidence=confidence,
+                             tool_calls=calls, errors=sorted(set(errors)),
                              tokens=tokens, model_calls=model_calls, largest_prompt=largest_prompt)
     return handoff, tokens
 
@@ -273,9 +309,12 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
             system += as_prompt(task.get("lessons") or [])
             budgeted = Hooks(max_calls_per_agent=budget, allowed=hooks.allowed,
                              calls=hooks.calls, events=hooks.events)
+            # Fix for Module 4 - Security (Fix 3 - use cases 3 and 4): passage_text
             handoff, tokens = await run_specialist(agent, company, llm, tools_by_name, system,
                                                    budgeted, budget, _emit(),
-                                                   context={"plan": plan, "watchlist": task.get("watchlist")})
+                                                   context={"plan": plan,
+                                                            "watchlist": task.get("watchlist")},
+                                                   passage_text=passage_text)
             handoff.round = task.get("round", 0)
             h = handoff.model_dump()
             who = f"{agent}/{company}" if company else agent
@@ -286,6 +325,8 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
             return {"handoffs": [h], "tool_calls": handoff.tool_calls, "tokens": tokens,
                     "trace": _event("handoff", agent=agent, company=company, confidence=h["confidence"],
                                     passages=len(h["passage_ids"]), facts=len(h["fact_ids"]),
+                                    # Fix for Module 4 - Security (Fix 3): what crossed
+                                    quotes=len(h["claims"]), dropped=h["dropped"],
                                     tool_calls=h["tool_calls"], errors=h["errors"], tools=tools_log,
                                     tokens=h["tokens"], model_calls=h["model_calls"],
                                     largest_prompt=h["largest_prompt"], budget=budget)}

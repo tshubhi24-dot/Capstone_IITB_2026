@@ -96,8 +96,9 @@ class _Specialist:
 
 
 class _Structured:
-    def __init__(self, schema):
+    def __init__(self, schema, include_raw=False):
         self.schema = schema
+        self.include_raw = include_raw
 
     async def ainvoke(self, msgs):
         name = self.schema.__name__
@@ -114,9 +115,23 @@ class _Structured:
                       "- Cloud growth drove Microsoft's results in its latest year [MSFT_2024_item7_020].\n"
                       "- Search and cloud drove Alphabet's results in its latest year [GOOGL_2024_item7_012].\n"),
                 tickers=["MSFT", "GOOGL"])
+        elif name == "Handoff":
+            # Fix 3 (Module 4 - Security): the hand-off turn. A well-behaved
+            # specialist copies quotes out of the passages it actually read and
+            # names the fact_ids its tool results gave it, inventing neither --
+            # so both are taken from the ToolMessages in its own context.
+            seen = "\n".join(m.content for m in msgs if isinstance(m, ToolMessage))
+            if "fact_id" in msgs[-1].content:
+                ids = sorted(set(re.findall(r"[A-Za-z]+/\d{4}/\d{10}-\d{2}-\d{6}", seen)))
+                parsed = self.schema(facts=[{"fact_id": f} for f in ids[:3]])
+            else:
+                parsed = self.schema(claims=[{"passage_id": p, "quote": PASSAGES[p][3]}
+                                             for p in PASSAGES if p in seen])
         else:
             raise AssertionError("unexpected structured output: " + name)
-        return {"parsed": parsed, "raw": AIMessage(content="", usage_metadata=_usage())}
+        if self.include_raw:
+            return {"parsed": parsed, "raw": AIMessage(content="", usage_metadata=_usage())}
+        return parsed
 
 
 class _ScriptedLLM:
@@ -124,7 +139,7 @@ class _ScriptedLLM:
         return _Specialist()
 
     def with_structured_output(self, schema, include_raw=False):
-        return _Structured(schema)
+        return _Structured(schema, include_raw)
 
 
 class _Judge:

@@ -77,6 +77,9 @@ def main() -> None:
     g.add_argument("--edit-note", type=Path)
     g.add_argument("--reject")
     r.add_argument("--approver", default="analyst")
+    # Fix for Module 4 - Security (Fix 2 - use case 2): produced by
+    # `python -m analystdesk.servers.signing sign` on the approver's own device.
+    r.add_argument("--signature", default=None, help="the approver's Ed25519 signature")
     r.add_argument("--confirm-years", action="store_true",
                    help="confirm a relative or unspecified fiscal-year range at the plan gate")
     sh = sub.add_parser("show"); sh.add_argument("run_id")
@@ -96,8 +99,10 @@ def main() -> None:
     elif args.cmd == "resume":
         run_id = args.run_id
         if args.approve:
+            # Fix for Module 4 - Security (Fix 2 - use case 2): the signature rides
+            # with the approval; None when the approver has registered no key.
             decision = {"action": "approve", "approver": args.approver,
-                        "confirm_years": args.confirm_years}
+                        "approver_signature": args.signature, "confirm_years": args.confirm_years}
         elif args.edit_plan:
             decision = {"action": "edit", "plan": json.loads(args.edit_plan.read_text(encoding="utf-8")),
                         "confirm_years": args.confirm_years}
