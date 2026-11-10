@@ -1,9 +1,13 @@
 """Score one run against its golden case — in code (L13 "check with code first").
 
 Case types (data/evaluation/*.jsonl):
-    numeric / comparison  every expected figure appears in the output, same
-                          unit, within rounding (so C0's free text and the
-                          agents' code-rendered figures are judged alike)
+    numeric / comparison  every expected figure appears in the output with the
+                          same unit and sign, correctly rounded to the precision
+                          shown, and attached to the right company and year
+                          (by its source tag, or the company named on its line
+                          or table), so C0's free text and the agents'
+                          code-rendered figures are judged alike
+    any agent case        fails if the critic's review did not complete
     risk_change           the output cites Item 1A passages of the company for
                           BOTH years compared
     refusal               out-of-scope request (company, year, investment
@@ -70,23 +74,82 @@ def _parse(text: str) -> tuple[float, str]:
     return value, unit
 
 
-def figure_present(expected: str, output: str) -> bool:
-    """Does the output state this figure (same unit, within rounding)?"""
+_TAG_AFTER = re.compile(r"\s*\[(?:fact|fact_id|calc|growth|diff):\s*([A-Za-z]+)/(\d{4})/([\d-]+)")
+_DOWN = re.compile(r"\b(decreas|declin|fell|fall|drop|lower|down|contract|narrow)", re.I)
+_UP = re.compile(r"\b(increas|rose|rise|grew|higher|up|expand|widen|improv)", re.I)
+
+
+def _rounds_to(shown: str, value: float) -> bool:
+    """Is the shown number the expected value correctly rounded to the shown precision?
+    44.6 and 44.64 match 44.64; 44.70 does not (a blanket tolerance would accept it)."""
+    from .agent.figures import half_up
+    places = len(shown.split(".")[1]) if "." in shown else 0
+    return float(half_up(value, places)) == float(shown)
+
+
+def _names(key: str | None) -> list[str]:
+    if not key:
+        return []
+    from .scope import COMPANIES
+    ticker = key.split("_")[0]
+    c = next((c for c in COMPANIES if c.ticker == ticker), None)
+    return [ticker] + ([c.name.split()[0]] if c else [])
+
+
+def _associated(output: str, m: re.Match, key: str | None) -> bool:
+    """The number belongs to the expected company and year: by its source tag when it has one
+    (the fact resolves to that ticker and fiscal year), else the company is named on its line
+    or in its table."""
+    if not key:
+        return True
+    ticker, year = key.split("_")[0], key.split("_")[1]
+    tag = _TAG_AFTER.match(output, m.end())
+    if tag:
+        from .servers.edgar_server import get_fact
+        r = get_fact(f"{tag.group(1)}/{tag.group(2)}/{tag.group(3)}")
+        return r.ok and r.ticker == ticker and tag.group(2) == year
+    start = output.rfind("\n", 0, m.start()) + 1
+    end = output.find("\n", m.end())
+    line = output[start:end if end != -1 else len(output)]
+    context = line
+    if line.lstrip().startswith("|"):   # a table row: the company may be named in the header
+        block_start = start
+        while block_start > 0:
+            prev = output.rfind("\n", 0, block_start - 1) + 1
+            if not output[prev:block_start].lstrip().startswith("|"):
+                break
+            block_start = prev
+        context = output[block_start:end if end != -1 else len(output)]
+    return any(re.search(rf"\b{re.escape(n)}\b", context, re.I) for n in _names(key))
+
+
+def figure_present(expected: str, output: str, key: str | None = None) -> bool:
+    """Does the output state this figure: same unit, correctly rounded, right sign, and (when the
+    case gives its key, e.g. MSFT_2024_margin) attached to the right company and year?"""
     value, unit = _parse(expected)
     for m in _NUM.finditer(output):
         raw, u = m.group(1), (m.group(2) or "").lower()
-        try:
-            v = float(re.sub(r"[^\d.\-]", "", raw.replace("+", "")))
-        except ValueError:
+        digits = re.sub(r"[^\d.]", "", raw)
+        if not digits or digits == ".":
             continue
-        if unit == "%" and u == "%" and abs(v - value) <= 0.06:
-            return True
-        if unit == "pp" and u.startswith(("pp", "percentage")) and abs(abs(v) - abs(value)) <= 0.06:
-            return True
-        if unit == "$M":
+        negative = "-" in raw
+        if unit == "%" and u == "%":
+            ok = (negative == (value < 0) or not value) and _rounds_to(digits, abs(value))
+        elif unit == "pp" and u.startswith(("pp", "percentage")):
+            if "-" in raw or "+" in raw:
+                sign_ok = negative == (value < 0)
+            else:   # unsigned: the words on its line must give the direction
+                start = output.rfind("\n", 0, m.start()) + 1
+                line = output[start:output.find("\n", m.end()) if "\n" in output[m.end():] else len(output)]
+                sign_ok = bool((_DOWN if value < 0 else _UP).search(line))
+            ok = sign_ok and _rounds_to(digits, abs(value))
+        elif unit == "$M":
             scale = 1000 if u in ("b", "billion") else 1 if u in ("m", "million") else None
-            if scale and abs(v * scale - value) <= max(0.0006 * value, 0.06 * scale):
-                return True
+            ok = bool(scale) and negative == (value < 0) and _rounds_to(digits, abs(value) / scale)
+        else:
+            ok = False
+        if ok and _associated(output, m, key):
+            return True
     return False
 
 
@@ -95,10 +158,13 @@ def score(case: dict, out: dict) -> dict:
     text = out.get("text") or ""
     exp = case["expect"]
     result = {"id": case["id"], "type": case["type"]}
+    incomplete = [i for i in (out.get("check") or {}).get("issues", []) if i.startswith("Review incomplete")]
     if out.get("error"):
         result.update(success=False, reason=f"error: {out['error']}")
+    elif incomplete:   # a required review that did not finish is not a pass, whatever the figures
+        result.update(success=False, reason=f"incomplete: {incomplete[0][:120]}")
     elif case["type"] in ("numeric", "comparison"):
-        missing = [f["text"] for f in exp["figures"] if not figure_present(f["text"], text)]
+        missing = [f["text"] for f in exp["figures"] if not figure_present(f["text"], text, f.get("key"))]
         result.update(success=not missing and not out.get("refused"),
                       reason="refused a covered request" if out.get("refused")
                       else (f"missing {', '.join(missing)}" if missing else "all figures present"))

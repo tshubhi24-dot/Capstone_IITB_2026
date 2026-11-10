@@ -598,7 +598,8 @@ Result file: `data/evaluation/results/memory_compare_20261025-112601.json`. You 
 
 - **🧠 Memory panel** (Research tab, C1/C2): view preferences, the coverage list and past-note memory, and delete any item.
 - **↻ Re-run this request without memory**: that run neither reads nor writes memory (section 9.5).
-- `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed.
+- `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed. It skips any note the analyst deleted from memory, so a deletion stays deleted.
+- Deleting a past-note memory says exactly what it did: removed from memory and coverage, not restored by a backfill; the published note stays in the portal and old run checkpoints are unchanged.
 
 **Likely questions:**
 - *"Can the agent change its own memory?"* No. No tool writes memory. Only two code paths do: the analyst's "Add preference", and publish-after-approval.
@@ -674,7 +675,7 @@ Denials go back to the agent as normal tool results, so it adapts instead of cra
 
 - **The memory checkbox is gone.** Memory is per analyst (by name) and on by default.
 - **Evaluation runs force memory off** (`AGENT_EVAL=1`), so experiments stay reproducible and held-out cases never benefit from memory.
-- **Restated figures are detected by code.** If the same fiscal year now has a different value, the note says "restated since the last note" instead of calling it a change.
+- **A different value for the same year is detected by code.** The note says the figure differs between the two notes (a later presentation) instead of calling it a business change. It doesn't say "restated": code can't tell a restatement from a recast or reclassification.
 - **A missing previous note is stated plainly.** If the analyst asks "what changed since our last note" and there isn't one, the note says so.
 - **"↻ Re-run this request without memory"** covers independent views, second opinions and debugging, in one click.
 
@@ -729,7 +730,8 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
   - Expected figures were **computed from XBRL by code and frozen in the file before any agent ran** ([scripts/make_dev_cases.py](../scripts/make_dev_cases.py)).
 - **Held-out cases:** [data/evaluation/heldout/](../data/evaluation/heldout/README.md) is empty on purpose. The brief says the person who tunes the agent must not write them, so **a teammate (Role 5)** writes 40+. No agent tool can read that folder.
 - **Scoring is code first** ([analystdesk/evaluation.py](../analystdesk/evaluation.py)):
-  - **numeric / comparison:** every expected figure appears in the output with the same unit, within rounding. So C0's free text and the agents' code-rendered figures are judged alike.
+  - **numeric / comparison:** every expected figure appears in the output with the same unit and sign, correctly rounded at the precision shown, and attached to the right company and year (its source tag resolves to that company, or the company is named on its line or table). So C0's free text and the agents' code-rendered figures are judged alike, and the right digits on the wrong company fail.
+  - **Any agent case** fails if the critic's review did not complete.
   - **risk_change:** the note cites the company's Item 1A passages for **both** years.
   - **refusal:** it declines, with no figures and no advice.
   - **Recorded for every run:** policy violations (advice wording), verified share, tools used, tokens, cost and latency.
@@ -743,7 +745,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - [scripts/reflect.py](../scripts/reflect.py) reads a **development** evaluation result (it refuses held-out results). For each agent run it collects what went wrong: failed scoring, and critic issues across revisions. A reflection prompt then turns these into at most 2 lessons per run: *"When <situation>: <what to do>"*, with tags.
 - Lessons are **pending** until a person approves them in the app (Research tab, C1/C2 → 📘 Playbook). Rejections are kept with their reason, and the brief asks for one rejected lesson as evidence.
 - Approved lessons are **retrieved only when relevant** (tag and word overlap, top 3) and shown to the planner, researchers and specialists, and writer. Each run's log says how many lessons it used.
-- **Freeze** the playbook before the held-out run; a frozen playbook refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
+- **Freeze** the playbook before the held-out run. Freezing takes a snapshot of the approved lessons with a version hash; frozen runs read only that snapshot, the result file records the version, and `run_eval.py` refuses a held-out run with an unfrozen playbook. A frozen playbook also refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
 - **Duplicates are merged.** If reflection produces the same lesson twice (same *when*, *do* and tags after normalising case and spacing), it is stored once with all its source cases. If earlier copies were given conflicting decisions, the lesson goes back to pending for a fresh review.
 - Code: [analystdesk/lessons.py](../analystdesk/lessons.py).
 
@@ -878,7 +880,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 | Gap | Why it is acceptable now, and the fix |
 |---|---|
 | Typed names, not verified identities | A single-user prototype. Fix: authentication in front of the app |
-| The C2 judge checks at most 10 cited claims; C1 has none | Every number is still checked by code. Fix: judge every cited line, in batches |
+| The judge reviews cited claims only; uncited lines are counted and shown, not judged; C1 has no judge | Every number is still checked by code, and the analyst is told which lines nobody checked. Fix: judge uncited lines against the note's sources |
 | No correction or withdrawal of published notes | Publication is rare and approved by a person. Fix: a superseding-note workflow in the portal |
 | A mixed comparison spread over two lines is not caught | The Comparability section says the bases differ. Fix: a judge question about cross-basis rankings |
 
@@ -948,3 +950,55 @@ The pooled share matches the 98% alert's definition, because the per-case mean c
 3. How do you count a false block, and why does it matter as much as attack success?
 4. Why is an experiment a config file and not a branch?
 5. What would you change before a supervised pilot? (Sign-in, a networkless sandbox per call, a classifier such as Llama Prompt Guard, a correction workflow.)
+
+---
+
+## 14. The implementation gap analysis
+
+A teammate audited the app against the final specifications: 77 rule groups and 28 frontend messages. [gap_closure.md](gap_closure.md) gives the status of every ID. Know these:
+
+**Approval and review**
+- **No known-wrong note can be approved.** Approval is refused in the graph, the API (409) and the UI while any check fails. The portal accepts only a signature issued on a passing note.
+- **A review that did not finish is not a pass.** The C2 judge reviews every cited claim, in batches of 10, and each claim needs exactly one true/false verdict. A judge outage, an empty or duplicate verdict list, or "supported": "yes" leaves the review incomplete. That is an issue, so approval is refused.
+  - Uncited narrative lines are counted, and the analyst is told to read them.
+- **A lost publish response is "save outcome unknown", not "failed".** Published needs a note id. A memory update that fails after a real save leaves the note Published and says so; it never republishes.
+
+**Numbers**
+- Rounding is half away from zero (20.125% → 20.13%).
+- A loss keeps its sign (`-$1,234.5M`) and is checked.
+- No margin on non-positive revenue, and no growth rate from a zero or negative base. A margin change from zero income is kept (0% → 5% = +5.00 pp).
+- A ratio must use one company and one year.
+- A quoted "$2.2K" never matches "$2.2 billion".
+- An annual fact must cover 350–380 days.
+
+**Wording**
+- A same-year difference is "a later 10-K reports …, reason not established", never "restated".
+- A risk is "added" or "removed" only with passages from both years. Otherwise it is "unchanged" or "insufficient evidence".
+- Code adds a **Limitations** section when a specialist step ended in an error, or one year's Item 1A was not retrieved.
+
+**Plan gate**
+- Shows every requested company or year that the plan dropped.
+- Explains "latest" (FY2024, historical).
+- Says when a bank was asked for operating margin.
+- An edited plan must stay in coverage.
+
+**Memory and lessons**
+- A deleted past-note memory is not restored by a backfill.
+- A frozen playbook is a versioned snapshot.
+
+**Scoring**
+- Checks sign, correct rounding and company/year association.
+- An incomplete review fails the case.
+- Judge calibration excludes unavailable verdicts and reports an undefined kappa as undefined.
+
+**Open:**
+- the evidence items, from Role 5 and the team: held-out cases, attacks, human risk and judge labels, E1–E4;
+- the scope limits in product spec §9: typed identities, no correction workflow, no as-of cutoffs.
+
+**Likely questions:**
+1. The judge provider is down. What happens to a C2 note, and why is that the right behaviour?
+2. Why did you stop calling a changed figure a "restatement"?
+3. Why is −20 → −10 not "−50% growth"?
+4. A teammate unfreezes the playbook during a held-out run. What protects the results?
+5. The portal times out after saving. What does the analyst see, and why not just retry?
+

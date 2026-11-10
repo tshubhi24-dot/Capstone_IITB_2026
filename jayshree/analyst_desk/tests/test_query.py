@@ -18,6 +18,9 @@ class FindTests(unittest.TestCase):
     def test_years(self):
         self.assertEqual(find_years("FY2023 vs fiscal 2024, and 2023 again"), [2023, 2024])
         self.assertEqual(find_years("revenue of $20240 million"), [])
+        # two-digit fiscal years, as FinanceBench and analysts write them
+        self.assertEqual(find_years("From FY21 to FY22, and FY'23"), [2021, 2022, 2023])
+        self.assertEqual(find_years("up 22% on 23 deals"), [])
 
 
 class DecomposeTests(unittest.TestCase):

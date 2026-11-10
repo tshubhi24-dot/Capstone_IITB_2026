@@ -48,14 +48,14 @@ def _can_add_preference(text: str | None) -> bool:
     return bool(text and text.strip())
 
 
-async def _delete_memory_item(selection: list | None, confirmed: bool) -> bool:
+async def _delete_memory_item(selection: list | None, confirmed: bool) -> str:
+    """'' if nothing was deleted, else what was removed and what was kept."""
     if not confirmed or not selection:
-        return False
+        return ""
 
     from analystdesk import memory as ltm
 
-    await ltm.forget(tuple(selection[:2]), selection[2])
-    return True
+    return await ltm.forget(tuple(selection[:2]), selection[2])
 
 
 def _playbook_button_states(
@@ -94,12 +94,14 @@ def _parse_edited_plan(plan_text: str | None, original_plan_text: str | None) ->
         if not isinstance(original_data, dict):
             return None, "The original plan is invalid. Reload the plan before editing."
 
-        from analystdesk.agent.graph import Plan
+        from analystdesk.agent.graph import Plan, plan_scope_errors
 
         edited_plan = Plan(**plan_data).model_dump()
         original_plan = Plan(**original_data).model_dump()
     except (json.JSONDecodeError, TypeError, ValueError) as error:
         return None, f"Plan validation failed: {error}"
+    if errors := plan_scope_errors(edited_plan):
+        return None, "Plan validation failed: " + " ".join(errors)
 
     if edited_plan == original_plan:
         return None, "No plan changes detected. Make a valid change before approving."
@@ -214,13 +216,21 @@ def _check_display(c: dict) -> str:
             f"verified ({c['verified_share']}%)")
     claims = c.get("claims") or {}
     if claims.get("checked"):
+        reviewed = claims.get("reviewed", claims["checked"])
         head += (f"\n**Judge** ({claims.get('model')}): {claims.get('supported')}/{claims['checked']} "
                  "cited claims supported by their passages")
+        if reviewed < claims["checked"]:
+            head += f" · **review incomplete**: {claims['checked'] - reviewed} claim(s) got no verdict"
     elif claims.get("error"):
         head += f"\n**Judge**: {claims['error']}"
+    if claims.get("uncited"):
+        head += (f"\n{claims['uncited']} substantive line(s) cite no passage, so the judge could not "
+                 "check them: read them yourself before approving.")
     if c["issues"]:
-        head += "\n\nIssues (the analyst decides whether to edit or reject):\n" + "\n".join(
-            f"- {i}" for i in c["issues"])
+        head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
+                 "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
+    else:
+        head += "\n\nReady for your review: approving publishes exactly this note."
     return head
 
 
@@ -362,6 +372,8 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     board = _board(events if events is not None else v.get("trace", []), v.get("mode", "c1"))
     gate = result["interrupts"][0] if result.get("interrupts") else None
     usage = f"tool calls **{v.get('tool_calls', 0)}** · tokens **{v.get('tokens', 0):,}**"
+    if v.get("memory_on") is False:
+        usage += " · 🧠 saved memory **off**: no preferences, past notes or past-note tool in this run"
 
     plan_md, plan_json, note_md, check_md, note_body = "", "", "", "", ""
     plan_edit_feedback = ""
@@ -402,8 +414,18 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
         show_note = True
     else:
         outcome = v.get("outcome")
+        pub = v.get("published") or {}
         if outcome == "published":
-            status = f"### ✅ Published\nRun `{run_id}` · {usage}"
+            status = f"### ✅ Published as note #{pub.get('note_id')}\nRun `{run_id}` · {usage}"
+            if pub.get("memory_error"):
+                status += ("\n\n⚠️ The note is saved in the portal, but the memory update failed "
+                           f"({pub['memory_error']}). Do not publish again; run scripts/backfill_memory.py.")
+        elif outcome == "publish_unconfirmed":
+            status = (f"### ❓ Save outcome unknown\nThe portal may or may not have saved this note "
+                      f"({pub.get('error') or 'no note id returned'}). Check the portal's Recent notes "
+                      f"before trying again.\nRun `{run_id}` · {usage}")
+        elif outcome == "publish_failed":
+            status = f"### ✖ Not published: the portal refused the note\nRun `{run_id}` · {usage}"
         elif outcome == "rejected":
             status = f"### 🛑 Rejected by the analyst\nRun `{run_id}` · {usage}"
         elif outcome == "cancelled":
@@ -697,7 +719,7 @@ def build_agent_panel(workflow_mode):
                 )
             return (
                 None, gr.update(visible=False), gr.update(interactive=False),
-                "_Memory deleted._", *await memory_tables(name),
+                f"_Deleted. {deleted}_", *await memory_tables(name),
             )
 
         def cancel_memory_deletion(sel):
@@ -1018,7 +1040,10 @@ def build_agent_panel(workflow_mode):
                     for x in await pb.list_lessons("approved")]
             rej = [[x["key"], x["when"], x["do"], x.get("reviewed_by", ""), x.get("review_reason", "")]
                    for x in await pb.list_lessons("rejected")]
-            status_md = (f"**Playbook {'🧊 FROZEN' if frozen else 'open'}** · {len(pend)} pending · "
+            snapshot = await pb.frozen_playbook() if frozen else None
+            version = (f" version `{snapshot['version']}` ({len(snapshot['lessons'])} lessons; runs use only "
+                       "this snapshot)") if snapshot and snapshot.get("version") else ""
+            status_md = (f"**Playbook {'🧊 FROZEN' if frozen else 'open'}**{version} · {len(pend)} pending · "
                          f"{len(appr)} approved · {len(rej)} rejected")
             return (status_md, pend, appr, rej, frozen,
                     *[gr.update(interactive=False) for _ in range(4)])

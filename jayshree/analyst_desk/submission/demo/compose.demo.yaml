@@ -1,0 +1,18 @@
+# Demo only: plants submission/demo/injected_article.jsonl in the filings, so the
+# injected "buy" article (brief demo step 2) reaches the agents through our own data
+# path. It is added to keyword search and passage lookup only; the vector index on
+# disk is never changed. Stop with the plain compose file to remove it.
+#
+#   docker compose -f compose.yaml -f submission/demo/compose.demo.yaml up -d
+#   docker compose up -d          # back to normal
+services:
+  filings-kb:
+    environment:
+      AGENT_INJECT_PASSAGES: /demo/injected_article.jsonl
+    volumes:
+      - ./submission/demo:/demo:ro
+  app:
+    environment:
+      AGENT_INJECT_PASSAGES: /demo/injected_article.jsonl
+    volumes:
+      - ./submission/demo:/demo:ro

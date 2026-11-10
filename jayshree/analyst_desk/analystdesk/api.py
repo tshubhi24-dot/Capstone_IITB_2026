@@ -175,6 +175,10 @@ def create_app(
                 raise HTTPException(status_code=422, detail="the plan gate supports approve or edit")
             if body.action == "edit" and body.plan is None:
                 raise HTTPException(status_code=422, detail="an edited plan is required")
+            if body.action == "edit":
+                from .agent.graph import plan_scope_errors
+                if errors := plan_scope_errors({**interrupts[0].get("plan", {}), **body.plan}):
+                    raise HTTPException(status_code=422, detail=" ".join(errors))
             if _requires_year_confirmation(interrupts[0], snapshot["values"]) and not body.confirm_years:
                 raise HTTPException(
                     status_code=422,
