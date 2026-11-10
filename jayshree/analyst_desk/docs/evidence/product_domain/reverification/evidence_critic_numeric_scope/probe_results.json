@@ -1,0 +1,352 @@
+{
+  "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "scope": "AST-extracted current-source functions with in-memory synthetic dependencies only",
+  "limits": [
+    "No live model/provider behaviour tested",
+    "No whole-app imports or runtime data",
+    "No real signing, publication, model request or database action",
+    "No claim of full integration or repository-suite execution",
+    "Privacy/injection helpers stubbed only for unrelated numeric/scope scenarios"
+  ],
+  "source_sha256": {
+    "analystdesk/agent/team.py": "110e2554488376e93c31fa6928f724967ead64abce6401f66f7ef21dc5db0056",
+    "analystdesk/agent/checks.py": "c4da2f3ce07d0e0531c7738de87a4089db2f62bbe1bcf89abed3895a37424c49",
+    "analystdesk/agent/graph.py": "8a81f40230974c8358eb2c237360380b4f22e90a210fef96738b15997d805f35",
+    "analystdesk/query.py": "68e431954585cd2b28970d952aab76c94b255aab4324a9c67a9df537297f4455"
+  },
+  "probe_count": 37,
+  "positive_controls": 16,
+  "counterexamples": 21,
+  "results": [
+    {
+      "case": "F02_positive_tagged_fact_and_ratio",
+      "finding": "F02",
+      "kind": "positive control",
+      "observed": {
+        "ok": true,
+        "verified": 2,
+        "total": 2
+      }
+    },
+    {
+      "case": "F02_positive_wrong_arithmetic_rejected",
+      "finding": "F02",
+      "kind": "positive control",
+      "observed": false
+    },
+    {
+      "case": "F02_positive_uncited_dollar_rejected",
+      "finding": "F02",
+      "kind": "positive control",
+      "observed": false
+    },
+    {
+      "case": "F02_positive_quoted_value_and_unit",
+      "finding": "F02",
+      "kind": "positive control",
+      "observed": true
+    },
+    {
+      "case": "F02_counter_unrecognised_numeric_inventory",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "verified": 0,
+        "total": 0,
+        "verified_share": 100.0
+      }
+    },
+    {
+      "case": "F02_counter_wrong_period_and_perimeter_quote",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "verified": 1,
+        "total": 1
+      }
+    },
+    {
+      "case": "F02_counter_wrong_company_fact_label",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": true
+    },
+    {
+      "case": "F02_counter_wrong_concept_fact_label",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": true
+    },
+    {
+      "case": "F02_counter_signed_dollar_fact",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": true
+    },
+    {
+      "case": "F02_counter_thousand_billions_quote",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": true
+    },
+    {
+      "case": "F07_covered_pair",
+      "finding": "F07",
+      "kind": "positive control",
+      "observed": {
+        "ok": true,
+        "companies": [
+          "MSFT",
+          "GOOGL"
+        ],
+        "years": [
+          2024
+        ]
+      }
+    },
+    {
+      "case": "F07_unknown_only",
+      "finding": "F07",
+      "kind": "positive control",
+      "observed": {
+        "ok": false,
+        "companies": [],
+        "years": [
+          2024
+        ]
+      }
+    },
+    {
+      "case": "F07_unsupported_year",
+      "finding": "F07",
+      "kind": "positive control",
+      "observed": {
+        "ok": false,
+        "companies": [
+          "MSFT"
+        ],
+        "years": [
+          2025
+        ]
+      }
+    },
+    {
+      "case": "F07_mixed_unknown_name",
+      "finding": "F07",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "companies": [
+          "MSFT"
+        ],
+        "years": [
+          2024
+        ]
+      }
+    },
+    {
+      "case": "F07_mixed_unknown_ticker",
+      "finding": "F07",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "companies": [
+          "MSFT"
+        ],
+        "years": [
+          2024
+        ]
+      }
+    },
+    {
+      "case": "F07_positive_same_line_tagged_mixed_basis_rejected",
+      "finding": "F07",
+      "kind": "positive control",
+      "observed": false
+    },
+    {
+      "case": "F07_positive_separate_labelled_margins",
+      "finding": "F07",
+      "kind": "positive control",
+      "observed": true
+    },
+    {
+      "case": "F07_counter_cross_line_false_common_metric_ranking",
+      "finding": "F07",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "verified": 2,
+        "total": 2
+      }
+    },
+    {
+      "case": "F07_counter_mixed_basis_diff_tag",
+      "finding": "F07",
+      "kind": "counterexample",
+      "observed": true
+    },
+    {
+      "case": "F01_positive_supported_verdicts",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": {
+        "issues": [],
+        "checked": 10,
+        "supported": 10
+      }
+    },
+    {
+      "case": "F01_counter_twelve_claims_only_ten_sent",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": 10
+    },
+    {
+      "case": "F01_counter_empty_verdict_array",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "issues": [],
+        "checked": 2,
+        "supported": 2
+      }
+    },
+    {
+      "case": "F01_counter_partial_verdicts",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "issues": [],
+        "checked": 2,
+        "supported": 2
+      }
+    },
+    {
+      "case": "F01_counter_duplicate_verdicts",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "issues": [],
+        "checked": 2,
+        "supported": 2
+      }
+    },
+    {
+      "case": "F01_counter_invalid_verdict_index",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "issues": [],
+        "checked": 2,
+        "supported": 1
+      }
+    },
+    {
+      "case": "F01_counter_uncited_substantive_claim",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "issues": [],
+        "checked": 0,
+        "supported": 0
+      }
+    },
+    {
+      "case": "F01_positive_unsupported_verdict_is_issue",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": 1
+    },
+    {
+      "case": "F01_positive_aggregate_unsupported_blocked",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": false
+    },
+    {
+      "case": "F01_positive_revision_bound_0",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": "write"
+    },
+    {
+      "case": "F01_positive_revision_bound_1",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": "write"
+    },
+    {
+      "case": "F01_positive_revision_bound_2",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": "review_note"
+    },
+    {
+      "case": "F01_positive_final_gate_blocks_known_failure",
+      "finding": "F01",
+      "kind": "positive control",
+      "observed": true
+    },
+    {
+      "case": "F01_counter_outage_still_approvable",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "aggregate_ok": true,
+        "outcome": "approved",
+        "checked": 1,
+        "supported": null,
+        "has_error": true
+      }
+    },
+    {
+      "case": "F01_counter_malformed_json_still_approvable",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "aggregate_ok": true,
+        "outcome": "approved",
+        "checked": 1,
+        "supported": null,
+        "has_error": true
+      }
+    },
+    {
+      "case": "F01_counter_missing_verdicts_still_approvable",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "aggregate_ok": true,
+        "outcome": "approved",
+        "checked": 1,
+        "supported": null,
+        "has_error": true
+      }
+    },
+    {
+      "case": "F01_counter_empty_verdicts_still_approvable",
+      "finding": "F01",
+      "kind": "counterexample",
+      "observed": {
+        "aggregate_ok": true,
+        "outcome": "approved",
+        "checked": 1,
+        "supported": 1,
+        "has_error": false
+      }
+    },
+    {
+      "case": "F02_counter_numeric_title_excluded_from_check",
+      "finding": "F02",
+      "kind": "counterexample",
+      "observed": {
+        "ok": true,
+        "verified": 1,
+        "total": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,576 @@
+{
+  "review_kind": "Independent assistant evidence review; not human risk annotation or calibrated ground truth",
+  "artifact_revision": "42e2298a26bffb918ac8320543f6bc0d9591405c",
+  "latest_revision_not_tested_by_this_artifact": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "run_id": "comparison-20261109-c2",
+  "recommendation": "HOLD / not accepted as a fully supported risk-change note",
+  "publication_scope": {
+    "plan_scope": "research only; stop at note gate; no publication",
+    "captured_status": "waiting_note",
+    "next": [
+      "review_note"
+    ],
+    "check_ok": false,
+    "revisions": 2,
+    "published_field_present": false,
+    "final_note_approval_in_packet": false,
+    "portal_live_state_queried": false
+  },
+  "approved_plan_matches_saved_result_plan": true,
+  "source_snapshot_metadata": {
+    "revision": "42e2298a26bffb918ac8320543f6bc0d9591405c",
+    "passages": 12586,
+    "passages_sha256": "161e4d06e6c69838be8ccc5df6d9d15127475d7e481ef942eac9da06110132de",
+    "config_sha256": "c0f46e2e2dedb4a7c776df334b1aac3a356ed86ecf90d296ca29072a5baf2265",
+    "tool_transport": "http",
+    "memory_on": false,
+    "lessons_on": false
+  },
+  "inputs": {
+    "c2_research_result.json": {
+      "path": "local evidence archive",
+      "sha256": "3b118380f4c17aed0d1cd6640ab387fcae0497c2a7786f382088bd2e80daa12e"
+    },
+    "c2_cited_passages.json": {
+      "path": "local evidence archive",
+      "sha256": "fcc6c0bac5f67db03afedf041a9bdfa35298dadefa48bb6aec6d5c360c6f5414"
+    },
+    "c2_plan_approval.json": {
+      "path": "local evidence archive",
+      "sha256": "edafaf44ec0582511e8c2be4d7831f59d3a8abe21c5a940c7132329177efdc07"
+    },
+    "run_metadata.json": {
+      "path": "local evidence archive",
+      "sha256": "d5750a6621c6f57bac20050838416dfc626d3b6f49e9be922b5c460ac0110625"
+    }
+  },
+  "draft_body_sha256": "d906bcee993b16fb3431e2428c17591d596a9c3d10ca3bb4862f6ea3f1b3dc51",
+  "verdict_definitions": {
+    "Supported": "The narrow assertion is directly established by captured evidence or directly observed artifact scope/state. This is not a global eligibility/correctness certification.",
+    "Partial": "The packet establishes part of a compound claim or requested condition; other retained parts are not demonstrated.",
+    "Unsupported": "The retained assertion or acceptance inference has no supporting captured evidence, or is contradicted by the captured artifact. This does not imply the real-world proposition is false.",
+    "Unverified": "The required comparative/provenance coverage is unavailable or incomplete, so no factual truth/falsehood decision is made."
+  },
+  "counts": {
+    "Supported": 4,
+    "Partial": 6,
+    "Unsupported": 4,
+    "Unverified": 3
+  },
+  "claims": [
+    {
+      "id": "R01",
+      "claim": "Microsoft FY2024 discloses intellectual-property claims arising from AI training and output.",
+      "draft_lines": [
+        13,
+        17,
+        24
+      ],
+      "verdict": "Supported",
+      "passages": [
+        "MSFT_2024_item1a_081"
+      ],
+      "assessment": "The captured passage explicitly discusses current copyright/infringement claims arising from AI training/output and possible licensing, damages and operating-result consequences. This supports presence in FY2024, not novelty.",
+      "gap": "No gap for this narrow presence claim; source eligibility and complete-file provenance remain separate.",
+      "owners": [
+        "R2",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Retain a narrowly worded FY2024 presence statement with this passage.",
+        "Validate the original filing/version and source location under S05."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R02",
+      "claim": "The Microsoft AI-IP risk was new or added in FY2024 relative to FY2023.",
+      "draft_lines": [
+        13,
+        17,
+        24
+      ],
+      "verdict": "Unverified",
+      "passages": [
+        "MSFT_2023_item1a_000",
+        "MSFT_2024_item1a_081"
+      ],
+      "assessment": "The FY2023 captured opening concerns competition. Its silence on AI-IP does not establish absence elsewhere in the prior section. The handoff mentions prior IP passage _071, but its full text is not in the final cited packet.",
+      "gap": "Comparable FY2023 IP/AI coverage, exclusions and relocation/cross-reference checks are missing.",
+      "owners": [
+        "R2",
+        "R3",
+        "R5",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Recover the authentic historical FY2023 IP topic and relevant cross-references.",
+        "Compare equivalent coverage with FY2024 _081; record absence only within a demonstrated reviewed scope.",
+        "Until then replace new/added with present in FY2024 and state that change cannot be classified."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R03",
+      "claim": "Microsoft FY2024 discusses climate-related resource, energy, powering and cooling costs.",
+      "draft_lines": [
+        13,
+        18,
+        24
+      ],
+      "verdict": "Supported",
+      "passages": [
+        "MSFT_2024_item1a_090"
+      ],
+      "assessment": "The captured text explicitly identifies uncertain long-term climate effects, resource/energy availability or cost and increased powering/cooling costs.",
+      "gap": "No gap for the narrow FY2024 disclosure-presence statement.",
+      "owners": [
+        "R2",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Keep a conditional statement matching the passage, without claiming realised cost effects or newness."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R04",
+      "claim": "Microsoft climate disclosure was expanded or newly added in FY2024 versus FY2023.",
+      "draft_lines": [
+        13,
+        18,
+        24
+      ],
+      "verdict": "Unverified",
+      "passages": [
+        "MSFT_2023_item1a_000",
+        "MSFT_2024_item1a_090"
+      ],
+      "assessment": "The captured FY2023 competition opening is not the comparable climate disclosure. The FY2024 passage supports current content only.",
+      "gap": "Prior climate/topic coverage and actual paired wording are absent from the final cited packet.",
+      "owners": [
+        "R2",
+        "R3",
+        "R5",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Retrieve and verify the prior climate/environmental topic and cross-references.",
+        "Record whether the difference is substantive content, wording or relocation.",
+        "Use an insufficient-comparable-evidence limitation until that comparison is complete."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R05",
+      "claim": "Microsoft competition, IP, source-code and pandemic risks were updated with broader results-of-operations language.",
+      "draft_lines": [
+        13,
+        24
+      ],
+      "verdict": "Partial",
+      "passages": [
+        "MSFT_2023_item1a_000",
+        "MSFT_2024_item1a_081",
+        "MSFT_2024_item1a_090"
+      ],
+      "assessment": "The packet establishes FY2023 competition text and FY2024 IP/source-code and pandemic-tail content. It does not contain corresponding before-and-after text for every retained topic. Different topics cannot demonstrate a paired wording update.",
+      "gap": "Missing captured counterparts: FY2024 competition and FY2023 IP/source-code/pandemic. Handoff IDs alone are not full evidence.",
+      "owners": [
+        "R2",
+        "R3",
+        "R5"
+      ],
+      "reviewer_steps": [
+        "Break this bundled sentence into separate topic-level assertions.",
+        "Resolve the handoff passage IDs to complete authentic text and pair like topics.",
+        "Keep only differences actually supported by reviewed pairs."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R06",
+      "claim": "Alphabet FY2024 describes manufacturing/supply-chain reliance on contract manufacturers and other third parties.",
+      "draft_lines": [
+        14,
+        19,
+        24
+      ],
+      "verdict": "Supported",
+      "passages": [
+        "GOOGL_2024_item1a_020"
+      ],
+      "assessment": "The captured passage directly describes devices, servers/networking equipment, components, distribution and third-party capacity/obligation/pricing risks.",
+      "gap": "No gap for FY2024 presence; the trailing Table of Contents footer does not negate the substantive risk text.",
+      "owners": [
+        "R2",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Retain the narrowly supported FY2024 description and conditional wording."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R07",
+      "claim": "Alphabet introduced a new manufacturing and supply-chain risk in FY2024.",
+      "draft_lines": [
+        14,
+        19,
+        24
+      ],
+      "verdict": "Unverified",
+      "passages": [
+        "GOOGL_2023_item1a_000",
+        "GOOGL_2024_item1a_020"
+      ],
+      "assessment": "The FY2023 opening is an advertising-risk paragraph. It cannot establish that manufacturing/supply-chain text was absent elsewhere in FY2023.",
+      "gap": "Comparable prior manufacturing/supply-chain coverage and absence/relocation review are not captured.",
+      "owners": [
+        "R2",
+        "R3",
+        "R5",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Review the earlier complete topic/section and related cross-references from the historical source snapshot.",
+        "Classify newness only after adequate paired coverage.",
+        "Otherwise remove new/added/introduced and preserve presence plus a comparison limitation."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R08",
+      "claim": "Alphabet advertising, device-access, privacy/security and operating-result-fluctuation risks remained consistent with minor wording changes.",
+      "draft_lines": [
+        14
+      ],
+      "verdict": "Partial",
+      "passages": [
+        "GOOGL_2023_item1a_000",
+        "GOOGL_2024_item1a_020"
+      ],
+      "assessment": "The captured prior passage supports advertising-risk presence; the captured current passage concerns a different supply-chain topic. Neither supplies the complete paired evidence for the four-topic continuity claim. The handoff names extra IDs, whose full texts are not captured here.",
+      "gap": "Actual matched-year passages and reviewed coverage for all four topics are missing from the final cited packet.",
+      "owners": [
+        "R2",
+        "R3",
+        "R5"
+      ],
+      "reviewer_steps": [
+        "Recover the handoff pairs and verify them before retaining any continuity statement.",
+        "Limit Unchanged to the reviewed topic/scope, not the whole Item 1A section."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R09",
+      "claim": "Microsoft new AI-IP risk aligns with an increased company focus on AI technologies.",
+      "draft_lines": [
+        17
+      ],
+      "verdict": "Unsupported",
+      "passages": [
+        "MSFT_2024_item1a_081"
+      ],
+      "assessment": "The risk paragraph establishes AI-related claims, not a measured increase in strategic focus. No supporting strategy/time-comparison evidence is attached to this sentence in the captured packet. Unsupported here means not supported by this evidence packet, not proved false.",
+      "gap": "Evidence for the increased-focus comparison and its periods is missing; newness also depends on R02.",
+      "owners": [
+        "R2",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Remove the strategic-focus inference or add a directly supporting, attributed management source and explicit comparison.",
+        "Do not use this sentence to imply a financial cause."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "R10",
+      "claim": "No direct causal linkage between risk-disclosure changes and margin movements is established in the available filings.",
+      "draft_lines": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        24
+      ],
+      "verdict": "Partial",
+      "passages": [
+        "MSFT_2024_item1a_081",
+        "MSFT_2024_item1a_090",
+        "GOOGL_2024_item1a_020",
+        "MSFT_2023_item7_020",
+        "MSFT_2024_item7_017",
+        "GOOGL_2024_item7_048"
+      ],
+      "assessment": "This is an appropriate caution: the captured risk passages do not establish a causal margin explanation. However, no exhaustive review of the available filings is recorded, and risk-change existence is itself unverified.",
+      "gap": "The scope of the negative finding is broader than the demonstrated reviewed evidence. This limitation does not cure R02/R04/R07.",
+      "owners": [
+        "R1",
+        "R2",
+        "R5"
+      ],
+      "reviewer_steps": [
+        "Use: No direct causal linkage is established by the passages reviewed for this note.",
+        "Separately state whether each disclosure change can be classified; do not substitute lack of causation for missing prior coverage."
+      ],
+      "category": "note_claim"
+    },
+    {
+      "id": "S01",
+      "claim": "The response accounts for both requested companies and all three financial years.",
+      "draft_lines": [
+        5,
+        6
+      ],
+      "verdict": "Supported",
+      "passages": [],
+      "assessment": "The draft explicitly lists MSFT and Alphabet margins for FY2022, FY2023 and FY2024. The six displayed percentages match the supplied reference values, but this scope observation is not independent financial/source-eligibility verification.",
+      "gap": "Financial concepts, inputs, formulas and source eligibility require the separate financial review.",
+      "owners": [
+        "R1",
+        "R2"
+      ],
+      "reviewer_steps": [
+        "Cross-reference the financial reviewer's source and calculation checks; do not promote this presence check to full verification."
+      ],
+      "category": "scope_requirement"
+    },
+    {
+      "id": "S02",
+      "claim": "The note covers risk disclosures in the FY2022–FY2024 years retained by the approved plan.",
+      "draft_lines": [
+        2,
+        13,
+        14,
+        29,
+        30
+      ],
+      "verdict": "Partial",
+      "passages": [
+        "MSFT_2023_item1a_000",
+        "MSFT_2024_item1a_081",
+        "MSFT_2024_item1a_090",
+        "GOOGL_2023_item1a_000",
+        "GOOGL_2024_item1a_020"
+      ],
+      "assessment": "The approved plan asks about risks in these years, and explicitly retains FY2022/2023/2024. Both risk handoffs compare 2024 with 2023. No FY2022 Item 1A is in the final cited packet; no explicit scope change or coverage limitation accounts for that year. Replans is zero.",
+      "gap": "FY2022 risk evidence and any requested 2022-to-2023 or 2022-to-2024 transition are unaccounted for. The original request does not by itself choose every possible pair, so the intended pair set must be clarified rather than assumed.",
+      "owners": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "reviewer_steps": [
+        "R1 confirms the intended pair set under the approved all-years question.",
+        "R3 preserves every agreed company/year/pair in the research plan and output.",
+        "R2 supplies the missing source coverage or an explicit insufficient-evidence result; any narrowed task needs an explicit revised-scope decision."
+      ],
+      "category": "scope_requirement"
+    },
+    {
+      "id": "S03",
+      "claim": "Actual fiscal-period differences requested in the approved plan are disclosed.",
+      "draft_lines": [
+        5,
+        6
+      ],
+      "verdict": "Partial",
+      "passages": [],
+      "assessment": "Only FY2022 period ends (June 30 and December 31) are explicit in the draft. FY2023/FY2024 actual starts and ends and a direct explanation of unequal reporting windows are absent. No new-code Comparability section appears in this historical artifact.",
+      "gap": "The later-year reporting windows and cross-company comparability caveat are not fully stated.",
+      "owners": [
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "reviewer_steps": [
+        "After financial source review, state the actual requested-year periods and explain that each company's own FY differs from a common calendar window.",
+        "Do not credit comparability code added at 33fef7f as observed behaviour of this 42e2298 note."
+      ],
+      "category": "scope_requirement"
+    },
+    {
+      "id": "S04",
+      "claim": "The draft states insufficient evidence where risk changes cannot be established.",
+      "draft_lines": [
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24
+      ],
+      "verdict": "Unsupported",
+      "passages": [],
+      "assessment": "The limitations discuss absent causal links, but continue to call AI, climate and supply-chain disclosures new/expanded/added. They do not say that earlier-year comparable coverage is insufficient to classify these changes. This is an observable missing acceptance condition, not proof the real-world risks were old or new.",
+      "gap": "A topic-specific unverified-change limitation is missing for R02/R04/R07 and the bundled continuity/update assertions.",
+      "owners": [
+        "R1",
+        "R3",
+        "R6"
+      ],
+      "reviewer_steps": [
+        "Replace unsupported change labels or complete the paired evidence review.",
+        "Display the affected company/topic/pair and the precise missing coverage instead of a generic causal disclaimer."
+      ],
+      "category": "scope_requirement"
+    },
+    {
+      "id": "S05",
+      "claim": "Source references resolve to a reviewable original-document chain with URL and eligibility metadata.",
+      "draft_lines": [
+        13,
+        14,
+        29,
+        30
+      ],
+      "verdict": "Partial",
+      "passages": [
+        "GOOGL_2022_item7_023",
+        "GOOGL_2023_item1a_000",
+        "GOOGL_2023_item7_000",
+        "GOOGL_2024_item1a_020",
+        "GOOGL_2024_item7_048",
+        "MSFT_2023_item1a_000",
+        "MSFT_2023_item7_020",
+        "MSFT_2024_item1a_081",
+        "MSFT_2024_item1a_090",
+        "MSFT_2024_item7_017"
+      ],
+      "assessment": "The original captured passage map is text-only, but the supplemental PASSAGE_PROVENANCE.json now reports exact matches for all ten captured texts against the original role6 public JSONL files, recovering company, fiscal year, Item, accession, kind, local file/line and file hash. This partially resolves the ID-to-original-cached-source chain offline; it must not be called wholly unresolved. Per-passage document URLs are still not in the original capture.",
+      "gap": "Original-document URLs, filing-date/version eligibility, section boundaries and complete comparable risk coverage remain unverified by this risk review. Exact cached-text matches do not establish absence or newness of a risk.",
+      "owners": [
+        "R2",
+        "R6"
+      ],
+      "reviewer_steps": [
+        "Use the recovered PASSAGE_PROVENANCE.json accession and file/line/hash links as the current offline provenance record.",
+        "Resolve original-document URLs and filing dates/version eligibility as needed, preserving the historical revision.",
+        "Complete like-topic paired section and cross-reference review; metadata recovery does not close R02/R04/R07 or FY2022 coverage."
+      ],
+      "category": "scope_requirement",
+      "prior_verdict_before_supplement": "Unverified"
+    },
+    {
+      "id": "S06",
+      "claim": "The captured baseline item1a_000 passages are table-of-contents-only extracts.",
+      "draft_lines": [
+        13,
+        14
+      ],
+      "verdict": "Unsupported",
+      "passages": [
+        "MSFT_2023_item1a_000",
+        "GOOGL_2023_item1a_000"
+      ],
+      "assessment": "Both captured baseline passages contain substantive risk-section opening prose: Microsoft strategic/competitive risk and Alphabet advertising risk. MSFT's initial heading is clipped to K FACTORS, but it is not TOC-only. Alphabet FY2024 _020 has a trailing Table of Contents footer plus real supply-chain prose.",
+      "gap": "A TOC-only diagnosis would be inaccurate for these captured passages. Their actual limitation is topic/scope coverage, not absence of substantive text.",
+      "owners": [
+        "R2",
+        "R1"
+      ],
+      "reviewer_steps": [
+        "Describe the actual captured text accurately.",
+        "Do not treat an opening passage or incidental footer as proof of complete section coverage."
+      ],
+      "category": "review_assumption"
+    },
+    {
+      "id": "S07",
+      "claim": "This review may treat the saved plan approval as note/publication approval.",
+      "draft_lines": [],
+      "verdict": "Unsupported",
+      "passages": [],
+      "assessment": "The captured plan approval explicitly limits scope to research, stopping at the note gate with no publication. The result is waiting_note, next review_note, check.ok=false, revisions=2. No final-note approval, published outcome or publication receipt is present in these artifacts.",
+      "gap": "The note is not an accepted/published result in the captured state. No live portal was queried, so this is not a global proof that no portal record exists.",
+      "owners": [
+        "R1",
+        "R4",
+        "R6"
+      ],
+      "reviewer_steps": [
+        "Keep the review and note on HOLD; make no approval or publication action.",
+        "Any future acceptance requires completed checks, resolved scope/evidence issues and a fresh explicit decision for the exact eligible note.",
+        "Preserve the historical failed/incomplete state even if a later version succeeds."
+      ],
+      "category": "review_assumption"
+    }
+  ],
+  "coverage": {
+    "captured_risk_passage_counts": {
+      "MSFT": {
+        "2022": 0,
+        "2023": 1,
+        "2024": 2
+      },
+      "GOOGL": {
+        "2022": 0,
+        "2023": 1,
+        "2024": 1
+      }
+    },
+    "captured_risk_passages": [
+      "GOOGL_2023_item1a_000",
+      "GOOGL_2024_item1a_020",
+      "MSFT_2023_item1a_000",
+      "MSFT_2024_item1a_081",
+      "MSFT_2024_item1a_090"
+    ],
+    "risk_handoff_year_pair": "2023 to 2024 for both companies",
+    "full_text_handoff_risk_ids_not_in_final_citation_packet": [
+      "GOOGL_2023_item1a_010",
+      "GOOGL_2023_item1a_032",
+      "GOOGL_2023_item1a_042",
+      "GOOGL_2023_item1a_082",
+      "GOOGL_2024_item1a_000",
+      "GOOGL_2024_item1a_033",
+      "GOOGL_2024_item1a_044",
+      "GOOGL_2024_item1a_088",
+      "MSFT_2023_item1a_043",
+      "MSFT_2023_item1a_070",
+      "MSFT_2023_item1a_071",
+      "MSFT_2023_item1a_078",
+      "MSFT_2024_item1a_000",
+      "MSFT_2024_item1a_080",
+      "MSFT_2024_item1a_089"
+    ],
+    "packet_contains_per_passage_source_URL_metadata": false
+  },
+  "limits": [
+    "No model, network, credential or protected held-out access.",
+    "No source, runtime, saved-run, approval or portal changes.",
+    "Primary claim judgements use only the captured final draft, approved plan, cited text and run metadata.",
+    "No full-section absence, current SEC filing state, source eligibility or live portal inventory was independently established.",
+    "The automated judge's recorded 2/8 selected claims and 7/7 numeric checks are not human truth labels or complete-risk-review evidence."
+  ],
+  "aggregate_labels_are_not_accuracy": true,
+  "inventory_count_note": "Counts include note assertions, scope requirements and explicitly rejected review assumptions; do not report them as claim accuracy or human labels.",
+  "addenda": [
+    {
+      "kind": "Supplemental offline provenance recovery",
+      "evidence_path": "local evidence archive",
+      "sha256": "2ea2903431eac14f043367da045a2cc884450efeeb493a9a8870ea7ada406319",
+      "captured_text_matches_reported": 10,
+      "total_records": 10,
+      "recovered_fields": [
+        "company",
+        "fiscal_year",
+        "item",
+        "accession",
+        "kind",
+        "local_file",
+        "line",
+        "file_sha256"
+      ],
+      "remaining_limits": [
+        "The original captured text map still has no per-passage URL metadata.",
+        "Full-section completeness, comparable prior-topic coverage, original-document URLs and filing-date eligibility remain unverified by this risk review."
+      ],
+      "attribution": "Root generated the offline recovery record from the original role6 public passage files; this agent reviewed that record without rerunning a source-file comparison."
+    }
+  ]
+}

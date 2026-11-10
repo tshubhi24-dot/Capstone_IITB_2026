@@ -1,0 +1,76 @@
+{
+  "artifact": "Product and domain publication verification",
+  "branch": "R1_add_on",
+  "base_revision": "c64091276fea80140dd664c637c863b871c0b0e1",
+  "reviewed_main_revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "domain_release": "analyst-desk-domain-gold-2.1-20261109",
+  "core_case_count": 20,
+  "original_public_questions_and_expectations_preserved": true,
+  "all_four_domain_fields_present": true,
+  "core_app_cases_executed_in_this_publication": 0,
+  "new_paid_model_calls": 0,
+  "protected_case_contents_opened": 0,
+  "independent_human_R5_signoff_claimed": false,
+  "relative_markdown_links_checked": 128,
+  "broken_links": 0,
+  "word_text_integrity": {
+    "GOLDEN_ANSWERS_AND_SCORING_RULES": {
+      "markdown_sha256": "c54338d8e8da24800a0c7fd09f1873f01127341df51af475eabace9faabaa1cc",
+      "word_sha256": "888f3facda0b370a49033d67185873ec40fe72e32069b098008bd233657d6cb1",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "DEVELOPMENT_CASE_DOMAIN_REVIEW": {
+      "markdown_sha256": "06c1b346d1e18d2a24399af8d2aa75d2805d992140a64f4142b70b93b9c68cd9",
+      "word_sha256": "b0f9da19ade7f3d26c5bf819f8ddfaab95d24fce023236839c4a115596a05367",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "CONSOLIDATED_SPECIFICATION_REVIEW": {
+      "markdown_sha256": "e4aa897b69f0019c68c59fb8615d1d3b79ee01a4d0f7171714b6ff52bd5e7d4c",
+      "word_sha256": "9caeb4514d28cdd3742bd5a8b7949ecc5c9c71239b0f27b42c16ee91dd362080",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "PRODUCT_ACCEPTANCE_REVIEW": {
+      "markdown_sha256": "5092e49a64f6abcd7a2f19c76403f18b28bee3cb74a1088973681be31d628cfa",
+      "word_sha256": "1ed509be05576d72b44286c05e6d970c710c65fa1b778337b8d2bef31379ae1f",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "C0_C1_C2_COMPARISON": {
+      "markdown_sha256": "0f3610554d00100517744283a2f1e4a9d2038ad22e1a67d348e8102c7ca774ab",
+      "word_sha256": "7a160cd59d844e084f526df1b8fdf2553b13854aa67a4c868a7e5809b4fb2a65",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "THREE_STORY_DEMO_SCRIPT": {
+      "markdown_sha256": "db72d721fe4df759be478ac0d97f5a6a8826ff12e01f0968b2148af4b8ffdbdb",
+      "word_sha256": "0ca6767a54c144f02e141a10879ac7947a15caefe3ff8051ff034e3f494d7d73",
+      "body_table_and_numeric_text_preserved": true
+    },
+    "FINAL_SUBMISSION_OVERVIEW": {
+      "markdown_sha256": "3b4f4798b01da2dba26ebef2a366e428c1f6f3b8368ff75e235fc5087ffe6b00",
+      "word_sha256": "22013109f50ce69020eacf9a74eddbb2317476415a80dba020ce5da4cfb43968",
+      "body_table_and_numeric_text_preserved": true
+    }
+  },
+  "word_page_counts": {
+    "GOLDEN_ANSWERS_AND_SCORING_RULES": 8,
+    "DEVELOPMENT_CASE_DOMAIN_REVIEW": 3,
+    "CONSOLIDATED_SPECIFICATION_REVIEW": 11,
+    "PRODUCT_ACCEPTANCE_REVIEW": 6,
+    "C0_C1_C2_COMPARISON": 2,
+    "THREE_STORY_DEMO_SCRIPT": 7,
+    "FINAL_SUBMISSION_OVERVIEW": 2
+  },
+  "visual_qa": "All final pages inspected individually; readable text/tables/images and no outstanding layout defects",
+  "credentials_personal_key_details_private_paths_scan": "No matches in the selected text or Word XML",
+  "language": "English",
+  "screenshots_published": 3,
+  "screenshots_excluded": "Unrelated saved-note history and older-run screenshots; no pixel edits or simulated screens",
+  "raw_runtime_note_plan_approval_exports_included": false,
+  "personal_viva_PPT_old_drafts_render_intermediates_included": false,
+  "scope": "Documentation and evaluator-side content only; no application behaviour change or merge into Main",
+  "publication_normalisations": [
+    "Machine-specific provenance paths converted to source-relative labels.",
+    "Trailing display whitespace removed from the captured test log; test messages and outcomes unchanged.",
+    "Extra terminal blank lines removed from publication Markdown; document bodies and rendered layout unchanged."
+  ],
+  "test_log_before_whitespace_normalisation_sha256": "3c1d1db789aeb79ef4be88ebb0ce5e9c19e9e51b563d9a89112c5dde3e1da73a"
+}

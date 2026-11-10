@@ -1,0 +1,764 @@
+{
+  "review_type": "Local human evidence adjudication; not note correction, model re-review or approval",
+  "run_basis": "Historical C2 run from 42e2298; not the latest 33fef7f application",
+  "input_sha256": {
+    "c2_research_result.json": "3b118380f4c17aed0d1cd6640ab387fcae0497c2a7786f382088bd2e80daa12e",
+    "c2_cited_passages.json": "fcc6c0bac5f67db03afedf041a9bdfa35298dadefa48bb6aec6d5c360c6f5414"
+  },
+  "draft_sha256": "f4555ba4b812f190e196d05955b44773cb4beecc089360666b876e8eccb846a3",
+  "original_check_preserved": {
+    "ok": false,
+    "issues": [
+      "Claim not supported by its cited passage (judge): \"Microsoft’s operating margin was 42.06%  in FY2022 (period ending June 30, 2022), slightly declined to 41.77%  in FY2023, then increased to 44.64%  in FY2024 [M\" — passages do not mention specific operating margin percentages for FY2022, FY2023, and FY2024",
+      "Claim not supported by its cited passage (judge): \"Alphabet’s operating margin was 26.46%  in FY2022 (period ending December 31, 2022), rose to 27.42%  in FY2023, and further to 32.11%  in FY2024 [GOOGL_2022_ite\" — passage only mentions FY2022 operating margin, but not FY2023 and FY2024",
+      "Claim not supported by its cited passage (judge): \"Microsoft’s margin dipped slightly in FY2023 due to increased costs in cloud and productivity segments partially offset by revenue growth, then rebounded strong\" — passages do not mention gross margin increasing by 17% in FY2024",
+      "Claim not supported by its cited passage (judge): \"Alphabet’s margin improved steadily, with FY2022 margin pressured by rising costs despite revenue growth, FY2023 marked by workforce reductions and cost managem\" — passages do not provide detailed information about Alphabet's margin improvements and cost management initiatives for FY2023 and FY2024",
+      "Claim not supported by its cited passage (judge): \"Microsoft FY2023 and FY2024 10-K Item 7 and Item 1A risk factors [MSFT_2023_item7_020, MSFT_2024_item7_017, MSFT_2023_item1a_000, MSFT_2024_item1a_081, MSFT_202\" — claim is too broad and does not specify what is being claimed about Microsoft's 10-K Item 7 and Item 1A risk factors",
+      "Claim not supported by its cited passage (judge): \"Alphabet FY2022-FY2024 10-K Item 7 and Item 1A risk factors [GOOGL_2022_item7_023, GOOGL_2023_item7_000, GOOGL_2024_item7_048, GOOGL_2023_item1a_000, GOOGL_2024\" — claim is too broad and does not specify what is being claimed about Alphabet's 10-K Item 7 and Item 1A risk factors"
+    ],
+    "verified": 7,
+    "total": 7,
+    "verified_share": 100.0,
+    "claims": {
+      "issues": [
+        "Claim not supported by its cited passage (judge): \"Microsoft’s operating margin was 42.06%  in FY2022 (period ending June 30, 2022), slightly declined to 41.77%  in FY2023, then increased to 44.64%  in FY2024 [M\" — passages do not mention specific operating margin percentages for FY2022, FY2023, and FY2024",
+        "Claim not supported by its cited passage (judge): \"Alphabet’s operating margin was 26.46%  in FY2022 (period ending December 31, 2022), rose to 27.42%  in FY2023, and further to 32.11%  in FY2024 [GOOGL_2022_ite\" — passage only mentions FY2022 operating margin, but not FY2023 and FY2024",
+        "Claim not supported by its cited passage (judge): \"Microsoft’s margin dipped slightly in FY2023 due to increased costs in cloud and productivity segments partially offset by revenue growth, then rebounded strong\" — passages do not mention gross margin increasing by 17% in FY2024",
+        "Claim not supported by its cited passage (judge): \"Alphabet’s margin improved steadily, with FY2022 margin pressured by rising costs despite revenue growth, FY2023 marked by workforce reductions and cost managem\" — passages do not provide detailed information about Alphabet's margin improvements and cost management initiatives for FY2023 and FY2024",
+        "Claim not supported by its cited passage (judge): \"Microsoft FY2023 and FY2024 10-K Item 7 and Item 1A risk factors [MSFT_2023_item7_020, MSFT_2024_item7_017, MSFT_2023_item1a_000, MSFT_2024_item1a_081, MSFT_202\" — claim is too broad and does not specify what is being claimed about Microsoft's 10-K Item 7 and Item 1A risk factors",
+        "Claim not supported by its cited passage (judge): \"Alphabet FY2022-FY2024 10-K Item 7 and Item 1A risk factors [GOOGL_2022_item7_023, GOOGL_2023_item7_000, GOOGL_2024_item7_048, GOOGL_2023_item1a_000, GOOGL_2024\" — claim is too broad and does not specify what is being claimed about Alphabet's 10-K Item 7 and Item 1A risk factors"
+      ],
+      "checked": 8,
+      "supported": 2,
+      "model": "meta-llama/llama-3.3-70b-instruct"
+    }
+  },
+  "status": "Needs correction and fresh independent checks; unapproved",
+  "evidence_scope": "Only the ten captured cited passages; no original complete filing review",
+  "financial_boundary": "Six tagged margin-level assertions are not independently recalculated in this narrative audit; the raw code result is 7/7, not independent approval.",
+  "verdict_definitions": {
+    "Supported": "Directly supported within the captured evidence and stated scope.",
+    "Partial": "Some components are supported but another component, causal bridge or scope remains unsupported by this evidence.",
+    "Unsupported": "Contradicted by the captured evidence or asserted more strongly than its direct meaning allows.",
+    "Unverified": "Required evidence is missing from the capture; not a finding that the assertion is false."
+  },
+  "atomic_review_counts": {
+    "Supported": 14,
+    "Partial": 7,
+    "Unsupported": 0,
+    "Unverified": 12
+  },
+  "historical_critic_reconstruction": {
+    "basis": "Read-only git show 42e2298:jayshree/analyst_desk/analystdesk/agent/team.py; captured exact draft and passages",
+    "limits": "Reconstruction of deterministic assembly, not a recovered provider prompt or replayed model result",
+    "rules": "Each cited line over 30 characters; claim[:500]; first two cited passages only; each passage[:900]; first ten items",
+    "items": [
+      {
+        "item": 1,
+        "claim_excerpt": "Microsoft’s operating margin was 42.06%  in FY2022 (period ending June 30, 2022), slightly declined to 41.77%  in FY2023, then increased to 44.64%  in FY2024 [MSFT_2023_item7_020, MSFT_2024_item7_017].",
+        "all_cited_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017"
+        ],
+        "included_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017"
+        ],
+        "omitted_passages": [],
+        "included_text_lengths": {
+          "MSFT_2023_item7_020": 900,
+          "MSFT_2024_item7_017": 900
+        }
+      },
+      {
+        "item": 2,
+        "claim_excerpt": "Alphabet’s operating margin was 26.46%  in FY2022 (period ending December 31, 2022), rose to 27.42%  in FY2023, and further to 32.11%  in FY2024 [GOOGL_2022_item7_023, GOOGL_2024_item7_048].",
+        "all_cited_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2024_item7_048"
+        ],
+        "included_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2024_item7_048"
+        ],
+        "omitted_passages": [],
+        "included_text_lengths": {
+          "GOOGL_2022_item7_023": 676,
+          "GOOGL_2024_item7_048": 900
+        }
+      },
+      {
+        "item": 3,
+        "claim_excerpt": "Microsoft’s margin dipped slightly in FY2023 due to increased costs in cloud and productivity segments partially offset by revenue growth, then rebounded strongly in FY2024 driven by broad revenue growth across Intelligent Cloud, Productivity and Business Processes, and More Personal Computing segments, with gross margin increasing by 17% in FY2024 [MSFT_2023_item7_020, MSFT_2024_item7_017].",
+        "all_cited_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017"
+        ],
+        "included_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017"
+        ],
+        "omitted_passages": [],
+        "included_text_lengths": {
+          "MSFT_2023_item7_020": 900,
+          "MSFT_2024_item7_017": 900
+        }
+      },
+      {
+        "item": 4,
+        "claim_excerpt": "Alphabet’s margin improved steadily, with FY2022 margin pressured by rising costs despite revenue growth, FY2023 marked by workforce reductions and cost management initiatives, and FY2024 showing significant margin expansion due to revenue growth in Google Services and Cloud, alongside reduced employee compensation and general administrative expenses [GOOGL_2022_item7_023, GOOGL_2023_item7_000, GOOGL_2024_item7_048].",
+        "all_cited_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2023_item7_000",
+          "GOOGL_2024_item7_048"
+        ],
+        "included_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2023_item7_000"
+        ],
+        "omitted_passages": [
+          "GOOGL_2024_item7_048"
+        ],
+        "included_text_lengths": {
+          "GOOGL_2022_item7_023": 676,
+          "GOOGL_2023_item7_000": 900
+        }
+      },
+      {
+        "item": 5,
+        "claim_excerpt": "Microsoft’s 2024 risk disclosures added new risks related to intellectual property claims from AI training and outputs, and expanded climate change-related risks impacting operations and costs. Existing risks such as competition, intellectual property, source code leakage, and pandemic impacts were updated with broader language emphasizing effects on results of operations [MSFT_2023_item1a_000, MSFT_2024_item1a_081, MSFT_2024_item1a_090].",
+        "all_cited_passages": [
+          "MSFT_2023_item1a_000",
+          "MSFT_2024_item1a_081",
+          "MSFT_2024_item1a_090"
+        ],
+        "included_passages": [
+          "MSFT_2023_item1a_000",
+          "MSFT_2024_item1a_081"
+        ],
+        "omitted_passages": [
+          "MSFT_2024_item1a_090"
+        ],
+        "included_text_lengths": {
+          "MSFT_2023_item1a_000": 900,
+          "MSFT_2024_item1a_081": 900
+        }
+      },
+      {
+        "item": 6,
+        "claim_excerpt": "Alphabet’s 2024 risk disclosures introduced a new manufacturing and supply chain risk factor, reflecting reliance on third-party manufacturers and distribution. Other core risks related to advertising revenue, device access, privacy/security incidents, and operating results fluctuations remained consistent with minor wording changes [GOOGL_2023_item1a_000, GOOGL_2024_item1a_020].",
+        "all_cited_passages": [
+          "GOOGL_2023_item1a_000",
+          "GOOGL_2024_item1a_020"
+        ],
+        "included_passages": [
+          "GOOGL_2023_item1a_000",
+          "GOOGL_2024_item1a_020"
+        ],
+        "omitted_passages": [],
+        "included_text_lengths": {
+          "GOOGL_2023_item1a_000": 900,
+          "GOOGL_2024_item1a_020": 900
+        }
+      },
+      {
+        "item": 7,
+        "claim_excerpt": "Microsoft FY2023 and FY2024 10-K Item 7 and Item 1A risk factors [MSFT_2023_item7_020, MSFT_2024_item7_017, MSFT_2023_item1a_000, MSFT_2024_item1a_081, MSFT_2024_item1a_090]",
+        "all_cited_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017",
+          "MSFT_2023_item1a_000",
+          "MSFT_2024_item1a_081",
+          "MSFT_2024_item1a_090"
+        ],
+        "included_passages": [
+          "MSFT_2023_item7_020",
+          "MSFT_2024_item7_017"
+        ],
+        "omitted_passages": [
+          "MSFT_2023_item1a_000",
+          "MSFT_2024_item1a_081",
+          "MSFT_2024_item1a_090"
+        ],
+        "included_text_lengths": {
+          "MSFT_2023_item7_020": 900,
+          "MSFT_2024_item7_017": 900
+        }
+      },
+      {
+        "item": 8,
+        "claim_excerpt": "Alphabet FY2022-FY2024 10-K Item 7 and Item 1A risk factors [GOOGL_2022_item7_023, GOOGL_2023_item7_000, GOOGL_2024_item7_048, GOOGL_2023_item1a_000, GOOGL_2024_item1a_020]",
+        "all_cited_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2023_item7_000",
+          "GOOGL_2024_item7_048",
+          "GOOGL_2023_item1a_000",
+          "GOOGL_2024_item1a_020"
+        ],
+        "included_passages": [
+          "GOOGL_2022_item7_023",
+          "GOOGL_2023_item7_000"
+        ],
+        "omitted_passages": [
+          "GOOGL_2024_item7_048",
+          "GOOGL_2023_item1a_000",
+          "GOOGL_2024_item1a_020"
+        ],
+        "included_text_lengths": {
+          "GOOGL_2022_item7_023": 676,
+          "GOOGL_2023_item7_000": 900
+        }
+      }
+    ],
+    "msft_gross_margin_sentence_offset": 1067,
+    "msft_gross_margin_sentence_in_first900": false
+  },
+  "atomic_review_count_warning": "Human decomposition of narrative propositions is not comparable to the original eight cited-line judge items; no acceptance score is calculated.",
+  "claims": [
+    {
+      "id": "C01",
+      "location": "Microsoft drivers",
+      "assertion": "FY2023 cost of revenue rose with Microsoft Cloud growth.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2023_item7_020",
+          "quote": "Cost of revenue increased $3.2 billion or 5% driven by growth in Microsoft Cloud"
+        }
+      ],
+      "reason": "Direct management statement. This is narrower than the draft’s operating-margin explanation.",
+      "needed_fix": "Attribute this to management and retain its cost-of-revenue scope."
+    },
+    {
+      "id": "C02",
+      "location": "Microsoft drivers",
+      "assertion": "Increased productivity-segment costs explain the FY2023 operating-margin decline.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2023_item7_020",
+          "quote": "Productivity and Business Processes revenue increased driven by Office 365 Commercial and LinkedIn."
+        }
+      ],
+      "reason": "The captured paragraph discusses this segment’s revenue, not its costs. It does not establish the asserted cost driver.",
+      "needed_fix": "Remove the productivity-cost attribution or retrieve the relevant expense and operating-income evidence."
+    },
+    {
+      "id": "C03",
+      "location": "Microsoft drivers",
+      "assertion": "The FY2023 operating-margin dip was caused by the cited cloud/productivity cost increases, partially offset by revenue growth.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2023_item7_020",
+          "quote": "Revenue increased $13.6 billion or 7%"
+        },
+        {
+          "passage_id": "MSFT_2023_item7_020",
+          "quote": "Cost of revenue increased $3.2 billion or 5%"
+        }
+      ],
+      "reason": "Revenue and cost growth are supported, but the excerpt does not bridge them to operating-margin movement or cover operating expenses. Total revenue growing faster than cost of revenue alone does not explain an operating-margin decline.",
+      "needed_fix": "State the observed margin movement separately; report these management-attributed facts without asserting the missing causal bridge."
+    },
+    {
+      "id": "C04",
+      "location": "Microsoft drivers",
+      "assertion": "FY2024 revenue grew across Intelligent Cloud, Productivity and Business Processes, and More Personal Computing.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Revenue increased $33.2 billion or 16% driven by growth across each of our segments."
+        },
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Intelligent Cloud revenue increased driven by Azure."
+        },
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Productivity and Business Processes revenue increased driven by Office 365 Commercial."
+        },
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "More Personal Computing revenue increased driven by Gaming."
+        }
+      ],
+      "reason": "All named segments and their revenue drivers are explicit in the captured passage.",
+      "needed_fix": "Retain with management attribution; do not automatically identify revenue growth as the complete operating-margin explanation."
+    },
+    {
+      "id": "C05",
+      "location": "Microsoft drivers",
+      "assertion": "FY2024 gross margin increased by 17%.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Gross margin increased $25.0 billion or 17% driven by growth across each of our segments."
+        }
+      ],
+      "reason": "The actual captured text states this exactly. The original critic’s claim that the passage does not mention 17% is false. Here the filing discusses an increase in the gross-margin dollar amount, not a 17-point margin-rate increase.",
+      "needed_fix": "Clarify: “Management reported gross-margin dollars increased $25.0 billion, or 17%.” Do not interpret this as a gross-margin-rate change."
+    },
+    {
+      "id": "C06",
+      "location": "Microsoft drivers",
+      "assertion": "Broad FY2024 revenue growth establishes why Microsoft’s operating-margin rate rebounded.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Revenue increased $33.2 billion or 16% driven by growth across each of our segments."
+        },
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Gross margin increased $25.0 billion or 17% driven by growth across each of our segments."
+        }
+      ],
+      "reason": "Revenue and gross-profit dollar growth are direct evidence; the excerpt does not fully reconcile the operating-income-to-revenue ratio or operating-expense leverage.",
+      "needed_fix": "Separate the code-derived margin trend from management’s stated revenue and gross-profit drivers, or add the operating-expense evidence."
+    },
+    {
+      "id": "C07",
+      "location": "Alphabet drivers",
+      "assertion": "In FY2022 revenue grew while costs and operating expenses grew faster, accompanying lower operating margin.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2022_item7_023",
+          "quote": "Consolidated revenues | $257,637 | $282,836 | $25,199 | 10%"
+        },
+        {
+          "passage_id": "GOOGL_2022_item7_023",
+          "quote": "Cost of revenues | $110,939 | $126,203 | $15,264 | 14%"
+        },
+        {
+          "passage_id": "GOOGL_2022_item7_023",
+          "quote": "Operating expenses | $67,984 | $81,791 | $13,807 | 20%"
+        },
+        {
+          "passage_id": "GOOGL_2022_item7_023",
+          "quote": "Operating margin | 31% | 26% | (5)%"
+        }
+      ],
+      "reason": "The consolidated table supports this accounting description. It does not identify an underlying business cause for those expenses.",
+      "needed_fix": "Use the accounting description, with the comparison identified as FY2021 to FY2022; avoid inventing the underlying cause."
+    },
+    {
+      "id": "C08",
+      "location": "Alphabet drivers",
+      "assertion": "FY2023 was marked by workforce reductions.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2023_item7_000",
+          "quote": "The following section generally discusses 2023 results compared to 2022 results."
+        }
+      ],
+      "reason": "The cited FY2023 excerpt is an introduction and reporting-structure description. It contains no workforce-reduction statement.",
+      "needed_fix": "Remove the assertion or retrieve and cite the actual severance/headcount discussion. Do not infer reductions merely from a cross-reference."
+    },
+    {
+      "id": "C09",
+      "location": "Alphabet drivers",
+      "assertion": "FY2023 cost-management initiatives explain the operating-margin improvement.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2023_item7_000",
+          "quote": "Alphabet is a collection of businesses — the largest of which is Google."
+        }
+      ],
+      "reason": "No cost-management initiative or causal bridge appears in the captured FY2023 source.",
+      "needed_fix": "Remove the explanation or supply the corresponding management evidence and ratio reconciliation."
+    },
+    {
+      "id": "C10",
+      "location": "Alphabet drivers",
+      "assertion": "FY2024 Google Services operating income increased, primarily driven by revenue growth.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Google Services operating income increased $25.4 billion from 2023 to 2024."
+        },
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "The increase in operating income was primarily driven by an increase in revenues, partially offset by increases in content acquisition costs and TAC."
+        }
+      ],
+      "reason": "Direct segment-level management explanation.",
+      "needed_fix": "Retain as a Google Services operating-income explanation, including offsets."
+    },
+    {
+      "id": "C11",
+      "location": "Alphabet drivers",
+      "assertion": "FY2024 Google Cloud operating income increased, primarily driven by revenue growth.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Google Cloud operating income increased $4.4 billion from 2023 to 2024."
+        },
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "The increase in operating income was primarily driven by an increase in revenues, partially offset by increases in usage costs for technical infrastructure as well as employee compensation expenses, largely driven by headcount growth."
+        }
+      ],
+      "reason": "Direct segment-level management explanation, with material cost offsets.",
+      "needed_fix": "Retain as a Google Cloud operating-income explanation, including infrastructure and compensation offsets."
+    },
+    {
+      "id": "C12",
+      "location": "Alphabet drivers",
+      "assertion": "Reduced employee compensation contributed to FY2024 Google Services operating-income growth.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Additionally, a reduction in employee compensation expenses contributed to the increase in operating income."
+        }
+      ],
+      "reason": "The sentence belongs to Google Services, immediately before the Google Cloud heading.",
+      "needed_fix": "Make the Services scope explicit."
+    },
+    {
+      "id": "C13",
+      "location": "Alphabet drivers",
+      "assertion": "Reduced employee compensation is an unqualified driver alongside the Services and Cloud revenue explanations.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "increases in usage costs for technical infrastructure as well as employee compensation expenses, largely driven by headcount growth."
+        }
+      ],
+      "reason": "The captured Services reduction is supported, but Cloud compensation increased. The draft does not explicitly say Cloud compensation fell, so it would be excessive to call that an established false claim. Its unqualified combined wording needs narrowing; a consolidated compensation decline is not established here.",
+      "needed_fix": "Separate Services and Cloud. Preserve Services compensation reduction and Cloud compensation increase; do not infer a group-wide compensation-reduction claim."
+    },
+    {
+      "id": "C14",
+      "location": "Alphabet drivers",
+      "assertion": "Reduced general and administrative expenses contributed to FY2024 margin expansion.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Alphabet-level activities included substantially all of the charges related to employee severance and our office spa\nce charges."
+        }
+      ],
+      "reason": "The passage mentions charges but supplies no general-and-administrative expense reduction or comparison establishing the assertion.",
+      "needed_fix": "Remove the G&A claim or obtain the correct consolidated expense evidence."
+    },
+    {
+      "id": "C15",
+      "location": "Alphabet drivers",
+      "assertion": "The cited segment explanations establish the complete cause of Alphabet’s consolidated FY2024 operating-margin expansion.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Google Services operating income increased $25.4 billion from 2023 to 2024."
+        },
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Google Cloud operating income increased $4.4 billion from 2023 to 2024."
+        },
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Other Bets operating loss increased $349 million from 2023 to 2024."
+        }
+      ],
+      "reason": "The passage supports substantial segment operating-income drivers, not by itself the full consolidated margin-ratio reconciliation; Other Bets and Alphabet-level activities are also relevant.",
+      "needed_fix": "Label the segment drivers and separate them from the code-derived consolidated margin change unless the full bridge is supplied."
+    },
+    {
+      "id": "C16",
+      "location": "Microsoft risk comparison",
+      "assertion": "FY2024 Microsoft disclosure discusses IP claims arising from AI training and output.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_081",
+          "quote": "including current copyright infringement and other claims arising from AI training and output."
+        }
+      ],
+      "reason": "Direct current-year disclosure.",
+      "needed_fix": "Retain the current-year statement."
+    },
+    {
+      "id": "C17",
+      "location": "Microsoft risk comparison",
+      "assertion": "The AI-related IP risk was newly added in FY2024.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2023_item1a_000",
+          "quote": "We face intense competition across all markets for our products and services, which may lead to lower revenue or operating margins."
+        }
+      ],
+      "reason": "The captured FY2023 source is the opening competition passage, not comparable IP/AI coverage. Its silence cannot establish prior-year absence.",
+      "needed_fix": "Use “FY2024 discloses…” and mark change classification insufficiently evidenced until comparable earlier coverage is reviewed."
+    },
+    {
+      "id": "C18",
+      "location": "Microsoft risk comparison",
+      "assertion": "FY2024 climate disclosure identifies possible resource and powering/cooling cost effects.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_090",
+          "quote": "Environmental regulations or changes in the supply, demand, or available sources of energy or other resources may affect the availability or cost of goods and services"
+        },
+        {
+          "passage_id": "MSFT_2024_item1a_090",
+          "quote": "Changes in climate where we operate may increase the costs of powering and cooling computer hardware"
+        }
+      ],
+      "reason": "Direct conditional risk statement; not evidence that these costs actually rose.",
+      "needed_fix": "Retain the conditional wording and current-year scope."
+    },
+    {
+      "id": "C19",
+      "location": "Microsoft risk comparison",
+      "assertion": "Climate-change risk was expanded in FY2024.",
+      "verdict": "Unverified",
+      "evidence": [],
+      "reason": "No comparable FY2023 climate-risk passage or reviewed section coverage was captured.",
+      "needed_fix": "Do not classify Expanded/Changed without the paired evidence and relocation/coverage check."
+    },
+    {
+      "id": "C20",
+      "location": "Microsoft risk comparison",
+      "assertion": "Competition, IP, source-code leakage and pandemic risks were updated with broader results-of-operations language.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_081",
+          "quote": "Unauthorized access to or disclosure of source code or other intellectual property also could increase the security risks"
+        },
+        {
+          "passage_id": "MSFT_2024_item1a_090",
+          "quote": "Measures to contain a global pandemic may intensify other risks described in these Risk Factors."
+        }
+      ],
+      "reason": "Fragments show some FY2024 topics, but the corresponding prior-year passages and FY2024 competition comparison are absent.",
+      "needed_fix": "Split into current-year supported topics or retrieve the paired passages before asserting broader language."
+    },
+    {
+      "id": "C21",
+      "location": "Alphabet risk comparison",
+      "assertion": "FY2024 Alphabet disclosure describes manufacturing/supply-chain reliance on contract manufacturers and third parties.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item1a_020",
+          "quote": "We rely on contract manufacturers to manufacture or assemble our devices as well as servers and networking equipment"
+        },
+        {
+          "passage_id": "GOOGL_2024_item1a_020",
+          "quote": "We rely on third parties to supply components and distribute our products and services."
+        }
+      ],
+      "reason": "Direct current-year evidence.",
+      "needed_fix": "Retain the current-year disclosure statement."
+    },
+    {
+      "id": "C22",
+      "location": "Alphabet risk comparison",
+      "assertion": "Manufacturing and supply-chain risk was a new FY2024 risk factor.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2023_item1a_000",
+          "quote": "We generate a significant portion of our revenues from advertising."
+        }
+      ],
+      "reason": "The sole earlier-year excerpt concerns advertising, not supply chain or complete Item 1A coverage.",
+      "needed_fix": "Remove “new/introduced/added” or retrieve comparable earlier supply-chain coverage and confirm it was absent rather than relocated."
+    },
+    {
+      "id": "C23",
+      "location": "Alphabet risk comparison",
+      "assertion": "Advertising risks remained substantively consistent with only minor wording changes.",
+      "verdict": "Unverified",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2023_item1a_000",
+          "quote": "Reduced spending by advertisers, a loss of partners, or new and existing technologies that block ads online"
+        }
+      ],
+      "reason": "Earlier-year advertising evidence exists, but corresponding FY2024 advertising evidence is not captured.",
+      "needed_fix": "Do not classify Unchanged/minor change without a comparable later-year passage."
+    },
+    {
+      "id": "C24",
+      "location": "Alphabet risk comparison",
+      "assertion": "Device-access, privacy/security and operating-results-fluctuation risks remained consistent with minor wording changes.",
+      "verdict": "Unverified",
+      "evidence": [],
+      "reason": "No paired topic passages for those assertions are captured.",
+      "needed_fix": "Remove these comparisons or obtain and review both years’ topic evidence separately."
+    },
+    {
+      "id": "C25",
+      "location": "Risk-change limitations",
+      "assertion": "The AI risk is new and aligns with Microsoft’s increased focus on AI.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_081",
+          "quote": "claims arising from AI training and output."
+        }
+      ],
+      "reason": "Current AI/IP exposure is supported; newness and increased company focus are not established by this captured evidence.",
+      "needed_fix": "Keep only the current disclosure or independently support both the change and company-focus assertion."
+    },
+    {
+      "id": "C26",
+      "location": "Risk-change limitations",
+      "assertion": "The captured AI/IP disclosure establishes no actual operating-margin effect.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_081",
+          "quote": "which could adversely affect our results of operations."
+        }
+      ],
+      "reason": "The captured source states a possible future risk and no measured operating-margin attribution.",
+      "needed_fix": "Limit the conclusion explicitly to the captured excerpt; do not claim the complete filing was searched."
+    },
+    {
+      "id": "C27",
+      "location": "Risk-change limitations",
+      "assertion": "Expanded climate risk reflects broader environmental considerations affecting costs.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_090",
+          "quote": "The long-term effects of climate change on the global economy and the IT industry in particular are unclear."
+        }
+      ],
+      "reason": "Potential environmental/cost exposure is supported; the claimed year-over-year expansion is not.",
+      "needed_fix": "Remove “expanded” and preserve the conditional present-year cost-risk description."
+    },
+    {
+      "id": "C28",
+      "location": "Risk-change limitations",
+      "assertion": "The captured climate passage lacks direct attribution of an observed operating-margin fluctuation to climate change.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item1a_090",
+          "quote": "Changes in climate where we operate may increase the costs of powering and cooling computer hardware"
+        }
+      ],
+      "reason": "Only hypothetical potential costs are discussed; no measured operating-margin effect appears in this passage. The note correctly avoids the positive causal inference.",
+      "needed_fix": "Retain the note’s refusal to infer causality, with scope limited to the captured passage."
+    },
+    {
+      "id": "C29",
+      "location": "Risk-change limitations",
+      "assertion": "Alphabet’s added supply-chain risk corresponds with operational complexities.",
+      "verdict": "Partial",
+      "evidence": [
+        {
+          "passage_id": "GOOGL_2024_item1a_020",
+          "quote": "We face a number of risks related to manufacturing and supply chain management, which could affect our ability to supply both our products and our services."
+        }
+      ],
+      "reason": "Present operational dependencies are supported; added/new is unverified.",
+      "needed_fix": "Use the current-year risk description without an unsupported change label."
+    },
+    {
+      "id": "C30",
+      "location": "Risk-change limitations",
+      "assertion": "No causal link between the described risks and margin movement is established by the captured excerpts.",
+      "verdict": "Supported",
+      "evidence": [],
+      "reason": "None of the ten captured excerpts directly attributes the reported operating-margin movements to these risk-disclosure changes. This is an evidence-scope observation, not a full-filing absence finding.",
+      "needed_fix": "Say “The captured excerpts do not establish…” rather than “the available filings establish no link.”"
+    },
+    {
+      "id": "C31",
+      "location": "Risk-change limitations",
+      "assertion": "The complete available filings contain no explicit causal connection between risk changes and operating margins.",
+      "verdict": "Unverified",
+      "evidence": [],
+      "reason": "Only ten captured excerpts were reviewed; original complete filings and uncaptured passages were not inspected.",
+      "needed_fix": "Narrow the statement to captured evidence or perform and document a broader review."
+    },
+    {
+      "id": "C32",
+      "location": "Risk-change limitations",
+      "assertion": "The captured MD&A passages contain operational revenue, cost and segment operating-income drivers.",
+      "verdict": "Supported",
+      "evidence": [
+        {
+          "passage_id": "MSFT_2024_item7_017",
+          "quote": "Cost of revenue increased $8.3 billion or 13% driven by growth in Microsoft Cloud and Gaming"
+        },
+        {
+          "passage_id": "GOOGL_2024_item7_048",
+          "quote": "Google Services operating income increased $25.4 billion from 2023 to 2024."
+        }
+      ],
+      "reason": "Direct evidence, with the accounting-level and segment boundaries described above.",
+      "needed_fix": "Retain with management attribution and avoid calling every item a verified consolidated margin cause."
+    },
+    {
+      "id": "C33",
+      "location": "Conclusion",
+      "assertion": "Disclosures evolved with new or expanded AI, climate and supply-chain risks.",
+      "verdict": "Unverified",
+      "evidence": [],
+      "reason": "This repeats unverified comparative classifications C17/C19/C22. Repetition does not add paired evidence.",
+      "needed_fix": "Replace with supported current-year risk topics and an explicit insufficient-comparative-evidence limitation."
+    }
+  ],
+  "original_critic_adjudication": [
+    {
+      "id": "J01",
+      "original_objection": "Microsoft operating-margin percentages do not appear in the cited narrative passages.",
+      "decision": "Wrong verification route for the tagged ratios; not evidence that the ratios are wrong.",
+      "explanation": "Six ratios carry calc tags and the recorded code check reports all detected values verified. Their numerical source/period validation belongs to the separate financial audit. Narrative passages need not reproduce the computed ratio. Preserve the raw critic result; do not transform this adjudication into independent financial approval."
+    },
+    {
+      "id": "J02",
+      "original_objection": "Alphabet FY2023 and FY2024 margin percentages are absent from the narrative passages.",
+      "decision": "Same route mismatch as J01.",
+      "explanation": "The figures are tagged code-derived ratios. Absence of the exact derived display percentage from an MD&A excerpt is not by itself a valid rejection. Separate source eligibility and arithmetic still need their own verification."
+    },
+    {
+      "id": "J03",
+      "original_objection": "The Microsoft passages do not mention gross margin increasing by 17% in FY2024.",
+      "decision": "Factually false objection against the captured passage.",
+      "explanation": "MSFT_2024_item7_017 explicitly says “Gross margin increased $25.0 billion or 17%”. Historical source limits each passage to 900 characters; the sentence starts at zero-based offset 1067, so reconstructed critic evidence excludes it. This is an evidence-assembly omission, not proof that the source lacks the figure or that the judge ignored text it received. The compound sentence remains only partly supported because its FY2023 cost explanation and operating-margin causal bridge are not established."
+    },
+    {
+      "id": "J04",
+      "original_objection": "The Alphabet passages lack detailed FY2023/FY2024 margin-improvement and cost-management information.",
+      "decision": "Partly justified, but overbroad for FY2024.",
+      "explanation": "The FY2023 excerpt is insufficient. The FY2024 passage does directly explain Services and Cloud operating-income changes and Services compensation reduction. It does not show G&A reduction; Cloud compensation increased. The driver line cites FY2022, FY2023 and FY2024 in that order, while historical source supplies only the first two cited passages: reconstructed critic evidence excludes FY2024 altogether. Do not discard the supported FY2024 detail or claim the model rejected evidence it actually saw."
+    },
+    {
+      "id": "J05",
+      "original_objection": "Microsoft bibliography entry is too broad to be a supported claim.",
+      "decision": "Bibliographic metadata was mistaken for a substantive assertion.",
+      "explanation": "A source-list entry is not an independent business assertion requiring entailment. Citation existence, year/section provenance and sufficiency should be checked, but lack of a substantive proposition is not a false business claim."
+    },
+    {
+      "id": "J06",
+      "original_objection": "Alphabet bibliography entry is too broad to be a supported claim.",
+      "decision": "Same bibliographic category error as J05.",
+      "explanation": "Exclude the source-list label from the semantic assertion denominator while retaining provenance/citation validation."
+    },
+    {
+      "id": "J07",
+      "original_objection": "The two risk paragraphs were counted as supported by the original 2-of-8 result.",
+      "decision": "Current disclosure presence is supported; comparative classifications remain unverified.",
+      "explanation": "Neither earlier-year opening excerpt supplies the comparable AI/climate/supply-chain topic coverage. A positive compound verdict cannot establish newness, expansion or unchanged wording."
+    }
+  ]
+}

@@ -1,0 +1,677 @@
+{
+  "artifact": "Analyst Desk Supplementary Worked Examples",
+  "release_id": "analyst-desk-domain-gold-2.1-20261109",
+  "status": "Final supplementary examples outside the twenty core case count",
+  "source_release": "analyst-desk-domain-gold-1.0-20261109",
+  "source_content_sha256": "33365736f5a41016aef8e637ff975848b325ab7879c07be2a99717bef8a08306",
+  "not_eight_additional_independent_cases": true,
+  "evaluator_boundary": {
+    "placement": "Evaluator-side content only; exclude this file and expected-answer records from application-readable prompts, tools, indexes and memory.",
+    "allowed_runner_fields": [
+      "case_id",
+      "question",
+      "fixture_inputs"
+    ],
+    "prohibited_runner_fields": [
+      "expected_answer",
+      "failure_examples",
+      "case_status_notes",
+      "status_criteria",
+      "aggregation_contract",
+      "verification_results"
+    ],
+    "source_delivery": "Supply only declared eligible evidence or fixture inputs through the validated case adapter. Do not attach the complete evaluator file.",
+    "production_scope_boundary": "A legitimate production refusal of fictional names does not execute the intended component fixture and is not a failed financial component result.",
+    "security_boundary": "Declaring a component substitution must not disable production controls and then describe the exercise as a normal end-to-end run."
+  },
+  "source_manifest": {
+    "MSFT_FY2024_ORIGINAL": {
+      "source_type": "Declared original annual presentation with exact cached primary-fact corroboration",
+      "company": "Microsoft Corporation",
+      "ticker": "MSFT",
+      "cik": "0000789019",
+      "form": "10-K",
+      "accession": "0000950170-24-087843",
+      "filing_date": "2024-07-30",
+      "target_fiscal_year": "FY2024",
+      "period_start": "2023-07-01",
+      "period_end": "2024-06-30",
+      "inclusive_days": 366,
+      "currency": "USD",
+      "cache_value_scale": "base dollars",
+      "presentation": "original as reported",
+      "url_reference_not_refetched": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+      "statement_location_from_approved_definition": "Item 8, printed page 56, consolidated income statement",
+      "statement_page_reinspection": "Not performed in this finalization; exact cached facts and submissions were rechecked.",
+      "cached_primary_evidence": {
+        "numerator": {
+          "concept": "OperatingIncomeLoss",
+          "label": "Operating Income (Loss)",
+          "unit": "USD",
+          "row": {
+            "start": "2023-07-01",
+            "end": "2024-06-30",
+            "val": 109433000000,
+            "accn": "0000950170-24-087843",
+            "fy": 2024,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2024-07-30"
+          },
+          "json_pointer": "/facts/us-gaap/OperatingIncomeLoss/units/USD/256",
+          "repository_relative_cache_file": "data/edgar_cache/0000789019.json",
+          "cache_sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a"
+        },
+        "denominator": {
+          "concept": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "label": "Revenue from Contract with Customer, Excluding Assessed Tax",
+          "unit": "USD",
+          "row": {
+            "start": "2023-07-01",
+            "end": "2024-06-30",
+            "val": 245122000000,
+            "accn": "0000950170-24-087843",
+            "fy": 2024,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2024-07-30"
+          },
+          "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD/112",
+          "repository_relative_cache_file": "data/edgar_cache/0000789019.json",
+          "cache_sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a"
+        }
+      },
+      "cached_filing_metadata": {
+        "row_index": 403,
+        "accessionNumber": "0000950170-24-087843",
+        "form": "10-K",
+        "reportDate": "2024-06-30",
+        "filingDate": "2024-07-30",
+        "primaryDocument": "msft-20240630.htm",
+        "repository_relative_cache_file": "data/edgar_cache/submissions_0000789019.json",
+        "cache_sha256": "d00f79329830e62d133b105bdd77d1483e7f7a439466345bdb1f3e49d608b450"
+      },
+      "verification_boundary": "Issuer CIK/entity, exact concepts/accession/window/USD and filing metadata verified from cache. Whole statement/perimeter, amendments, non-reliance and current reliability are not certified."
+    },
+    "GOOGL_FY2024_ORIGINAL": {
+      "source_type": "Declared original annual presentation with exact cached primary-fact corroboration",
+      "company": "Alphabet Inc.",
+      "ticker": "GOOGL",
+      "cik": "0001652044",
+      "form": "10-K",
+      "accession": "0001652044-25-000014",
+      "filing_date": "2025-02-05",
+      "target_fiscal_year": "FY2024",
+      "period_start": "2024-01-01",
+      "period_end": "2024-12-31",
+      "inclusive_days": 366,
+      "currency": "USD",
+      "cache_value_scale": "base dollars",
+      "presentation": "original as reported",
+      "url_reference_not_refetched": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000014/goog-20241231.htm",
+      "statement_location_from_approved_definition": "Item 8, printed page 53, consolidated income statement",
+      "statement_page_reinspection": "Not performed in this finalization; exact cached facts and submissions were rechecked.",
+      "cached_primary_evidence": {
+        "numerator": {
+          "concept": "OperatingIncomeLoss",
+          "label": "Operating Income (Loss)",
+          "unit": "USD",
+          "row": {
+            "start": "2024-01-01",
+            "end": "2024-12-31",
+            "val": 112390000000,
+            "accn": "0001652044-25-000014",
+            "fy": 2024,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2025-02-05"
+          },
+          "json_pointer": "/facts/us-gaap/OperatingIncomeLoss/units/USD/132",
+          "repository_relative_cache_file": "data/edgar_cache/0001652044.json",
+          "cache_sha256": "97baddc6bac26eccd11b4d63007504cb959f123c69945465e1c55a4b1dd86eaa"
+        },
+        "denominator": {
+          "concept": "RevenueFromContractWithCustomerExcludingAssessedTax",
+          "label": "Revenue from Contract with Customer, Excluding Assessed Tax",
+          "unit": "USD",
+          "row": {
+            "start": "2024-01-01",
+            "end": "2024-12-31",
+            "val": 350018000000,
+            "accn": "0001652044-25-000014",
+            "fy": 2024,
+            "fp": "FY",
+            "form": "10-K",
+            "filed": "2025-02-05",
+            "frame": "CY2024"
+          },
+          "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD/85",
+          "repository_relative_cache_file": "data/edgar_cache/0001652044.json",
+          "cache_sha256": "97baddc6bac26eccd11b4d63007504cb959f123c69945465e1c55a4b1dd86eaa"
+        }
+      },
+      "cached_filing_metadata": {
+        "row_index": 573,
+        "accessionNumber": "0001652044-25-000014",
+        "form": "10-K",
+        "reportDate": "2024-12-31",
+        "filingDate": "2025-02-05",
+        "primaryDocument": "goog-20241231.htm",
+        "repository_relative_cache_file": "data/edgar_cache/submissions_0001652044.json",
+        "cache_sha256": "75b830876f5e0b8f1641cb04d3aac94a51df2fc044cdfef67d3d2fb547c699f3"
+      },
+      "verification_boundary": "Issuer CIK/entity, exact concepts/accession/window/USD and filing metadata verified from cache. Whole statement/perimeter, amendments, non-reliance and current reliability are not certified."
+    }
+  },
+  "examples": [
+    {
+      "case_id": "DG001",
+      "split": "development",
+      "case_type": "issuer-source financial expectation",
+      "related_group": "MSFT_GOOGL_FY2024_ANNUAL_SOURCE_GROUP",
+      "execution_boundary": {
+        "mode": "issuer-source integration",
+        "permitted_test_input": "Question and eligible Microsoft original annual evidence only; expected answers and scoring notes remain evaluator-side.",
+        "claim_limit": "No completed SEC retrieval or end-to-end evaluation is established by this draft.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Using Microsoft's original FY2024 annual filing, calculate its reported consolidated operating margin. State the reporting period, revenue, operating income and source.",
+      "fixture_inputs": {
+        "source_refs": [
+          "MSFT_FY2024_ORIGINAL"
+        ],
+        "company": "Microsoft Corporation",
+        "ticker": "MSFT",
+        "fiscal_year": "FY2024",
+        "period_start": "2023-07-01",
+        "period_end": "2024-06-30",
+        "presentation": "original as reported",
+        "knowledge_cutoff": null,
+        "currency": "USD",
+        "scale": "millions",
+        "revenue": "245122",
+        "operating_income": "109433",
+        "basis": "Reported consolidated U.S. GAAP; same operations and original statement presentation"
+      },
+      "expected_answer": {
+        "result_status": "supported numeric answer under the declared historical evidence contract",
+        "association": "MSFT | reported consolidated operating margin | FY2024 | 2023-07-01 through 2024-06-30 | original as reported",
+        "normalized_revenue_USD": "245122000000",
+        "normalized_operating_income_USD": "109433000000",
+        "formula_percent": "109433 / 245122 * 100",
+        "reference_percent_decimal": "44.644299573273716761449400706586924062303669193300",
+        "display_percent": "44.64",
+        "display_label": "44.64% reported consolidated operating margin",
+        "mandatory_qualifiers": [
+          "Identify Microsoft and FY2024 with the actual annual dates.",
+          "Associate revenue and operating income with the same selected original filing and compatible basis.",
+          "Identify USD millions or an unambiguously equivalent converted scale.",
+          "Cite the reviewed statement location; do not claim current-source reliability from the original-presentation exercise alone."
+        ]
+      },
+      "failure_examples": [
+        "Use net income, pre-tax income or another company's operating income.",
+        "Report 44.64 percent under a January-December 2024 period label.",
+        "Find the correct digits elsewhere but attach them to the wrong metric or source presentation.",
+        "Prematurely round source inputs or ratios so source precision is lost; an exact lossless unit conversion is acceptable."
+      ],
+      "case_status_notes": "Final expected Microsoft content under the declared historical source contract; application execution and independent scoring-release validation are separate claims.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG002",
+      "split": "development",
+      "case_type": "issuer-source financial expectation",
+      "related_group": "MSFT_GOOGL_FY2024_ANNUAL_SOURCE_GROUP",
+      "execution_boundary": {
+        "mode": "issuer-source integration",
+        "permitted_test_input": "Question and eligible Alphabet original annual evidence only; expected answers and scoring notes remain evaluator-side.",
+        "claim_limit": "No completed SEC retrieval or end-to-end evaluation is established by this draft.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Using Alphabet's original FY2024 annual filing, calculate its reported consolidated operating margin. State the reporting period, revenue, operating income and source.",
+      "fixture_inputs": {
+        "source_refs": [
+          "GOOGL_FY2024_ORIGINAL"
+        ],
+        "company": "Alphabet Inc.",
+        "ticker": "GOOGL",
+        "fiscal_year": "FY2024",
+        "period_start": "2024-01-01",
+        "period_end": "2024-12-31",
+        "presentation": "original as reported",
+        "knowledge_cutoff": null,
+        "currency": "USD",
+        "scale": "millions",
+        "revenue": "350018",
+        "operating_income": "112390",
+        "basis": "Reported consolidated U.S. GAAP; same operations and original statement presentation"
+      },
+      "expected_answer": {
+        "result_status": "supported numeric answer under the declared historical evidence contract",
+        "association": "GOOGL / Alphabet | reported consolidated operating margin | FY2024 | 2024-01-01 through 2024-12-31 | original as reported",
+        "normalized_revenue_USD": "350018000000",
+        "normalized_operating_income_USD": "112390000000",
+        "formula_percent": "112390 / 350018 * 100",
+        "reference_percent_decimal": "32.109777211457696461324846150769389002851281934072",
+        "display_percent": "32.11",
+        "display_label": "32.11% reported consolidated operating margin",
+        "mandatory_qualifiers": [
+          "Identify Alphabet and FY2024 with the actual annual dates.",
+          "Associate both inputs with the same selected original filing and compatible basis.",
+          "Identify USD millions or an unambiguously equivalent converted scale.",
+          "Treat GOOG in the source filename and GOOGL in the question as identifiers of the same consolidated issuer, not distinct operating statements.",
+          "Cite the reviewed statement location; do not claim current-source reliability from this original-presentation exercise alone."
+        ]
+      },
+      "failure_examples": [
+        "Substitute Microsoft inputs or Alphabet net income.",
+        "Attach 32.11 percent to the wrong period or financial basis.",
+        "Treat the filing date in February 2025 as the FY2024 financial period.",
+        "Claim that GOOGL and GOOG require two different consolidated operating-margin calculations."
+      ],
+      "case_status_notes": "Final expected Alphabet content under the declared historical source contract; correct arithmetic does not certify full source eligibility or current reliability.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG003",
+      "split": "development",
+      "case_type": "issuer-source cross-company comparison expectation",
+      "related_group": "MSFT_GOOGL_FY2024_ANNUAL_SOURCE_GROUP",
+      "execution_boundary": {
+        "mode": "issuer-source integration",
+        "permitted_test_input": "Question and the two eligible original annual presentations only; expected margins, comparison and scoring notes remain evaluator-side.",
+        "claim_limit": "No completed SEC retrieval or end-to-end evaluation is established by this draft.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Compare Microsoft's and Alphabet's reported FY2024 operating margins using their original annual filings. Calculate Microsoft's margin minus Alphabet's margin in percentage points and explain any difference in reporting windows.",
+      "fixture_inputs": {
+        "source_refs": [
+          "MSFT_FY2024_ORIGINAL",
+          "GOOGL_FY2024_ORIGINAL"
+        ],
+        "Microsoft": {
+          "ticker": "MSFT",
+          "fiscal_year": "FY2024",
+          "period_start": "2023-07-01",
+          "period_end": "2024-06-30",
+          "revenue_USD_millions": "245122",
+          "operating_income_USD_millions": "109433"
+        },
+        "Alphabet": {
+          "ticker": "GOOGL",
+          "fiscal_year": "FY2024",
+          "period_start": "2024-01-01",
+          "period_end": "2024-12-31",
+          "revenue_USD_millions": "350018",
+          "operating_income_USD_millions": "112390"
+        },
+        "basis": "Each issuer's reported consolidated U.S. GAAP original presentation; qualify differing annual windows",
+        "knowledge_cutoff": null
+      },
+      "expected_answer": {
+        "result_status": "qualified reported-fiscal-year comparison under the declared historical evidence contract",
+        "Microsoft_display_percent": "44.64",
+        "Alphabet_display_percent": "32.11",
+        "formula_percentage_points": "(109433 / 245122 * 100) - (112390 / 350018 * 100)",
+        "reference_percentage_points_decimal": "12.534522361816020300124554555817535059452387259228",
+        "display_percentage_points": "+12.53",
+        "mandatory_qualifiers": [
+          "Use each company's own reported FY2024 and show both actual annual windows.",
+          "State Microsoft minus Alphabet; a positive 12.53 percentage-point difference has that direction.",
+          "Explain that the annual windows differ and do not represent the same calendar period.",
+          "Calculate the difference from unrounded ratios, not by using display percentages as computational inputs.",
+          "Retain company, metric, source and basis associations for every number.",
+          "The margin difference alone does not establish its business cause, investment quality or a stock recommendation."
+        ]
+      },
+      "failure_examples": [
+        "Call the difference 12.53 percent revenue growth or give the opposite sign without reversing the stated order.",
+        "Describe both figures as January-December 2024 operating performance.",
+        "Refuse an ordinary reported-FY comparison solely because the year ends differ.",
+        "Omit one requested company or replace operating income with a different metric."
+      ],
+      "case_status_notes": "Related to DG001-DG004; qualified own-FY comparison, not four independent source validations or an investment ranking.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG004",
+      "split": "development",
+      "case_type": "issuer-source constrained-coverage expectation",
+      "related_group": "MSFT_GOOGL_FY2024_ANNUAL_SOURCE_GROUP",
+      "execution_boundary": {
+        "mode": "constrained issuer-source integration",
+        "permitted_test_input": "Question and only the two declared annual source presentations; do not supply expected availability decisions or gold values as guidance.",
+        "claim_limit": "A controlled two-source result is not evidence of unrestricted SEC retrieval coverage or a completed end-to-end evaluation.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Using only the provided original FY2024 annual sources, calculate Microsoft's and Alphabet's operating margins for 1 January through 31 December 2024. Do not estimate missing periods or obtain additional sources.",
+      "fixture_inputs": {
+        "source_refs": [
+          "MSFT_FY2024_ORIGINAL",
+          "GOOGL_FY2024_ORIGINAL"
+        ],
+        "permitted_sources": "Only the two cited original FY2024 annual presentations; no quarterly, monthly, later-year or estimated inputs",
+        "requested_period_start": "2024-01-01",
+        "requested_period_end": "2024-12-31",
+        "Microsoft": {
+          "ticker": "MSFT",
+          "available_period_start": "2023-07-01",
+          "available_period_end": "2024-06-30",
+          "revenue_USD_millions": "245122",
+          "operating_income_USD_millions": "109433"
+        },
+        "Alphabet": {
+          "ticker": "GOOGL",
+          "available_period_start": "2024-01-01",
+          "available_period_end": "2024-12-31",
+          "revenue_USD_millions": "350018",
+          "operating_income_USD_millions": "112390"
+        }
+      },
+      "expected_answer": {
+        "result_status": "supported partial answer with explicit unavailable aligned-period result",
+        "requested_rows": [
+          {
+            "ticker": "MSFT",
+            "period_start": "2024-01-01",
+            "period_end": "2024-12-31",
+            "status": "unavailable",
+            "display_percent": null,
+            "reason": "The supplied Microsoft annual inputs cover 2023-07-01 through 2024-06-30, not the requested January-December 2024 window."
+          },
+          {
+            "ticker": "GOOGL",
+            "period_start": "2024-01-01",
+            "period_end": "2024-12-31",
+            "status": "available under the declared historical evidence contract",
+            "formula_percent": "112390 / 350018 * 100",
+            "display_percent": "32.11"
+          }
+        ],
+        "cross_company_gap": "unavailable for the requested aligned calendar period",
+        "mandatory_qualifiers": [
+          "Retain both requested company-period rows and explain Microsoft's missing aligned inputs.",
+          "Do not relabel Microsoft's June-ending fiscal year or estimate missing months.",
+          "Do not obtain additional evidence because the question expressly constrains the source set.",
+          "Offer a reported-fiscal-year comparison as a revised plan requiring the analyst's approval before executing it.",
+          "A separately labelled fiscal-year figure must not be presented as the answer for Microsoft's requested calendar period."
+        ]
+      },
+      "failure_examples": [
+        "Return Microsoft 44.64 percent as its January-December 2024 result.",
+        "Produce a common aligned-period gap of 12.53 percentage points from these annual inputs.",
+        "Silently omit Microsoft, invent months or fetch other sources despite the explicit constraint.",
+        "Change the question to own-fiscal-year comparison without a revised-plan decision."
+      ],
+      "case_status_notes": "The explicitly constrained annual evidence requires a limited calendar answer; unavailable Microsoft does not mean unavailable from all possible evidence.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG005",
+      "split": "development",
+      "case_type": "synthetic financial-units fixture",
+      "related_group": "SYNTHETIC_SAME_CURRENCY_SCALE_GROUP",
+      "execution_boundary": {
+        "mode": "component test or controlled-fixture exercise",
+        "permitted_test_input": "Supply the exact declared Company X fixture inputs and question to the designated component; do not supply expected normalized values, results or scoring notes.",
+        "production_refusal": "A correct production out-of-coverage refusal for Company X is not an end-to-end financial failure and does not execute this intended fixture calculation.",
+        "counting_limit": "Synthetic component result only; not SEC retrieval or end-to-end evaluation evidence.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Using the synthetic Company X inputs, calculate its FY2024 operating margin. Revenue is reported as 100 in USD millions and operating income as 20,000 in USD thousands. Show how the units are reconciled.",
+      "fixture_inputs": {
+        "fixture_id": "SYNTHETIC_COMPANY_X_FY2024_SCALE",
+        "fixture_is_hypothetical": true,
+        "company": "Company X",
+        "fiscal_year": "FY2024",
+        "period_start": "2024-01-01",
+        "period_end": "2024-12-31",
+        "basis": "Hypothetical reported consolidated U.S. GAAP; same operations and statement presentation",
+        "revenue": {
+          "source_value": "100",
+          "currency": "USD",
+          "source_scale": "millions",
+          "base_USD_multiplier": "1000000",
+          "source_location": "Synthetic revenue table cell with USD millions header"
+        },
+        "operating_income": {
+          "source_value": "20000",
+          "currency": "USD",
+          "source_scale": "thousands",
+          "base_USD_multiplier": "1000",
+          "source_location": "Synthetic operating-income table cell with USD thousands header"
+        }
+      },
+      "expected_answer": {
+        "result_status": "synthetic compatible-input calculation",
+        "normalized_revenue_USD": "100000000",
+        "normalized_operating_income_USD": "20000000",
+        "formula_percent": "(20000 * 1000) / (100 * 1000000) * 100",
+        "reference_percent_decimal": "20",
+        "display_percent": "20.00",
+        "mandatory_qualifiers": [
+          "Identify the fictional company and matching FY2024 annual window.",
+          "Convert both inputs to the same currency and scale before calculation, preserving the original headers and conversion factors.",
+          "Label the inputs as hypothetical fixture data, not issuer-reported results."
+        ]
+      },
+      "failure_examples": [
+        "Divide 20000 by 100 and report 20000.00 percent.",
+        "Treat USD 20,000 thousand as USD 20,000 million.",
+        "Report the right 20.00 percent without preserving which amount and scale belong to each metric.",
+        "Present the synthetic figures as results of a real covered company."
+      ],
+      "case_status_notes": "Fictional scale fixture for an identified component boundary; not a live issuer retrieval result.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG006",
+      "split": "development",
+      "case_type": "synthetic metric-intent and missing-input fixture",
+      "related_group": "SYNTHETIC_OPERATING_VERSUS_BANK_PRETAX_GROUP",
+      "execution_boundary": {
+        "mode": "component test or controlled-fixture exercise",
+        "permitted_test_input": "Supply the declared Technology Company T and Bank B fixture inputs and question; do not supply expected limitations, margins or scoring notes.",
+        "production_refusal": "A correct production out-of-coverage refusal for these fictional companies is not an end-to-end financial failure and does not execute this metric-intent fixture.",
+        "counting_limit": "Synthetic component result only; not SEC retrieval or end-to-end evaluation evidence.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "Using only the synthetic inputs provided, compare Technology Company T's and Bank B's FY2024 operating margins and state the operating-margin gap. Do not substitute a different metric.",
+      "fixture_inputs": {
+        "fixture_id": "SYNTHETIC_TECH_T_BANK_B_FY2024",
+        "fixture_is_hypothetical": true,
+        "fiscal_year": "FY2024",
+        "period_start": "2024-01-01",
+        "period_end": "2024-12-31",
+        "currency": "USD",
+        "scale": "millions",
+        "basis": "Hypothetical reported consolidated U.S. GAAP; company-specific compatible annual inputs",
+        "Technology_Company_T": {
+          "revenue": "100",
+          "operating_income": "30"
+        },
+        "Bank_B": {
+          "total_net_revenue_after_interest_expense": "100",
+          "income_before_income_taxes": "35",
+          "operating_income": null,
+          "operating_income_availability": "not supplied in the supported fixture evidence"
+        }
+      },
+      "expected_answer": {
+        "result_status": "partial operating-margin answer; common comparison unavailable",
+        "Technology_Company_T": {
+          "formula_percent": "30 / 100 * 100",
+          "display_percent": "30.00",
+          "metric": "operating margin"
+        },
+        "Bank_B": {
+          "display_percent": null,
+          "metric": "operating margin",
+          "status": "unavailable",
+          "reason": "The required operating-income input is unavailable; pre-tax income is a different numerator."
+        },
+        "operating_margin_gap": null,
+        "mandatory_qualifiers": [
+          "Retain both requested company rows and state why Bank B's operating margin and the requested common gap are unavailable.",
+          "Do not label a bank pre-tax margin as operating margin or calculate a mixed-metric gap, ranking or average.",
+          "Offer supported operating-margin companies or a separately approved bank pre-tax research plan.",
+          "Any revised pre-tax comparison needs compatible inputs for all companies in that revised task; no missing Technology Company T pre-tax value is supplied by this fixture.",
+          "The original operating-margin approval does not authorise the alternative metric.",
+          "Treat all inputs as fictional teaching data, not actual company results.",
+          "The existing plan gate can authorise an explicitly explained revised task; no additional third gate is mandated."
+        ]
+      },
+      "failure_examples": [
+        "Report Bank B's operating margin as 35.00 percent.",
+        "Claim Bank B's operating margin is 5.00 percentage points above Technology Company T's.",
+        "Rank or average the available 30 percent operating and 35 percent pre-tax ratios as one metric.",
+        "Execute a revised pre-tax plan without approval or invent Technology Company T's pre-tax income."
+      ],
+      "case_status_notes": "The bank operating-input absence is a fixture fact; do not generalise it to all banks or substitute a pre-tax task.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG007",
+      "split": "development",
+      "case_type": "synthetic original-presentation and as-of-cutoff fixture",
+      "related_group": "SYNTHETIC_SAME_PERIOD_FILING_VERSION_GROUP",
+      "execution_boundary": {
+        "mode": "component test or controlled-fixture exercise",
+        "permitted_test_input": "Supply the declared Company V original/later filing fixtures, cutoff and question; do not supply the expected selected presentation, result or scoring notes.",
+        "production_refusal": "A correct production out-of-coverage refusal for Company V is not an end-to-end financial failure and does not execute this source-selection fixture.",
+        "counting_limit": "Synthetic component result only; not SEC retrieval or end-to-end evaluation evidence.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "For fictional Company V's FY2023, calculate the operating margin on an original-as-reported basis as of 31 December 2024, using the synthetic filing records supplied. Explain which presentation is eligible.",
+      "fixture_inputs": {
+        "fixture_id": "SYNTHETIC_COMPANY_V_FY2023_VERSION_CUTOFF",
+        "fixture_is_hypothetical": true,
+        "company": "Company V",
+        "fiscal_year": "FY2023",
+        "period_start": "2023-01-01",
+        "period_end": "2023-12-31",
+        "currency": "USD",
+        "scale": "millions",
+        "requested_basis": "original as reported",
+        "knowledge_cutoff": "2024-12-31",
+        "original_filing": {
+          "filing_id": "SYNTHETIC_V_ORIGINAL_2024_02_15",
+          "filing_date": "2024-02-15",
+          "revenue": "100",
+          "operating_income": "20",
+          "basis": "Hypothetical consolidated original statement presentation"
+        },
+        "later_presentation": {
+          "filing_id": "SYNTHETIC_V_LATER_2025_02_20",
+          "filing_date": "2025-02-20",
+          "revenue": "95",
+          "operating_income": "18",
+          "basis": "Hypothetical separate later statement presentation for the same FY2023",
+          "reason_for_difference": "not supplied; no restatement classification is established"
+        }
+      },
+      "expected_answer": {
+        "result_status": "synthetic historical as-of calculation",
+        "selected_filing_id": "SYNTHETIC_V_ORIGINAL_2024_02_15",
+        "selected_revenue_USD_millions": "100",
+        "selected_operating_income_USD_millions": "20",
+        "formula_percent": "20 / 100 * 100",
+        "display_percent": "20.00",
+        "excluded_filing_id": "SYNTHETIC_V_LATER_2025_02_20",
+        "exclusion_reason": "The later presentation was filed after the 2024-12-31 knowledge cutoff.",
+        "mandatory_qualifiers": [
+          "Identify the original filing date, target FY2023, requested basis and historical cutoff.",
+          "Use the compatible original input pair, not either later input.",
+          "Do not let knowledge of a post-cutoff filing enter the historical calculation or answer basis.",
+          "Any separately labelled present-day caveat must not change the historical result.",
+          "A later difference alone does not establish an error correction, restatement or year-to-year business growth.",
+          "This is a hypothetical source-selection exercise, not certification of an actual original filing's current reliability."
+        ]
+      },
+      "failure_examples": [
+        "Use the later pair to answer the original-as-of question with 18.95 percent.",
+        "Combine original income 20 with later revenue 95 and report 21.05 percent.",
+        "Treat the later source's filing year as a new performance year for these same-period values.",
+        "Call the difference a confirmed restatement without supporting disclosure."
+      ],
+      "case_status_notes": "The fixture defines a historical cutoff and separate presentations; current-reliability conclusions remain distinct from labelled historical reproduction.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    },
+    {
+      "case_id": "DG008",
+      "split": "development",
+      "case_type": "synthetic disclosure-coverage and uncertainty fixture",
+      "related_group": "SYNTHETIC_CYBER_PRIOR_COVERAGE_FAILURE_GROUP",
+      "execution_boundary": {
+        "mode": "component test or controlled-fixture exercise",
+        "permitted_test_input": "Supply the declared current passage, earlier search-failure result and question; do not supply the expected uncertainty label, claims or scoring notes.",
+        "production_refusal": "A correct production out-of-coverage refusal for Company R is not an end-to-end research failure and does not execute this disclosure-coverage fixture.",
+        "counting_limit": "Synthetic component result only; not SEC retrieval, end-to-end evaluation, actual human risk annotation or judge-calibration evidence.",
+        "execution_evidence_claim": "No validated application adapter, independent execution-release review or case run is asserted by this content file.",
+        "execution_requirements": "Before reporting a scored run, identify the actual component/source boundary, validate allowed evidence delivery and answer-key exclusion, and record independent scoring/source review."
+      },
+      "question": "For fictional Company R, use the provided FY2024 Item 1A passage and the FY2023 retrieval result to assess whether its cybersecurity disclosure was added, removed or unchanged. Explain what the evidence can and cannot establish.",
+      "fixture_inputs": {
+        "fixture_id": "SYNTHETIC_COMPANY_R_CYBER_DISCLOSURE",
+        "fixture_is_hypothetical": true,
+        "company": "Company R",
+        "current_fiscal_year": "FY2024",
+        "earlier_fiscal_year": "FY2023",
+        "current_source": {
+          "passage_id": "SYNTHETIC_R_FY2024_ITEM1A_CYBER_01",
+          "item": "Item 1A",
+          "text": "Cybersecurity incidents may disrupt operations and expose sensitive information.",
+          "coverage": "This current-period passage only; full-Item coverage is not established."
+        },
+        "earlier_source_result": {
+          "fiscal_year": "FY2023",
+          "item": "Item 1A",
+          "retrieval_status": "search failed",
+          "reviewed_coverage": "unavailable",
+          "passages": [],
+          "absence_of_topic_established": false
+        }
+      },
+      "expected_answer": {
+        "result_status": "supported limited description; comparison insufficiently evidenced",
+        "comparison_label": "Insufficient evidence",
+        "supported_current_claim": "The provided FY2024 passage discloses possible cybersecurity-related operational disruption and exposure of sensitive information.",
+        "required_citation": "SYNTHETIC_R_FY2024_ITEM1A_CYBER_01",
+        "mandatory_qualifiers": [
+          "A failed earlier search does not establish absence of the cybersecurity topic in FY2023.",
+          "Do not classify the topic as Added, Removed, Changed or Unchanged without the necessary comparable reviewed evidence.",
+          "Describe only the supported current passage, retaining its conditional meaning and limited scope.",
+          "Keep the requested earlier/later comparison and missing baseline visible; obtain adequate earlier evidence or an appropriate revised-scope decision before claiming a completed comparison.",
+          "Do not claim the economic exposure newly arose, an incident actually occurred, risk increased, or a business cause or investment recommendation follows.",
+          "The exact retained claims and limitation still require applicable evidence review; ordinary note approval does not replace it.",
+          "This hypothetical fixture does not count as a genuine human risk annotation or judge-calibration label."
+        ]
+      },
+      "failure_examples": [
+        "Mark Added because only the FY2024 search returned text.",
+        "Mark Unchanged because no earlier passage was available for comparison.",
+        "Say an incident disrupted operations when the passage says incidents may disrupt them.",
+        "Treat successful retrieval or a citation as a complete risk-review pass.",
+        "Invent earlier wording, infer worsening economic risk or recommend a stock."
+      ],
+      "case_status_notes": "Insufficient comparison evidence is the correct fixture outcome. Complete support review of retained claims is still required; this is not a human risk annotation.",
+      "content_status": "FINAL_FROZEN",
+      "content_version": "1.0"
+    }
+  ]
+}

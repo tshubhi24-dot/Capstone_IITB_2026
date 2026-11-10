@@ -1,0 +1,680 @@
+{
+  "reviewed_revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+  "status": "Final domain content review of existing public development questions",
+  "source_scope": "Four local Item 1A cache files and exact public filing metadata; full original HTML/complete section boundaries not inspected.",
+  "case_count": 2,
+  "topic_pair_count": 4,
+  "contracts": [
+    {
+      "case": {
+        "id": "d14",
+        "split": "dev",
+        "type": "risk_change",
+        "request": "What changed in Microsoft's risk factors between fiscal 2023 and 2024?",
+        "expect": {
+          "risk_change": {
+            "ticker": "MSFT",
+            "years": [
+              2023,
+              2024
+            ]
+          }
+        }
+      },
+      "jsonl_line": 14,
+      "source_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+      "contract_id": "d14-domain-v1.0",
+      "content_status": "Final source-backed domain reference, bounded to selected public cached topics",
+      "reference_answer": "Within the selected Microsoft Item 1A passages, the retained third-party IP paragraph becomes more explicit in FY2024 about copyright and other claims arising from AI training/output and about royalty-bearing data-access/licensing terms [MSFT_2023_item1a_071; MSFT_2024_item1a_081]. This supports Changed wording within that topic, not a claim that AI/IP risk was absent company-wide in FY2023. The matched three-sentence climate/resource/powering-and-cooling paragraph is unchanged after whitespace normalisation [MSFT_2023_item1a_079; MSFT_2024_item1a_090]. These are selected-topic findings; complete Item 1A coverage, economic materiality and any operating-margin cause are not established.",
+      "topic_comparisons": [
+        {
+          "id": "d14-T1",
+          "case_id": "d14",
+          "topic": "Third-party IP claims and AI specificity",
+          "label": "Changed",
+          "earlier": {
+            "passage_id": "MSFT_2023_item1a_071",
+            "company": "MSFT",
+            "fiscal_year": 2023,
+            "item": "item1a",
+            "accession": "0000950170-23-035122",
+            "source_path": "data/passages/MSFT_2023.jsonl",
+            "jsonl_line": 72,
+            "file_sha256": "b7a33659b74494c541c1278ff0fec3f53bc9d484393c207f68bfa7cf3f788042",
+            "passage_text_sha256": "9fb9d4b41e2cc8aefa6b438be6796c7bfde323cfef94a39be4b27533a65803ab",
+            "excerpt_start_char_zero_based": 201,
+            "excerpt_end_char_exclusive": 1042,
+            "excerpt": "Third parties may claim that we infringe their intellectual property.\n From time to time, others claim we infringe their intellectual property rights. To resolve these claims, we may enter into royalty and licensing agreements on terms that are less favorable than currently available, stop selling or redesign affected products or services, or pay damages to satisfy indemnification commitments with our customers. Adverse outcomes could also include monetary damages or injunctive relief that may limit or prevent importing, marketing, and selling our products or services that have infringing technologies. We have paid significant amounts to settle claims related to the use of technology and intellectual property rights and to procure intellectual property rights as part of our strategy to manage this risk, and may continue to do so.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "MSFT",
+              "issuer_cik": "0000789019",
+              "fiscal_year": 2023,
+              "accessionNumber": "0000950170-23-035122",
+              "filingDate": "2023-07-27",
+              "reportDate": "2023-06-30",
+              "form": "10-K",
+              "primaryDocument": "msft-20230630.htm",
+              "reporting_period_start": "2022-07-01",
+              "reporting_period_end": "2023-06-30",
+              "period_days_inclusive": 365,
+              "period_provenance": {
+                "path": "data/edgar_cache/0000789019.json",
+                "sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a",
+                "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2022-07-01",
+                  "end": "2023-06-30",
+                  "val": 211915000000,
+                  "accn": "0000950170-23-035122",
+                  "fy": 2023,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2023-07-27"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0000789019.json",
+                "sha256": "d00f79329830e62d133b105bdd77d1483e7f7a439466345bdb1f3e49d608b450",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 574
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "later": {
+            "passage_id": "MSFT_2024_item1a_081",
+            "company": "MSFT",
+            "fiscal_year": 2024,
+            "item": "item1a",
+            "accession": "0000950170-24-087843",
+            "source_path": "data/passages/MSFT_2024.jsonl",
+            "jsonl_line": 82,
+            "file_sha256": "e9136c75f3f41e54a9556e9bba09a16d8426b16e64fd0f2bf1b6b59efe0dddb3",
+            "passage_text_sha256": "56e88bc21551d9f8c7eab9f50b00c3d5e683d307af1266fa3c56a66656ef4430",
+            "excerpt_start_char_zero_based": 202,
+            "excerpt_end_char_exclusive": 1213,
+            "excerpt": "Third parties may claim that we infringe their intellectual property.\n From time to time, others claim we infringe their intellectual property rights, including current copyright infringement and other claims arising from AI training and output. To resolve these claims, we may enter into royalty-bearing data access or licensing agreements on terms that are less favorable than currently available, stop selling or redesign affected products or services, or pay damages to satisfy indemnification commitments with our customers. Adverse outcomes could also include monetary damages or injunctive relief that may limit or prevent importing, marketing, and selling our products or services that have infringing technologies. We have paid significant amounts to settle claims related to the use of technology and intellectual property rights and to procure intellectual property rights as part of our strategy to manage this risk, and may continue to do so, which could adversely affect our results of operations.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "MSFT",
+              "issuer_cik": "0000789019",
+              "fiscal_year": 2024,
+              "accessionNumber": "0000950170-24-087843",
+              "filingDate": "2024-07-30",
+              "reportDate": "2024-06-30",
+              "form": "10-K",
+              "primaryDocument": "msft-20240630.htm",
+              "reporting_period_start": "2023-07-01",
+              "reporting_period_end": "2024-06-30",
+              "period_days_inclusive": 366,
+              "period_provenance": {
+                "path": "data/edgar_cache/0000789019.json",
+                "sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a",
+                "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2023-07-01",
+                  "end": "2024-06-30",
+                  "val": 245122000000,
+                  "accn": "0000950170-24-087843",
+                  "fy": 2024,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2024-07-30"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0000789019.json",
+                "sha256": "d00f79329830e62d133b105bdd77d1483e7f7a439466345bdb1f3e49d608b450",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 403
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "reference_finding": "The selected IP-infringement paragraph is retained but becomes more specific in FY2024: it explicitly names current copyright-infringement and other claims arising from AI training/output, and describes royalty-bearing data-access or licensing agreements. FY2023 describes IP-infringement claims and royalty/licensing agreements generically.",
+          "mandatory_claims": [
+            "The IP-risk topic exists in both selected years.",
+            "FY2024 adds AI-training/output claim specificity within this paragraph.",
+            "Changed disclosure does not by itself prove a newly arising company-wide economic risk, realised loss or margin effect."
+          ],
+          "prohibited_inferences": [
+            "AI/IP risk was absent from the entire FY2023 filing.",
+            "AI risk as a whole was newly invented in FY2024.",
+            "This wording caused an actual operating-margin decline."
+          ],
+          "acceptable_alternatives": [
+            "“Expanded AI-specific wording within the retained IP paragraph” is acceptable if Expanded is descriptive and maps to Changed.",
+            "A narrower accurate comparison of the licensing/data-access language is acceptable with both passages and scope."
+          ],
+          "coverage": "Full selected IP paragraph in each cached record; other AI, cybersecurity, litigation and cross-reference sections are not certified complete."
+        },
+        {
+          "id": "d14-T2",
+          "case_id": "d14",
+          "topic": "Climate resource and powering/cooling costs",
+          "label": "Scoped Unchanged",
+          "earlier": {
+            "passage_id": "MSFT_2023_item1a_079",
+            "company": "MSFT",
+            "fiscal_year": 2023,
+            "item": "item1a",
+            "accession": "0000950170-23-035122",
+            "source_path": "data/passages/MSFT_2023.jsonl",
+            "jsonl_line": 80,
+            "file_sha256": "b7a33659b74494c541c1278ff0fec3f53bc9d484393c207f68bfa7cf3f788042",
+            "passage_text_sha256": "f65291476ba33a4ee46305b158642918c63f59d11a96ea060c96ef4bd3e7c7e1",
+            "excerpt_start_char_zero_based": 202,
+            "excerpt_end_char_exclusive": 701,
+            "excerpt": "The long-term effects of climate change on the global economy and the IT industry in particular are unclear. Environmental regulations or changes in the supply, demand, or available sources of energy or other resources may affect the availability or cost of goods and services, including natural resources, necessary to run our business. Changes in climate where we operate may increase the costs of powering and cooling computer hardware we use to develop software and provide cloud-based services.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "MSFT",
+              "issuer_cik": "0000789019",
+              "fiscal_year": 2023,
+              "accessionNumber": "0000950170-23-035122",
+              "filingDate": "2023-07-27",
+              "reportDate": "2023-06-30",
+              "form": "10-K",
+              "primaryDocument": "msft-20230630.htm",
+              "reporting_period_start": "2022-07-01",
+              "reporting_period_end": "2023-06-30",
+              "period_days_inclusive": 365,
+              "period_provenance": {
+                "path": "data/edgar_cache/0000789019.json",
+                "sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a",
+                "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2022-07-01",
+                  "end": "2023-06-30",
+                  "val": 211915000000,
+                  "accn": "0000950170-23-035122",
+                  "fy": 2023,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2023-07-27"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0000789019.json",
+                "sha256": "d00f79329830e62d133b105bdd77d1483e7f7a439466345bdb1f3e49d608b450",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 574
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017023035122/msft-20230630.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "later": {
+            "passage_id": "MSFT_2024_item1a_090",
+            "company": "MSFT",
+            "fiscal_year": 2024,
+            "item": "item1a",
+            "accession": "0000950170-24-087843",
+            "source_path": "data/passages/MSFT_2024.jsonl",
+            "jsonl_line": 91,
+            "file_sha256": "e9136c75f3f41e54a9556e9bba09a16d8426b16e64fd0f2bf1b6b59efe0dddb3",
+            "passage_text_sha256": "d92852069c2ea4a5b0939292a3b2eeb8c00d8e3b3d00d4cb33948545bc7c65cc",
+            "excerpt_start_char_zero_based": 202,
+            "excerpt_end_char_exclusive": 701,
+            "excerpt": "The long-term effects of climate change on the global economy and the IT industry in particular are unclear. Environmental regulations or changes in the supply, demand, or available sources of energy or other resources may affect the availability or cost of goods and services, including natural resources, necessary to run our business. Changes in climate where we operate may increase the costs of powering and cooling computer hardware we use to develop software and provide cloud-based services.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "MSFT",
+              "issuer_cik": "0000789019",
+              "fiscal_year": 2024,
+              "accessionNumber": "0000950170-24-087843",
+              "filingDate": "2024-07-30",
+              "reportDate": "2024-06-30",
+              "form": "10-K",
+              "primaryDocument": "msft-20240630.htm",
+              "reporting_period_start": "2023-07-01",
+              "reporting_period_end": "2024-06-30",
+              "period_days_inclusive": 366,
+              "period_provenance": {
+                "path": "data/edgar_cache/0000789019.json",
+                "sha256": "bf634f485edffb616b1ce47236a9ef9773e03b1ac7173126f7827c7d0368a34a",
+                "json_pointer": "/facts/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2023-07-01",
+                  "end": "2024-06-30",
+                  "val": 245122000000,
+                  "accn": "0000950170-24-087843",
+                  "fy": 2024,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2024-07-30"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0000789019.json",
+                "sha256": "d00f79329830e62d133b105bdd77d1483e7f7a439466345bdb1f3e49d608b450",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 403
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000095017024087843/msft-20240630.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "reference_finding": "The three-sentence climate paragraph is identical after whitespace normalisation: uncertainty about long-term effects, environmental/resource cost exposure, and possible powering/cooling cost increases appear in both years. No substantive change is identified within this paired paragraph.",
+          "mandatory_claims": [
+            "Climate cost exposure is present in both selected paragraphs.",
+            "The matched topic paragraph is unchanged after whitespace normalisation.",
+            "This is a scoped finding, not a statement that every climate disclosure or the entire risk section is unchanged."
+          ],
+          "prohibited_inferences": [
+            "The climate-risk topic was newly added or expanded based solely on these paragraphs.",
+            "Unchanged wording proves unchanged real economic exposure.",
+            "No climate discussion changed anywhere else in the filing."
+          ],
+          "acceptable_alternatives": [
+            "“No material wording change in these matched climate paragraphs” is acceptable.",
+            "An answer can omit this supporting topic if it supplies another valid paired change, preserves scope and explains selective coverage."
+          ],
+          "coverage": "Complete matched climate paragraph only; no complete climate-section or full-filing assurance."
+        }
+      ],
+      "execution_mode": "Existing issuer-source development integration question; no new fictional fixture or run",
+      "expected_answer_scope": "At least one actual supported change must be explained with paired topic evidence. The second reference topic illustrates an acceptable additional finding; no exhaustive-diff claim is permitted.",
+      "mandatory_qualifiers": [
+        "Name the issuer and compare its own FY2023 and FY2024 filings.",
+        "Cite authentic same-topic evidence from both years for each asserted comparison.",
+        "Distinguish disclosure change from new economic exposure or realised loss.",
+        "State selected-topic coverage and relevant missing/full-section limitations.",
+        "Do not invent a causal connection to financial performance."
+      ],
+      "scoring": {
+        "Pass": "A completed answer explains at least one genuine supported change with correct paired evidence, attribution/dates and scope; any retained additional claim is supported or explicitly limited. Exact reference prose and both selected topics are not mandatory.",
+        "Fail": "A completed answer fabricates or contradicts a mandatory fact, labels an existing risk wholly new without adequate coverage, gives a false paired citation/issuer/year, or asserts unsupported economic causation/advice. A known mandatory violation remains Fail even if completion is also interrupted.",
+        "Incomplete": "No established mandatory failure, but execution or necessary review is incomplete, a complete comparative answer is absent, or only insufficient evidence is returned although these available source pairs were not examined. Such a cautious limited answer may be publication-safe while still failing to complete this case.",
+        "Disputed_or_defective_case": "Conflicting source eligibility, genuine materially different paired coverage, extraction damage or a rubric defect must be adjudicated and versioned; do not force a model failure to protect the reference."
+      },
+      "alternative_answer_rule": "Another true and adequately evidenced topic pair is acceptable. Evaluate its actual sources and meaning; do not require the literal phrases, passage IDs or all topics used by this exemplar.",
+      "publication_boundary": "Case Pass is not final-note approval or confirmation of portal publication.",
+      "human_and_independence_boundary": "AI-assisted domain reference prepared from public cached evidence. Not an actual human risk annotation, independently accepted R5 gold, protected held-out case or executed model result."
+    },
+    {
+      "case": {
+        "id": "d15",
+        "split": "dev",
+        "type": "risk_change",
+        "request": "How did NVIDIA's risk factors change from fiscal 2023 to fiscal 2024?",
+        "expect": {
+          "risk_change": {
+            "ticker": "NVDA",
+            "years": [
+              2023,
+              2024
+            ]
+          }
+        }
+      },
+      "jsonl_line": 15,
+      "source_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+      "contract_id": "d15-domain-v1.0",
+      "content_status": "Final source-backed domain reference, bounded to selected public cached topics",
+      "reference_answer": "Within the selected NVIDIA export passages, FY2023 describes A800 as an alternative not subject to the then-new licence requirements [NVDA_2023_item1a_069], whereas FY2024 describes updated October 2023 requirements including A800 and an immediate 23 October 2023 licensing notice [NVDA_2024_item1a_085]. This is Changed licensing exposure, not a new overall export-risk topic. In the climate-goal sentence, FY2023 names the 100% renewable-electricity goal for the end of FY2025, while FY2024 refers more generally to sustainability-related goals [NVDA_2023_item1a_045; NVDA_2024_item1a_055]. Both retain reputational/unexpected-cost exposure. This wording change does not prove that a goal was abandoned or achieved. These are selected-topic findings, not a complete filing diff or quantified financial effect.",
+      "topic_comparisons": [
+        {
+          "id": "d15-T1",
+          "case_id": "d15",
+          "topic": "Export licensing and the A800 example",
+          "label": "Changed",
+          "earlier": {
+            "passage_id": "NVDA_2023_item1a_069",
+            "company": "NVDA",
+            "fiscal_year": 2023,
+            "item": "item1a",
+            "accession": "0001045810-23-000017",
+            "source_path": "data/passages/NVDA_2023.jsonl",
+            "jsonl_line": 70,
+            "file_sha256": "084e081677fa0054620f293c3adae18e3bec2acd15c7e14ee8cf062d5204f82f",
+            "passage_text_sha256": "38739d19b0225eb7d176184576455a1c39d8e2e5bdac30bfba0651451b37a07c",
+            "excerpt_start_char_zero_based": 403,
+            "excerpt_end_char_exclusive": 1222,
+            "excerpt": "The new license requirements also apply to any future NVIDIA integrated circuit achieving certain peak performance and chip-to-chip I/O performance thresholds, as well as any system or board that includes those circuits. There are also now licensing requirements to export a wide array of products, including networking products, destined for certain end users and for certain end uses in China. We are required to transition certain operations out of China (including Hong Kong), which could be costly and time consuming, and adversely affect our research and development and supply and distribution operations, as well as our revenue, during any such transition period. We have engaged with customers in China to provide alternative products not subject to the new license requirements, such as our new A800 offering.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "NVDA",
+              "issuer_cik": "0001045810",
+              "fiscal_year": 2023,
+              "accessionNumber": "0001045810-23-000017",
+              "filingDate": "2023-02-24",
+              "reportDate": "2023-01-29",
+              "form": "10-K",
+              "primaryDocument": "nvda-20230129.htm",
+              "reporting_period_start": "2022-01-31",
+              "reporting_period_end": "2023-01-29",
+              "period_days_inclusive": 364,
+              "period_provenance": {
+                "path": "data/edgar_cache/0001045810.json",
+                "sha256": "a7cf2857c67726f1627299e0e7533670272e37349da086efaebeb5b8a6c7970d",
+                "json_pointer": "/facts/us-gaap/Revenues/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2022-01-31",
+                  "end": "2023-01-29",
+                  "val": 26974000000,
+                  "accn": "0001045810-23-000017",
+                  "fy": 2023,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2023-02-24"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0001045810.json",
+                "sha256": "1601dec0a199757f278b0f5369f25debdeb0b1b288f0ccb4f02283845986fb67",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 761
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "later": {
+            "passage_id": "NVDA_2024_item1a_085",
+            "company": "NVDA",
+            "fiscal_year": 2024,
+            "item": "item1a",
+            "accession": "0001045810-24-000029",
+            "source_path": "data/passages/NVDA_2024.jsonl",
+            "jsonl_line": 86,
+            "file_sha256": "0ab9d86dd8adb475cb052c06159ce260de3f36e83e74f7ec404565b7618990a9",
+            "passage_text_sha256": "078c21453988f843e3f6d90be77585d9ad392fb2997e0e87b6a9b77d3bd38462",
+            "excerpt_start_char_zero_based": 403,
+            "excerpt_end_char_exclusive": 1273,
+            "excerpt": "In October 2023, the USG announced new and updated licensing requirements that became effective in our fourth quarter of fiscal year 2024 for exports to China and Country Groups D1, D4, and D5 (including but not limited to, Saudi Arabia, the United Arab Emirates, and Vietnam, but excluding Israel) of our products exceeding certain performance thresholds, including A100, A800, H100, H800, L4, L40, L40S and RTX 4090. The licensing requirements also apply to the export of products exceeding certain performance thresholds to a party headquartered in, or with an ultimate parent headquartered in, Country Group D5, including China. On October 23, 2023, the USG informed us that the licensing requirements were effective immediately for shipments of our A100, A800, H100, H800, and L40S products. We have not received licenses to ship these restricted products to China.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "NVDA",
+              "issuer_cik": "0001045810",
+              "fiscal_year": 2024,
+              "accessionNumber": "0001045810-24-000029",
+              "filingDate": "2024-02-21",
+              "reportDate": "2024-01-28",
+              "form": "10-K",
+              "primaryDocument": "nvda-20240128.htm",
+              "reporting_period_start": "2023-01-30",
+              "reporting_period_end": "2024-01-28",
+              "period_days_inclusive": 364,
+              "period_provenance": {
+                "path": "data/edgar_cache/0001045810.json",
+                "sha256": "a7cf2857c67726f1627299e0e7533670272e37349da086efaebeb5b8a6c7970d",
+                "json_pointer": "/facts/us-gaap/Revenues/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2023-01-30",
+                  "end": "2024-01-28",
+                  "val": 60922000000,
+                  "accn": "0001045810-24-000029",
+                  "fy": 2024,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2024-02-21"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0001045810.json",
+                "sha256": "1601dec0a199757f278b0f5369f25debdeb0b1b288f0ccb4f02283845986fb67",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 611
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "reference_finding": "FY2023 describes A800 as an alternative product not subject to the then-new licence requirements. FY2024 describes October 2023 updated requirements covering products including A800 and records immediate requirements on 23 October 2023 for A100/A800/H100/H800/L40S shipments. The scope of the disclosed licensing exposure changes; export-control risk itself already existed.",
+          "mandatory_claims": [
+            "Export licensing is an existing topic in FY2023, not a newly appearing overall risk.",
+            "The FY2023 A800 alternative and FY2024 A800 licensing treatment differ.",
+            "FY2024 refers to updated October 2023 requirements; fiscal 2024 is not calendar 2024."
+          ],
+          "prohibited_inferences": [
+            "NVIDIA had no export-control exposure in FY2023.",
+            "The new restrictions began only after the FY2024 reporting period.",
+            "All NVIDIA products or all countries were prohibited.",
+            "The excerpts quantify a realised revenue or margin loss."
+          ],
+          "acceptable_alternatives": [
+            "A supported comparison of the new regional/customer scope or post-control operational transitions is acceptable with authentic paired passages and precise dates.",
+            "An accurate concise answer can describe updated licensing specificity without listing every model or country group."
+          ],
+          "coverage": "Selected licensing discussion and its surrounding cached records; no assurance that every restriction or exception in the complete filing is covered."
+        },
+        {
+          "id": "d15-T2",
+          "case_id": "d15",
+          "topic": "Climate-goal risk specificity",
+          "label": "Changed",
+          "earlier": {
+            "passage_id": "NVDA_2023_item1a_045",
+            "company": "NVDA",
+            "fiscal_year": 2023,
+            "item": "item1a",
+            "accession": "0001045810-23-000017",
+            "source_path": "data/passages/NVDA_2023.jsonl",
+            "jsonl_line": 46,
+            "file_sha256": "084e081677fa0054620f293c3adae18e3bec2acd15c7e14ee8cf062d5204f82f",
+            "passage_text_sha256": "b508ed0ac9f7aaf47b0bbbca9517696c8a0d619b834f4a03cae209571c743a74",
+            "excerpt_start_char_zero_based": 560,
+            "excerpt_end_char_exclusive": 817,
+            "excerpt": "We may not achieve our stated goal to source 100% of our global electricity use from renewable energy by the end of fiscal year 2025, which could harm our reputation, or we may incur additional, \n24\nTable of Contents\nunexpected costs to achieve such a goal.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "NVDA",
+              "issuer_cik": "0001045810",
+              "fiscal_year": 2023,
+              "accessionNumber": "0001045810-23-000017",
+              "filingDate": "2023-02-24",
+              "reportDate": "2023-01-29",
+              "form": "10-K",
+              "primaryDocument": "nvda-20230129.htm",
+              "reporting_period_start": "2022-01-31",
+              "reporting_period_end": "2023-01-29",
+              "period_days_inclusive": 364,
+              "period_provenance": {
+                "path": "data/edgar_cache/0001045810.json",
+                "sha256": "a7cf2857c67726f1627299e0e7533670272e37349da086efaebeb5b8a6c7970d",
+                "json_pointer": "/facts/us-gaap/Revenues/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2022-01-31",
+                  "end": "2023-01-29",
+                  "val": 26974000000,
+                  "accn": "0001045810-23-000017",
+                  "fy": 2023,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2023-02-24"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0001045810.json",
+                "sha256": "1601dec0a199757f278b0f5369f25debdeb0b1b288f0ccb4f02283845986fb67",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 761
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581023000017/nvda-20230129.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "later": {
+            "passage_id": "NVDA_2024_item1a_055",
+            "company": "NVDA",
+            "fiscal_year": 2024,
+            "item": "item1a",
+            "accession": "0001045810-24-000029",
+            "source_path": "data/passages/NVDA_2024.jsonl",
+            "jsonl_line": 56,
+            "file_sha256": "0ab9d86dd8adb475cb052c06159ce260de3f36e83e74f7ec404565b7618990a9",
+            "passage_text_sha256": "4ec134655b42830030bf6f3039d494965cb508545c0136c17e6cbcf2df9bb83b",
+            "excerpt_start_char_zero_based": 403,
+            "excerpt_end_char_exclusive": 563,
+            "excerpt": "We may not achieve our stated sustainability-related goals, which could harm our reputation, or we may incur additional, unexpected costs to achieve such goals.",
+            "offset_scope": "Offsets into exact cached passage text, not HTML or original filing pagination.",
+            "filing": {
+              "company": "NVDA",
+              "issuer_cik": "0001045810",
+              "fiscal_year": 2024,
+              "accessionNumber": "0001045810-24-000029",
+              "filingDate": "2024-02-21",
+              "reportDate": "2024-01-28",
+              "form": "10-K",
+              "primaryDocument": "nvda-20240128.htm",
+              "reporting_period_start": "2023-01-30",
+              "reporting_period_end": "2024-01-28",
+              "period_days_inclusive": 364,
+              "period_provenance": {
+                "path": "data/edgar_cache/0001045810.json",
+                "sha256": "a7cf2857c67726f1627299e0e7533670272e37349da086efaebeb5b8a6c7970d",
+                "json_pointer": "/facts/us-gaap/Revenues/units/USD",
+                "selection": "Exact accession and reportDate match; unique annual-duration context",
+                "matched_context": {
+                  "start": "2023-01-30",
+                  "end": "2024-01-28",
+                  "val": 60922000000,
+                  "accn": "0001045810-24-000029",
+                  "fy": 2024,
+                  "fp": "FY",
+                  "form": "10-K",
+                  "filed": "2024-02-21"
+                }
+              },
+              "filing_metadata_provenance": {
+                "path": "data/edgar_cache/submissions_0001045810.json",
+                "sha256": "1601dec0a199757f278b0f5369f25debdeb0b1b288f0ccb4f02283845986fb67",
+                "json_pointer": "/filings/recent",
+                "parallel_array_index": 611
+              },
+              "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581024000029/nvda-20240128.htm",
+              "limitations": "Source URL recovered from cache metadata; no network or original complete filing/HTML inspection."
+            }
+          },
+          "reference_finding": "FY2023 specifically discusses not achieving 100% renewable global electricity by the end of FY2025, together with reputational and unexpected-cost exposure. FY2024 refers more generally to not achieving stated sustainability-related goals while retaining the reputational/cost warning. The selected sentence becomes less specific about the named goal.",
+          "mandatory_claims": [
+            "The risk of missing environmental/sustainability goals is present in both selected years.",
+            "FY2023 names a specific renewable-electricity target; FY2024 uses broader sustainability-goal wording in this selected sentence.",
+            "Loss of specificity in this paragraph does not establish target abandonment, achievement or disappearance elsewhere."
+          ],
+          "prohibited_inferences": [
+            "NVIDIA abandoned or achieved the renewable-energy goal.",
+            "The renewable target was absent from the whole FY2024 filing.",
+            "The underlying climate risk was removed."
+          ],
+          "acceptable_alternatives": [
+            "“Changed specificity while the reputational/cost risk remains” is acceptable.",
+            "A source-backed comparison of other selected climate wording can replace this topic if the scope and paired evidence are equally explicit."
+          ],
+          "coverage": "Selected stated-goal sentence and continuation; not the complete sustainability disclosures or actual progress against goals."
+        }
+      ],
+      "execution_mode": "Existing issuer-source development integration question; no new fictional fixture or run",
+      "expected_answer_scope": "At least one actual supported change must be explained with paired topic evidence. The second reference topic illustrates an acceptable additional finding; no exhaustive-diff claim is permitted.",
+      "mandatory_qualifiers": [
+        "Name the issuer and compare its own FY2023 and FY2024 filings.",
+        "Cite authentic same-topic evidence from both years for each asserted comparison.",
+        "Distinguish disclosure change from new economic exposure or realised loss.",
+        "State selected-topic coverage and relevant missing/full-section limitations.",
+        "Do not invent a causal connection to financial performance."
+      ],
+      "scoring": {
+        "Pass": "A completed answer explains at least one genuine supported change with correct paired evidence, attribution/dates and scope; any retained additional claim is supported or explicitly limited. Exact reference prose and both selected topics are not mandatory.",
+        "Fail": "A completed answer fabricates or contradicts a mandatory fact, labels an existing risk wholly new without adequate coverage, gives a false paired citation/issuer/year, or asserts unsupported economic causation/advice. A known mandatory violation remains Fail even if completion is also interrupted.",
+        "Incomplete": "No established mandatory failure, but execution or necessary review is incomplete, a complete comparative answer is absent, or only insufficient evidence is returned although these available source pairs were not examined. Such a cautious limited answer may be publication-safe while still failing to complete this case.",
+        "Disputed_or_defective_case": "Conflicting source eligibility, genuine materially different paired coverage, extraction damage or a rubric defect must be adjudicated and versioned; do not force a model failure to protect the reference."
+      },
+      "alternative_answer_rule": "Another true and adequately evidenced topic pair is acceptable. Evaluate its actual sources and meaning; do not require the literal phrases, passage IDs or all topics used by this exemplar.",
+      "publication_boundary": "Case Pass is not final-note approval or confirmation of portal publication.",
+      "human_and_independence_boundary": "AI-assisted domain reference prepared from public cached evidence. Not an actual human risk annotation, independently accepted R5 gold, protected held-out case or executed model result."
+    }
+  ],
+  "source_review_limits": [
+    "No application run or provider/model call.",
+    "No original full-filing completeness certification.",
+    "No realised-loss or economic-materiality finding.",
+    "No actual human annotation or independent R5 gold acceptance.",
+    "No protected held-out case access."
+  ],
+  "current_scorer": {
+    "path": "analystdesk/evaluation.py",
+    "sha256": "7f961865060efdde47da769acd12706e38092b92f6c24aea49209eac0fc45031",
+    "lines": "105–109",
+    "limitation": "The risk task-success branch tests only issuer/year passage-ID appearance; it does not evaluate actual change meaning, paired relevance, evidence sufficiency or completeness.",
+    "offline_probes": [
+      {
+        "case_id": "d14",
+        "probe": "citations_only_no_comparison",
+        "text": "No comparative finding is supplied. [MSFT_2023_item1a_071] [MSFT_2024_item1a_081]",
+        "observed": {
+          "id": "d14",
+          "type": "risk_change",
+          "success": true,
+          "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]"
+        }
+      },
+      {
+        "case_id": "d14",
+        "probe": "contradictory_newness",
+        "text": "MSFT had no export or IP risks at all before the later filing; every risk was newly added. [MSFT_2023_item1a_071] [MSFT_2024_item1a_081]",
+        "observed": {
+          "id": "d14",
+          "type": "risk_change",
+          "success": true,
+          "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]"
+        }
+      },
+      {
+        "case_id": "d14",
+        "probe": "missing_earlier_citation",
+        "text": "A comparison is stated [MSFT_2024_item1a_081]",
+        "observed": {
+          "id": "d14",
+          "type": "risk_change",
+          "success": false,
+          "reason": "cites Item 1A for [2024] of [2023, 2024]"
+        }
+      },
+      {
+        "case_id": "d15",
+        "probe": "citations_only_no_comparison",
+        "text": "No comparative finding is supplied. [NVDA_2023_item1a_069] [NVDA_2024_item1a_085]",
+        "observed": {
+          "id": "d15",
+          "type": "risk_change",
+          "success": true,
+          "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]"
+        }
+      },
+      {
+        "case_id": "d15",
+        "probe": "contradictory_newness",
+        "text": "NVDA had no export or IP risks at all before the later filing; every risk was newly added. [NVDA_2023_item1a_069] [NVDA_2024_item1a_085]",
+        "observed": {
+          "id": "d15",
+          "type": "risk_change",
+          "success": true,
+          "reason": "cites Item 1A for [2023, 2024] of [2023, 2024]"
+        }
+      },
+      {
+        "case_id": "d15",
+        "probe": "missing_earlier_citation",
+        "text": "A comparison is stated [NVDA_2024_item1a_085]",
+        "observed": {
+          "id": "d15",
+          "type": "risk_change",
+          "success": false,
+          "reason": "cites Item 1A for [2024] of [2023, 2024]"
+        }
+      }
+    ],
+    "probe_limit": "Only the exact score decision prefix was AST-extracted; full metric computation, runtime and app acceptance were not executed."
+  }
+}

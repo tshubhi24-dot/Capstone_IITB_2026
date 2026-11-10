@@ -1,0 +1,13 @@
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+......................[11/09/26 11:26:33] WARNING  Invalid arguments for tool           server.py:1403
+                             'search_filings': [{'type':
+                             'missing_argument', 'loc':
+                             ('query',), 'msg': 'Missing required
+                             argument', 'input': {'company':
+                             'MSFT', 'item': 'item7',
+                             'fiscal_year': 2024}}]
+............................................................................ssss...................
+----------------------------------------------------------------------
+Ran 121 tests in 11.446s
+
+OK (skipped=4)

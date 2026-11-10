@@ -1,0 +1,9 @@
+{
+  "revision": "42e2298a26bffb918ac8320543f6bc0d9591405c",
+  "passages": 12586,
+  "passages_sha256": "161e4d06e6c69838be8ccc5df6d9d15127475d7e481ef942eac9da06110132de",
+  "config_sha256": "c0f46e2e2dedb4a7c776df334b1aac3a356ed86ecf90d296ca29072a5baf2265",
+  "tool_transport": "http",
+  "memory_on": false,
+  "lessons_on": false
+}
