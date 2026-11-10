@@ -1,0 +1,64 @@
+{
+  "artifact": "Analyst Desk Role 5 Held-out Evaluation Cases",
+  "release_id": "role5-heldout-v1",
+  "status": "EXECUTED; C2 RUN 3 HAS 10 PROVIDER CREDIT ERRORS",
+  "source_code_revision": "72ce461ae8f3b66c4bb1af148c041cb57bf01b7c",
+  "case_file": "data/evaluation/heldout/role5_heldout_v1.jsonl",
+  "case_file_sha256": "3D602F20B4D08D5E0B55EA3F7D409C0E1439BAF6B70D097D64A88CA10DFDFD2F",
+  "expected_case_count": 40,
+  "core_case_type_counts": {
+    "numeric": 12,
+    "comparison": 10,
+    "risk_change": 12,
+    "refusal": 6
+  },
+  "development_case_count": 20,
+  "expected_core_total": 60,
+  "source_basis": "Project-pinned SEC XBRL cache and cached Item 1A passages",
+  "validation": {
+    "financial_expectations_regenerated_from_build_figures": 34,
+    "risk_anchor_passages_resolved": 24,
+    "runner_load_cases_passed": true,
+    "model_evaluations_run": 3,
+    "independent_human_domain_signoff": false
+  },
+  "execution": {
+    "run_tags": [
+      "role5_v1_run1",
+      "role5_v1_run2",
+      "role5_v1_run3"
+    ],
+    "result_files": [
+      "data/evaluation/results/eval_heldout_role5_v1_run1.json",
+      "data/evaluation/results/eval_heldout_role5_v1_run2.json",
+      "data/evaluation/results/eval_heldout_role5_v1_run3.json"
+    ],
+    "report": "docs/heldout_report.md",
+    "report_sha256": "918830C2D00F9DEEE7E5AF5E168D49FCD464E18A015C9A2AFC3CFF15096ECF88",
+    "report_data": "docs/heldout_report.json",
+    "report_data_sha256": "08FC8929A34810F5B0EFD679380346D481A1F459652A0A09CC6AE5CBAF77C585",
+    "frozen_playbook_version": "8f1608da4cec",
+    "cases_per_configuration_per_run": 40,
+    "c2_run3_provider_errors": 10,
+    "provider_error": "HTTP 402 insufficient credits",
+    "record_handling": "Credential-bearing provider URL strings were redacted from error/reason text; error status, scores, and case outcomes were preserved.",
+    "diagnostic_retry": {
+      "tag": "role5_v1_retry_hr04_20261110",
+      "case_id": "h-r04",
+      "config": "c2",
+      "result_file": "data/evaluation/results/eval_heldout_role5_v1_retry_hr04_20261110.json",
+      "outcome": "HTTP 402 insufficient credits; no model answer returned",
+      "included_in_three_run_report": false,
+      "record_handling": "Credential-bearing provider URL strings were redacted from error/reason text."
+    }
+  },
+  "scorer_boundary": "The current risk_change scorer checks citation coverage for both years only; it does not score expected_interpretation.",
+  "evaluator_boundary": {
+    "application_input": "Only case.request is passed to the application.",
+    "answer_key_location": "expect fields in the held-out JSONL; evaluator-side only",
+    "prohibited": [
+      "Do not expose expected answers, interpretation labels, or answer-key evidence anchors to prompts, tools, indexes, or memory."
+    ]
+  },
+  "independence_note": "The project owner has reviewed this release. If the owner tunes the agent, replace the exposed cases or classify the affected cases as development."
+}
