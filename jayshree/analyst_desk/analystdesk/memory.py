@@ -10,6 +10,8 @@ store is what the desk remembers across runs. See docs/memory_policy.md.
                                              "figures": {"<metric>_<year>": {"value", "unit", "text"}}}
     ("watchlist", analyst)    key=tickers  {"tickers", "updated_at"}   private: only the planner
                                            sees it, and the hooks keep it out of every tool call
+    ("suppressed", "notes")   key=note-<id> {"note_id", "at"}  past-note memories the analyst
+                                           deleted, so a backfill does not restore them
 
 Past-note figures are parsed from the published note's own [fact: ...] and
 [calc: ...] tags — numbers code already verified — so memory never holds an
@@ -117,10 +119,13 @@ async def set_watchlist(analyst: str, tickers: list[str]) -> list[str]:
 
 async def remember_published_note(note_id: int, title: str, body: str, tickers: list[str],
                                   approver: str, analyst: str, published_at: str | None = None) -> dict:
-    """Called only after publish_note succeeded (i.e. after analyst approval)."""
+    """Called only after publish_note succeeded (i.e. after analyst approval).
+    A note the analyst deleted from memory is not remembered again (returns {})."""
     published_at = published_at or _now()
     figures = figures_from_note(body)
     async with open_store() as s:
+        if await s.aget(("suppressed", "notes"), f"note-{note_id}"):
+            return {}
         for t in tickers:
             t = t.upper()
             await s.aput(("notes", t), f"note-{note_id}", {
@@ -158,10 +163,35 @@ async def all_note_memories() -> list[dict]:
     return sorted(out, key=lambda v: (v["published_at"], v["note_id"]), reverse=True)
 
 
-async def forget(namespace: tuple[str, ...], key: str) -> None:
-    """Delete one memory item (policy: the analyst can delete anything stored)."""
+async def forget(namespace: tuple[str, ...], key: str) -> str:
+    """Delete one memory item (policy: the analyst can delete anything stored).
+
+    Deleting a past-note memory also takes the note off every coverage list and
+    records it as deleted, so a later backfill or memory sync does not bring it
+    back. Returns what was removed and what was not (shown to the analyst).
+    """
     async with open_store() as s:
         await s.adelete(namespace, key)
+        if namespace[0] != "notes":
+            return f"Removed this {namespace[0].rstrip('s')} from memory; later runs no longer use it."
+        note_id = int(key.split("-", 1)[1])
+        await s.aput(("suppressed", "notes"), key, {"note_id": note_id, "at": _now()})
+        for ns in await s.alist_namespaces(prefix=("coverage",), limit=200):
+            item = await s.aget(ns, namespace[1])
+            if item and note_id in item.value.get("notes", []):
+                notes = [n for n in item.value["notes"] if n != note_id]
+                if notes:
+                    await s.aput(ns, namespace[1], {**item.value, "notes": notes, "last_note_id": max(notes)})
+                else:
+                    await s.adelete(ns, namespace[1])
+    return (f"Removed note #{note_id} on {namespace[1]} from memory and coverage; later runs will not compare "
+            "against it and a backfill will not restore it. The published note itself stays in the portal, "
+            "and saved runs that already used it are not changed.")
+
+
+async def suppressed_notes() -> set[int]:
+    async with open_store() as s:
+        return {i.value["note_id"] for i in await s.asearch(("suppressed", "notes"), limit=1000)}
 
 
 # ── what changed (computed by code) ───────────────────────────────────────────
@@ -187,9 +217,11 @@ def what_changed(ticker: str, previous: dict, current: dict) -> list[str]:
         if p_year == c_year and abs(p["value"] - c["value"]) < 1e-9:
             lines.append(f"{label} FY{c_year}: unchanged since the last note at {c['text']}.")
         elif p_year == c_year:
-            # same fiscal year, different value: the figure was restated, not a business change
+            # same fiscal year, different value: a different presentation, not a business change.
+            # Code cannot tell a restatement from a recast or reclassification, so it does not say which.
             lines.append(f"{label} FY{c_year}: the last note reported {p['text']}; the value now "
-                         f"reported is {c['text']}. Restated since the last note; this note uses "
+                         f"reported is {c['text']}. The figure for the same year differs between the two "
+                         f"notes (a later presentation, not a change in the business); this note uses "
                          f"the current value.")
         elif metric == "margin":
             # the move in percentage points, with a [diff] tag the checker verifies

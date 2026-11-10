@@ -31,7 +31,7 @@ Memory is read-only to the agent: no tool lets the model write, edit or delete m
 ## How it is corrected or deleted
 
 - **Delete:** in the 🧠 Memory panel, click a preference or a past-note memory, then **Delete selected memory**. The next run no longer sees it. To change or clear the watchlist, edit it and click **Save watchlist**.
-- **Correct:** delete the wrong item and add the right one (preferences), or re-run `python scripts/backfill_memory.py`, which rebuilds past-note memory from the published notes in the portal.
+- **Correct:** delete the wrong item and add the right one (preferences), or re-run `python scripts/backfill_memory.py`, which rebuilds past-note memory from the published notes in the portal. It skips notes the analyst deleted from memory.
 - **Run without memory:** memory is on by default for each analyst. **↻ Re-run this request without memory** (C1/C2 panel) repeats a request with memory off; that run neither reads nor writes memory, and the `get_past_notes` tool is removed from it, so the agent has no route to earlier notes. This is also how memory-on vs memory-off is compared. Through the API, send `"memory_on": false`. Evaluation runs (`AGENT_EVAL=1`) always run without memory.
 - **Forget everything:** delete `data/memory/memory.sqlite`. Published notes stay in the portal, because publishing is a separate, approved record.
 
@@ -48,10 +48,10 @@ Each kind of record has its own purpose and store. Being stored does not make a 
 | Filing passages and index | `data/passages/`, `data/index/` | Public SEC text only. No analyst questions, preferences or notes are added to the index |
 
 - **Memory off** stops the run from reading preferences, the watchlist and previous notes (including through the `get_past_notes` tool) and from writing memory. It does not delete existing records, and the run's checkpoint is still saved. Publishing to the portal and using playbook lessons are separate settings (`AGENT_LESSONS=0` turns lessons off).
-- **A previous note is context, not a source.** Its figures are compared with freshly fetched XBRL facts; a same-year difference is reported as a restatement, not as a business change.
+- **A previous note is context, not a source.** Its figures are compared with freshly fetched XBRL facts; a same-year difference is reported as a later presentation of that year (cause not established), not as a business change.
 - **What leaves the machine:** the request, plan, preferences, the watchlist (planner only) and the retrieved passages and facts are sent to the model provider (OpenRouter) during a run. The API key, the memory files and published notes stay local unless they are part of that context.
 - **Secrets stay out of memory**, lessons, logs and git: the key is read from `.env` at run time.
-- **Deletion has a stated scope.** Deleting a preference or past-note memory removes it from the memory store only. It does not withdraw the published note, edit old checkpoints or change the portal; rebuilding with `backfill_memory.py` recreates past-note memory from the portal.
+- **Deletion has a stated scope, and the app says it.** Deleting a past-note memory removes it from the memory store and from every coverage list, and records the note as deleted, so neither a backfill nor a later memory sync brings it back. It does not withdraw the published note, edit old checkpoints or change the portal. The confirmation message states exactly this.
 
 ## Limits
 

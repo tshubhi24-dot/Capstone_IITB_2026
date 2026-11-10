@@ -64,7 +64,7 @@ class DashboardTests(unittest.TestCase):
             [trace.name for trace in income.data],
             ["Microsoft (Operating income)", "JPMorgan Chase (Pre-tax income)"],
         )
-        self.assertEqual(rows[1][4:7], ["$50.0M", "25.0%", "✅"])
+        self.assertEqual(rows[1][4:7], ["$50.0M", "25.00%", "✅"])
         self.assertIn("Selected companies | Microsoft, JPMorgan Chase", summary)
         self.assertNotIn("C0 baseline pair", summary)
 

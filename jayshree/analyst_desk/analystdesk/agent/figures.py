@@ -18,12 +18,20 @@ For every company and fiscal year in the plan:
 comparability_notes() states, in code, what keeps the figures from being
 like-for-like (different fiscal year-ends, 53-week years, mixed margin
 bases); the writer node adds them to every note they apply to.
+
+Arithmetic rules (docs/product_spec.md): every ratio is computed from the
+raw reported dollars and rounded only for display, half away from zero
+(20.125% -> 20.13%). A margin needs positive revenue. A growth rate needs a
+positive earlier amount: from a loss (-20 -> -10) there is no meaningful
+growth percentage, so none is offered. A margin change from zero income is
+a real change (0.00% -> 5.00% is +5.00 pp) and is kept.
 """
 
 from __future__ import annotations
 
 import re
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 
 from ..edgar import get_financials
 from ..scope import COMPANIES
@@ -31,6 +39,17 @@ from ..scope import COMPANIES
 _BY_TICKER = {c.ticker: c for c in COMPANIES}
 # {MSFT_2024_margin}; [MSFT_2024_margin] too, which the writer sometimes types in tables
 PLACEHOLDER = re.compile(r"[{\[]([A-Z]{1,5}_\d{4}_[a-z_]+)[}\]]")
+
+
+def half_up(x: float, places: int = 2) -> Decimal:
+    """Round for display, halves away from zero: 20.125 -> 20.13 (Python's round() gives 20.12)."""
+    return Decimal(repr(x)).quantize(Decimal(1).scaleb(-places), ROUND_HALF_UP)
+
+
+def money(val: float) -> str:
+    """Raw USD -> '$245,122.0M'; a loss keeps its sign in front: '-$1,234.5M'."""
+    m = half_up(val / 1e6, 1)
+    return f"{'-' if m < 0 else ''}${abs(m):,}M"
 
 
 def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
@@ -47,32 +66,33 @@ def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
             inc = data[income_key]
             if rev:
                 figures[f"{t}_{y}_revenue"] = {
-                    "text": f"${rev['val'] / 1e6:,.1f}M [fact: {rev['fact_id']}]",
+                    "text": f"{money(rev['val'])} [fact: {rev['fact_id']}]",
                     "label": f"{c.name} FY{y} {'net ' if c.margin_basis == 'pretax' else ''}revenue"}
                 figures[f"{t}_{y}_period_end"] = {"text": rev["end"],
                                                   "label": f"{c.name} FY{y} period end"}
             if inc:
                 figures[f"{t}_{y}_{income_key}"] = {
-                    "text": f"${inc['val'] / 1e6:,.1f}M [fact: {inc['fact_id']}]",
+                    "text": f"{money(inc['val'])} [fact: {inc['fact_id']}]",
                     "label": f"{c.name} FY{y} {income_key.replace('_', ' ')}"}
-            if rev and inc and rev["val"]:
+            if rev and inc and rev["val"] > 0:
                 figures[f"{t}_{y}_margin"] = {
-                    "text": f"{inc['val'] / rev['val'] * 100:.2f}% [calc: {inc['fact_id']} / {rev['fact_id']}]",
+                    "text": f"{half_up(inc['val'] / rev['val'] * 100)}% [calc: {inc['fact_id']} / {rev['fact_id']}]",
                     "label": f"{c.name} FY{y} {c.margin_basis} margin"}
             prior = get_financials(c.cik, y - 1) if (y - 1) in years else None
-            if prior and rev and prior["revenue"] and prior["revenue"]["val"]:
+            if prior and rev and prior["revenue"] and prior["revenue"]["val"] > 0:
                 pr = prior["revenue"]
                 figures[f"{t}_{y}_revenue_growth"] = {
-                    "text": f"{(rev['val'] / pr['val'] - 1) * 100:.2f}% [growth: {rev['fact_id']} / {pr['fact_id']}]",
+                    "text": f"{half_up((rev['val'] / pr['val'] - 1) * 100)}% [growth: {rev['fact_id']} / {pr['fact_id']}]",
                     "label": f"{c.name} FY{y} revenue growth vs FY{y - 1}"}
                 pi = prior[income_key]
-                if inc and pi and pi["val"]:
+                if inc and pi and pi["val"] > 0:
                     figures[f"{t}_{y}_income_growth"] = {
-                        "text": f"{(inc['val'] / pi['val'] - 1) * 100:.2f}% [growth: {inc['fact_id']} / {pi['fact_id']}]",
+                        "text": f"{half_up((inc['val'] / pi['val'] - 1) * 100)}% [growth: {inc['fact_id']} / {pi['fact_id']}]",
                         "label": f"{c.name} FY{y} {income_key.replace('_', ' ')} growth vs FY{y - 1}"}
-                    change = (inc["val"] / rev["val"] - pi["val"] / pr["val"]) * 100
+                if inc and pi and rev["val"] > 0:   # zero earlier income is a valid starting margin
+                    change = half_up((inc["val"] / rev["val"] - pi["val"] / pr["val"]) * 100)
                     figures[f"{t}_{y}_margin_change"] = {
-                        "text": f"{change:+.2f} pp [diff: {inc['fact_id']} / {rev['fact_id']} - "
+                        "text": f"{'+' if change >= 0 else ''}{change} pp [diff: {inc['fact_id']} / {rev['fact_id']} - "
                                 f"{pi['fact_id']} / {pr['fact_id']}]",
                         "label": f"{c.name} FY{y} margin change vs FY{y - 1} (percentage points)"}
     return figures

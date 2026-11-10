@@ -65,10 +65,10 @@ def find_companies(question: str) -> list[str]:
 
 
 def find_years(question: str) -> list[int]:
-    """Fiscal years named in the question ("FY2024", "2023", "fiscal 2022")."""
+    """Fiscal years named in the question ("FY2024", "2023", "fiscal 2022", "FY22", "FY'23")."""
     years = []
-    for m in re.finditer(r"(?<!\d)(?:fy\s?)?(20\d{2})(?!\d)", question, re.I):
-        y = int(m.group(1))
+    for m in re.finditer(r"(?<!\d)(?:fy\s?)?(20\d{2})(?!\d)|\bfy\s?['’]?(\d{2})(?!\d)", question, re.I):
+        y = int(m.group(1)) if m.group(1) else 2000 + int(m.group(2))
         if y not in years:
             years.append(y)
     return years
@@ -89,7 +89,8 @@ def strip_entities(question: str) -> str:
     text = re.sub(
         r"\b(?:" + "|".join(sorted(_TICKERS, key=len, reverse=True)) + r")(?:['’]s?)?(?!\w)", " ", text
     )
-    text = re.sub(r"(?<!\d)(?:fiscal\s+year\s+|fiscal\s+|fy\s?)?20\d{2}(?!\d)", " ", text, flags=re.I)
+    text = re.sub(r"(?<!\d)(?:fiscal\s+year\s+|fiscal\s+|fy\s?)?20\d{2}(?!\d)|\bfy\s?['’]?\d{2}(?!\d)", " ", text,
+                  flags=re.I)
     text = re.sub(r"\s+", " ", text).strip(" ,.?()")
     return text if len(text.split()) >= 2 else question
 

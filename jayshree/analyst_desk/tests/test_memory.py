@@ -74,7 +74,8 @@ class MemoryTests(TempMemory):
         stale = {k: {**v, "value": v["value"] + 1.0} for k, v in current.items()}
         previous = {"note_id": 1, "title": "t", "published_at": "2026-10-25", "figures": stale}
         lines = memory.what_changed("MSFT", previous, current)
-        self.assertTrue(any("Restated since the last note" in l for l in lines), lines)
+        self.assertTrue(any("differs between the two notes" in l for l in lines), lines)
+        self.assertFalse(any("restat" in l.lower() for l in lines), lines)   # cause not established
 
     def test_current_figures_round_trip_through_parser(self):
         f = build_figures(["MSFT"], [2024])

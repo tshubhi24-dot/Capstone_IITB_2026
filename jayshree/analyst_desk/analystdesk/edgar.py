@@ -174,14 +174,15 @@ def get_annual_fact(cik: str, concept: str, fiscal_year: int) -> dict | None:
     # ends June 30). Filtering on end[:4] works for both Microsoft (June-end)
     # and Alphabet (December-end). This is Signature Challenge A: fiscal year
     # alignment must be done by the period end date, not by the fy label.
-    # Only full-year durations: 10-Ks also tag quarterly figures (e.g. BAC's
-    # quarterly table) with fp == "FY".
+    # Only one-year durations: 10-Ks also tag quarterly figures (e.g. BAC's
+    # quarterly table) with fp == "FY", and some tag multi-year totals. A 52- or
+    # 53-week year is 363-371 days.
     annual = [
         e for e in entries
         if e.get("fp") == "FY"
         and e.get("form") in ("10-K", "10-K/A")
         and e.get("end", "")[:4] == str(fiscal_year)
-        and _duration_days(e) >= 350
+        and 350 <= _duration_days(e) <= 380
     ]
 
     if not annual:

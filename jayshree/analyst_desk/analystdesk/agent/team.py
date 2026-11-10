@@ -16,7 +16,8 @@
   are extracted by code from the tool results, not claimed by the model.
 * The compliance critic = the code checks (numbers vs XBRL facts, quotes vs
   passages, advice wording) + a judge from a different model family that
-  checks each cited claim against its passage.
+  checks every cited claim against its passage. A claim the judge could not
+  review leaves the review incomplete, which blocks approval.
 * Same model, same tools and the same total tool budget as C1
   (graph.tool_budget, split across the specialists by specialist_budgets),
   so E1 compares the orchestration only.
@@ -133,36 +134,84 @@ async def run_specialist(agent: str, company: str | None, llm, tools_by_name: di
 
 # ── compliance critic: the judge part ─────────────────────────────────────────
 
+JUDGE_BATCH = 10
+_TAGS = re.compile(r"\[(fact|calc|growth|diff):[^\]]*\]")
+# A figure code rendered and verified against XBRL ($245,122.0M [fact: ...], 44.64% [calc: ...]).
+# The judge sees a marker instead: it judges the wording against the passage, not a number
+# the passage was never meant to state.
+_VERIFIED_FIGURE = re.compile(r"-?\$?\s?[\d,]+(?:\.\d+)?\s?(?:[MB]|%|pp)?\s*\[(?:fact|calc|growth|diff):[^\]]*\]")
+VERIFIED_MARK = "[code-verified figure]"
+# sections code writes itself (no model claims in them)
+_CODE_SECTIONS = re.compile(r"^#+\s*(comparability|limitations|what changed)", re.I)
+
+
+def claim_lines(body: str) -> tuple[list[tuple[str, list[str]]], int]:
+    """The note's claims for the judge: (cited lines, number of uncited substantive lines).
+
+    A cited line is any line naming a passage id with more than 30 characters of text.
+    An uncited substantive line is a sentence of 8+ words outside headings, tables and
+    the sections code writes; it cannot be judged against a passage, so it is counted
+    and shown to the analyst rather than silently passed.
+    """
+    cited, uncited, in_code = [], 0, False
+    for line in body.splitlines():
+        s = line.strip()
+        if s.startswith("#"):
+            in_code = bool(_CODE_SECTIONS.match(s))
+            continue
+        if in_code or not s or s.startswith("|"):
+            continue
+        pids = PASSAGE_ID.findall(s)
+        text = _TAGS.sub("", _VERIFIED_FIGURE.sub(VERIFIED_MARK, s)).strip(" -*")
+        if pids and len(text) > 30:
+            cited.append((text[:500], pids))
+        elif not pids and len(re.findall(r"[A-Za-z]{2,}", text)) >= 8:
+            uncited += 1
+    return cited, uncited
+
+
 def make_judge(judge_llm, passage_text):
-    """async critic(body) -> {"issues", "checked", "supported", "model", "tokens"}."""
+    """async critic(body) -> {"issues", "checked", "reviewed", "supported", "uncited", "model", "tokens"}.
+
+    Every cited claim is judged, in batches of JUDGE_BATCH. Each claim needs exactly one
+    true/false verdict; a claim left without one (judge down, malformed or missing
+    verdict) makes the review incomplete, which is an issue: approval stays unavailable
+    until a re-check completes it. A missing verdict is never counted as supported.
+    """
     async def critic(body: str) -> dict:
-        items = []
-        for line in body.splitlines():
-            pids = PASSAGE_ID.findall(line)
-            text = re.sub(r"\[(fact|calc):[^\]]*\]", "", line).strip(" -*#")
-            if pids and len(text) > 30:
-                src = "\n".join(f"[{p}] {(passage_text(p) or '(missing)')[:900]}" for p in pids[:2])
-                items.append((text[:500], src))
-        items = items[:10]
-        if not items:
-            return {"issues": [], "checked": 0, "supported": 0,
-                    "model": LLM_CONFIG.model("judge"), "tokens": 0}
-        prompt = "\n\n".join(f"ITEM {i}\nCLAIM: {c}\nPASSAGES:\n{s}" for i, (c, s) in enumerate(items, 1))
-        try:
-            reply = await judge_llm.ainvoke([
-                SystemMessage(LLM_CONFIG.prompt("judge")), HumanMessage(prompt)
-            ])
-            raw = reply.content if isinstance(reply.content, str) else json.dumps(reply.content)
-            verdicts = json.loads(raw[raw.index("{"): raw.rindex("}") + 1])["verdicts"]
-        except Exception as exc:   # noqa: BLE001 — a judge failure must not block the note
-            return {"issues": [], "checked": len(items), "supported": None,
-                    "model": LLM_CONFIG.model("judge"),
-                    "error": f"judge unavailable: {type(exc).__name__}", "tokens": 0}
-        unsupported = [v for v in verdicts if not v.get("supported")]
-        issues = [f"Claim not supported by its cited passage (judge): \"{items[v['i'] - 1][0][:160]}\" — "
-                  f"{v.get('reason', '')}" for v in unsupported if 1 <= v.get("i", 0) <= len(items)]
-        return {"issues": issues, "checked": len(items), "supported": len(items) - len(unsupported),
-                "model": LLM_CONFIG.model("judge"), "tokens": usage(reply)}
+        lines, uncited = claim_lines(body)
+        items = [(text, "\n".join(f"[{p}] {(passage_text(p) or '(missing)')[:900]}" for p in pids[:2]))
+                 for text, pids in lines]
+        verdict: dict[int, dict] = {}
+        tokens, errors = 0, []
+        for start in range(0, len(items), JUDGE_BATCH):
+            batch = items[start:start + JUDGE_BATCH]
+            prompt = "\n\n".join(f"ITEM {i}\nCLAIM: {c}\nPASSAGES:\n{s}" for i, (c, s) in enumerate(batch, 1))
+            try:
+                reply = await judge_llm.ainvoke([SystemMessage(LLM_CONFIG.prompt("judge")), HumanMessage(prompt)])
+                tokens += usage(reply)
+                raw = reply.content if isinstance(reply.content, str) else json.dumps(reply.content)
+                got = json.loads(raw[raw.index("{"): raw.rindex("}") + 1])["verdicts"]
+            except Exception as exc:   # noqa: BLE001 — recorded below as an incomplete review
+                errors.append(f"judge unavailable: {type(exc).__name__}")
+                continue
+            for v in got:
+                i = v.get("i") if isinstance(v, dict) else None
+                if isinstance(i, int) and 1 <= i <= len(batch) and isinstance(v.get("supported"), bool) \
+                        and start + i - 1 not in verdict:
+                    verdict[start + i - 1] = v
+        issues = [f"Claim not supported by its cited passage (judge): \"{items[k][0][:160]}\" — "
+                  f"{v.get('reason', '')}" for k, v in sorted(verdict.items()) if not v["supported"]]
+        missing = len(items) - len(verdict)
+        if missing:
+            issues.append(f"Review incomplete: the judge gave no valid verdict for {missing} of {len(items)} "
+                          f"cited claims{' (' + errors[0] + ')' if errors else ''}. Re-check before approval.")
+        out = {"issues": issues, "checked": len(items), "reviewed": len(verdict),
+               "supported": sum(v["supported"] for v in verdict.values()), "uncited": uncited,
+               "model": LLM_CONFIG.model("judge"), "tokens": tokens}
+        if errors:
+            out["error"] = errors[0]
+        return out
     return critic
 
 
@@ -205,6 +254,10 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
         async def node(task: dict):
             plan, company = task["plan"], task.get("company")
             years = plan["fiscal_years"]
+            # risk-diff compares the plan's latest year with the plan's previous one
+            # (FY2022 vs FY2024 when those two were asked for), not always latest - 1
+            latest = max(years)
+            prior = max((y for y in years if y < latest), default=latest - 1)
             budget = specialist_budgets(len(plan["companies"]))[agent]
             prompt_name = {
                 "researcher": "specialist_researcher",
@@ -214,7 +267,7 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
             system = LLM_CONFIG.format_prompt(
                 prompt_name,
                 company=company, companies=", ".join(plan["companies"]), years=years,
-                latest=max(years), prior=max(years) - 1, budget=budget,
+                latest=latest, prior=prior, budget=budget,
                 plan=json.dumps(plan))
             from ..lessons import as_prompt
             system += as_prompt(task.get("lessons") or [])

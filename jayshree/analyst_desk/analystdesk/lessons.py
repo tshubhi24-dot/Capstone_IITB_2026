@@ -12,7 +12,8 @@ Rules (brief, L12):
   * every lesson is reviewed by a person before it can be used;
   * only lessons relevant to the current request are retrieved (top 3);
   * the playbook is frozen before the held-out run: once frozen, no lesson
-    can be approved, rejected or added until it is unfrozen on purpose.
+    can be approved, rejected or added until it is unfrozen on purpose, and
+    runs use a snapshot taken at the freeze, identified by a version hash.
   * exact normalized duplicates share one review status and retain their sources;
     conflicting legacy decisions return the lesson to pending review.
 
@@ -22,6 +23,8 @@ Lessons live in the same LangGraph store as memory, in namespace
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import uuid
 from datetime import datetime, timezone
@@ -145,8 +148,27 @@ async def is_frozen() -> bool:
 
 
 async def set_frozen(frozen: bool, who: str) -> None:
+    """Freezing takes a snapshot of the approved lessons with a version hash. A frozen
+    playbook's runs read only that snapshot, so the lessons cannot change during an
+    evaluation even if the store does; results record the version they used."""
+    meta = {"frozen": frozen, "by": who, "at": _now()}
+    if frozen:
+        snapshot = await list_lessons("approved")
+        meta["lessons"] = snapshot
+        meta["version"] = hashlib.sha256(
+            json.dumps([[les["key"], les["when"], les["do"], sorted(les.get("applies_to", []))]
+                        for les in snapshot], sort_keys=True).encode()).hexdigest()[:12]
     async with open_store() as s:
-        await s.aput(("lessons", "meta"), "playbook", {"frozen": frozen, "by": who, "at": _now()})
+        await s.aput(("lessons", "meta"), "playbook", meta)
+
+
+async def frozen_playbook() -> dict | None:
+    """{"version", "lessons", "by", "at"} of the frozen snapshot, or None when not frozen."""
+    async with open_store() as s:
+        item = await s.aget(("lessons", "meta"), "playbook")
+    if not (item and item.value.get("frozen")):
+        return None
+    return {k: item.value.get(k) for k in ("version", "lessons", "by", "at")}
 
 
 async def add_pending(lesson: dict) -> str | None:
@@ -211,8 +233,13 @@ def _terms(text: str) -> set[str]:
 
 
 async def relevant(request: str, case_type: str | None = None, k: int = 3) -> list[dict]:
-    """Approved lessons most relevant to this request (tag and word overlap)."""
-    lessons = await list_lessons("approved")
+    """Approved lessons most relevant to this request (tag and word overlap).
+    From the frozen snapshot when the playbook is frozen."""
+    frozen = await frozen_playbook()
+    if frozen and frozen.get("lessons") is not None:
+        lessons = frozen["lessons"]
+    else:   # not frozen, or frozen before snapshots existed
+        lessons = await list_lessons("approved")
     req = _terms(request)
     scored = []
     for les in lessons:

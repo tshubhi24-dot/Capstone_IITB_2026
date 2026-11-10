@@ -108,7 +108,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
   - analyst preferences;
   - a coverage list;
   - past-note figures, parsed from the verified tags of published notes.
-- **"What changed since our last note"** is computed by code from those figures, including restatements.
+- **"What changed since our last note"** is computed by code from those figures, including a different value for the same year in a later filing.
 - **The analyst controls it:** view and delete entries in the app, or re-run any request without memory to compare.
 - **Short-term memory** (the research conversation within a run) is trimmed to a size budget.
 
@@ -116,7 +116,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 - `scripts/reflect.py` turns failures on development cases into short "when … do …" lessons.
 - **A person reviews every lesson** in the 📘 Playbook. Only approved lessons are used, and only the 3 most relevant to each request. Rejected lessons are kept with their reason, and duplicates are merged.
-- **The playbook can be frozen** before a held-out evaluation.
+- **The playbook can be frozen** before a held-out evaluation: runs then use a versioned snapshot of the approved lessons.
 
 ### Evaluation
 
@@ -451,6 +451,8 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
 | [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
+| [submission/](submission/README.md) | Submission checklist, evaluation report, experiment and work logs, demo script, slides outline |
+| [docs/gap_closure.md](docs/gap_closure.md) | Status of every item in the team's implementation gap analysis |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
