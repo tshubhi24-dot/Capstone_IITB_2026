@@ -99,6 +99,7 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
         verified, total = 0, 0
         substantive_shares = []
         zero_number_rows = 0
+        cases_with_numeric_checks = 0
         for i, row in enumerate(rows, 1):
             cid = row.get("id")
             if cid not in gold:
@@ -110,7 +111,10 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
                 raise ValueError(f"{config}/{cid} has non-boolean success/policy result")
             if not isinstance(row.get("seconds"), (int, float)) or not math.isfinite(row["seconds"]) or row["seconds"] < 0:
                 raise ValueError(f"{config}/{cid} has invalid duration")
-            if not isinstance(row.get("tokens"), int) or row["tokens"] < 0:
+            if row.get("tokens") is None:
+                if not row.get("error"):
+                    raise ValueError(f"{config}/{cid} has no token count and no recorded error")
+            elif not isinstance(row["tokens"], int) or row["tokens"] < 0:
                 raise ValueError(f"{config}/{cid} has invalid token count")
             if row.get("error") and row["success"]:
                 raise ValueError(f"{config}/{cid} cannot succeed with an error")
@@ -128,6 +132,7 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
                     raise ValueError(f"{config}/{cid} verified percentage disagrees with counts")
                 if b:
                     substantive_shares.append(share)
+                    cases_with_numeric_checks += 1
                 else:
                     zero_number_rows += 1
                 verified += a
@@ -148,7 +153,7 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
         failures = len(rows) - successes
         errors = sum(bool(r.get("error")) for r in rows)
         policy = sum(r["policy_violation"] for r in rows)
-        tokens = [r["tokens"] for r in rows]
+        tokens = [r["tokens"] for r in rows if r["tokens"] is not None]
         report[config] = {
             "cases": len(rows),
             "success": successes,
@@ -159,11 +164,14 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
             "timeouts": sum(r.get("error") == "timeout" for r in rows),
             "verified_numbers": verified,
             "total_numbers": total,
+            "cases_with_numeric_checks": cases_with_numeric_checks,
             "verified_share_pooled_pct": round(100 * verified / total, 1) if total else None,
             "zero_number_cases": zero_number_rows,
             "verified_share_mean_with_numbers_only_pct": round(sum(substantive_shares) / len(substantive_shares), 1) if substantive_shares else None,
             "verified_share_case_mean_pct": round(sum(shares) / len(shares), 1) if shares else None,
             "tokens_mean": round(sum(tokens) / len(rows)),
+            "tokens_recorded_cases": len(tokens),
+            "tokens_unreported_cases": len(rows) - len(tokens),
             "latency_median_s": round(median(seconds), 1),
             "latency_p95_s": seconds[min(len(seconds) - 1, round(0.95 * (len(seconds) - 1)))],
             "by_type": {
@@ -220,7 +228,8 @@ def markdown_report(report: dict) -> str:
         ("Notes with 0 counted numbers", "zero_number_cases"),
         ("Case-mean share, numeric-content notes only (%)", "verified_share_mean_with_numbers_only_pct"),
         ("Verified share, average per scored case (%)", "verified_share_case_mean_pct"),
-        ("Tokens per case (mean)", "tokens_mean"), ("Latency median (seconds)", "latency_median_s"),
+        ("Recorded-token contribution per evaluated case (incomplete if counts are missing)", "tokens_mean"),
+        ("Latency median (seconds)", "latency_median_s"),
         ("Latency p95 (seconds)", "latency_p95_s"),
     ]:
         rows.append(f"| {label} | " + " | ".join(str(v[k]) for v in cfg.values()) + " |")

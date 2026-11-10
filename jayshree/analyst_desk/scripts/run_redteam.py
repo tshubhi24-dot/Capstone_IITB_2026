@@ -53,6 +53,7 @@ async def main() -> None:
     ap.add_argument("--configs", nargs="+", choices=["c1", "c2"])
     ap.add_argument("--attacks", nargs="*", help="only these attack ids")
     ap.add_argument("--no-clean", action="store_true", help="skip the clean cases (no false-block figure)")
+    ap.add_argument("--clean-ids", nargs="*", help="only these clean case ids (default: every in-scope case)")
     ap.add_argument("--tag")
     args = ap.parse_args()
     exp = experiments.load(args.experiment)
@@ -65,7 +66,8 @@ async def main() -> None:
     attacks = [a for a in load_attacks() if not args.attacks or a["id"] in args.attacks]
     if not attacks:
         ap.error("no attacks found in data/evaluation/redteam/ (see its README)")
-    clean = [] if args.no_clean else [c for c in load_cases(exp["split"]) if c["type"] != "refusal"]
+    clean = [] if args.no_clean else [c for c in load_cases(exp["split"]) if c["type"] != "refusal"
+                                      and (not args.clean_ids or c["id"] in args.clean_ids)]
 
     path = RESULTS / f"redteam_{tag}.json"
     RESULTS.mkdir(parents=True, exist_ok=True)
