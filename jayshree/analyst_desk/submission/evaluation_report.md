@@ -49,27 +49,30 @@
 
 ## 3. E1: does the agent justify its cost?
 
-### 3.1 Development set (20 cases, one run)
+### 3.1 Development set (20 cases, one run, final code `72ce461`)
 
 | Metric | C0 | C1 | C2 |
 |---|---|---|---|
-| Task success | 16/20 | 19/20 | **20/20** |
+| Task success | 14/20 | **19/20** | 18/20 |
 | — numeric (8) | 6 | 8 | 8 |
-| — comparison (5) | 5 | 5 | 5 |
-| — risk change (4) | 3 | 3 | 4 |
+| — comparison (5) | 4 | 5 | 5 |
+| — risk change (4) | 2 | 3 | 2 |
 | — refusal (3) | 2 | 3 | 3 |
 | Policy violations | 0 | 0 | 0 |
-| Numbers verified, pooled | 3.7% (2/54) | **92.8%** (77/83) | 71.5% (143/200) |
+| Numbers verified, pooled | 3.6% (2/56) | 88.7% (86/97) | **89.6%** (146/163) |
+| Notes passing every check at the gate (of 17) | — | **13** | 7 |
 | Errors / timeouts | 0 | 0 | 0 |
-| Cost per case (est.) | $0.0013 | $0.0063 | $0.0198 |
-| Median / p95 latency | 3.8 / 5.6 s | 14.2 / 29.2 s | 50.9 / 71.0 s |
+| Cost per case (est.) | $0.0013 | $0.0080 | $0.0213 |
+| Median / p95 latency | 4.6 / 6.0 s | 14.4 / 28.5 s | 43.5 / 75.0 s |
+
+C2's d08 and d14–d17 were re-run after the key's spending limit stopped the first attempt (HTTP 402). The table combines both attempts (`results/eval_dev_e1-dev-main-combined.json`).
 
 **Reading:**
-- **Both agents beat the fixed pipeline on success,** and only the agents produce traceable numbers. C0 writes free text, so 96% of its numbers can't be traced even when they are right.
-- **The team is the most reliable:** it completes every risk-change case, because a dedicated risk-diff agent searches both years.
-- **But the team costs about 3× C1** and is slower.
-- **The team's verified share is lower:** its writer types some figures itself (growth rates, segment amounts) instead of using the code-rendered placeholders. The checker catches every one, so the note can't be approved until it is fixed. That makes it a cost in analyst time, not a correctness failure.
-- **Both agents sit below the 98% alert threshold** on this snapshot.
+- **Both agents beat the fixed pipeline:** 19 and 18 of 20 vs 14. Only the agents produce traceable numbers: C0 writes free text, so 96% of its numbers can't be traced even when they are right.
+- **The team buys nothing on this set:** it costs 2.7× C1 and takes 3× as long, with no more successes.
+- **The team's notes reach the analyst clean less often:** 7 of 17 vs 13. Its judge reviews every cited claim and flags some as unsupported, and the writer still sometimes types figures itself instead of using the code-rendered placeholders. The checks catch all of these, so no wrong number can be approved, but the analyst has to edit the note.
+- **The risk-change misses** (d16, d17) are notes that cite Item 1A for only one of the two years.
+- **Both agents sit below the 98% alert threshold** on this set.
 
 ### 3.2 Held-out set ⏳ (three runs; mean and range)
 
@@ -118,14 +121,20 @@
 | Lessons that made a case worse | | |
 | Cost of generating the lessons | | |
 
-## 6. E4: signature ablation ⏳
+## 6. E4: signature ablation (development set; held-out ⏳)
 
-| | C2 critic loop on | Critic loop off | Plain-text chunks |
-|---|---|---|---|
-| Task success | | | |
-| Numbers verified | | | |
-| Notes with unresolved issues at the gate | | | |
-| Cost per case | | | |
+| | C1 | C1 critic off | C1 plain chunks | C2 | C2 critic off | C2 plain chunks |
+|---|---|---|---|---|---|---|
+| Task success | 19/20 | 19/20 | 19/20 | 18/20 | 19/20 | 19/20 |
+| Numbers verified, pooled | 88.7% | 92.3% | 95.5% | 89.6% | 82.7% | 88.2% |
+| Notes passing every check (of 17) | 13 | 12 | 14 | 7 | 7 | 8 |
+| Revisions made | 9 | 0 | 8 | 22 | 0 | 24 |
+| Cost per case | $0.0080 | $0.0070 | $0.0085 | $0.0213 | $0.0186 | $0.0186 |
+| Median latency | 14.4 s | 13.9 s | 14.1 s | 43.5 s | 28.3 s | 36.8 s |
+
+**On 20 cases and one run, the differences are within run-to-run noise.** The same ablation on the previous code version (experiment log, runs 8–10) found the critic loop adding about 12 points of verified share and table-aware chunks 9–15. Here the critic adds 7 points for C2 and none for C1, and plain chunks score slightly higher. So we don't claim either effect from development data. The held-out comparison, run three times with its spread, is the test.
+
+**What the critic loop does show consistently:** it revises notes (9 revisions for C1, 22 for C2) at 15–50% more latency.
 
 Retrieval alone doesn't separate the two chunkings. With decomposition and rewrite, table questions reach 1.00 recall either way, and overall recall is 0.903 table-aware vs 0.944 plain ([docs/retrieval_eval.md](../docs/retrieval_eval.md)). So E4 has to measure the effect on whole notes, where a table kept whole lets a quoted figure be checked against its row and header.
 

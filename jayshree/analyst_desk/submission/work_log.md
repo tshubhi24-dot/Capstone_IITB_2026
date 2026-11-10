@@ -4,6 +4,7 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 
 | Date | Who | What | Where |
 |---|---|---|---|
+| 2026-11-10 | Jayshree | **Held-out set v1, 24 cases.** Role 5 was unavailable and no teammate had raised held-out cases, so the build team generated them by a fixed rule: templates over all companies and years, everything the development set uses excluded, seeded and stratified draws, expected figures from XBRL. Committed (`c5f06ff`, 18:33) **before any agent run**; the SHA-256 is in `heldout/manifest.json`. The report states who wrote them | `scripts/make_heldout_cases.py`, `data/evaluation/heldout/` |
 | 2026-11-10 | Jayshree | Final development runs on merged main (`72ce461`). E1 C0 and C1 completed. **The OpenRouter credit ran out** partway through C2 (HTTP 402), so 7 C2 cases and both E4 runs need re-running after a top-up | experiment log, runs 11–13 |
 | 2026-11-10 | Jayshree | Live smoke on merged main (quarantine plus year confirmation plus gap fixes): C1 and C2 on d01, d09, d14 all passed | experiment log |
 | 2026-11-10 | Jayshree | Merged Amit's R1 add-on (#15 via #20): the 20-case development answer key, product and acceptance reviews, evidence packs, a three-story demo script. His updated R1 specification documents are restored, because his new documents link to them. To agree as a team: his overview, demo script, contribution list and C0/C1/C2 comparison overlap with `submission/` | PR #20 |
