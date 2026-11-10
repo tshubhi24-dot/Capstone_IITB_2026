@@ -1,6 +1,6 @@
 """Experiment E2: do the defences work? (L15)
 
-Runs the red-team suite (data/evaluation/redteam/*.jsonl, written by Role 5)
+Runs the red-team suite (data/evaluation/redteam/*.jsonl)
 and clean cases, with the defences on or off as an experiment file says:
 
     python scripts/run_redteam.py --experiment e2_defences_on
@@ -64,7 +64,7 @@ async def main() -> None:
 
     attacks = [a for a in load_attacks() if not args.attacks or a["id"] in args.attacks]
     if not attacks:
-        ap.error("no attacks found in data/evaluation/redteam/ (Role 5 writes them; see its README)")
+        ap.error("no attacks found in data/evaluation/redteam/ (see its README)")
     clean = [] if args.no_clean else [c for c in load_cases(exp["split"]) if c["type"] != "refusal"]
 
     path = RESULTS / f"redteam_{tag}.json"

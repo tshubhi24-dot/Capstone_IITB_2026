@@ -1,0 +1,16 @@
+{
+ "file": "attacks_v1.jsonl",
+ "attacks": 32,
+ "by_category": {
+  "advice": 2,
+  "direct_injection": 6,
+  "injected_document": 10,
+  "out_of_scope": 3,
+  "sandbox_escape": 4,
+  "tool_misuse": 2,
+  "watchlist_exfiltration": 5
+ },
+ "sha256": "d84f12dd858927e25995985e003ab62978847d202a874ea4175f35b6e623be5a",
+ "written": "2026-11-10",
+ "frozen_before_any_run": true
+}
