@@ -14,17 +14,14 @@ The design follows three rules:
 
 ## Quick start
 
-You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) running and your own [OpenRouter](https://openrouter.ai) API key.
+You need Docker Desktop or Docker Engine, Git, and your own [OpenRouter](https://openrouter.ai) API key.
 
-```powershell
+```text
 git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
-cd Capstone_IITB_2026\jayshree\analyst_desk
-Copy-Item .env.example .env      # then set OPENROUTER_API_KEY in .env (Mac/Linux: cp)
-docker compose pull              # the team image, about 3.6 GB the first time
-docker compose up -d
+cd Capstone_IITB_2026/jayshree/analyst_desk
 ```
 
-Open <http://127.0.0.1:7861> after about 5 minutes. After that you can start and stop it from Docker Desktop. Details and troubleshooting are in [5. Run it](#5-run-it).
+Copy `.env.example` to `.env`, add `OPENROUTER_API_KEY`, then run `.\start.bat` on Windows or `bash ./start.sh` on macOS/Linux. See [5. Run it](#5-run-it) for the full steps.
 
 ---
 
@@ -76,7 +73,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 ### Human in control
 
-- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs.
+- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs. Relative or unspecified fiscal years must be explicitly confirmed or edited and confirmed before research starts.
 - **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval.
 - **Signed approval:** the gate signs the exact note with an HMAC key. The publishing server verifies the signature, so a skipped or forged approval is refused at the server.
 - **Stop and resume:** every run is checkpointed in SQLite. Any run can be reopened from the run list, even after a restart.
@@ -108,7 +105,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
   - analyst preferences;
   - a coverage list;
   - past-note figures, parsed from the verified tags of published notes.
-- **"What changed since our last note"** is computed by code from those figures, including restatements.
+- **"What changed since our last note"** is computed by code from those figures, including a different value for the same year in a later filing.
 - **The analyst controls it:** view and delete entries in the app, or re-run any request without memory to compare.
 - **Short-term memory** (the research conversation within a run) is trimmed to a size budget.
 
@@ -116,7 +113,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 - `scripts/reflect.py` turns failures on development cases into short "when … do …" lessons.
 - **A person reviews every lesson** in the 📘 Playbook. Only approved lessons are used, and only the 3 most relevant to each request. Rejected lessons are kept with their reason, and duplicates are merged.
-- **The playbook can be frozen** before a held-out evaluation.
+- **The playbook can be frozen** before a held-out evaluation: runs then use a versioned snapshot of the approved lessons.
 
 ### Evaluation
 
@@ -199,32 +196,46 @@ These are development results. Final claims use a held-out set written by a team
 
 You need your own [OpenRouter](https://openrouter.ai) API key. All data is in the repository: 10-K passages and XBRL facts, so there is no SEC download.
 
-### Option A: Docker, the team image (everything, recommended)
+### Docker deployment (centralized scripts)
 
-Everyone runs **the same image**. CI builds it from `main` after every merge and publishes it to GitHub Container Registry as `ghcr.io/tshubhi24-dot/analyst-desk`. In that image, the base image, every Python package (`requirements.lock`), torch, the two models and the search index are all fixed, so it behaves the same on every machine.
+Everyone runs **the same image**. CI builds it from `main` when Analyst Desk files change and publishes it to GitHub Container Registry as `ghcr.io/tshubhi24-dot/analyst-desk`. Each published image is tagged with its source commit, so the start scripts can select the image for the latest `main` commit instead of relying on a potentially stale moving tag.
 
 **One-time setup:**
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running. The image is public, so no registry login is needed.
-2. Get the code and create `.env` with **your own** key:
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine, and install Git. Start Docker and wait until its engine is running. The image is public, so no registry login is needed.
+2. Clone the repository and create `.env` with **your own** key:
 
-   ```powershell
+   ```text
    git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
-   cd Capstone_IITB_2026\jayshree\analyst_desk
-   Copy-Item .env.example .env     # Mac/Linux: cp .env.example .env
-   notepad .env                    # set OPENROUTER_API_KEY; never commit or share .env
+   cd Capstone_IITB_2026/jayshree/analyst_desk
    ```
 
-**Every time:**
+   Copy `.env.example` to `.env` (`Copy-Item .env.example .env` on Windows or `cp .env.example .env` on macOS/Linux), set `OPENROUTER_API_KEY`, and never commit or share `.env`.
 
-```powershell
-git checkout main         # the image is built from main; on another branch you would mix two versions
-git pull                  # same code, config and data as the image
-docker compose pull       # the exact image CI built from main
-docker compose up -d      # starts in the background; ready in about 5 minutes, then open http://127.0.0.1:7861
-```
+**After changes are merged to `main`:**
 
-Run these again whenever someone merges to `main`. CI publishes the new image about 30–40 minutes after the merge.
+- Update the checkout so its scripts and Compose configuration match `main`:
+
+  ```text
+  git checkout main
+  git pull
+  ```
+- Run `.\start.bat` on Windows or `bash ./start.sh` on macOS/Linux from `jayshree/analyst_desk`. With no argument, it fetches `origin/main` and selects that commit's image.
+- To run a specific version, pass a commit SHA that exists in your local checkout:
+
+  ```powershell
+  .\start.bat 1a2b3c4
+  ```
+
+  ```bash
+  bash ./start.sh 1a2b3c4
+  ```
+
+- The selected commit must have a published image. In either mode, the script tries twice total, waiting 60 seconds before the second attempt. If the image is unavailable, it stops without starting the stack; check the **Analyst Desk Docker Image** workflow and retry after publishing. Compose then starts the stack and pulls any other missing service images.
+- To stop the stack, run `.\stop.bat` on Windows or `bash ./stop.sh` on macOS/Linux. Persistent data volumes are kept.
+- The first image pull is about 3.6 GB. Later pulls reuse layers already on the machine.
+
+The scripts require Git, Docker, and the `.env` file created during setup. Starting the latest version also requires an `origin` remote; a specific-version start uses a commit already present in the checkout.
 
 | Service | Address |
 |---|---|
@@ -235,22 +246,11 @@ Run these again whenever someone merges to `main`. CI publishes the new image ab
 | Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
 - **In-app alerts:** the top of the Analyst Desk page shows active Prometheus alerts and refreshes every 30 seconds. Use **Refresh alerts** to check immediately. The panel distinguishes no active alerts from Prometheus being unavailable; `/api/alerts` provides the same status as JSON.
-- **Check it is ready:** `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
-- **Stop it** with ■ in Docker Desktop or `docker compose down`. Your runs, memory, published notes and approval key stay in Docker volumes. Don't use `--volumes` unless you want to delete them.
-- **Run a specific version**, for example to compare with a teammate or before a change: each commit on `main` has an image tagged `sha-<first 7 characters of the commit>`.
-
-  ```powershell
-  $env:ANALYSTDESK_IMAGE = "ghcr.io/tshubhi24-dot/analyst-desk:sha-1a2b3c4"; docker compose up
-  ```
-- **Your own code changes:** `docker compose up --build` builds the image from your folder instead. It takes about 20 minutes the first time, and the index is built on first start if your passages changed. Run `docker compose pull` to go back to the team image.
+- **Check it is ready:** `curl --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
+- **Persistent data:** stopping the stack keeps runs, memory, published notes, and the approval key in Docker volumes.
 - **Only host-loopback ports are published:** the app and monitoring UIs are bound to `127.0.0.1`; MCP servers have no published ports. The MCP servers share an internal Docker network. The model-created Python runs in a restricted subprocess inside the sandbox MCP service, but `SANDBOX_MODE=local` is not a full no-network sandbox; this is a remaining security limitation for Role 4. Your API key stays in `.env` and is not baked into the image.
 
-**In Docker Desktop:** after the first `docker compose up -d`, the stack appears under **Containers** as the group **analyst_desk**.
-
-- **Start and stop** with ▶ and ■ on the group row. This reuses the image you already have; to get a newer one, run the commands above again.
-- **Open the app** with the **7861:7861** link on the **app** row. Only the app publishes a port; the MCP servers have none.
-- **Logs:** click a container, then **Logs** (or run `docker compose logs -f app`).
-- **"Exited" is normal** for `volume-init`, which sets up the data volumes and stops, and for `index`, which checks the search index and stops. The app and the four MCP servers stay running, and the app shows **(healthy)** when it is ready.
+**Logs:** use Docker Desktop, or run `docker compose logs -f app` from the Analyst Desk directory.
 
 **Deployment smoke check:** Once Compose reports the app as healthy, run the read-only check below. It verifies the HTTP service, readiness, Prometheus scraping, the 98% alert rule and Grafana without making any model calls.
 
@@ -269,15 +269,14 @@ A successful smoke check is not proof that a research note is correct. For an ac
 
 | Problem | Fix |
 |---|---|
-| `docker compose pull` says *denied* or *unauthorized* | The package has been made private. Create a GitHub token (classic) with only the `read:packages` scope, run `docker login ghcr.io -u <your-github-username>` and paste the token as the password, or ask the repository owner for **Read** access |
-| Pull is slow | The image is about 3.6 GB (PyTorch, models, index). Only the first pull is large; later pulls fetch only the layers that changed |
-| `port is already allocated` | Something else is using port 7861. Another Docker stack shows it in the **Port(s)** column in Docker Desktop: stop that group. A Python `app.py` does not appear there: `netstat -ano \| findstr :7861` gives its process ID to end in Task Manager. Then run `docker compose up -d` again |
+| The start script says the image is unavailable after two attempts | Check the **Analyst Desk Docker Image** workflow. Once it publishes the image for the latest `main` commit, run the start script again |
+| Pull is slow | The image is about 3.6 GB (PyTorch, models, index). The first pull is large; later pulls reuse image layers |
+| `port is already allocated` | Something else is using port 7861. Stop the other service or container, then run the start script again |
 | C1/C2 runs failed with *unable to open database file* (Docker runs from before this image) | Fixed automatically: the `volume-init` service gives the app user ownership of its data volumes on every start, keeping their data |
-| The index service runs for about 10 minutes | Your checkout's passages differ from the image's. Run `git pull` so they match, or let it build once; it is reused afterwards |
 
 **Package visibility:** the image is public, set by the repository owner at *github.com/tshubhi24-dot → Packages → analyst-desk → Package settings*. If it is ever made private, give each teammate **Read** access there.
 
-### Option B: Python (development and tests)
+### Python development and tests
 
 Python 3.12 or newer.
 
@@ -340,7 +339,7 @@ The app is a FastAPI server with the Gradio UI mounted at `/`. Interactive docs 
 | `GET /healthz` | Liveness: `{"status": "ok"}` |
 | `GET /readyz` | Readiness: returns 503 until the retriever and index are loaded |
 | `POST /api/research` | Start a C1 or C2 run (`request`, `mode`, `analyst`, `memory_on`). Streams events (server-sent events) until the plan gate. |
-| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. Streams until the next gate or the end. |
+| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. For relative or unspecified years, plan decisions also require `"confirm_years": true`. Streams until the next gate or the end. |
 
 The API runs the same graph and gates as the UI, so publishing still requires a signed approval of the exact note.
 
@@ -451,6 +450,8 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
 | [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
+| [submission/](submission/README.md) | Submission checklist, evaluation report, experiment and work logs, demo script, slides outline |
+| [docs/gap_closure.md](docs/gap_closure.md) | Status of every item in the team's implementation gap analysis |
 | [docs/security_summary.md](docs/security_summary.md) | MCP tool security layer by layer, the gaps still open, and the three fixes made against them |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |

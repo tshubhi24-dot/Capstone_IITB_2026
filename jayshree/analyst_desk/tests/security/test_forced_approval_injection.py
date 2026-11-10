@@ -260,6 +260,7 @@ class Fix2RegistryTests(unittest.TestCase):
             self.assertIsNone(signing.check({"title": "t", "body": "b", "tickers": ["MSFT"],
                                              "approval_token": "anything"}))
 
+    @unittest.skipIf(os.name == "nt", "Windows has no Unix file modes; checked on Linux CI")
     def test_keygen_writes_a_private_key_only_its_owner_can_read(self):
         reg = _Registry(self, "jayshree")
         private = reg.private["jayshree"]

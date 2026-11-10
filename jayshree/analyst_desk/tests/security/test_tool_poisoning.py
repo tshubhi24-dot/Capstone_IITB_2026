@@ -98,7 +98,9 @@ import inspect
 import json
 import sys
 import time
+import os
 import unittest
+from unittest.mock import patch
 from unittest import mock
 
 from analystdesk import observability
@@ -460,7 +462,8 @@ class InjectedArgumentTests(unittest.TestCase):
 
     def test_a_refusal_is_a_result_not_an_exception(self):
         """Tools return, never raise - so the quant can adapt and write up."""
-        r = sandbox.run_python(code=INJECTED["read the environment"], data=None)
+        with patch.dict(os.environ, {"SANDBOX_MODE": "local"}):   # the in-process guard, whatever this machine has
+            r = sandbox.run_python(code=INJECTED["read the environment"], data=None)
         self.assertFalse(r.ok)
         self.assertIsNotNone(r.error)
         self.assertEqual(r.sandbox_mode, "local",

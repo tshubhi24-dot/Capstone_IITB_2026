@@ -20,7 +20,8 @@ class ApiTests(unittest.TestCase):
                 plan = {"companies": ["MSFT"]}
                 result = {
                     "values": {"plan": plan},
-                    "interrupts": [{"gate": "plan", "plan": plan}],
+                    "interrupts": [{"gate": "plan", "plan": plan,
+                                    "requires_year_confirmation": True}],
                 }
                 await on_event({"node": "plan", "plan": plan})
             elif gate == "plan":
@@ -138,12 +139,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual([name for name, _ in events], ["started", "progress", "result"])
         self.assertEqual(events[-1][1]["status"], "waiting_for_plan_approval")
         self.assertEqual(events[-1][1]["plan"], {"companies": ["MSFT"]})
+        self.assertTrue(events[-1][1]["requires_year_confirmation"])
         run_id = events[0][1]["run_id"]
 
         response = self.client.post(
             f"/api/research/{run_id}/decision",
-            json={"action": "approve"},
+            json={"action": "approve", "confirm_years": True},
         )
+        self.assertTrue(self.runner_calls[-1][1]["resume"]["confirm_years"])
         events = self._events(response)
         self.assertEqual(events[-1][1]["status"], "waiting_for_note_approval")
         self.assertEqual(events[-1][1]["draft"]["body"], "Evidence-backed draft")
@@ -153,6 +156,27 @@ class ApiTests(unittest.TestCase):
             json={"action": "approve", "approver": "analyst"},
         )
         self.assertEqual(self._events(response)[-1][1]["status"], "published")
+
+    def test_ambiguous_plan_requires_year_confirmation_through_api(self):
+        response = self.client.post(
+            "/api/research",
+            json={"request": "Compare Microsoft margins", "mode": "c1"},
+        )
+        run_id = self._events(response)[0][1]["run_id"]
+        response = self.client.post(
+            f"/api/research/{run_id}/decision",
+            json={"action": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("confirm the proposed fiscal years", response.json()["detail"])
+        self.assertEqual(len(self.runner_calls), 1)
+
+        response = self.client.post(
+            f"/api/research/{run_id}/decision",
+            json={"action": "approve", "confirm_years": True},
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_unverified_note_cannot_be_approved(self):
         self.saved_runs["bad-note"] = {

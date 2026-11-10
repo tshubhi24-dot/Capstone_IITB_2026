@@ -17,6 +17,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from .agent.figures import half_up
 from .edgar import get_financials, get_quarterly_financials
 from .llm_config import LLM_CONFIG
 from .query import decompose, find_companies, search_decomposed
@@ -60,7 +61,7 @@ def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
                 )
             if op:
                 op_m = round(op["val"] / 1_000_000, 1)
-                margin = round(op_m / (rev["val"] / 1_000_000) * 100, 2) if rev else None
+                margin = float(half_up(op["val"] / rev["val"] * 100)) if rev and rev["val"] > 0 else None
                 lines.append(
                     f"{ticker} FY{year} Annual Operating Income: ${op_m:,.1f}M"
                     + (f" → Margin: {margin}%" if margin else "")
@@ -69,7 +70,7 @@ def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
             pretax = data["pretax_income"]
             if company.margin_basis == "pretax" and pretax:
                 pt_m = round(pretax["val"] / 1_000_000, 1)
-                pt_margin = round(pt_m / (rev["val"] / 1_000_000) * 100, 2) if rev else None
+                pt_margin = float(half_up(pretax["val"] / rev["val"] * 100)) if rev and rev["val"] > 0 else None
                 lines.append(
                     f"{ticker} FY{year} Annual Pre-tax Income: ${pt_m:,.1f}M"
                     + (f" → Pre-tax Margin: {pt_margin}% (banks report no operating income;"
@@ -84,7 +85,7 @@ def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
                 qrev_str = f"Revenue ${round(qrev['val']/1_000_000,1):,.1f}M [fact_id: {qrev['fact_id']}]" if qrev else "Revenue N/A"
                 if qop:
                     qop_m = round(qop["val"] / 1_000_000, 1)
-                    qmargin = round(qop_m / (qrev["val"] / 1_000_000) * 100, 2) if qrev else None
+                    qmargin = float(half_up(qop["val"] / qrev["val"] * 100)) if qrev and qrev["val"] > 0 else None
                     qop_str = (f"Op.Income ${qop_m:,.1f}M"
                                + (f" ({qmargin}% margin)" if qmargin else "")
                                + f" [fact_id: {qop['fact_id']}]")

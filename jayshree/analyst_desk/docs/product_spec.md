@@ -34,7 +34,7 @@ Numerical verification supports the analyst's judgement; it does not prove every
 | 2. Read sources | News, filings, reports | Searches the 10-K risk factors (Item 1A) and MD&A (Item 7) |
 | 3. Update the model | Excel earnings and valuation model | Not covered |
 | 4. Inspect disclosures | Statements, commentary, risk factors | Compares risk factors across two years with passages from both |
-| 5. Reconcile inputs | Fiscal dates, metrics, units, filing versions | Code renders figures with their period end; restatements are flagged |
+| 5. Reconcile inputs | Fiscal dates, metrics, units, filing versions | Code renders figures with their period end; a different later value is flagged |
 | 6. Prepare findings | Review figures, explanations, limitations | Drafts the note; code checks every number; in C2 a judge checks cited claims |
 | 7. Retain and revisit | Save the reviewed note | Publishes the approved note and remembers it for "what changed since our last note" |
 
@@ -97,7 +97,7 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 - **Only full-year facts are used** (about 365 days), so quarter-only or year-to-date values cannot enter an annual margin ([edgar.py](../analystdesk/edgar.py)).
 - **A fiscal year is the year the period ends,** checked against the filing rather than assumed from the filing date.
 - A fiscal year is not relabelled as a calendar year, and missing months are not estimated.
-- **Relative periods are shown, not guessed silently.** "Last three years" is read as FY2022–FY2024, the covered years, and the plan gate says so under "How your request was read", so the analyst can edit the plan before any research runs.
+- **Relative periods require explicit confirmation.** "Last three years" proposes the latest three covered years (currently FY2022–FY2024). The analyst must confirm that range or edit and confirm it at the plan gate before research runs. Unspecified years also require confirmation of the proposed default.
 
 ### Units and precision
 
@@ -109,7 +109,7 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 ### Filing versions
 
 - **As originally reported is the default.** When several 10-Ks report a value for the same year, the app uses that year's own 10-K, the same document the cited passages come from.
-- **A later restatement is shown, never swapped in.** The fact carries the restated value, C0 prints a warning, and a follow-up note says "Restated since the last note" rather than treating it as a business change. Known cases: BAC FY2023 and FY2024, WFC FY2022.
+- **A later restatement is shown, never swapped in.** The fact carries the restated value, C0 prints a warning, and a follow-up note says the figure for the same year differs between the two notes (a later presentation, reason not established) rather than treating it as a business change. Known cases: BAC FY2023 and FY2024, WFC FY2022.
 - A same-year difference between filings is a version change, not growth, and is not assumed to be an error correction.
 
 ## 5. Evidence and risk-change rules
@@ -171,12 +171,11 @@ The specification sets a higher bar than the app meets in some places. These are
 
 | Specification | The app today |
 |---|---|
-| Explicit "Insufficient evidence" label and coverage record for each risk comparison | The risk specialist reports Added / Removed / Changed with passages from both years; there is no coverage record |
-| Every substantive claim is reviewed; a judge failure leaves the review incomplete | The C2 judge checks up to 10 cited claims; uncited narrative is not judged; a judge failure is shown but does not block the note; C1 has no judge |
-| Calendar-period requests and filing as-of cutoffs handled explicitly | Fiscal year-ends and 53-week years are stated in the note, but a calendar-period request is not converted and no as-of cutoff is applied |
-| Decimal `ROUND_HALF_UP` display rounding | Python number formatting, which can differ from `ROUND_HALF_UP` only on an exact half-way value |
-| Verified reviewer identity, per-analyst access and audiences | The approver and analyst are typed names, not verified identities. Preferences and coverage are kept per analyst name; past-note memory and published notes are shared by everyone using the app |
-| Publication outcome unknown, corrections, supersession and withdrawal of published notes | Publication either succeeds or is refused; there is no correction or withdrawal workflow |
+| A typed coverage record for each risk comparison | The risk specialist labels each point Added / Removed / Changed / Unchanged / Insufficient evidence with passages from both years, and code adds a Limitations line when one year's Item 1A evidence is missing; there is no per-section coverage record |
+| Every substantive claim is reviewed | The C2 judge reviews every cited claim and a missing verdict blocks approval; uncited narrative lines are counted and shown to the analyst but not judged; C1 has no judge (its numbers are still checked by code) |
+| Calendar-period requests and filing as-of cutoffs handled explicitly | Fiscal year-ends and 53-week years are stated in the note and "latest" is read as FY2024 at the plan gate, but a calendar-period request is not converted and no as-of cutoff is applied |
+| Verified reviewer identity, per-analyst access and audiences | The approver and analyst are typed names, not verified identities. Preferences, coverage and the watchlist are kept per analyst name; past-note memory and published notes are shared by everyone using the app |
+| Corrections, supersession and withdrawal of published notes | A published note can't be corrected or withdrawn in the app; an unconfirmed save is reported as unknown and reconciled by hand |
 | Retention periods per record type | No automatic expiry; memory stays until it is deleted |
 
 None of these affects the guarantee that every number in a published note was checked against its source before the analyst saw it.

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import threading
 from pathlib import Path
 
 INDEX_DIR = Path(__file__).parent.parent / "data" / "index"
@@ -202,8 +203,23 @@ class HybridRetriever:
         return [{**p, "score": float(s)} for p, s in ranked_pairs[:top_k]]
 
 
+_build_lock = threading.Lock()
+
+
 def get_retriever(passages: list[dict] | None = None) -> HybridRetriever:
-    """Return a cached HybridRetriever. Builds the index on first call."""
+    """Return a cached HybridRetriever. Builds the index on first call.
+
+    Locked: parallel first searches (C1 can issue several tool calls at once) must not
+    open the vector store twice, which fails inside Chroma.
+    """
+    global _retriever
+    if _retriever is not None:
+        return _retriever
+    with _build_lock:
+        return _build(passages)
+
+
+def _build(passages: list[dict] | None) -> HybridRetriever:
     global _retriever
     if _retriever is None:
         if passages is None:

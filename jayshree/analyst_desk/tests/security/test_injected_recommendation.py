@@ -384,11 +384,12 @@ class KnownGapTests(unittest.TestCase):
         self.assertEqual(out["checked"], 0)
         self.assertEqual(out["issues"], [])
 
-    def test_the_judge_fails_open_when_it_does_see_the_claim(self):
+    def test_an_unreachable_judge_now_blocks_the_note(self):
         """Even with a citation attached — which is what gets the claim in front
-        of the judge — an unreachable judge returns no issues, so the note
-        proceeds. Fail-open is deliberate (a judge outage must not block the
-        desk) and is the second half of this gap."""
+        of the judge — the judge may be unreachable. That used to fail open (no
+        issues, the note proceeded); the gap-analysis fixes (AE03) made it fail
+        closed: an incomplete review is an issue, so approval stays unavailable
+        until a re-check completes. This half of the gap is closed."""
         class JudgeUnavailable:
             async def ainvoke(self, messages):
                 raise RuntimeError("judge model unreachable")
@@ -396,8 +397,9 @@ class KnownGapTests(unittest.TestCase):
         critic = make_judge(JudgeUnavailable(), PASSAGES.get)
         out = asyncio.run(critic(PARAPHRASED + " [MSFT_2024_item7_016]"))
         self.assertEqual(out["checked"], 1)
-        self.assertEqual(out["issues"], [])
-        self.assertIsNone(out["supported"])
+        self.assertEqual(out["reviewed"], 0)
+        self.assertEqual(len(out["issues"]), 1)
+        self.assertTrue(out["issues"][0].startswith("Review incomplete"))
         self.assertIn("judge unavailable", out["error"])
 
 

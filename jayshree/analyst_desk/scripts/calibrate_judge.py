@@ -67,12 +67,14 @@ async def sample(n: int) -> None:
     print(f"Wrote {len(picked)} rows to {LABELS.relative_to(ROOT)}. Fill the 'human' column with yes/no.")
 
 
-def cohen_kappa(a: list[bool], b: list[bool]) -> float:
+def cohen_kappa(a: list[bool], b: list[bool]) -> float | None:
+    """None when kappa is undefined: both raters gave one label to every row (chance
+    agreement is 1), so agreement says nothing about the judge. Reported as such."""
     n = len(a)
     p_obs = sum(x == y for x, y in zip(a, b)) / n
     pa, pb = sum(a) / n, sum(b) / n
     p_chance = pa * pb + (1 - pa) * (1 - pb)
-    return 1.0 if p_chance == 1 else (p_obs - p_chance) / (1 - p_chance)
+    return None if p_chance == 1 else (p_obs - p_chance) / (1 - p_chance)
 
 
 async def score() -> None:
@@ -84,16 +86,24 @@ async def score() -> None:
     if len(labelled) < 20:
         sys.exit(f"Only {len(labelled)} rows labelled; label at least 20 (yes/no) first.")
     critic = make_judge(make_judge_llm(), passage_text)
-    human, judge = [], []
+    human, judge, unavailable = [], [], 0
     for r in labelled:
-        # one claim at a time, exactly as the critic sees it
-        verdict = await critic(f"{r['claim']} [{r['passage_ids'].split()[0]}]")
+        # one claim at a time, with the same passage(s) the person labelled it against
+        cites = " ".join(f"[{p}]" for p in r["passage_ids"].split())
+        verdict = await critic(f"{r['claim']} {cites}")
+        if verdict.get("reviewed") != 1:   # no valid verdict: incomplete, not a "no"
+            unavailable += 1
+            continue
         human.append(r["human"].strip().lower() == "yes")
-        judge.append(verdict.get("supported") == verdict.get("checked") == 1)
+        judge.append(verdict.get("supported") == 1)
+    if len(human) < 20:
+        sys.exit(f"Only {len(human)} rows got a judge verdict ({unavailable} unavailable); need at least 20.")
     agree = sum(h == j for h, j in zip(human, judge)) / len(human)
     kappa = cohen_kappa(human, judge)
-    result = {"judge_model": LLM_CONFIG.model("judge"), "n": len(human), "agreement": round(agree, 3),
-              "cohen_kappa": round(kappa, 3),
+    result = {"judge_model": LLM_CONFIG.model("judge"), "n": len(human), "judge_unavailable": unavailable,
+              "agreement": round(agree, 3),
+              "cohen_kappa": round(kappa, 3) if kappa is not None else None,
+              "kappa_note": None if kappa is not None else "undefined: every row got the same label",
               "confusion": {"both_yes": sum(h and j for h, j in zip(human, judge)),
                             "both_no": sum(not h and not j for h, j in zip(human, judge)),
                             "human_yes_judge_no": sum(h and not j for h, j in zip(human, judge)),

@@ -129,7 +129,7 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
 |---|---|---|
 | `input_guard` | Covered company named? Covered years only? No advice request? No instructions aimed at the system? | Code |
 | `plan` | Sub-questions, outline, companies and years. Reads preferences, previous notes and relevant lessons. Coverage is then enforced by code. | Model (structured output) + code |
-| `review_plan` | Interrupt: approve, edit or cancel. Shows how code read the request ("last three years" → FY2022–FY2024; banks on pre-tax margin) | Person |
+| `review_plan` | Interrupt: approve, edit or cancel. Relative or unspecified years require explicit confirmation; shows the proposed covered range ("last three years" → FY2022–FY2024) and records the confirmed range | Person + code |
 | `write` | Draft with figure placeholders. Code renders every figure and adds the "what changed" and Comparability sections (fiscal year-ends, 53-week years, mixed margin bases). | Model + code |
 | `check` | Every number, citation and placeholder; no operating vs pre-tax margin on one line; no advice wording; no private-watchlist company. Failed checks go back to the writer at most twice. C2 adds the judge. | Code (+ judge) |
 | `review_note` | Interrupt: approve (signs the exact note; refused while checks fail), edit (re-checked) or reject | Person |
@@ -179,13 +179,14 @@ companyfacts.json
 ```
 fp == "FY" and form == "10-K"     annual report facts only
 end[:4] == fiscal year             aligned by period END, not EDGAR's fy field
-end − start ≥ 350 days             full year only (10-Ks also tag quarterly tables)
+350 ≤ end − start ≤ 380 days      one year only (10-Ks also tag quarterly and multi-year values;
+                                   a 53-week year is 371 days)
 earliest filed                     as originally reported in that year's own 10-K;
-                                   later restatements become warnings
+                                   a different later value becomes a warning
 ```
 
 - **Why the period end.** EDGAR's `fy` describes the filing, not the period, and is wrong for non-December year-ends. Year-ends differ: Microsoft June, Apple September, Oracle May, NVIDIA late January.
-- **Why the earliest filing.** Later 10-Ks restate prior years. For example, BAC's FY2024 revenue went from $101,887M to $105,856M in its FY2025 10-K. The as-reported value matches the 10-K the passages come from, so the citation and the text agree.
+- **Why the earliest filing.** Later 10-Ks can report a different value for a prior year. For example, BAC's FY2024 revenue went from $101,887M to $105,856M in its FY2025 10-K. The as-reported value matches the 10-K the passages come from, so the citation and the text agree.
 - **Revenue concepts.** The earliest-filed fact is taken across all of a company's revenue concepts.
 - **Banks use pre-tax margin.** JPM, GS, BAC, MS and WFC report no `OperatingIncomeLoss`. Their margin is pre-tax income ÷ net revenue. `margin_basis` is fixed per company in [scope.py](../analystdesk/scope.py), and margins on different bases are never compared.
 

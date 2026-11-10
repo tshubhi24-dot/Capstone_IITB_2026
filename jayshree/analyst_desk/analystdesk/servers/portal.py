@@ -179,7 +179,12 @@ def publish_note(
             )
             note_id = cur.lastrowid
     except sqlite3.IntegrityError:
-        return fail(PublishResult, "ALREADY_EXISTS", "this exact note is already published")
+        # name the existing record, so a retry after a lost response can be reconciled
+        with _connect() as con:
+            row = con.execute("SELECT id, published_at FROM notes WHERE note_sha256 = ?",
+                              (claims["note_sha256"],)).fetchone()
+        where = f" as note #{row[0]} at {row[1]}" if row else ""
+        return fail(PublishResult, "ALREADY_EXISTS", f"this exact note is already published{where}")
     return PublishResult(note_id=note_id, note_sha256=claims["note_sha256"], published_at=published_at)
 
 

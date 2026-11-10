@@ -7,8 +7,8 @@ Research tab's C1/C2 modes do the same through runtime.py.
 
     python -m analystdesk.agent start "Compare Microsoft and Alphabet operating margins 2022-2024"
     python -m analystdesk.agent start "..." --team          # C2 team instead of C1
-    python -m analystdesk.agent resume RUN_ID --approve                 # plan gate
-    python -m analystdesk.agent resume RUN_ID --edit-plan plan.json
+    python -m analystdesk.agent resume RUN_ID --approve --confirm-years # relative/unspecified years
+    python -m analystdesk.agent resume RUN_ID --edit-plan plan.json --confirm-years
     python -m analystdesk.agent resume RUN_ID --approve --approver Jayshree   # note gate
     python -m analystdesk.agent resume RUN_ID --edit-note note.md
     python -m analystdesk.agent resume RUN_ID --reject "reason"
@@ -42,8 +42,11 @@ def _report(run_id: str, result: dict) -> None:
         gate = result["interrupts"][0]
         if gate["gate"] == "plan":
             print("WAITING FOR PLAN APPROVAL:\n" + json.dumps(gate["plan"], indent=2))
-            print(f"\n  approve: python -m analystdesk.agent resume {run_id} --approve"
-                  f"\n  edit:    python -m analystdesk.agent resume {run_id} --edit-plan plan.json")
+            confirm = " --confirm-years" if gate.get("requires_year_confirmation") else ""
+            if gate.get("requires_year_confirmation"):
+                print("\nRelative or unspecified fiscal years require confirmation.")
+            print(f"\n  approve: python -m analystdesk.agent resume {run_id} --approve{confirm}"
+                  f"\n  edit:    python -m analystdesk.agent resume {run_id} --edit-plan plan.json{confirm}")
         else:
             c = gate["check"]
             print(f"WAITING FOR NOTE APPROVAL — code check: {'PASS' if c['ok'] else 'ISSUES'}, "
@@ -77,6 +80,8 @@ def main() -> None:
     # Fix for Module 4 - Security (Fix 2 - use case 2): produced by
     # `python -m analystdesk.servers.signing sign` on the approver's own device.
     r.add_argument("--signature", default=None, help="the approver's Ed25519 signature")
+    r.add_argument("--confirm-years", action="store_true",
+                   help="confirm a relative or unspecified fiscal-year range at the plan gate")
     sh = sub.add_parser("show"); sh.add_argument("run_id")
     sub.add_parser("graph")
     args = ap.parse_args()
@@ -97,9 +102,10 @@ def main() -> None:
             # Fix for Module 4 - Security (Fix 2 - use case 2): the signature rides
             # with the approval; None when the approver has registered no key.
             decision = {"action": "approve", "approver": args.approver,
-                        "approver_signature": args.signature}
+                        "approver_signature": args.signature, "confirm_years": args.confirm_years}
         elif args.edit_plan:
-            decision = {"action": "edit", "plan": json.loads(args.edit_plan.read_text(encoding="utf-8"))}
+            decision = {"action": "edit", "plan": json.loads(args.edit_plan.read_text(encoding="utf-8")),
+                        "confirm_years": args.confirm_years}
         elif args.edit_note:
             decision = {"action": "edit", "note": {"body": args.edit_note.read_text(encoding="utf-8")}}
         else:
