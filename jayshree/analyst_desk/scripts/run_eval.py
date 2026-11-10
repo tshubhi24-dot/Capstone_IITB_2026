@@ -93,6 +93,15 @@ async def main() -> None:
                 if frozen else {"frozen": False})
     if args.split == "heldout" and os.getenv("AGENT_LESSONS", "1") != "0" and not frozen:
         ap.error("freeze the playbook before a held-out run (Research tab -> Playbook -> Freeze)")
+    # what produced these results: code revision, config version, models, reply cap
+    from analystdesk.llm_config import LLM_CONFIG
+    import subprocess
+    commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True)
+    dirty = subprocess.run(["git", "status", "--porcelain", "--", "analystdesk", "config", "scripts"], cwd=ROOT,
+                           capture_output=True, text=True)
+    system = {"commit": commit.stdout.strip() or None, "uncommitted_changes": bool(dirty.stdout.strip()),
+              "llm_config_version": LLM_CONFIG.version, "models": dict(LLM_CONFIG.models),
+              "max_output_tokens": LLM_CONFIG.max_output_tokens}
     RESULTS.mkdir(parents=True, exist_ok=True)
     path = RESULTS / f"eval_{args.split}_{args.tag}.json"
     all_rows: dict[str, list] = {}
@@ -106,6 +115,7 @@ async def main() -> None:
                   flush=True)
             all_rows[config] = rows
             snapshot = json.dumps({"split": args.split, "tag": args.tag, "price_per_m": PRICE_PER_M,
+                                   "system": system,
                                    "lessons": os.getenv("AGENT_LESSONS", "1") != "0",
                                    "playbook": playbook,
                                    "experiment": {"file": experiment["file"], "name": experiment["name"],
