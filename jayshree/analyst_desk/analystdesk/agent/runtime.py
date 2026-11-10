@@ -36,6 +36,7 @@ def make_llm(model_role: str = "agent"):
         base_url="https://openrouter.ai/api/v1",
         api_key=os.environ["OPENROUTER_API_KEY"],
         temperature=0,
+        max_tokens=LLM_CONFIG.max_output_tokens,
         timeout=120,
     )
 

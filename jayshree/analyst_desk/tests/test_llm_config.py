@@ -98,6 +98,22 @@ class LLMConfigTests(unittest.TestCase):
             with self.assertRaisesRegex(LLMConfigError, "version must be 1"):
                 load_llm_config(path)
 
+    def test_reply_length_is_capped(self):
+        # every call must cap its reply, or OpenRouter reserves 65,536 tokens per call
+        self.assertEqual(LLM_CONFIG.max_output_tokens, 4096)
+        from analystdesk.agent.runtime import make_llm
+        import os
+        from unittest.mock import patch
+        with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test"}):
+            self.assertEqual(make_llm().max_tokens, 4096)
+        content = CONFIG_PATH.read_text(encoding="utf-8").replace(
+            "max_output_tokens = 4096", "max_output_tokens = 0", 1)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "llm.toml"
+            path.write_text(content, encoding="utf-8")
+            with self.assertRaisesRegex(LLMConfigError, "max_output_tokens"):
+                load_llm_config(path)
+
     def test_env_example_contains_only_api_key_setting(self):
         env_example = CONFIG_PATH.parent.parent / ".env.example"
         assignments = [

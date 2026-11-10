@@ -254,7 +254,8 @@ def make_judge(judge_llm, passage_text):
 def make_judge_llm():
     from langchain_openai import ChatOpenAI
     return ChatOpenAI(model=LLM_CONFIG.model("judge"), base_url="https://openrouter.ai/api/v1",
-                      api_key=os.environ["OPENROUTER_API_KEY"], temperature=0, timeout=120)
+                      api_key=os.environ["OPENROUTER_API_KEY"], temperature=0,
+                      max_tokens=LLM_CONFIG.max_output_tokens, timeout=120)
 
 
 # ── graph ─────────────────────────────────────────────────────────────────────
