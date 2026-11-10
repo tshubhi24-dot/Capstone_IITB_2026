@@ -1,0 +1,15 @@
+{
+ "file": "heldout_v1.jsonl",
+ "cases": 24,
+ "by_type": {
+  "numeric": 10,
+  "comparison": 6,
+  "risk_change": 4,
+  "refusal": 4
+ },
+ "seed": 20261110,
+ "sha256": "6647c6ddef9f2f99f947562ccb3a4fe716199550ee86e83a8eec7fc72dbd5e84",
+ "written": "2026-11-10",
+ "author": "build team (Role 5 unavailable)",
+ "frozen_before_any_agent_run": true
+}
