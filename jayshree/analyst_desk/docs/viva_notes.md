@@ -38,9 +38,11 @@ The same server also exposes a FastAPI API with health checks (section 11).
 | Area | Built by |
 |---|---|
 | The base system: EDGAR facts, ingestion, retrieval, MCP servers, C0/C1/C2 graphs, checker, memory, playbook, evaluation harness, observability, the app | Jayshree |
+| **Role 1, Domain and product:** problem statement, user workflow, supported scope, financial, filing-version, evidence and acceptance rules, reference answers ([product_spec.md](product_spec.md), 12) | Amit |
 | **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
-| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests (11) | Shubhi |
+| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
+| **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Nidhi |
 
 Every part is explained below, but expect the deepest questions on your own role.
 
@@ -596,7 +598,8 @@ Result file: `data/evaluation/results/memory_compare_20261025-112601.json`. You 
 
 - **🧠 Memory panel** (Research tab, C1/C2): view preferences, the coverage list and past-note memory, and delete any item.
 - **↻ Re-run this request without memory**: that run neither reads nor writes memory (section 9.5).
-- `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed.
+- `scripts/backfill_memory.py` rebuilds past-note memory from the portal. It was used once, for note #1, which was published before memory existed. It skips any note the analyst deleted from memory, so a deletion stays deleted.
+- Deleting a past-note memory says exactly what it did: removed from memory and coverage, not restored by a backfill; the published note stays in the portal and old run checkpoints are unchanged.
 
 **Likely questions:**
 - *"Can the agent change its own memory?"* No. No tool writes memory. Only two code paths do: the analyst's "Add preference", and publish-after-approval.
@@ -672,7 +675,7 @@ Denials go back to the agent as normal tool results, so it adapts instead of cra
 
 - **The memory checkbox is gone.** Memory is per analyst (by name) and on by default.
 - **Evaluation runs force memory off** (`AGENT_EVAL=1`), so experiments stay reproducible and held-out cases never benefit from memory.
-- **Restated figures are detected by code.** If the same fiscal year now has a different value, the note says "restated since the last note" instead of calling it a change.
+- **A different value for the same year is detected by code.** The note says the figure differs between the two notes (a later presentation) instead of calling it a business change. It doesn't say "restated": code can't tell a restatement from a recast or reclassification.
 - **A missing previous note is stated plainly.** If the analyst asks "what changed since our last note" and there isn't one, the note says so.
 - **"↻ Re-run this request without memory"** covers independent views, second opinions and debugging, in one click.
 
@@ -727,7 +730,8 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
   - Expected figures were **computed from XBRL by code and frozen in the file before any agent ran** ([scripts/make_dev_cases.py](../scripts/make_dev_cases.py)).
 - **Held-out cases:** [data/evaluation/heldout/](../data/evaluation/heldout/README.md) is empty on purpose. The brief says the person who tunes the agent must not write them, so **a teammate (Role 5)** writes 40+. No agent tool can read that folder.
 - **Scoring is code first** ([analystdesk/evaluation.py](../analystdesk/evaluation.py)):
-  - **numeric / comparison:** every expected figure appears in the output with the same unit, within rounding. So C0's free text and the agents' code-rendered figures are judged alike.
+  - **numeric / comparison:** every expected figure appears in the output with the same unit and sign, correctly rounded at the precision shown, and attached to the right company and year (its source tag resolves to that company, or the company is named on its line or table). So C0's free text and the agents' code-rendered figures are judged alike, and the right digits on the wrong company fail.
+  - **Any agent case** fails if the critic's review did not complete.
   - **risk_change:** the note cites the company's Item 1A passages for **both** years.
   - **refusal:** it declines, with no figures and no advice.
   - **Recorded for every run:** policy violations (advice wording), verified share, tools used, tokens, cost and latency.
@@ -741,7 +745,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - [scripts/reflect.py](../scripts/reflect.py) reads a **development** evaluation result (it refuses held-out results). For each agent run it collects what went wrong: failed scoring, and critic issues across revisions. A reflection prompt then turns these into at most 2 lessons per run: *"When <situation>: <what to do>"*, with tags.
 - Lessons are **pending** until a person approves them in the app (Research tab, C1/C2 → 📘 Playbook). Rejections are kept with their reason, and the brief asks for one rejected lesson as evidence.
 - Approved lessons are **retrieved only when relevant** (tag and word overlap, top 3) and shown to the planner, researchers and specialists, and writer. Each run's log says how many lessons it used.
-- **Freeze** the playbook before the held-out run; a frozen playbook refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
+- **Freeze** the playbook before the held-out run. Freezing takes a snapshot of the approved lessons with a version hash; frozen runs read only that snapshot, the result file records the version, and `run_eval.py` refuses a held-out run with an unfrozen playbook. A frozen playbook also refuses new approvals. `run_eval.py --no-lessons` gives the "before" runs for E3.
 - **Duplicates are merged.** If reflection produces the same lesson twice (same *when*, *do* and tags after normalising case and spacing), it is stored once with all its source cases. If earlier copies were given conflicting decisions, the lesson goes back to pending for a fresh review.
 - Code: [analystdesk/lessons.py](../analystdesk/lessons.py).
 
@@ -762,6 +766,9 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - **Metrics:** `prometheus_client` on `/metrics` (port 9464): runs by outcome, latency histogram, tokens and cost, verified/unverified numbers, critic rejections, tool calls by agent, hook denials, and EDGAR cache vs network.
 - **Grafana dashboard** ([docker/grafana/dashboards/analyst_desk.json](../docker/grafana/dashboards/analyst_desk.json)) shows the verified share against the 98% line, cost per note, latency (median and p95), rejections and tokens, tool calls by agent, and denials and EDGAR lookups.
 - **Alert:** Prometheus rule `VerifiedShareBelow98` (the brief's exact alert) ([docker/prometheus/alerts.yml](../docker/prometheus/alerts.yml)).
+- **In-app alerts:** the top of the app shows active Prometheus alerts, refreshed every 30 seconds and by a button; `/api/alerts` returns the same as JSON ([alerts.py](../analystdesk/alerts.py)).
+  - It says "Monitoring is unavailable" when Prometheus can't be reached, rather than "no alerts", so a broken monitor never looks like a healthy system.
+  - The API returns 503 in that case, and Prometheus's reply is validated field by field before anything is shown.
 - `docker compose up` now also starts **Jaeger (:16686), Prometheus (:9090) and Grafana (:3000)**.
 - **Known gap:** the MCP servers' own spans form separate traces, because trace context isn't propagated over the in-memory MCP connection. The lecture's `traceparent` header approach would fix this over HTTP.
 
@@ -829,6 +836,13 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 ### 11.4 Deployment details
 
 - **Compose health check:** the app's health check is `/readyz`. Runs, memory, portal notes and the approval key live in named volumes, so they survive restarts and image rebuilds.
+- **One team image, fully pinned** ([Dockerfile](../Dockerfile), [requirements.lock](../requirements.lock), [docker-image.yml](../../../.github/workflows/docker-image.yml)):
+  - **What's pinned:** the base image (`python:3.12.16-slim-trixie`); all 188 Python packages, frozen from a working image into `requirements.lock`; torch (`2.15.0+cpu`); the embedding and reranker model snapshots (by commit hash); and the search index, built into the image from the committed passages.
+  - **How it's shared:** CI builds it on every merge to `main` and publishes it to GitHub Container Registry as `:main` and `:sha-<commit>`. Teammates run `docker compose pull` then `docker compose up`, with no 20-minute build and nothing that can drift between machines.
+  - **Why lock and not just `requirements.txt`?** Unpinned packages resolve to whatever is newest on the day of the build. Two teammates building a week apart could get different library versions and different behaviour. The lock makes the image reproducible; `requirements.txt` stays the human-edited list.
+  - **Why bake the index?** It takes about 10 minutes to build on CPU, and it should be identical for everyone. It's named after a fingerprint of the passages, so if a checkout's passages differ from the image's, a matching index is built instead of using a stale one.
+  - **A bug found while testing it, also on main:** the `runs` and `memory` volumes were added to Compose, but the image never created those folders for the app user. Docker made them root-owned, so **every C1/C2 run failed in Docker** ("unable to open database file"). Fixed twice over: the image creates the folders, and a one-shot `volume-init` service gives the app user ownership of every data volume on start, which repairs volumes created earlier without deleting their data. Verified with a full C1 run through the API in the team image: plan gate → research → note gate, 5/5 numbers verified.
+  - **The key never enters the image:** `.env` is excluded from the build, and each person's key is read at run time.
 - **Setup:** `setup.bat` creates a project-local `.venv` and installs the requirements on Windows, with a check for Python 3.12 or newer.
 - **Windows output encoding:** `app.py` switches stdout and stderr to UTF-8, because emoji progress messages crashed the app when its output went to a file or pipe.
 
@@ -841,4 +855,150 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 5. What does CI run on every push, and what does it deliberately not run?
 6. What makes the evaluation gate fail?
 7. How do you test an alert rule without waiting for a real incident?
+8. How do you make sure every teammate runs exactly the same app? What exactly is pinned?
+9. Why bake the search index into the image, and what happens if the passages change?
+
+---
+
+## 12. The product specification and its gaps (role 1)
+
+[product_spec.md](product_spec.md) states what a correct note must do: the scope, the metric and fiscal-period rules, filing versions, evidence for claims, and acceptance. Its last section lists where the app falls short. Knowing those gaps, and why they are acceptable for now, is a strong viva answer.
+
+**Rules the app enforces in code:**
+- Coverage (15 companies × FY2022–2024) and refusal of advice requests, before planning.
+- Banks on pre-tax margin, fixed per company, so the basis never switches.
+- Each company's own fiscal year, with its period end shown.
+- As originally reported, with restatements flagged.
+- Every number checked against XBRL or its cited passage, with the same unit.
+- No line sets an operating margin against a pre-tax margin; a Comparability section states differing fiscal year-ends, 53-week years (Apple FY2023, AMD FY2022) and mixed bases.
+- "Last three years" and unspecified-year defaults are proposed at the plan gate; the analyst must confirm or edit and confirm the range before research starts.
+- Two approval gates, an HMAC signature over the exact note, approval refused while checks fail, and the portal refusing duplicates.
+- Memory off removes the `get_past_notes` tool from the run.
+
+**Main gaps, and the answer to give:**
+
+| Gap | Why it is acceptable now, and the fix |
+|---|---|
+| Typed names, not verified identities | A single-user prototype. Fix: authentication in front of the app |
+| The judge reviews cited claims only; uncited lines are counted and shown, not judged; C1 has no judge | Every number is still checked by code, and the analyst is told which lines nobody checked. Fix: judge uncited lines against the note's sources |
+| No correction or withdrawal of published notes | Publication is rare and approved by a person. Fix: a superseding-note workflow in the portal |
+| A mixed comparison spread over two lines is not caught | The Comparability section says the bases differ. Fix: a judge question about cross-basis rankings |
+
+**Likely questions:**
+1. What is the difference between operating margin and pre-tax margin, and why can't you rank Microsoft against JPMorgan?
+2. Microsoft's FY2024 ends in June and Alphabet's in December. Is comparing them valid?
+3. A 10-K restates last year's revenue. Which figure does the note use, and what does it say?
+4. Your risk agent found no cybersecurity passage for 2023. Can the note say the risk was added in 2024?
+5. Where does your app fall short of its own specification?
+
+---
+
+## 13. Security, experiments and deployment checks
+
+**Threat model:** [threat_model.md](threat_model.md). Learn its first sentence: *only notes the analyst approved, word for word, reach the portal; every number in them is true; the analyst's private data stays inside the system.*
+
+**Guardrails in code** ([guards.py](../analystdesk/agent/guards.py)), in three layers:
+
+| Layer | What it does |
+|---|---|
+| Input | The input guard refuses uncovered companies or years, advice requests, and requests that carry instructions to the system ("ignore your instructions…") |
+| Tools | The pre-tool hook checks the allow-list, and refuses any call naming a **private-watchlist** company the plan doesn't cover (`WATCHLIST_PRIVATE`). After the call, `screen()` withholds any result field that contains instructions aimed at the model |
+| Output | The note checks reject advice wording and watchlist companies; the analyst signs the exact note |
+
+- **The injection screen fires on 0 of 24,660 real filing passages** (both chunkings), so on our data it does not cost false blocks. It is a pattern list, so a paraphrased attack can pass it. That's why the output checks and the human gate stay behind it (defence in depth).
+- **The private watchlist** (🧠 Memory panel) is seen only by the planner. It can propose a watchlist company as a peer, but only an approved plan lets it into a tool call.
+- **Residual risks to name honestly:**
+  - typed identities;
+  - a planted passage with a wrong number but no instructions passes the quote check;
+  - in Compose, the sandbox guard is in-process and the sandbox shares the internal network with the app.
+
+**Experiments as config files** ([experiments/](../experiments/)): one harness and one file per arm. Each file's `[env]` sets switches the code reads at run time:
+- `AGENT_CRITIC=0`: no revisions and no judge (E4);
+- `AGENT_PASSAGES=plain`: flattened tables (E4);
+- `AGENT_DEFENCES=0`: every guardrail off (E2);
+- `AGENT_LESSONS=0`: no playbook (E3).
+
+The model, prompts, tools and budget never change between arms, so a difference comes from the switch. Every result file records which experiment and switches produced it.
+
+**E2 harness** ([redteam.py](../analystdesk/redteam.py), [run_redteam.py](../scripts/run_redteam.py)):
+- Attacks are JSONL written by Role 5. An attack can **plant passages in the filings** for one run: injection through our own data path. It is planted in keyword search and passage lookup only, so the stored vector index never holds attack text.
+- Success is decided in code, from `success_if`. A note-content attack counts only if the note **passed its checks**, because a note that fails them can't be approved.
+- The same run replays clean cases. A **false block** is an in-scope case in which any guardrail fired.
+- **First live check:** one planted "buy" article, C1.
+  - With defences on, the screen withheld it.
+  - With defences off, gpt-4.1-mini ignored it anyway.
+  - So the model resists some attacks by itself, and E2 has to measure that rather than assume it.
+
+**Role 6 additions (Nidhi):**
+- In Docker, the app calls the four MCP servers over HTTP. This was verified live: all four containers received calls, and a C1 note was published through the HTTP portal.
+- `ops_smoke.py` checks the running stack.
+- CI installs the locked dependencies and checks the Prometheus rules with `promtool`.
+- `audit_eval_results.py` recomputes the recorded development results.
+
+The audit points out that the **pooled** verified share differs from the per-case mean:
+
+| Config | Pooled | Per-case mean |
+|---|---|---|
+| C1 | 92.8% | 96.6% |
+| C2 | 71.5% | 80.2% |
+
+The pooled share matches the 98% alert's definition, because the per-case mean counts a note with no numbers as 100%.
+
+**Likely questions:**
+1. Walk through what stops an injected "buy" recommendation, layer by layer. Which layer would catch a paraphrase the regex misses?
+2. Why may the planner see the watchlist but no tool call may name it? What does the analyst's plan approval change?
+3. How do you count a false block, and why does it matter as much as attack success?
+4. Why is an experiment a config file and not a branch?
+5. What would you change before a supervised pilot? (Sign-in, a networkless sandbox per call, a classifier such as Llama Prompt Guard, a correction workflow.)
+
+---
+
+## 14. The implementation gap analysis
+
+A teammate audited the app against the final specifications: 77 rule groups and 28 frontend messages. [gap_closure.md](gap_closure.md) gives the status of every ID. Know these:
+
+**Approval and review**
+- **No known-wrong note can be approved.** Approval is refused in the graph, the API (409) and the UI while any check fails. The portal accepts only a signature issued on a passing note.
+- **A review that did not finish is not a pass.** The C2 judge reviews every cited claim, in batches of 10, and each claim needs exactly one true/false verdict. A judge outage, an empty or duplicate verdict list, or "supported": "yes" leaves the review incomplete. That is an issue, so approval is refused.
+  - Uncited narrative lines are counted, and the analyst is told to read them.
+- **A lost publish response is "save outcome unknown", not "failed".** Published needs a note id. A memory update that fails after a real save leaves the note Published and says so; it never republishes.
+
+**Numbers**
+- Rounding is half away from zero (20.125% → 20.13%).
+- A loss keeps its sign (`-$1,234.5M`) and is checked.
+- No margin on non-positive revenue, and no growth rate from a zero or negative base. A margin change from zero income is kept (0% → 5% = +5.00 pp).
+- A ratio must use one company and one year.
+- A quoted "$2.2K" never matches "$2.2 billion".
+- An annual fact must cover 350–380 days.
+
+**Wording**
+- A same-year difference is "a later 10-K reports …, reason not established", never "restated".
+- A risk is "added" or "removed" only with passages from both years. Otherwise it is "unchanged" or "insufficient evidence".
+- Code adds a **Limitations** section when a specialist step ended in an error, or one year's Item 1A was not retrieved.
+
+**Plan gate**
+- Shows every requested company or year that the plan dropped.
+- Explains "latest" (FY2024, historical).
+- Says when a bank was asked for operating margin.
+- An edited plan must stay in coverage.
+
+**Memory and lessons**
+- A deleted past-note memory is not restored by a backfill.
+- A frozen playbook is a versioned snapshot.
+
+**Scoring**
+- Checks sign, correct rounding and company/year association.
+- An incomplete review fails the case.
+- Judge calibration excludes unavailable verdicts and reports an undefined kappa as undefined.
+
+**Open:**
+- the evidence items, from Role 5 and the team: held-out cases, attacks, human risk and judge labels, E1–E4;
+- the scope limits in product spec §9: typed identities, no correction workflow, no as-of cutoffs.
+
+**Likely questions:**
+1. The judge provider is down. What happens to a C2 note, and why is that the right behaviour?
+2. Why did you stop calling a changed figure a "restatement"?
+3. Why is −20 → −10 not "−50% growth"?
+4. A teammate unfreezes the playbook during a held-out run. What protects the results?
+5. The portal times out after saving. What does the analyst see, and why not just retry?
 

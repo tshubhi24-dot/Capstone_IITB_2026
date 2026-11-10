@@ -36,3 +36,5 @@ jayshree/analyst_desk/data/memory/
 
 # macOS
 .DS_Store
+# Third-party datasets downloaded at run time (FinanceBench, CC BY-NC): not redistributed
+jayshree/analyst_desk/data/external/

@@ -39,6 +39,14 @@ class MemoryTests(TempMemory):
         cov = asyncio.run(memory.coverage("desk"))
         self.assertEqual([(c["ticker"], c["notes"]) for c in cov], [("MSFT", [7])])
 
+    def test_watchlist_keeps_covered_tickers_and_clears(self):
+        kept = asyncio.run(memory.set_watchlist("desk", ["nvda", "TSLA", " amd "]))
+        self.assertEqual(kept, ["AMD", "NVDA"])                       # TSLA is not covered
+        self.assertEqual(asyncio.run(memory.watchlist("desk")), ["AMD", "NVDA"])
+        self.assertEqual(asyncio.run(memory.watchlist("someone else")), [])   # per analyst
+        asyncio.run(memory.set_watchlist("desk", []))
+        self.assertEqual(asyncio.run(memory.watchlist("desk")), [])
+
     def test_preferences_add_and_forget(self):
         key = asyncio.run(memory.add_preference("desk", "Always include a peer table"))
         self.assertEqual([p["text"] for p in asyncio.run(memory.preferences("desk"))],
@@ -66,7 +74,8 @@ class MemoryTests(TempMemory):
         stale = {k: {**v, "value": v["value"] + 1.0} for k, v in current.items()}
         previous = {"note_id": 1, "title": "t", "published_at": "2026-10-25", "figures": stale}
         lines = memory.what_changed("MSFT", previous, current)
-        self.assertTrue(any("Restated since the last note" in l for l in lines), lines)
+        self.assertTrue(any("differs between the two notes" in l for l in lines), lines)
+        self.assertFalse(any("restat" in l.lower() for l in lines), lines)   # cause not established
 
     def test_current_figures_round_trip_through_parser(self):
         f = build_figures(["MSFT"], [2024])

@@ -70,8 +70,8 @@ Output fields: `ok`, `error`, `ticker`, `company`, `filings`
 
 Revenue, operating income and pre-tax income for one company and fiscal year.
 
-Values are as originally reported in that year's own 10-K. A later
-restatement is shown in restated_value_usd and in warnings.
+Values are as originally reported in that year's own 10-K. A different
+value in a later 10-K is shown in restated_value_usd and in warnings.
 
 Annotations: readOnlyHint=True, destructiveHint=False
 

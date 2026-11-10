@@ -36,6 +36,7 @@ import plotly.graph_objects as go
 
 from analystdesk.baseline import run_baseline
 from analystdesk.api import create_app
+from analystdesk.alerts import alert_panel_data
 from analystdesk.chat_chart import build_chat_chart
 from analystdesk.ingest import ingest_all, load_passages, PASSAGES_DIR
 from analystdesk.scope import COMPANIES, C0_COMPANIES, create_request
@@ -105,10 +106,15 @@ def build_margin_chart(note):
             x=[row.fiscal_year for row in rows],
             y=margins,
             mode="lines+markers+text",
-            text=[f"{margin:.1f}%" if margin is not None else "—" for margin in margins],
+            text=[f"{margin:.2f}%" if margin is not None else "—" for margin in margins],
             textposition="top center",
             line=dict(color=colors[company], width=3), marker=dict(size=10),
         ))
+    if len({row.margin_basis for row in note.rows}) > 1:
+        # Banks are on pre-tax margin: the two series are shown side by side, never ranked
+        fig.add_annotation(
+            text="Operating and pre-tax margins use different income lines: not comparable, not ranked.",
+            xref="paper", yref="paper", x=0, y=-0.22, showarrow=False, font=dict(size=11))
     fig.update_layout(
         title="Headline Margin (%) — Operating or Pre-tax as applicable",
         xaxis_title="Fiscal Year", yaxis_title="Margin %",
@@ -172,7 +178,7 @@ def load_dashboard(company_names):
             row.period_end,
             f"${row.revenue_usd_m:,.1f}M" if row.revenue_usd_m is not None else "—",
             f"${headline_income:,.1f}M" if headline_income is not None else "—",
-            f"{row.headline_margin_pct():.1f}%"
+            f"{row.headline_margin_pct():.2f}%"
             if row.headline_margin_pct() is not None else "—",
             "✅" if row.revenue_fact_id and row.headline_income_fact_id() else "❌",
         ])
@@ -180,7 +186,8 @@ def load_dashboard(company_names):
     stats_md = (
         f"| Metric | Value |\n|--------|-------|\n"
         f"| Selected companies | {', '.join(company_names)} |\n"
-        f"| Fiscal Years | 2022 · 2023 · 2024 |\n"
+        f"| Fiscal Years | 2022 · 2023 · 2024 (historical annual 10-Ks; each company's own fiscal "
+        f"year, so period ends differ) |\n"
         f"| EDGAR Verified | {note.verification_pct()}% |\n"
         f"| 10-K Documents Indexed | {n_files} |\n"
         f"| Text Passages Indexed | {n_passages if n_passages else '⚠️ Run ingestion first'} |\n"
@@ -367,6 +374,18 @@ with gr.Blocks(title="Analyst Desk") as demo:
         "IIT Bombay Agentic AI Capstone"
     )
 
+    gr.Markdown("### 🚨 Monitoring alerts")
+    alerts_status = gr.Markdown()
+    alerts_table = gr.Dataframe(
+        headers=["State", "Alert", "Severity", "Summary", "Active since"],
+        datatype=["str", "str", "str", "str", "str"],
+        interactive=False,
+        label="Active Prometheus alerts",
+        value=[],
+    )
+    refresh_alerts_btn = gr.Button("🔄 Refresh alerts", size="sm")
+    alerts_timer = gr.Timer(30)
+
     # ── Tab 1: Dashboard ──────────────────────────────────────────────────────
     with gr.Tab("📈 Dashboard"):
         with gr.Row():
@@ -522,6 +541,10 @@ with gr.Blocks(title="Analyst Desk") as demo:
         inputs=[dashboard_companies],
         outputs=[rev_chart, margin_chart, income_chart, metrics_table, stats_md],
     )
+    demo.load(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+    refresh_alerts_btn.click(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+    alerts_timer.tick(fn=alert_panel_data, outputs=[alerts_status, alerts_table])
+
     # Preload the retriever in the background for baseline research.
     _try_preload_retriever()
     refresh_btn.click(

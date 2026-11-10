@@ -127,12 +127,12 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
 
 | Node | What it does | Model or code |
 |---|---|---|
-| `input_guard` | Covered company named? Covered years only? No advice request? | Code |
+| `input_guard` | Covered company named? Covered years only? No advice request? No instructions aimed at the system? | Code |
 | `plan` | Sub-questions, outline, companies and years. Reads preferences, previous notes and relevant lessons. Coverage is then enforced by code. | Model (structured output) + code |
-| `review_plan` | Interrupt: approve, edit or cancel | Person |
-| `write` | Draft with figure placeholders. Code renders every figure and inserts the "what changed" section. | Model + code |
-| `check` | Every number, citation, placeholder and advice phrase is checked. C2 adds the judge. | Code (+ judge) |
-| `review_note` | Interrupt: approve (signs the exact note), edit (re-checked) or reject | Person |
+| `review_plan` | Interrupt: approve, edit or cancel. Relative or unspecified years require explicit confirmation; shows the proposed covered range ("last three years" → FY2022–FY2024) and records the confirmed range | Person + code |
+| `write` | Draft with figure placeholders. Code renders every figure and adds the "what changed" and Comparability sections (fiscal year-ends, 53-week years, mixed margin bases). | Model + code |
+| `check` | Every number, citation and placeholder; no operating vs pre-tax margin on one line; no advice wording; no private-watchlist company. Failed checks go back to the writer at most twice. C2 adds the judge. | Code (+ judge) |
+| `review_note` | Interrupt: approve (signs the exact note; refused while checks fail), edit (re-checked) or reject | Person |
 | `publish` | `publish_note` with the approval token. The portal re-hashes the note and verifies the token. | Code |
 
 ---
@@ -179,13 +179,14 @@ companyfacts.json
 ```
 fp == "FY" and form == "10-K"     annual report facts only
 end[:4] == fiscal year             aligned by period END, not EDGAR's fy field
-end − start ≥ 350 days             full year only (10-Ks also tag quarterly tables)
+350 ≤ end − start ≤ 380 days      one year only (10-Ks also tag quarterly and multi-year values;
+                                   a 53-week year is 371 days)
 earliest filed                     as originally reported in that year's own 10-K;
-                                   later restatements become warnings
+                                   a different later value becomes a warning
 ```
 
 - **Why the period end.** EDGAR's `fy` describes the filing, not the period, and is wrong for non-December year-ends. Year-ends differ: Microsoft June, Apple September, Oracle May, NVIDIA late January.
-- **Why the earliest filing.** Later 10-Ks restate prior years. For example, BAC's FY2024 revenue went from $101,887M to $105,856M in its FY2025 10-K. The as-reported value matches the 10-K the passages come from, so the citation and the text agree.
+- **Why the earliest filing.** Later 10-Ks can report a different value for a prior year. For example, BAC's FY2024 revenue went from $101,887M to $105,856M in its FY2025 10-K. The as-reported value matches the 10-K the passages come from, so the citation and the text agree.
 - **Revenue concepts.** The earliest-filed fact is taken across all of a company's revenue concepts.
 - **Banks use pre-tax margin.** JPM, GS, BAC, MS and WFC report no `OperatingIncomeLoss`. Their margin is pre-tax income ÷ net revenue. `margin_basis` is fixed per company in [scope.py](../analystdesk/scope.py), and margins on different bases are never compared.
 
@@ -243,6 +244,11 @@ The writer has no tools: it drafts only from the hand-offs.
   - each agent is bound only to its tools (`servers.AGENT_TOOLS`);
   - the permission hook re-checks every call;
   - in Docker, the MCP servers sit on an internal network with no internet access.
+- **Guardrails** ([agent/guards.py](../analystdesk/agent/guards.py), threats in [threat_model.md](threat_model.md)):
+  - **input:** the input guard refuses uncovered companies or years, advice requests and instructions aimed at the system;
+  - **tools:** the pre-tool hook refuses a call that names a company on the analyst's private watchlist the plan does not cover (`WATCHLIST_PRIVATE`); a tool result with instructions aimed at the model is withheld from it;
+  - **output:** the note checks reject advice wording and private-watchlist companies;
+  - `AGENT_DEFENCES=0` turns all of them off, for experiment E2 only.
 - **Typed results:** every tool returns `{ok: true, …}` or `{ok: false, error: {code, message}}`, with codes such as `NOT_IN_COVERAGE`, `NOT_FOUND`, `BLOCKED`, `BUDGET_EXCEEDED`, `PERMISSION_DENIED` and `APPROVAL_INVALID`. Agents adapt instead of crashing.
 - **Approval** ([approval.py](../analystdesk/approval.py)):
   - the note gate signs SHA-256(title + body + tickers) with an HMAC key the agents never see;
@@ -275,7 +281,7 @@ Tool schemas: [tools.md](tools.md).
 
 ## 9. Deployment
 
-`docker compose up` starts the services below. They all use one image (CPU-only PyTorch, models baked in, offline at run time); only the start command differs.
+`docker compose up` starts the services below. They all use one image; only the start command differs. The image is fully pinned: the base image, every Python package (`requirements.lock`), CPU-only PyTorch, the model snapshots, and a search index built from the committed passages. It runs offline. CI builds it from `main` and publishes it to `ghcr.io/tshubhi24-dot/analyst-desk`, so every teammate runs the identical build (`docker compose pull`).
 
 | Service | Role | Network |
 |---|---|---|
@@ -289,7 +295,7 @@ Tool schemas: [tools.md](tools.md).
 - Only the app container receives the OpenRouter key.
 - All ports are bound to 127.0.0.1.
 
-Outside Docker, the app runs the same MCP servers in-process over the in-memory transport: the same protocol and schemas, with no subprocesses. The CLI can use stdio.
+The research UI and FastAPI now select MCP transport from the environment. With `MCP_URL_*` variables (Docker Compose), they use the separate MCP servers over HTTP. Without those variables, they launch local stdio MCP subprocesses; tests and the offline evaluation harness may use in-process MCP explicitly. These transports expose the same tool schemas, but do not provide equivalent process isolation.
 
 ---
 
@@ -335,9 +341,12 @@ Outside Docker, the app runs the same MCP servers in-process over the in-memory 
 | E3 | Did the Reflexion lessons help? | Held-out with `AGENT_LESSONS=0` vs the frozen playbook |
 | E4 | Signature ablation | Critic loop on vs off; table-aware vs plain passages |
 
+Each experiment is a config file in [experiments/](../experiments/); `run_eval.py --experiment` and `run_redteam.py --experiment` run them with one harness.
+
 - **CI** ([.github/workflows](../../../.github/workflows)):
   - `ci.yml` runs the offline test suite and validates the Compose file on every push and pull request;
-  - `evaluation-gate.yml` runs on demand: C1 on the 20 development cases, failing below 95% task success or on any policy violation.
+  - `evaluation-gate.yml` runs when a maintainer starts it (it calls OpenRouter, using a repository secret): C1 on the 20 development cases, failing below 95% task success, on any run error or on any policy violation;
+  - `docker-image.yml` publishes the team image on every merge to `main`, and test-builds it on pull requests.
 
 ---
 

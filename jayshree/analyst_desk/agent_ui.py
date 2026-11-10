@@ -48,14 +48,14 @@ def _can_add_preference(text: str | None) -> bool:
     return bool(text and text.strip())
 
 
-async def _delete_memory_item(selection: list | None, confirmed: bool) -> bool:
+async def _delete_memory_item(selection: list | None, confirmed: bool) -> str:
+    """'' if nothing was deleted, else what was removed and what was kept."""
     if not confirmed or not selection:
-        return False
+        return ""
 
     from analystdesk import memory as ltm
 
-    await ltm.forget(tuple(selection[:2]), selection[2])
-    return True
+    return await ltm.forget(tuple(selection[:2]), selection[2])
 
 
 def _playbook_button_states(
@@ -94,12 +94,14 @@ def _parse_edited_plan(plan_text: str | None, original_plan_text: str | None) ->
         if not isinstance(original_data, dict):
             return None, "The original plan is invalid. Reload the plan before editing."
 
-        from analystdesk.agent.graph import Plan
+        from analystdesk.agent.graph import Plan, plan_scope_errors
 
         edited_plan = Plan(**plan_data).model_dump()
         original_plan = Plan(**original_data).model_dump()
     except (json.JSONDecodeError, TypeError, ValueError) as error:
         return None, f"Plan validation failed: {error}"
+    if errors := plan_scope_errors(edited_plan):
+        return None, "Plan validation failed: " + " ".join(errors)
 
     if edited_plan == original_plan:
         return None, "No plan changes detected. Make a valid change before approving."
@@ -139,6 +141,9 @@ def _event_line(ev: dict) -> str:
     if n == "review_plan":
         if ev["action"] == "cancel":
             return "🚫 **Plan cancelled** — research did not start"
+        if ev["action"] == "confirm_years":
+            years = ", ".join(f"FY{year}" for year in ev["year_confirmation"]["fiscal_years"])
+            return f"👤 **Fiscal years confirmed** — {years} by the analyst"
         return f"👤 **Plan {'edited and approved' if ev['action'] == 'edit' else 'approved'}** by the analyst"
     if n == "research":
         calls = ev.get("tool_calls") or []
@@ -211,13 +216,21 @@ def _check_display(c: dict) -> str:
             f"verified ({c['verified_share']}%)")
     claims = c.get("claims") or {}
     if claims.get("checked"):
+        reviewed = claims.get("reviewed", claims["checked"])
         head += (f"\n**Judge** ({claims.get('model')}): {claims.get('supported')}/{claims['checked']} "
                  "cited claims supported by their passages")
+        if reviewed < claims["checked"]:
+            head += f" · **review incomplete**: {claims['checked'] - reviewed} claim(s) got no verdict"
     elif claims.get("error"):
         head += f"\n**Judge**: {claims['error']}"
+    if claims.get("uncited"):
+        head += (f"\n{claims['uncited']} substantive line(s) cite no passage, so the judge could not "
+                 "check them: read them yourself before approving.")
     if c["issues"]:
-        head += "\n\nIssues (the analyst decides whether to edit or reject):\n" + "\n".join(
-            f"- {i}" for i in c["issues"])
+        head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
+                 "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
+    else:
+        head += "\n\nReady for your review: approving publishes exactly this note."
     return head
 
 
@@ -335,7 +348,7 @@ async def _drive(run_id: str, payload):
     async def on_event(ev):
         await queue.put(ev)
 
-    task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="inprocess"))
+    task = asyncio.create_task(run_until_gate(run_id, payload, on_event, transport="auto"))
     try:
         while not (task.done() and queue.empty()):
             try:
@@ -359,32 +372,60 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     board = _board(events if events is not None else v.get("trace", []), v.get("mode", "c1"))
     gate = result["interrupts"][0] if result.get("interrupts") else None
     usage = f"tool calls **{v.get('tool_calls', 0)}** · tokens **{v.get('tokens', 0):,}**"
+    if v.get("memory_on") is False:
+        usage += " · 🧠 saved memory **off**: no preferences, past notes or past-note tool in this run"
 
     plan_md, plan_json, note_md, check_md, note_body = "", "", "", "", ""
     plan_edit_feedback = ""
     original_plan_json = ""
     show_plan = show_note = False
+    requires_year_confirmation = False
     if gate and gate["gate"] == "plan":
-        status = f"### ⏸ Waiting for you: approve, edit, or cancel the plan\nRun `{run_id}` · {usage}"
+        requires_year_confirmation = gate.get("requires_year_confirmation")
+        if requires_year_confirmation is None:
+            from analystdesk.agent.graph import year_confirmation_required
+            requires_year_confirmation = year_confirmation_required(v.get("request", ""))
+        next_step = ("confirm the fiscal years, edit the plan, or cancel"
+                     if requires_year_confirmation else "approve, edit, or cancel the plan")
+        status = f"### ⏸ Waiting for you: {next_step}\nRun `{run_id}` · {usage}"
         p = gate["plan"]
         plan_md = (f"**Companies:** {', '.join(p['companies'])} · **Fiscal years:** "
                    f"{', '.join(map(str, p['fiscal_years']))}\n\n**Sub-questions**\n"
                    + "\n".join(f"1. {q}" for q in p["sub_questions"])
-                   + "\n\n**Outline:** " + " → ".join(p["outline"]))
+                   + "\n\n**Outline:** " + " → ".join(p["outline"])
+                   + ("\n\n**How your request was read** (edit the plan to change it)\n"
+                      + "\n".join(f"- {a}" for a in gate.get("assumptions", []))
+                      if gate.get("assumptions") else ""))
+        if requires_year_confirmation:
+            plan_md += "\n\n**Confirm the fiscal-year range below before research starts.**"
         plan_json = json.dumps(p, indent=2)
         original_plan_json = plan_json
         plan_edit_feedback = "Make a valid change to the JSON plan to enable this button."
         show_plan = True
     elif gate and gate["gate"] == "note":
-        status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
+        if gate.get("check", {}).get("ok", False):
+            status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
+        else:
+            status = (f"### ⛔ Note failed verification. Edit and re-check it, or reject it. "
+                      f"Approval is blocked.\nRun `{run_id}` · {usage}")
         note_md = f"# {gate['note']['title']}\n\n" + _note_display(gate["note"]["body"])
         check_md = _check_display(gate["check"])
         note_body = gate["note"]["body"]
         show_note = True
     else:
         outcome = v.get("outcome")
+        pub = v.get("published") or {}
         if outcome == "published":
-            status = f"### ✅ Published\nRun `{run_id}` · {usage}"
+            status = f"### ✅ Published as note #{pub.get('note_id')}\nRun `{run_id}` · {usage}"
+            if pub.get("memory_error"):
+                status += ("\n\n⚠️ The note is saved in the portal, but the memory update failed "
+                           f"({pub['memory_error']}). Do not publish again; run scripts/backfill_memory.py.")
+        elif outcome == "publish_unconfirmed":
+            status = (f"### ❓ Save outcome unknown\nThe portal may or may not have saved this note "
+                      f"({pub.get('error') or 'no note id returned'}). Check the portal's Recent notes "
+                      f"before trying again.\nRun `{run_id}` · {usage}")
+        elif outcome == "publish_failed":
+            status = f"### ✖ Not published: the portal refused the note\nRun `{run_id}` · {usage}"
         elif outcome == "rejected":
             status = f"### 🛑 Rejected by the analyst\nRun `{run_id}` · {usage}"
         elif outcome == "cancelled":
@@ -405,7 +446,11 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             gr.update(value=note_md), gr.update(value=check_md), gr.update(value=note_body),
             gr.update(visible=show_note), _past_notes(), board,
             gr.update(value=plan_edit_feedback), original_plan_json,
-            gr.update(interactive=False))
+            gr.update(interactive=False),
+            gr.update(interactive=bool(gate and gate.get("gate") == "note"
+                                       and gate.get("check", {}).get("ok", False))),
+            gr.update(visible=requires_year_confirmation, value=False),
+            requires_year_confirmation)
 
 
 def _log_from_trace(values: dict) -> list[str]:
@@ -451,6 +496,12 @@ def build_agent_panel(workflow_mode):
         with gr.Group(visible=False) as plan_box:
             gr.Markdown("## 📝 Plan — your approval is needed")
             plan_md = gr.Markdown()
+            confirm_years_checkbox = gr.Checkbox(
+                label="I confirm the fiscal years shown above and want research to proceed.",
+                visible=False,
+                value=False,
+            )
+            year_confirmation_required = gr.State(False)
             with gr.Accordion("✏️ Edit the plan (JSON)", open=False):
                 plan_json = gr.Code(language="json", label="Plan")
                 plan_edit_feedback = gr.Markdown()
@@ -487,6 +538,13 @@ def build_agent_panel(workflow_mode):
                 new_pref = gr.Textbox(label="Add a standing preference", scale=4,
                                       placeholder="e.g. Always include a peer comparison table")
                 add_pref_btn = gr.Button("Add", scale=1, interactive=False)
+            with gr.Row():
+                watchlist_box = gr.Textbox(
+                    label="🔒 Private watchlist (tickers, comma-separated)", scale=4,
+                    info="Only the planner sees it. It never goes into a tool call, a search or a note "
+                         "unless you approve a plan that covers the company.")
+                save_watchlist_btn = gr.Button("Save watchlist", scale=1)
+            watchlist_status = gr.Markdown()
             prefs_table = gr.Dataframe(headers=["key", "preference", "added (UTC)"],
                                        interactive=False, wrap=True)
             coverage_table = gr.Dataframe(headers=["ticker", "notes", "last published"],
@@ -536,7 +594,8 @@ def build_agent_panel(workflow_mode):
 
         outputs = [run_id, status, activity, plan_md, plan_json, plan_box,
                    note_md, check_md, note_body, note_box, past, board,
-                   plan_edit_feedback, plan_json_baseline, edit_plan_btn]
+                   plan_edit_feedback, plan_json_baseline, edit_plan_btn, approve_note_btn,
+                   confirm_years_checkbox, year_confirmation_required]
 
         def start_control_updates(req, mode, running, current_run_id):
             return (
@@ -555,7 +614,8 @@ def build_agent_panel(workflow_mode):
                 gr.update(), gr.update(), gr.update(visible=False),
                 gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                 _board(events, mode), gr.update(value=""), gr.update(),
-                gr.update(interactive=False),
+                gr.update(interactive=False), gr.update(interactive=False),
+                gr.update(visible=False, value=False), False,
                 *start_control_updates(request_text, mode, True, rid),
             )
             try:
@@ -568,7 +628,8 @@ def build_agent_panel(workflow_mode):
                             gr.update(), gr.update(), gr.update(visible=False),
                             gr.update(), gr.update(), gr.update(), gr.update(visible=False), gr.update(),
                             _board(events, mode), gr.update(value=""), gr.update(),
-                            gr.update(interactive=False),
+                            gr.update(interactive=False), gr.update(interactive=False),
+                            gr.update(visible=False, value=False), False,
                             *start_control_updates(request_text, mode, True, rid),
                         )
                     else:
@@ -580,8 +641,11 @@ def build_agent_panel(workflow_mode):
                 failure_updates[1] = "### Run failed; check the server logs for details"
                 failure_updates[5] = gr.update(visible=False)
                 failure_updates[9] = gr.update(visible=False)
-                failure_updates[-3] = gr.update(value="")
-                failure_updates[-1] = gr.update(interactive=False)
+                failure_updates[12] = gr.update(value="")
+                failure_updates[14] = gr.update(interactive=False)
+                failure_updates[15] = gr.update(interactive=False)
+                failure_updates[16] = gr.update(visible=False, value=False)
+                failure_updates[17] = False
                 yield (
                     *failure_updates,
                     *start_control_updates(request_text, mode, False, rid),
@@ -610,6 +674,20 @@ def build_agent_panel(workflow_mode):
             from analystdesk import memory as ltm
             await ltm.add_preference((name or "analyst").strip(), text)
             yield ("", *await memory_tables(name), gr.update(interactive=False))
+
+        async def watchlist_text(name):
+            from analystdesk import memory as ltm
+            return ", ".join(await ltm.watchlist((name or "analyst").strip()))
+
+        async def on_save_watchlist(name, text):
+            from analystdesk import memory as ltm
+            asked = [t for t in re.split(r"[,\s]+", text or "") if t]
+            kept = await ltm.set_watchlist((name or "analyst").strip(), asked)
+            dropped = sorted({t.upper() for t in asked} - set(kept))
+            status = f"_Saved: {', '.join(kept)}._" if kept else "_Watchlist cleared._"
+            if dropped:
+                status += f" _Not covered, so not kept: {', '.join(dropped)}._"
+            return ", ".join(kept), status
 
         def update_add_preference_button(text):
             return gr.update(interactive=_can_add_preference(text))
@@ -641,7 +719,7 @@ def build_agent_panel(workflow_mode):
                 )
             return (
                 None, gr.update(visible=False), gr.update(interactive=False),
-                "_Memory deleted._", *await memory_tables(name),
+                f"_Deleted. {deleted}_", *await memory_tables(name),
             )
 
         def cancel_memory_deletion(sel):
@@ -737,8 +815,17 @@ def build_agent_panel(workflow_mode):
             ):
                 yield out
 
-        async def on_approve_plan(rid):
-            async for out in resume_with(rid, {"action": "approve"}):
+        async def on_approve_plan(rid, confirm_years, confirmation_required, req, agents, busy):
+            if confirmation_required and not confirm_years:
+                response = run_action_response(
+                    "### Confirm the fiscal-year range, edit the plan, or cancel before research starts.",
+                    req, agents, rid, busy,
+                )
+                response = list(response)
+                response[12] = gr.update(value="Fiscal-year confirmation is required to continue.")
+                yield tuple(response)
+                return
+            async for out in resume_with(rid, {"action": "approve", "confirm_years": bool(confirm_years)}):
                 yield out
 
         async def on_cancel_plan(rid):
@@ -749,7 +836,17 @@ def build_agent_panel(workflow_mode):
             edited_plan, feedback = _parse_edited_plan(text, original_plan)
             return gr.update(interactive=edited_plan is not None), feedback
 
-        async def on_edit_plan(rid, text, req, agents, busy, original_plan):
+        async def on_edit_plan(rid, text, req, agents, busy, original_plan,
+                               confirm_years, confirmation_required):
+            if confirmation_required and not confirm_years:
+                response = run_action_response(
+                    "### Confirm the fiscal-year range before approving the edited plan.",
+                    req, agents, rid, busy,
+                )
+                response = list(response)
+                response[12] = gr.update(value="Fiscal-year confirmation is required to continue.")
+                yield tuple(response)
+                return
             plan, feedback = _parse_edited_plan(text, original_plan)
             if plan is None:
                 updates = [gr.update() for _ in outputs]
@@ -758,7 +855,9 @@ def build_agent_panel(workflow_mode):
                 updates[-1] = gr.update(interactive=False)
                 yield (*updates, *start_control_updates(req, agents, busy, rid))
                 return
-            async for out in resume_with(rid, {"action": "edit", "plan": plan}):
+            async for out in resume_with(
+                rid, {"action": "edit", "plan": plan, "confirm_years": bool(confirm_years)}
+            ):
                 yield out
 
         async def on_approve_note(rid, name):
@@ -777,6 +876,7 @@ def build_agent_panel(workflow_mode):
             updates = [gr.update() for _ in outputs]
             updates[1] = status_text
             if running:
+                updates[-2] = gr.update(interactive=False)
                 updates[-1] = gr.update(interactive=False)
             return (*updates, *start_control_updates(req, agents, running, rid))
 
@@ -870,10 +970,13 @@ def build_agent_panel(workflow_mode):
 
         # every action refreshes the runs list afterwards
         for trigger, fn, inputs in (
-                (approve_plan_btn.click, on_approve_plan, [run_id]),
+                (approve_plan_btn.click, on_approve_plan,
+                 [run_id, confirm_years_checkbox, year_confirmation_required,
+                  request, workflow_mode, start_busy]),
                 (cancel_plan_btn.click, on_cancel_plan, [run_id]),
                 (edit_plan_btn.click, on_edit_plan,
-                 [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline]),
+                 [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline,
+                  confirm_years_checkbox, year_confirmation_required]),
                 (approve_note_btn.click, on_approve_note, [run_id, approver]),
                 (edit_note_btn.click, on_edit_note, [run_id, note_body]),
                 (reject_btn.click, on_reject, [run_id, reject_reason])):
@@ -900,6 +1003,8 @@ def build_agent_panel(workflow_mode):
         new_pref.input(update_add_preference_button, [new_pref], add_pref_btn)
         new_pref.change(update_add_preference_button, [new_pref], add_pref_btn)
         add_pref_btn.click(on_add_pref, [approver, new_pref], [new_pref, *mem_outputs, add_pref_btn])
+        save_watchlist_btn.click(on_save_watchlist, [approver, watchlist_box], [watchlist_box, watchlist_status])
+        approver.blur(watchlist_text, [approver], watchlist_box)
         prefs_table.select(
             on_pick_pref, [prefs_table, approver], [selected_mem, selected_label, delete_mem_btn]
         )
@@ -935,7 +1040,10 @@ def build_agent_panel(workflow_mode):
                     for x in await pb.list_lessons("approved")]
             rej = [[x["key"], x["when"], x["do"], x.get("reviewed_by", ""), x.get("review_reason", "")]
                    for x in await pb.list_lessons("rejected")]
-            status_md = (f"**Playbook {'🧊 FROZEN' if frozen else 'open'}** · {len(pend)} pending · "
+            snapshot = await pb.frozen_playbook() if frozen else None
+            version = (f" version `{snapshot['version']}` ({len(snapshot['lessons'])} lessons; runs use only "
+                       "this snapshot)") if snapshot and snapshot.get("version") else ""
+            status_md = (f"**Playbook {'🧊 FROZEN' if frozen else 'open'}**{version} · {len(pend)} pending · "
                          f"{len(appr)} approved · {len(rej)} rejected")
             return (status_md, pend, appr, rej, frozen,
                     *[gr.update(interactive=False) for _ in range(4)])
@@ -1028,6 +1136,7 @@ def build_agent_panel(workflow_mode):
         )
 
         async def on_page_load(name):
-            return (await refresh_runs(), *await memory_tables(name), *await playbook_tables())
+            return (await refresh_runs(), *await memory_tables(name), *await playbook_tables(),
+                    await watchlist_text(name))
 
-        return on_page_load, [approver], [runs_table, *mem_outputs, *pb_outputs]
+        return on_page_load, [approver], [runs_table, *mem_outputs, *pb_outputs, watchlist_box]

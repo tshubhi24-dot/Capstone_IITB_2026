@@ -10,6 +10,9 @@ from langgraph.types import Command
 
 
 class _PlanModel:
+    def __init__(self):
+        self.calls = 0
+
     def with_structured_output(self, model, include_raw=False):
         return self
 
@@ -17,6 +20,9 @@ class _PlanModel:
         return self
 
     async def ainvoke(self, messages):
+        self.calls += 1
+        if self.calls > 1:
+            raise RuntimeError("research started")
         plan = Plan(
             companies=["MSFT"],
             fiscal_years=[2024],
@@ -26,12 +32,18 @@ class _PlanModel:
         return {"parsed": plan, "raw": SimpleNamespace(usage_metadata={"total_tokens": 1})}
 
 
-async def _resume_plan_gate(graph, action="cancel"):
+async def _resume_plan_gate(
+    graph,
+    action="cancel",
+    request="Compare Microsoft margins in 2024",
+    confirm_years=False,
+    plan=None,
+):
     checkpointer = MemorySaver()
     app = graph.compile(checkpointer=checkpointer)
     config = {"configurable": {"thread_id": "cancel-plan-test"}}
     async for _ in app.astream(
-        {"request": "Compare Microsoft margins in 2024", "memory_on": False},
+        {"request": request, "memory_on": False},
         config,
         stream_mode="updates",
     ):
@@ -43,7 +55,7 @@ async def _resume_plan_gate(graph, action="cancel"):
 
     updates = []
     async for update in app.astream(
-        Command(resume={"action": action}),
+        Command(resume={"action": action, "confirm_years": confirm_years, **({"plan": plan} if plan else {})}),
         config,
         stream_mode="updates",
     ):
@@ -86,6 +98,102 @@ class GraphShapeTests(unittest.TestCase):
         with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
             with self.assertRaisesRegex(ValueError, "approve, edit, or cancel"):
                 asyncio.run(_resume_plan_gate(build_graph(_PlanModel(), [], None), action="unexpected"))
+
+    def test_relative_years_block_research_without_explicit_confirmation(self):
+        import os
+        from analystdesk.agent.team import build_team_graph
+
+        request = "Compare Microsoft's margins over the last three fiscal years"
+        for build in (build_graph, build_team_graph):
+            with self.subTest(graph=build.__name__), patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+                model = _PlanModel()
+                with self.assertRaisesRegex(ValueError, "Confirm the fiscal-year range"):
+                    asyncio.run(_resume_plan_gate(
+                        build(model, [], None), action="approve", request=request
+                    ))
+                self.assertEqual(model.calls, 1)
+
+    def test_confirmed_relative_years_allow_research_in_c1_and_c2(self):
+        import os
+        from analystdesk.agent.team import build_team_graph
+
+        request = "Compare Microsoft's margins over the last three fiscal years"
+        for build in (build_graph, build_team_graph):
+            with self.subTest(graph=build.__name__), patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+                model = _PlanModel()
+                with self.assertRaisesRegex(RuntimeError, "research started"):
+                    asyncio.run(_resume_plan_gate(
+                        build(model, [], None),
+                        action="approve",
+                        request=request,
+                        confirm_years=True,
+                    ))
+                self.assertGreater(model.calls, 1)
+
+    def test_editing_and_confirming_relative_years_records_selected_range(self):
+        import os
+
+        async def run():
+            checkpointer = MemorySaver()
+            app = build_graph(_PlanModel(), [], None).compile(checkpointer=checkpointer)
+            config = {"configurable": {"thread_id": "edit-confirm-years"}}
+            request = "Compare Microsoft's margins over the last three fiscal years"
+            async for _ in app.astream(
+                {"request": request, "memory_on": False},
+                config,
+                stream_mode="updates",
+            ):
+                pass
+
+            updates = []
+            try:
+                async for update in app.astream(
+                    Command(resume={
+                        "action": "edit",
+                        "confirm_years": True,
+                        "plan": {
+                            "companies": ["MSFT"],
+                            "fiscal_years": [2023],
+                            "sub_questions": ["Compare margins"],
+                            "outline": ["Summary"],
+                        },
+                    }),
+                    config,
+                    stream_mode="updates",
+                ):
+                    updates.append(update)
+            except RuntimeError as error:
+                if str(error) != "research started":
+                    raise
+            return updates
+
+        with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+            updates = asyncio.run(run())
+        review = next(update["review_plan"] for update in updates if "review_plan" in update)
+
+        self.assertEqual(review["plan"]["fiscal_years"], [2023])
+        self.assertEqual(review["year_confirmation"], {
+            "required": True,
+            "confirmed": True,
+            "fiscal_years": [2023],
+            "edited": True,
+        })
+
+    def test_edited_plan_rejects_uncovered_years(self):
+        import os
+
+        with patch.dict(os.environ, {"AGENT_LESSONS": "0"}):
+            with self.assertRaisesRegex(ValueError, "Only fiscal years"):
+                asyncio.run(_resume_plan_gate(
+                    build_graph(_PlanModel(), [], None),
+                    action="edit",
+                    plan={
+                        "companies": ["MSFT"],
+                        "fiscal_years": [1900],
+                        "sub_questions": ["What changed?"],
+                        "outline": ["Summary"],
+                    },
+                ))
 
 
 

@@ -1,0 +1,175 @@
+{
+ "source": "https://huggingface.co/datasets/PatronusAI/financebench/resolve/main/financebench_merged.jsonl",
+ "licence": "CC BY-NC 4.0",
+ "summary": {
+  "questions_total": 150,
+  "in_coverage": 9,
+  "evidence_in_corpus": 4,
+  "hit@5": 2,
+  "recall@5_on_findable": 0.5
+ },
+ "rows": [
+  {
+   "id": "financebench_id_00222",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    55
+   ],
+   "in_corpus": false,
+   "hit@5": false,
+   "top5": [
+    "AMD_2022_item1a_113",
+    "AMD_2022_item7_040",
+    "AMD_2022_item1a_114",
+    "AMD_2022_item7_021",
+    "AMD_2022_item1a_065"
+   ],
+   "seconds": 1.03
+  },
+  {
+   "id": "financebench_id_00995",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    3
+   ],
+   "in_corpus": false,
+   "hit@5": false,
+   "top5": [
+    "AMD_2022_item1a_026",
+    "AMD_2022_item1a_110",
+    "AMD_2022_item1a_037",
+    "AMD_2022_item1a_082",
+    "AMD_2022_item1a_004"
+   ],
+   "seconds": 0.92
+  },
+  {
+   "id": "financebench_id_01198",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    42
+   ],
+   "in_corpus": true,
+   "hit@5": true,
+   "top5": [
+    "AMD_2022_item7_046",
+    "AMD_2022_item7_045",
+    "AMD_2022_item7_033",
+    "AMD_2022_item7_031",
+    "AMD_2022_item7_003"
+   ],
+   "seconds": 0.99
+  },
+  {
+   "id": "financebench_id_00917",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    42
+   ],
+   "in_corpus": true,
+   "hit@5": true,
+   "top5": [
+    "AMD_2022_item7_004",
+    "AMD_2022_item7_046",
+    "AMD_2022_item7_045",
+    "AMD_2022_item7_033",
+    "AMD_2022_item7_034"
+   ],
+   "seconds": 1.21
+  },
+  {
+   "id": "financebench_id_01279",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    57
+   ],
+   "in_corpus": false,
+   "hit@5": false,
+   "top5": [
+    "AMD_2022_item7_041",
+    "AMD_2022_item1a_121",
+    "AMD_2022_item7_044",
+    "AMD_2022_item7_047",
+    "AMD_2022_item1a_120"
+   ],
+   "seconds": 1.08
+  },
+  {
+   "id": "financebench_id_00563",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    47
+   ],
+   "in_corpus": true,
+   "hit@5": false,
+   "top5": [
+    "AMD_2022_item7_003",
+    "AMD_2022_item7_033",
+    "AMD_2022_item7_029",
+    "AMD_2022_item7_023",
+    "AMD_2022_item7_034"
+   ],
+   "seconds": 1.24
+  },
+  {
+   "id": "financebench_id_00757",
+   "ticker": "AMD",
+   "year": 2022,
+   "evidence_page": [
+    11
+   ],
+   "in_corpus": false,
+   "hit@5": false,
+   "top5": [
+    "AMD_2022_item1a_019",
+    "AMD_2022_item1a_067",
+    "AMD_2022_item1a_036",
+    "AMD_2022_item1a_066",
+    "AMD_2022_item1a_030"
+   ],
+   "seconds": 0.93
+  },
+  {
+   "id": "financebench_id_00206",
+   "ticker": "JPM",
+   "year": 2022,
+   "evidence_page": [
+    2
+   ],
+   "in_corpus": true,
+   "hit@5": false,
+   "top5": [
+    "JPM_2023_item7_014",
+    "JPM_2024_item7_335",
+    "JPM_2022_item7_101",
+    "JPM_2023_item7_354",
+    "JPM_2022_item7_011"
+   ],
+   "seconds": 2.06
+  },
+  {
+   "id": "financebench_id_00552",
+   "ticker": "MSFT",
+   "year": 2023,
+   "evidence_page": [
+    59
+   ],
+   "in_corpus": false,
+   "hit@5": false,
+   "top5": [
+    "MSFT_2023_item7_050",
+    "MSFT_2022_item7_048",
+    "MSFT_2023_item7_051",
+    "MSFT_2022_item7_049",
+    "MSFT_2023_item7_037"
+   ],
+   "seconds": 2.06
+  }
+ ]
+}

@@ -7,7 +7,10 @@
 .git/
 .vscode/
 *.code-workspace
-data/
+# data is mounted from the repo at run time; only the passages are copied in,
+# to bake the search index into the image
+data/*
+!data/passages/
 docs/
 tests/
 notebooks/

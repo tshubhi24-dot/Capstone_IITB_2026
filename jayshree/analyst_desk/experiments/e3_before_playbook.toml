@@ -1,0 +1,8 @@
+name = "E3: did the lessons help? (before the playbook)"
+question = "Held-out results with no playbook lessons; compare with e3_after_playbook."
+runner = "eval"
+configs = ["c1", "c2"]
+split = "heldout"
+
+[env]
+AGENT_LESSONS = "0"

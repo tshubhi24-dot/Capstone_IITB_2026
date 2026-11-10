@@ -4,6 +4,7 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from analystdesk.alerts import PrometheusUnavailable
 from analystdesk.api import ResearchRequest, create_app
 
 
@@ -19,7 +20,8 @@ class ApiTests(unittest.TestCase):
                 plan = {"companies": ["MSFT"]}
                 result = {
                     "values": {"plan": plan},
-                    "interrupts": [{"gate": "plan", "plan": plan}],
+                    "interrupts": [{"gate": "plan", "plan": plan,
+                                    "requires_year_confirmation": True}],
                 }
                 await on_event({"node": "plan", "plan": plan})
             elif gate == "plan":
@@ -30,7 +32,7 @@ class ApiTests(unittest.TestCase):
                 }
                 result = {
                     "values": {"draft": draft},
-                    "interrupts": [{"gate": "note", "note": draft, "check": {"verified_share": 100}}],
+                    "interrupts": [{"gate": "note", "note": draft, "check": {"ok": True, "verified_share": 100}}],
                 }
                 await on_event({"node": "write", "draft": draft})
             elif gate == "note" and payload["resume"]["action"] == "reject":
@@ -53,18 +55,54 @@ class ApiTests(unittest.TestCase):
 
     @staticmethod
     def _events(response):
+        """Parse SSE data events; ignore standards-compliant keep-alive comments."""
         events = []
         for block in response.text.strip().split("\n\n"):
-            event_name, event_data = block.splitlines()
-            events.append((
-                event_name.removeprefix("event: "),
-                json.loads(event_data.removeprefix("data: ")),
-            ))
+            lines = block.splitlines()
+            names = [line[7:] for line in lines if line.startswith("event: ")]
+            payloads = [line[6:] for line in lines if line.startswith("data: ")]
+            if not names and not payloads:  # a comment, e.g. ': keep-alive'
+                continue
+            if len(names) != 1 or len(payloads) != 1:
+                raise AssertionError(f"invalid SSE event: {block!r}")
+            events.append((names[0], json.loads(payloads[0])))
         return events
 
     def test_health_and_readiness(self):
         self.assertEqual(self.client.get("/healthz").json(), {"status": "ok"})
         self.assertEqual(self.client.get("/readyz").json(), {"status": "ready"})
+
+    def test_alerts_endpoint_returns_active_prometheus_alerts(self):
+        alerts = [
+            {
+                "state": "firing",
+                "name": "VerifiedShareBelow98",
+                "severity": "warning",
+                "summary": "Verified share below threshold",
+                "active_at": "2026-11-05T10:00:00Z",
+            }
+        ]
+        with TestClient(create_app(alert_reader=lambda: alerts)) as client:
+            response = client.get("/api/alerts")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "available", "alerts": alerts})
+
+    def test_alerts_endpoint_reports_monitoring_unavailable(self):
+        def unavailable():
+            raise PrometheusUnavailable("connection refused")
+
+        with TestClient(create_app(alert_reader=unavailable)) as client:
+            response = client.get("/api/alerts")
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(
+            response.json()["detail"],
+            {
+                "status": "unavailable",
+                "message": "Prometheus alerts are currently unavailable.",
+            },
+        )
 
     def test_readiness_waits_for_dependencies(self):
         state = {"reason": "retriever_loading"}
@@ -101,12 +139,14 @@ class ApiTests(unittest.TestCase):
         self.assertEqual([name for name, _ in events], ["started", "progress", "result"])
         self.assertEqual(events[-1][1]["status"], "waiting_for_plan_approval")
         self.assertEqual(events[-1][1]["plan"], {"companies": ["MSFT"]})
+        self.assertTrue(events[-1][1]["requires_year_confirmation"])
         run_id = events[0][1]["run_id"]
 
         response = self.client.post(
             f"/api/research/{run_id}/decision",
-            json={"action": "approve"},
+            json={"action": "approve", "confirm_years": True},
         )
+        self.assertTrue(self.runner_calls[-1][1]["resume"]["confirm_years"])
         events = self._events(response)
         self.assertEqual(events[-1][1]["status"], "waiting_for_note_approval")
         self.assertEqual(events[-1][1]["draft"]["body"], "Evidence-backed draft")
@@ -116,6 +156,40 @@ class ApiTests(unittest.TestCase):
             json={"action": "approve", "approver": "analyst"},
         )
         self.assertEqual(self._events(response)[-1][1]["status"], "published")
+
+    def test_ambiguous_plan_requires_year_confirmation_through_api(self):
+        response = self.client.post(
+            "/api/research",
+            json={"request": "Compare Microsoft margins", "mode": "c1"},
+        )
+        run_id = self._events(response)[0][1]["run_id"]
+        response = self.client.post(
+            f"/api/research/{run_id}/decision",
+            json={"action": "approve"},
+        )
+
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("confirm the proposed fiscal years", response.json()["detail"])
+        self.assertEqual(len(self.runner_calls), 1)
+
+        response = self.client.post(
+            f"/api/research/{run_id}/decision",
+            json={"action": "approve", "confirm_years": True},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_unverified_note_cannot_be_approved(self):
+        self.saved_runs["bad-note"] = {
+            "values": {"draft": {"body": "Unsupported 15%"}},
+            "interrupts": [{"gate": "note", "check": {"ok": False, "issues": ["unsourced 15%"]}}],
+        }
+        response = self.client.post(
+            "/api/research/bad-note/decision",
+            json={"action": "approve", "approver": "reviewer"},
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertIn("unresolved checks", response.json()["detail"])
+        self.assertEqual(len(self.runner_calls), 0)
 
     def test_existing_gradio_ui_is_mounted_at_root(self):
         import gradio as gr

@@ -12,9 +12,22 @@ The design follows three rules:
 2. **Outside text is data, never instructions.** Filing text and tool results are passed to the model as evidence only.
 3. **A person approves each exact change to the outside world.** Approval is a signature over the exact note; any edit invalidates it.
 
+## Quick start
+
+You need Docker Desktop or Docker Engine, Git, and your own [OpenRouter](https://openrouter.ai) API key.
+
+```text
+git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
+cd Capstone_IITB_2026/jayshree/analyst_desk
+```
+
+Copy `.env.example` to `.env`, add `OPENROUTER_API_KEY`, then run `.\start.bat` on Windows or `bash ./start.sh` on macOS/Linux. See [5. Run it](#5-run-it) for the full steps.
+
 ---
 
 ## Contents
+
+- [Quick start](#quick-start)
 
 1. [Features](#1-features)
 2. [Coverage](#2-coverage)
@@ -60,7 +73,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 ### Human in control
 
-- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs.
+- **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs. Relative or unspecified fiscal years must be explicitly confirmed or edited and confirmed before research starts.
 - **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval.
 - **Signed approval:** the gate signs the exact note with an HMAC key. The publishing server verifies the signature, so a skipped or forged approval is refused at the server.
 - **Stop and resume:** every run is checkpointed in SQLite. Any run can be reopened from the run list, even after a restart.
@@ -92,7 +105,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
   - analyst preferences;
   - a coverage list;
   - past-note figures, parsed from the verified tags of published notes.
-- **"What changed since our last note"** is computed by code from those figures, including restatements.
+- **"What changed since our last note"** is computed by code from those figures, including a different value for the same year in a later filing.
 - **The analyst controls it:** view and delete entries in the app, or re-run any request without memory to compare.
 - **Short-term memory** (the research conversation within a run) is trimmed to a size budget.
 
@@ -100,7 +113,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 
 - `scripts/reflect.py` turns failures on development cases into short "when … do …" lessons.
 - **A person reviews every lesson** in the 📘 Playbook. Only approved lessons are used, and only the 3 most relevant to each request. Rejected lessons are kept with their reason, and duplicates are merged.
-- **The playbook can be frozen** before a held-out evaluation.
+- **The playbook can be frozen** before a held-out evaluation: runs then use a versioned snapshot of the approved lessons.
 
 ### Evaluation
 
@@ -117,10 +130,12 @@ All three use the same model, the same tools and the same tool-call budget. The 
   - an alert when the verified share drops below 98%.
 - **FastAPI service:** health and readiness endpoints, plus a streaming research API, with the Gradio UI mounted on the same server.
 - **Docker Compose** starts the app, the four MCP servers on an internal network with no internet access, and the observability stack.
+- **One team image:** CI publishes a fully pinned image (base image, `requirements.lock`, torch, model snapshots, prebuilt search index) to GitHub Container Registry on every merge to `main`, so every teammate runs exactly the same build.
 - **Versioned LLM configuration:** all prompts and model IDs live in `config/llm.toml`, validated at start-up.
 - **GitHub Actions CI:**
-  - offline tests and Compose validation on every push and pull request;
-  - an on-demand evaluation gate: at least 95% task success and zero policy violations.
+  - offline tests, Compose validation and Prometheus rule tests on every push and pull request, using the same dependency lock as Docker;
+  - a live C1 development evaluation gate, started by a maintainer: at least 95% task success, no run errors and zero policy violations; it needs an OpenRouter repository secret;
+  - the team Docker image, published on every merge to `main` (test-built on pull requests).
 
 ---
 
@@ -181,24 +196,46 @@ These are development results. Final claims use a held-out set written by a team
 
 You need your own [OpenRouter](https://openrouter.ai) API key. All data is in the repository: 10-K passages and XBRL facts, so there is no SEC download.
 
-### Option A: Docker Compose (everything, recommended)
+### Docker deployment (centralized scripts)
 
-1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), start it, and wait until the engine is running.
-2. In a terminal, go to the project folder and create `.env` with your key:
+Everyone runs **the same image**. CI builds it from `main` when Analyst Desk files change and publishes it to GitHub Container Registry as `ghcr.io/tshubhi24-dot/analyst-desk`. Each published image is tagged with its source commit, so the start scripts can select the image for the latest `main` commit instead of relying on a potentially stale moving tag.
 
-   ```powershell
-   cd Capstone_IITB_2026\jayshree\analyst_desk
-   Copy-Item .env.example .env     # Mac/Linux: cp .env.example .env
-   notepad .env                    # set OPENROUTER_API_KEY; never commit or share .env
+**One-time setup:**
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine, and install Git. Start Docker and wait until its engine is running. The image is public, so no registry login is needed.
+2. Clone the repository and create `.env` with **your own** key:
+
+   ```text
+   git clone https://github.com/tshubhi24-dot/Capstone_IITB_2026.git
+   cd Capstone_IITB_2026/jayshree/analyst_desk
    ```
 
-3. Start the stack:
+   Copy `.env.example` to `.env` (`Copy-Item .env.example .env` on Windows or `cp .env.example .env` on macOS/Linux), set `OPENROUTER_API_KEY`, and never commit or share `.env`.
 
-   ```powershell
-   docker compose up --build
-   ```
+**After changes are merged to `main`:**
 
-   The first start takes about 20 minutes. It downloads the dependencies and the CPU embedding and reranker models, then builds the search index once. No GPU is needed. Later starts take seconds, and the index, runs, memory, notes and approval key persist in Docker volumes.
+- Update the checkout so its scripts and Compose configuration match `main`:
+
+  ```text
+  git checkout main
+  git pull
+  ```
+- Run `.\start.bat` on Windows or `bash ./start.sh` on macOS/Linux from `jayshree/analyst_desk`. With no argument, it fetches `origin/main` and selects that commit's image.
+- To run a specific version, pass a commit SHA that exists in your local checkout:
+
+  ```powershell
+  .\start.bat 1a2b3c4
+  ```
+
+  ```bash
+  bash ./start.sh 1a2b3c4
+  ```
+
+- The selected commit must have a published image. In either mode, the script tries twice total, waiting 60 seconds before the second attempt. If the image is unavailable, it stops without starting the stack; check the **Analyst Desk Docker Image** workflow and retry after publishing. Compose then starts the stack and pulls any other missing service images.
+- To stop the stack, run `.\stop.bat` on Windows or `bash ./stop.sh` on macOS/Linux. Persistent data volumes are kept.
+- The first image pull is about 3.6 GB. Later pulls reuse layers already on the machine.
+
+The scripts require Git, Docker, and the `.env` file created during setup. Starting the latest version also requires an `origin` remote; a specific-version start uses a commit already present in the checkout.
 
 | Service | Address |
 |---|---|
@@ -208,16 +245,38 @@ You need your own [OpenRouter](https://openrouter.ai) API key. All data is in th
 | Jaeger traces | <http://127.0.0.1:16686> |
 | Prometheus (alerts at `/alerts`) | <http://127.0.0.1:9090> |
 
-Check it is ready: `curl.exe --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
+- **In-app alerts:** the top of the Analyst Desk page shows active Prometheus alerts and refreshes every 30 seconds. Use **Refresh alerts** to check immediately. The panel distinguishes no active alerts from Prometheus being unavailable; `/api/alerts` provides the same status as JSON.
+- **Check it is ready:** `curl --fail http://127.0.0.1:7861/readyz` should return `{"status":"ready"}`.
+- **Persistent data:** stopping the stack keeps runs, memory, published notes, and the approval key in Docker volumes.
+- **Only host-loopback ports are published:** the app and monitoring UIs are bound to `127.0.0.1`; MCP servers have no published ports. The MCP servers share an internal Docker network. The model-created Python runs in a restricted subprocess inside the sandbox MCP service, but `SANDBOX_MODE=local` is not a full no-network sandbox; this is a remaining security limitation for Role 4. Your API key stays in `.env` and is not baked into the image.
 
-Stop it with **Ctrl+C** or `docker compose down`. Don't use `--volumes` unless you want to delete stored runs, memory and notes.
+**Logs:** use Docker Desktop, or run `docker compose logs -f app` from the Analyst Desk directory.
+
+**Deployment smoke check:** Once Compose reports the app as healthy, run the read-only check below. It verifies the HTTP service, readiness, Prometheus scraping, the 98% alert rule and Grafana without making any model calls.
+
+```powershell
+python scripts/ops_smoke.py
+```
+
+A successful smoke check is not proof that a research note is correct. For an actual note, confirm the final verification status before approval. The Approve button is disabled when checks fail, and the backend also rejects that approval.
 
 **Checking the dashboard:**
 1. Run a C1 or C2 request in the app and approve the plan.
 2. After about 15 seconds, Prometheus at <http://127.0.0.1:9090/graph> returns values for `sum(ad_runs_total)` and `sum(ad_tool_calls_total)`.
 3. In Grafana, set the time range to *Last 6 hours*. The verified-share panel fills once a draft reaches the note gate.
 
-### Option B: Python (development and tests)
+**Troubleshooting:**
+
+| Problem | Fix |
+|---|---|
+| The start script says the image is unavailable after two attempts | Check the **Analyst Desk Docker Image** workflow. Once it publishes the image for the latest `main` commit, run the start script again |
+| Pull is slow | The image is about 3.6 GB (PyTorch, models, index). The first pull is large; later pulls reuse image layers |
+| `port is already allocated` | Something else is using port 7861. Stop the other service or container, then run the start script again |
+| C1/C2 runs failed with *unable to open database file* (Docker runs from before this image) | Fixed automatically: the `volume-init` service gives the app user ownership of its data volumes on every start, keeping their data |
+
+**Package visibility:** the image is public, set by the repository owner at *github.com/tshubhi24-dot → Packages → analyst-desk → Package settings*. If it is ever made private, give each teammate **Read** access there.
+
+### Python development and tests
 
 Python 3.12 or newer.
 
@@ -280,7 +339,7 @@ The app is a FastAPI server with the Gradio UI mounted at `/`. Interactive docs 
 | `GET /healthz` | Liveness: `{"status": "ok"}` |
 | `GET /readyz` | Readiness: returns 503 until the retriever and index are loaded |
 | `POST /api/research` | Start a C1 or C2 run (`request`, `mode`, `analyst`, `memory_on`). Streams events (server-sent events) until the plan gate. |
-| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. Streams until the next gate or the end. |
+| `POST /api/research/{run_id}/decision` | Resume at a gate: `approve`, `edit` (with `plan` or `note`) or `reject`. For relative or unspecified years, plan decisions also require `"confirm_years": true`. Streams until the next gate or the end. |
 
 The API runs the same graph and gates as the UI, so publishing still requires a signed approval of the exact note.
 
@@ -311,9 +370,11 @@ Optional environment variables:
 ## 9. Tests, evaluation and CI
 
 ```powershell
-.\.venv\Scripts\python.exe -m unittest discover -s tests          # 184 tests, no API key needed
+.\.venv\Scripts\python.exe -m unittest discover -s tests          # offline tests; no API key needed
 .\.venv\Scripts\python.exe scripts\run_eval.py --configs c0 c1 c2 --split dev
 .\.venv\Scripts\python.exe scripts\eval_report.py data\evaluation\results\eval_dev_<tag>.json   # writes docs/evaluation.md
+.\.venv\Scripts\python.exe scripts\run_eval.py --experiment e4_critic_off     # an experiment file (experiments/)
+.\.venv\Scripts\python.exe scripts\run_redteam.py --experiment e2_defences_on  # E2: attacks and false blocks
 .\.venv\Scripts\python.exe scripts\eval_retrieval.py                # Recall@5 report
 .\.venv\Scripts\python.exe scripts\reflect.py data\evaluation\results\eval_dev_merged.json      # pending lessons
 .\.venv\Scripts\python.exe scripts\calibrate_judge.py sample        # judge calibration items
@@ -322,11 +383,9 @@ Optional environment variables:
 Evaluation runs use memory off, auto-approve the plan, stop at the note gate (nothing is published), and count failures and timeouts rather than hiding them.
 
 **GitHub Actions:**
-- **Analyst Desk CI** runs on every push and pull request. It runs the full offline test suite and validates the Docker Compose file, with no API calls.
-- **Analyst Desk Evaluation Gate** runs on demand:
-  1. Add the repository secret `OPENROUTER_API_KEY`.
-  2. Go to **Actions → Analyst Desk Evaluation Gate → Run workflow**.
-  3. It runs C1 on the 20 development cases and fails unless task success is at least 95% with zero policy violations. The results JSON is attached to the workflow run.
+- **Analyst Desk CI** runs on every push and pull request. It runs the offline test suite, validates Docker Compose, and executes `promtool` rule tests without model API calls. Both this workflow and the live gate use the pinned `requirements.lock` and CPU-only torch to match the Docker image.
+- **Analyst Desk Docker Image** runs on every merge to `main`. It builds the pinned image with the search index baked in and publishes it as `ghcr.io/tshubhi24-dot/analyst-desk:main` and `:sha-<commit>`. On pull requests it only test-builds the image, without the index and without publishing.
+- **Analyst Desk Evaluation Gate** runs only when a maintainer starts it: **Actions → Analyst Desk Evaluation Gate → Run workflow**. It calls OpenRouter, so it needs the repository secret `OPENROUTER_API_KEY`; use a separate key with a low spending limit, never the key from your `.env`. It runs C1 on 20 development cases and fails below 95% task success, on any run error or on any policy violation; results are attached as an artifact. This is a development-set gate, not a held-out result.
 
 **Alert rule test** (with Compose running):
 
@@ -365,12 +424,16 @@ analyst_desk/
 │   ├── evaluation.py      Scoring, runner, evaluation gate
 │   ├── observability.py   Traces and metrics
 │   ├── llm_config.py      Loads and validates config/llm.toml
+│   ├── alerts.py          Prometheus alerts for the in-app panel
 │   └── api.py             FastAPI endpoints
-├── scripts/               Evaluation, reflection, judge calibration, retrieval eval, utilities
+├── scripts/               Evaluation, red team, reflection, judge calibration, retrieval eval, utilities
+├── experiments/           One config file per experiment (E1-E4)
 ├── data/                  passages/, passages_plain/, edgar_cache/, evaluation/ (all committed)
 ├── docker/                Sandbox image, Prometheus rules and tests, Grafana dashboard
 ├── tests/                 Unit, integration and offline end-to-end tests
-├── Dockerfile, compose.yaml, setup.bat, requirements.txt
+├── Dockerfile, compose.yaml, setup.bat
+├── requirements.txt       Dependencies (human-edited; used by a local venv)
+├── requirements.lock      Exact versions the Docker image installs
 └── docs/                  See below
 ```
 
@@ -382,11 +445,15 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 
 | Document | Contents |
 |---|---|
+| [docs/product_spec.md](docs/product_spec.md) | The problem, user, scope and domain rules, and where the app differs from them |
 | [docs/architecture.md](docs/architecture.md) | Components, data flow, agent graphs, deployment |
 | [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
-| [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, how to correct or delete it |
-| [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works and how to read the results |
+| [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
+| [submission/](submission/README.md) | Submission checklist, evaluation report, experiment and work logs, demo script, slides outline |
+| [docs/gap_closure.md](docs/gap_closure.md) | Status of every item in the team's implementation gap analysis |
+| [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
+| [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
 | [docs/retrieval_eval.md](docs/retrieval_eval.md) | Retrieval Recall@5 results |
 | [docs/plan.md](docs/plan.md) | Team build plan and contribution log |
