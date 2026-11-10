@@ -46,7 +46,7 @@ def _range(values: list[float], fmt: str = "{:.1f}") -> str:
 
 
 def heldout() -> str | None:
-    runs = sorted(RESULTS.glob("eval_heldout_e1-heldout-run*.json"))
+    runs = sorted(RESULTS.glob("eval_heldout_e1-heldout-v2-run*.json"))
     if not runs:
         return None
     data = [_load(p) for p in runs]
