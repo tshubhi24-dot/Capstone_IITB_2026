@@ -1,0 +1,655 @@
+{
+  "configurations": {
+    "c0": {
+      "by_type": {
+        "comparison": {
+          "cases": 10,
+          "success_max": 10,
+          "success_median": 10,
+          "success_min": 10,
+          "success_runs": [
+            10,
+            10,
+            10
+          ]
+        },
+        "numeric": {
+          "cases": 12,
+          "success_max": 8,
+          "success_median": 8,
+          "success_min": 7,
+          "success_runs": [
+            8,
+            8,
+            7
+          ]
+        },
+        "refusal": {
+          "cases": 6,
+          "success_max": 2,
+          "success_median": 2,
+          "success_min": 2,
+          "success_runs": [
+            2,
+            2,
+            2
+          ]
+        },
+        "risk_change": {
+          "cases": 12,
+          "success_max": 12,
+          "success_median": 12,
+          "success_min": 12,
+          "success_runs": [
+            12,
+            12,
+            12
+          ]
+        }
+      },
+      "cases_with_numeric_checks": {
+        "max": 27,
+        "median": 26,
+        "min": 26,
+        "runs": [
+          27,
+          26,
+          26
+        ]
+      },
+      "errors": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "estimated_cost_per_case_usd": {
+        "max": 0.0013,
+        "median": 0.0013,
+        "min": 0.0013,
+        "runs": [
+          0.0013,
+          0.0013,
+          0.0013
+        ]
+      },
+      "false_blocks": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "latency_median_s": {
+        "max": 8.4,
+        "median": 8.0,
+        "min": 7.5,
+        "runs": [
+          8.4,
+          7.5,
+          8.0
+        ]
+      },
+      "latency_p95_s": {
+        "max": 11.3,
+        "median": 11.0,
+        "min": 10.3,
+        "runs": [
+          11.0,
+          10.3,
+          11.3
+        ]
+      },
+      "policy_violations": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "success_rate_pct": {
+        "max": 80.0,
+        "median": 80.0,
+        "min": 77.5,
+        "runs": [
+          80.0,
+          80.0,
+          77.5
+        ]
+      },
+      "timeouts": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "tokens_mean": {
+        "max": 2470,
+        "median": 2467,
+        "min": 2466,
+        "runs": [
+          2470,
+          2467,
+          2466
+        ]
+      },
+      "tokens_recorded_cases": {
+        "max": 40,
+        "median": 40,
+        "min": 40,
+        "runs": [
+          40,
+          40,
+          40
+        ]
+      },
+      "tokens_unreported_cases": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "total_numbers": {
+        "max": 103,
+        "median": 99,
+        "min": 95,
+        "runs": [
+          95,
+          103,
+          99
+        ]
+      },
+      "verified_numbers": {
+        "max": 10,
+        "median": 9,
+        "min": 8,
+        "runs": [
+          10,
+          9,
+          8
+        ]
+      },
+      "verified_share_pooled_pct": {
+        "max": 10.5,
+        "median": 8.7,
+        "min": 8.1,
+        "runs": [
+          10.5,
+          8.7,
+          8.1
+        ]
+      }
+    },
+    "c1": {
+      "by_type": {
+        "comparison": {
+          "cases": 10,
+          "success_max": 10,
+          "success_median": 10,
+          "success_min": 10,
+          "success_runs": [
+            10,
+            10,
+            10
+          ]
+        },
+        "numeric": {
+          "cases": 12,
+          "success_max": 12,
+          "success_median": 11,
+          "success_min": 11,
+          "success_runs": [
+            11,
+            12,
+            11
+          ]
+        },
+        "refusal": {
+          "cases": 6,
+          "success_max": 5,
+          "success_median": 5,
+          "success_min": 5,
+          "success_runs": [
+            5,
+            5,
+            5
+          ]
+        },
+        "risk_change": {
+          "cases": 12,
+          "success_max": 12,
+          "success_median": 12,
+          "success_min": 12,
+          "success_runs": [
+            12,
+            12,
+            12
+          ]
+        }
+      },
+      "cases_with_numeric_checks": {
+        "max": 26,
+        "median": 23,
+        "min": 23,
+        "runs": [
+          23,
+          26,
+          23
+        ]
+      },
+      "errors": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "estimated_cost_per_case_usd": {
+        "max": 0.0076,
+        "median": 0.0074,
+        "min": 0.007,
+        "runs": [
+          0.0074,
+          0.0076,
+          0.007
+        ]
+      },
+      "false_blocks": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "latency_median_s": {
+        "max": 16.6,
+        "median": 15.4,
+        "min": 14.9,
+        "runs": [
+          14.9,
+          15.4,
+          16.6
+        ]
+      },
+      "latency_p95_s": {
+        "max": 36.4,
+        "median": 33.8,
+        "min": 31.8,
+        "runs": [
+          33.8,
+          31.8,
+          36.4
+        ]
+      },
+      "policy_violations": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "success_rate_pct": {
+        "max": 97.5,
+        "median": 95.0,
+        "min": 95.0,
+        "runs": [
+          95.0,
+          97.5,
+          95.0
+        ]
+      },
+      "timeouts": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "tokens_mean": {
+        "max": 14598,
+        "median": 14188,
+        "min": 13547,
+        "runs": [
+          14188,
+          14598,
+          13547
+        ]
+      },
+      "tokens_recorded_cases": {
+        "max": 40,
+        "median": 40,
+        "min": 40,
+        "runs": [
+          40,
+          40,
+          40
+        ]
+      },
+      "tokens_unreported_cases": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "total_numbers": {
+        "max": 202,
+        "median": 186,
+        "min": 179,
+        "runs": [
+          186,
+          202,
+          179
+        ]
+      },
+      "verified_numbers": {
+        "max": 156,
+        "median": 153,
+        "min": 142,
+        "runs": [
+          156,
+          153,
+          142
+        ]
+      },
+      "verified_share_pooled_pct": {
+        "max": 83.9,
+        "median": 79.3,
+        "min": 75.7,
+        "runs": [
+          83.9,
+          75.7,
+          79.3
+        ]
+      }
+    },
+    "c2": {
+      "by_type": {
+        "comparison": {
+          "cases": 10,
+          "success_max": 4,
+          "success_median": 4,
+          "success_min": 4,
+          "success_runs": [
+            4,
+            4,
+            4
+          ]
+        },
+        "numeric": {
+          "cases": 12,
+          "success_max": 9,
+          "success_median": 9,
+          "success_min": 9,
+          "success_runs": [
+            9,
+            9,
+            9
+          ]
+        },
+        "refusal": {
+          "cases": 6,
+          "success_max": 5,
+          "success_median": 5,
+          "success_min": 5,
+          "success_runs": [
+            5,
+            5,
+            5
+          ]
+        },
+        "risk_change": {
+          "cases": 12,
+          "success_max": 11,
+          "success_median": 8,
+          "success_min": 2,
+          "success_runs": [
+            8,
+            11,
+            2
+          ]
+        }
+      },
+      "cases_with_numeric_checks": {
+        "max": 18,
+        "median": 16,
+        "min": 14,
+        "runs": [
+          18,
+          16,
+          14
+        ]
+      },
+      "errors": {
+        "max": 10,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          10
+        ]
+      },
+      "estimated_cost_per_case_usd": {
+        "max": 0.0166,
+        "median": 0.0161,
+        "min": 0.012,
+        "runs": [
+          0.0161,
+          0.0166,
+          0.012
+        ]
+      },
+      "false_blocks": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "latency_median_s": {
+        "max": 40.5,
+        "median": 38.8,
+        "min": 32.2,
+        "runs": [
+          38.8,
+          40.5,
+          32.2
+        ]
+      },
+      "latency_p95_s": {
+        "max": 73.2,
+        "median": 67.0,
+        "min": 66.2,
+        "runs": [
+          66.2,
+          67.0,
+          73.2
+        ]
+      },
+      "policy_violations": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "success_rate_pct": {
+        "max": 72.5,
+        "median": 65.0,
+        "min": 50.0,
+        "runs": [
+          65.0,
+          72.5,
+          50.0
+        ]
+      },
+      "timeouts": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          0
+        ]
+      },
+      "tokens_mean": {
+        "max": 31914,
+        "median": 30918,
+        "min": 23123,
+        "runs": [
+          30918,
+          31914,
+          23123
+        ]
+      },
+      "tokens_recorded_cases": {
+        "max": 40,
+        "median": 40,
+        "min": 30,
+        "runs": [
+          40,
+          40,
+          30
+        ]
+      },
+      "tokens_unreported_cases": {
+        "max": 10,
+        "median": 0,
+        "min": 0,
+        "runs": [
+          0,
+          0,
+          10
+        ]
+      },
+      "total_numbers": {
+        "max": 140,
+        "median": 128,
+        "min": 114,
+        "runs": [
+          140,
+          114,
+          128
+        ]
+      },
+      "verified_numbers": {
+        "max": 134,
+        "median": 125,
+        "min": 109,
+        "runs": [
+          134,
+          109,
+          125
+        ]
+      },
+      "verified_share_pooled_pct": {
+        "max": 97.7,
+        "median": 95.7,
+        "min": 95.6,
+        "runs": [
+          95.7,
+          95.6,
+          97.7
+        ]
+      }
+    }
+  },
+  "gold_sha256": "3d602f20b4d08d5e0b55ea3f7d409c0e1439baf6b70d097d64a88ca10dfdfd2f",
+  "limitations": [
+    "Audits saved model scores; does not replay or independently score raw model outputs.",
+    "The risk-change scorer checks Item 1A citation coverage for both years, not semantic support for the interpretation.",
+    "A run with provider errors is retained as recorded and is not a complete successful repeat.",
+    "Per-case token and cost contributions divide recorded totals by all rows; unavailable token counts are omitted, so these metrics are lower-bound contributions, not provider billing records."
+  ],
+  "playbook": {
+    "frozen": true,
+    "lessons": 3,
+    "version": "8f1608da4cec"
+  },
+  "provenance": [
+    {
+      "sha256": "5e2bc773373688e41fc69554abd396fcd49844efb8a4ffd7764e85826490488b",
+      "source": "data/evaluation/results/eval_heldout_role5_v1_run1.json",
+      "tag": "role5_v1_run1"
+    },
+    {
+      "sha256": "bd4e031b390a4e6a842f744fd536357f8ca1c9004f893ec715f78aeb80904880",
+      "source": "data/evaluation/results/eval_heldout_role5_v1_run2.json",
+      "tag": "role5_v1_run2"
+    },
+    {
+      "sha256": "7107aae847a826e1a4c160e439a1adc0a9eb6216022823595a548efb98517a5f",
+      "source": "data/evaluation/results/eval_heldout_role5_v1_run3.json",
+      "tag": "role5_v1_run3"
+    }
+  ],
+  "redacted_provider_url_count": 20,
+  "run_count": 3,
+  "run_diagnostics": [
+    {
+      "errors": {
+        "c2": {
+          "affected_case_ids": [
+            "h-r04",
+            "h-r05",
+            "h-r06",
+            "h-r07",
+            "h-r08",
+            "h-r09",
+            "h-r10",
+            "h-r11",
+            "h-r12",
+            "h-x04"
+          ],
+          "by_error": {
+            "APIStatusError (402)": 10
+          },
+          "cases": 10
+        }
+      },
+      "tag": "role5_v1_run3"
+    }
+  ],
+  "split": "heldout"
+}

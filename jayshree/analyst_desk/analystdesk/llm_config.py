@@ -45,6 +45,10 @@ class LLMConfig:
     version: int
     models: Mapping[str, str]
     prompts: Mapping[str, str]
+    # Cap on each reply. OpenRouter reserves credit for the maximum a call may return, so
+    # without a cap every call reserves the model's full 65,536 tokens and fails (402) while
+    # a capped key still has budget left. Our longest output, a note, is far below this.
+    max_output_tokens: int = 4096
 
     def model(self, name: str) -> str:
         return self.models[name]
@@ -115,10 +119,16 @@ def load_llm_config(path: Path = CONFIG_PATH) -> LLMConfig:
                 f"got {sorted(actual_fields)}"
             )
 
+    limits = data.get("limits", {})
+    max_output_tokens = limits.get("max_output_tokens", LLMConfig.max_output_tokens) if isinstance(limits, dict) else None
+    if type(max_output_tokens) is not int or max_output_tokens <= 0:
+        raise LLMConfigError("[limits] max_output_tokens must be a positive integer")
+
     return LLMConfig(
         version=version,
         models=MappingProxyType({name: models[name] for name in _REQUIRED_MODELS}),
         prompts=MappingProxyType({name: prompts[name] for name in _REQUIRED_PROMPTS}),
+        max_output_tokens=max_output_tokens,
     )
 
 

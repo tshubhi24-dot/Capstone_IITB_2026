@@ -61,6 +61,16 @@ def specialist_budgets(n_companies: int) -> dict[str, int]:
 _FACT_ID = re.compile(r"[A-Za-z]+/\d{4}/\d{10}-\d{2}-\d{6}")
 
 
+def risk_years(years: list[int]) -> tuple[int, int] | None:
+    """(latest, prior) for the risk-diff: the plan's latest year and the plan's previous one
+    (FY2022 vs FY2024 when those two were asked for), else latest - 1 if that year is covered.
+    None when there is no covered earlier year (a FY2022-only plan)."""
+    from ..servers.common import COVERED_YEARS
+    latest = max(years)
+    prior = max((y for y in years if y < latest), default=latest - 1)
+    return (latest, prior) if prior in COVERED_YEARS else None
+
+
 class HandoffMessage(BaseModel):
     """What every specialist hands back to the research lead.
 
@@ -254,7 +264,8 @@ def make_judge(judge_llm, passage_text):
 def make_judge_llm():
     from langchain_openai import ChatOpenAI
     return ChatOpenAI(model=LLM_CONFIG.model("judge"), base_url="https://openrouter.ai/api/v1",
-                      api_key=os.environ["OPENROUTER_API_KEY"], temperature=0, timeout=120)
+                      api_key=os.environ["OPENROUTER_API_KEY"], temperature=0,
+                      max_tokens=LLM_CONFIG.max_output_tokens, timeout=120)
 
 
 # ── graph ─────────────────────────────────────────────────────────────────────
@@ -283,17 +294,17 @@ def build_team_graph(llm, tools: list, publish_tool, passage_text=None, judge_ll
                 "watchlist": state.get("watchlist") or []}
         sends = [Send("researcher", {**base, "company": t}) for t in plan["companies"]]
         sends.append(Send("quant", base))
-        sends += [Send("risk_diff", {**base, "company": t}) for t in plan["companies"]]
+        # risk-diff needs a covered earlier year to compare with: a FY2022-only plan has none
+        # (FY2021 is not covered), and searching it would trip NOT_IN_COVERAGE and a needless replan
+        if risk_years(plan["fiscal_years"]):
+            sends += [Send("risk_diff", {**base, "company": t}) for t in plan["companies"]]
         return sends
 
     def _specialist(agent: str):
         async def node(task: dict):
             plan, company = task["plan"], task.get("company")
             years = plan["fiscal_years"]
-            # risk-diff compares the plan's latest year with the plan's previous one
-            # (FY2022 vs FY2024 when those two were asked for), not always latest - 1
-            latest = max(years)
-            prior = max((y for y in years if y < latest), default=latest - 1)
+            latest, prior = risk_years(years) or (max(years), max(years))
             budget = specialist_budgets(len(plan["companies"]))[agent]
             prompt_name = {
                 "researcher": "specialist_researcher",

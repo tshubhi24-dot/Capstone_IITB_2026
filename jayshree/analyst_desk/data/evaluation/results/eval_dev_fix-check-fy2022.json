@@ -1,0 +1,159 @@
+{
+ "split": "dev",
+ "tag": "fix-check-fy2022",
+ "price_per_m": 0.52,
+ "system": {
+  "commit": "17a2ab4",
+  "uncommitted_changes": true,
+  "llm_config_version": 1,
+  "models": {
+   "reflection": "openai/gpt-4.1-mini",
+   "judge": "meta-llama/llama-3.3-70b-instruct",
+   "c0": "openai/gpt-4.1-mini",
+   "agent": "openai/gpt-4.1-mini"
+  },
+  "max_output_tokens": 4096
+ },
+ "lessons": true,
+ "playbook": {
+  "frozen": false
+ },
+ "experiment": null,
+ "rows": {
+  "c2": [
+   {
+    "id": "h01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "2/7",
+    "verified_share": 28.6,
+    "tokens": 66863,
+    "seconds": 69.2,
+    "tools": [
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "get_financials"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-fix-check-fy2022-c2-h01"
+   },
+   {
+    "id": "h03",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "5/5",
+    "verified_share": 100.0,
+    "tokens": 127317,
+    "seconds": 72.4,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_passage",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-fix-check-fy2022-c2-h03"
+   },
+   {
+    "id": "h04",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/4",
+    "verified_share": 100.0,
+    "tokens": 8197,
+    "seconds": 15.3,
+    "tools": [
+     "search_filings",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-fix-check-fy2022-c2-h04"
+   },
+   {
+    "id": "h10",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "5/5",
+    "verified_share": 100.0,
+    "tokens": 12737,
+    "seconds": 19.2,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-fix-check-fy2022-c2-h10"
+   }
+  ]
+ },
+ "summary": {
+  "c2": {
+   "cases": 4,
+   "success": 4,
+   "by_type": {
+    "numeric": "4/4"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 82.2,
+   "tokens_mean": 53778,
+   "cost_per_case_usd": 0.028,
+   "latency_median_s": 44.2,
+   "latency_p95_s": 72.4
+  }
+ }
+}

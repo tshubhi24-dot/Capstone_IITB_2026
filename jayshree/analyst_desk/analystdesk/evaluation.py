@@ -50,8 +50,10 @@ _NUM = re.compile(r"(-?\+?\$?\s?[\d,]*\d(?:\.\d+)?)\s?(%|pp\b|percentage points?
 
 
 def load_cases(split: str) -> list[dict]:
-    """dev -> data/evaluation/dev_cases.jsonl; heldout -> data/evaluation/heldout/*.jsonl."""
-    files = [EVAL_DIR / "dev_cases.jsonl"] if split == "dev" else sorted((EVAL_DIR / "heldout").glob("*.jsonl"))
+    """dev -> data/evaluation/dev_cases.jsonl plus dev_extra/*.jsonl (cases moved to development,
+    e.g. a held-out set seen while fixing the agent); heldout -> data/evaluation/heldout/*.jsonl."""
+    files = ([EVAL_DIR / "dev_cases.jsonl"] + sorted((EVAL_DIR / "dev_extra").glob("*.jsonl")) if split == "dev"
+             else sorted((EVAL_DIR / "heldout").glob("*.jsonl")))
     cases = []
     for f in files:
         cases += [json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -215,7 +217,10 @@ async def run_agent(case: dict, mode: str, tag: str) -> dict:
     rid = f"eval-{tag}-{mode}-{case['id']}"
     r = await run_until_gate(rid, {"request": case["request"], "mode": mode, "memory_on": False},
                              transport="inprocess")
-    if r["interrupts"] and r["interrupts"][0]["gate"] == "plan":
+    # approve the plan, and any revised plan after a replan, as the analyst would
+    for _ in range(3):
+        if not (r["interrupts"] and r["interrupts"][0]["gate"] == "plan"):
+            break
         r = await run_until_gate(rid, Command(resume={"action": "approve", "approver": "eval",
                                                       "confirm_years": True}),
                                  transport="inprocess")

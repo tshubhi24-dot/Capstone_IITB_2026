@@ -74,6 +74,16 @@ class EvaluationAuditTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "cannot succeed with an error"):
             self.validate()
 
+    def test_error_with_unavailable_tokens_is_auditable(self):
+        self.rows[0]["success"] = False
+        self.rows[0]["error"] = "APIStatusError: Error code: 402"
+        self.rows[0]["tokens"] = None
+        self.write()
+        report = self.validate()["configurations"]["c1"]
+        self.assertEqual(report["tokens_mean"], 10)
+        self.assertEqual(report["tokens_recorded_cases"], 1)
+        self.assertEqual(report["tokens_unreported_cases"], 1)
+
     def test_wrong_gold_type_fails(self):
         self.rows[0]["type"] = "refusal"
         self.write()
@@ -98,12 +108,23 @@ class EvaluationAuditTests(unittest.TestCase):
         sources = []
         for n in range(3):
             path = self.root / f"heldout_{n}.json"
+            rows = copy.deepcopy(self.rows)
+            for row in rows:
+                row["tokens"] *= 1000
+                row["blocks"] = n == 0 and row["id"] == "a1"
             path.write_text(json.dumps({"tag": f"live-run-{n}", "split": "heldout",
-                                        "rows": {"c1": self.rows}}), encoding="utf-8")
+                                        "price_per_m": 0.52,
+                                        "playbook": {"frozen": True, "version": "test-version", "lessons": 3},
+                                        "rows": {"c1": rows}}), encoding="utf-8")
             sources.append(path)
         report = evaluate(sources, self.gold, ["c1"], min_cases=2)
         self.assertEqual(report["run_count"], 3)
         self.assertEqual(report["configurations"]["c1"]["verified_share_pooled_pct"]["median"], 50.0)
+        self.assertEqual(report["configurations"]["c1"]["by_type"]["numeric"]["success_runs"], [2, 2, 2])
+        self.assertEqual(report["configurations"]["c1"]["false_blocks"]["runs"], [1, 0, 0])
+        self.assertEqual(report["configurations"]["c1"]["estimated_cost_per_case_usd"]["runs"],
+                         [0.0078, 0.0078, 0.0078])
+        self.assertEqual(report["playbook"]["version"], "test-version")
 
     def test_development_fixture_works(self):
         result = validate_result(ROOT / "data/evaluation/results/eval_dev_merged.json",

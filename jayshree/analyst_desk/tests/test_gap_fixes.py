@@ -176,6 +176,14 @@ class JudgeCoverageTests(unittest.TestCase):   # AE02, AE03, E03
         self.assertEqual((len(cited), uncited), (1, 1))
 
 
+class RiskYearTests(unittest.TestCase):   # found by the held-out v1 run: FY2022-only plans replanned
+    def test_risk_years(self):
+        from analystdesk.agent.team import risk_years
+        self.assertEqual(risk_years([2022, 2024]), (2024, 2022))   # the plan's own years
+        self.assertEqual(risk_years([2024]), (2024, 2023))         # one year: the covered year before
+        self.assertIsNone(risk_years([2022]))                      # FY2021 is not covered: no risk-diff
+
+
 class PlanScopeTests(unittest.TestCase):   # F02, S02, F04, B01
     PLAN = {"companies": ["MSFT"], "fiscal_years": [2024], "sub_questions": [], "outline": []}
 

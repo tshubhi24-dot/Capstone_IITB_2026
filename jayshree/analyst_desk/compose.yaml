@@ -147,7 +147,10 @@ services:
     volumes:
       - ./data/passages:/app/data/passages:ro
       - ./data/edgar_cache:/app/data/edgar_cache:ro
-      - ./data/evaluation:/app/data/evaluation
+      # cases and answer keys read-only (the app may run evaluations but never change them);
+      # only the results folder is writable
+      - ./data/evaluation:/app/data/evaluation:ro
+      - ./data/evaluation/results:/app/data/evaluation/results
       - index:/app/data/index
       - runs:/app/data/runs
       - memory:/app/data/memory

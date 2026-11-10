@@ -6,6 +6,10 @@ agent = "openai/gpt-4.1-mini"
 judge = "meta-llama/llama-3.3-70b-instruct"
 reflection = "openai/gpt-4.1-mini"
 
+[limits]
+# Most tokens one reply may use. OpenRouter reserves credit for this on every call.
+max_output_tokens = 4096
+
 [prompts]
 c0_system = '''You are a financial research assistant.
 Answer the analyst's question using ONLY the provided context (retrieved passages and EDGAR numbers).

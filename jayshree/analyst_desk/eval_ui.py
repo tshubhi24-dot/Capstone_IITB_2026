@@ -41,7 +41,7 @@ def _expected(case: dict) -> str:
     if "risk_change" in e:
         r = e["risk_change"]
         return f"cites {r['ticker']} Item 1A for FY{r['years'][0]} and FY{r['years'][1]}"
-    return f"decline ({e['refusal']})"
+    return f"decline ({e.get('refusal') or e.get('refusal_reason', 'out of scope')})"   # both case formats
 
 
 def _golden_rows() -> list[list]:
