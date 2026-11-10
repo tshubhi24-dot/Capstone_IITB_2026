@@ -12,6 +12,7 @@ This folder holds everything the brief asks for at submission (brief p.6, "What 
 | [evaluation_report.md](evaluation_report.md) | The 4–6 page evaluation report (draft) |
 | [demo_script.md](demo_script.md) | The live demo, step by step, and the plan for the backup recording |
 | [slides_outline.md](slides_outline.md) | Slide-by-slide outline for the presentation |
+| [viva_prep.md](viva_prep.md) | Answers to the brief's eight viva questions, with evidence to show |
 | [ci_failure.md](ci_failure.md) | The failed CI run the brief asks for, with its explanation |
 
 Status key: ✅ done · 🟡 partly done · ⬜ not started · 🔴 blocked on someone else.
