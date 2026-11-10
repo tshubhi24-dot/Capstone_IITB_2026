@@ -906,7 +906,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 | Output | The note checks reject advice wording and watchlist companies; the analyst signs the exact note |
 
 - **The injection screen fires on 0 of 24,660 real filing passages** (both chunkings), so on our data it does not cost false blocks. It is a pattern list, so a paraphrased attack can pass it. That's why the output checks and the human gate stay behind it (defence in depth).
-- **The private watchlist** (🧠 Memory panel) is seen only by the planner. It can propose a watchlist company as a peer, but only an approved plan lets it into a tool call.
+- **The private watchlist** (🧠 Memory panel) is not added to model prompts. Names supplied in the request or preferences may still be sent to the provider; private watchlist names outside the approved plan are blocked in tool calls and notes.
 - **Residual risks to name honestly:**
   - typed identities;
   - a planted passage with a wrong number but no instructions passes the quote check;
@@ -946,7 +946,7 @@ The pooled share matches the 98% alert's definition, because the per-case mean c
 
 **Likely questions:**
 1. Walk through what stops an injected "buy" recommendation, layer by layer. Which layer would catch a paraphrase the regex misses?
-2. Why may the planner see the watchlist but no tool call may name it? What does the analyst's plan approval change?
+2. Why is the saved watchlist excluded from model prompts, and what does plan approval change for tool calls?
 3. How do you count a false block, and why does it matter as much as attack success?
 4. Why is an experiment a config file and not a branch?
 5. What would you change before a supervised pilot? (Sign-in, a networkless sandbox per call, a classifier such as Llama Prompt Guard, a correction workflow.)
@@ -1001,4 +1001,3 @@ A teammate audited the app against the final specifications: 77 rule groups and 
 3. Why is −20 → −10 not "−50% growth"?
 4. A teammate unfreezes the playbook during a held-out run. What protects the results?
 5. The portal times out after saving. What does the analyst see, and why not just retry?
-

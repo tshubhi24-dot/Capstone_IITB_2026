@@ -30,6 +30,7 @@ import json
 import operator
 import os
 import re
+from itertools import combinations
 from typing import Annotated, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -48,6 +49,7 @@ from .checks import ADVICE, check_note
 from .figures import build_figures, comparability_notes, figures_table, render
 from .guards import INJECTION, defences_on, private_names
 from .hooks import Hooks, wrap_for_toolnode
+from .review_snapshot import ReviewStaleError
 
 # Tool-call budget for one run, the SAME for C1 and C2 (brief: the single agent and the team get
 # "the same tools and budget"; L11: only the division of work changes). It grows with the number
@@ -107,12 +109,15 @@ class AgentState(TypedDict, total=False):
     tokens: Annotated[int, operator.add]
     draft: dict
     render_issues: list
+    trusted_suffix: str
+    review_snapshot: dict
     check: dict
     revisions: int
     outcome: str                      # approved | published | rejected | publish_failed | publish_unconfirmed
     published: dict
     analyst: str
     memory_on: bool
+    lifecycle_epoch: int
     memory: dict                      # what memory contributed to this run
     watchlist: list                   # the analyst's private watchlist (never leaves the system)
     lessons: list                     # approved playbook lessons used in this run
@@ -169,7 +174,7 @@ _RELATIVE_YEARS = re.compile(
     re.I,
 )
 _YEAR_COUNTS = {"two": 2, "three": 3}
-_LATEST = re.compile(r"(latest|most recent|current|this year)", re.I)
+_LATEST = re.compile(r"\b(latest|most recent|current|this year)\b", re.I)
 
 
 def _relative_year_count(request: str) -> int | None:
@@ -273,12 +278,33 @@ def trim_context(msgs: list, max_chars: int = MAX_CONTEXT_CHARS) -> list:
 
 # ── nodes shared by C1 and C2 ─────────────────────────────────────────────────
 
-def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
+def common_nodes(llm, publish_tool, passage_text=None, critic=None, require_critic=False) -> dict:
     """Guard, plan, plan gate, writer, check (+ optional critic), note gate, publish.
 
     critic: async fn(draft_body) -> {"issues": [...], ...} run after the code
-    checks (the C2 compliance critic's judge); None for C1.
+    checks. When required, a missing critic blocks approval.
     """
+
+    def assert_lifecycle_unchanged(state: AgentState) -> None:
+        if state.get("memory_on", True):
+            from ..servers.portal import inactive_note_ids
+            current = len(inactive_note_ids())
+            if current != state.get("lifecycle_epoch", 0):
+                raise ReviewStaleError("Published-note status changed during this run; start a fresh run before continuing.")
+
+    def assert_review_unchanged(state: AgentState) -> None:
+        if not require_critic:
+            return
+        from .review_snapshot import SnapshotError, capture
+        previous = state.get("review_snapshot")
+        if not previous:
+            raise ReviewStaleError("Review evidence snapshot is missing; start a fresh run and review again.")
+        try:
+            current = capture(state["draft"], passage_text)
+        except SnapshotError as exc:
+            raise ReviewStaleError(f"Review evidence unavailable; start a fresh run: {exc}") from exc
+        if current != previous:
+            raise ReviewStaleError("Review evidence or policy changed; start a fresh run and review again.")
 
     # 1. scope check in code: covered companies, no advice requests
     def input_guard(state: AgentState):
@@ -286,7 +312,10 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         companies = find_companies(req)
         years = [y for y in find_years(req)]
         reason = None
-        if not companies:
+        from ..query import unsupported_period_reason
+        if period_reason := unsupported_period_reason(req, annual_only=True):
+            reason = period_reason
+        elif not companies:
             reason = f"No covered company named. Covered: {', '.join(sorted(_TICKERS))}."
         elif [y for y in years if y not in COVERED_YEARS]:
             reason = f"Only fiscal years {COVERED_YEARS} are covered."
@@ -299,7 +328,9 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         guard = {"ok": reason is None, "reason": reason, "companies": companies, "years": years}
         # evaluation runs never use memory, so results stay reproducible
         memory_on = state.get("memory_on", True) and os.getenv("AGENT_EVAL") != "1"
+        from ..servers.portal import inactive_note_ids
         return {"guard": guard, "replans": 0, "revisions": 0, "memory_on": memory_on,
+                "lifecycle_epoch": len(inactive_note_ids()) if memory_on else 0,
                 "trace": _event("input_guard", **guard)}
 
     def after_guard(state) -> Literal["plan", "__end__"]:
@@ -307,6 +338,7 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 2. plan (also used for replanning, with feedback)
     async def plan(state: AgentState):
+        assert_lifecycle_unchanged(state)
         mem = dict(state.get("memory") or {})
         if state.get("memory_on", True) and not mem:
             from .. import memory as ltm
@@ -320,10 +352,6 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                 from .. import memory as ltm
                 watchlist = await ltm.watchlist(state.get("analyst", "analyst"))
         context = ""
-        if watchlist:
-            context += ("\nPRIVATE WATCHLIST (confidential): " + ", ".join(watchlist)
-                        + ". Add one to the plan's companies only if the request asks for peers. Never name a "
-                          "watchlist company in a sub-question unless it is in the plan's companies.")
         if mem.get("preferences"):
             context += "\nANALYST PREFERENCES: " + "; ".join(mem["preferences"])
         if mem.get("previous_notes"):
@@ -456,13 +484,17 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                     out.append(f"The {who} step ended with {', '.join(errors)}; its part of the "
                                "note may be incomplete.")
                 if h["agent"] == "risk_diff" and len(years) > 1:
-                    pair = (max(y for y in years if y < years[-1]), years[-1])
-                    lacking = [y for y in pair if not any(p.startswith(f"{h['company']}_{y}_item1a")
-                                                          for p in h.get("passage_ids", []))]
-                    if lacking:
-                        out.append(f"No Item 1A risk-factor passage for {h['company']} FY"
-                                   f"{', FY'.join(map(str, lacking))} was retrieved, so added or removed risks "
-                                   f"between FY{pair[0]} and FY{pair[1]} are not established.")
+                    coverage = {(p["earlier_year"], p["later_year"]): p
+                                for p in h.get("risk_coverage", [])}
+                    for earlier, later in combinations(sorted(set(years)), 2):
+                        pair = coverage.get((earlier, later))
+                        if not pair or pair["status"] == "missing_evidence":
+                            out.append(f"Insufficient paired Item 1A evidence for {h['company']} "
+                                       f"FY{earlier} and FY{later}; risk changes are not established.")
+                        else:
+                            out.append(f"Only Item 1A excerpts were reviewed for {h['company']} "
+                                       f"FY{earlier} and FY{later}; section-wide additions, removals, "
+                                       "or absence are not established.")
         else:
             calls = []
             for m in state.get("messages", []):
@@ -475,6 +507,7 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         return out
 
     async def write(state: AgentState):
+        assert_lifecycle_unchanged(state)
         issues = state.get("check", {}).get("issues") if state.get("revisions") else None
         figures = build_figures(state["plan"]["companies"], state["plan"]["fiscal_years"])
         notes = comparability_notes(state["plan"]["companies"], state["plan"]["fiscal_years"])
@@ -509,28 +542,66 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
             d.body = insert_changes(d.body, changed)
         else:         # nothing to compare: never leave the template token in the note
             d.body = d.body.replace("{WHAT_CHANGED}", "No earlier note was available to compare against.")
-        if notes:     # and what keeps the figures from being like-for-like
-            d.body = d.body.rstrip() + "\n\n## Comparability\n" + "\n".join(f"- {n}" for n in notes)
-        if gaps:      # and what evidence the note could not establish
-            d.body = d.body.rstrip() + "\n\n## Limitations\n" + "\n".join(f"- {g}" for g in gaps)
-        return {"draft": d.model_dump(), "render_issues": render_issues, "tokens": usage(result["raw"]),
+        suffix = ""
+        if notes:
+            suffix += "\n\n## Comparability\n" + "\n".join(f"- {n}" for n in notes)
+        if gaps:
+            suffix += "\n\n## Limitations\n" + "\n".join(f"- {g}" for g in gaps)
+        if suffix:
+            d.body = d.body.rstrip() + suffix
+        return {"draft": d.model_dump(), "render_issues": render_issues, "trusted_suffix": suffix,
+                "tokens": usage(result["raw"]),
                 "trace": _event("write", revision=state.get("revisions", 0))}
 
     # 6. code checks every number and citation; C2 adds the critic's judge
     async def check(state: AgentState):
-        r = check_note(state["draft"]["body"], passage_text=passage_text,
+        content = state["draft"].get("title", "") + "\n" + state["draft"]["body"]
+        before = None
+        snapshot_issue = None
+        if require_critic:
+            from .review_snapshot import SnapshotError, capture
+            try:
+                before = capture(state["draft"], passage_text)
+            except SnapshotError as exc:
+                snapshot_issue = str(exc)
+        r = check_note(content, passage_text=passage_text,
                        private=private_names(state.get("watchlist"), state.get("plan")))
         issues = list(dict.fromkeys((state.get("render_issues") or []) + r.issues))   # no repeats
+        reviewed = before and before.get("facts") and all(
+            item["fact"].get("eligibility") == "eligible" for item in before["facts"].values())
+        warning = ("Cited financial facts match the configured review register; the application does not "
+                   "independently verify the reviewer's evidence." if reviewed else
+                   "Financial source eligibility and non-reliance status are not independently verified.")
         result = {"ok": not issues, "issues": issues, "verified": r.verified_numbers,
-                  "total": r.total_numbers, "verified_share": r.verified_share}
+                  "total": r.total_numbers, "verified_share": r.verified_share, "warnings": [warning]}
         tokens = 0
         if critic is not None:
-            judged = await critic(state["draft"]["body"])
+            critic_args = {}
+            if state.get("trusted_suffix"):
+                critic_args["trusted_suffix"] = state["trusted_suffix"]
+            if before and before.get("facts"):
+                critic_args["fact_evidence"] = before["facts"]
+            judged = await critic(content, **critic_args)
             tokens = judged.pop("tokens", 0)
             result["issues"] = issues + judged["issues"]
             result["ok"] = not result["issues"]
             result["claims"] = judged
-        return {"check": result, "tokens": tokens,
+        elif require_critic:
+            result["issues"].append("Review incomplete: automated claim review is unavailable.")
+            result["ok"] = False
+        snapshot = None
+        if require_critic and before is not None:
+            try:
+                snapshot = capture(state["draft"], passage_text)
+                if snapshot != before:
+                    snapshot_issue = "Evidence or policy changed during review."
+                    snapshot = None
+            except SnapshotError as exc:
+                snapshot_issue = str(exc)
+        if snapshot_issue:
+            result["issues"].append(f"Review incomplete: {snapshot_issue}")
+            result["ok"] = False
+        return {"check": result, "review_snapshot": snapshot, "tokens": tokens,
                 "trace": _event("critic" if critic else "check", **result)}
 
     def after_check(state) -> Literal["write", "review_note"]:
@@ -545,7 +616,14 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
 
     # 7. human gate: approve, edit or reject the exact note
     def review_note(state: AgentState):
-        decision = interrupt({"gate": "note", "note": state["draft"], "check": state["check"]})
+        assert_lifecycle_unchanged(state)
+        context = {"version": 2 if require_critic else 1, "request": state.get("request", ""),
+                   "plan": state.get("plan") or {}, "check": state["check"],
+                   "memory_on": state.get("memory_on", True),
+                   "lifecycle_epoch": state.get("lifecycle_epoch", 0),
+                   "evidence_snapshot": state.get("review_snapshot")}
+        decision = interrupt({"gate": "note", "note": state["draft"], "check": state["check"],
+                              "review_context": context})
         action = decision.get("action")
         if action == "edit":
             edited = {**state["draft"], **decision.get("note", {})}
@@ -560,8 +638,10 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         # checks or unresolved critic findings. Revisions must be re-checked.
         if not state.get("check", {}).get("ok", False):
             raise ValueError("Cannot approve note with unresolved verification or critic issues; edit or reject it.")
+        assert_review_unchanged(state)
         d = state["draft"]
-        token = approval.sign(d["title"], d["body"], d["tickers"], decision.get("approver", "analyst"))
+        token = approval.sign(d["title"], d["body"], d["tickers"], decision.get("approver", "analyst"),
+                              context=context)
         # Fix for Module 4 - Security (Fix 2 - use case 2): the approver's signature
         # is made on their own device and arrives with the resume payload; nothing
         # here can produce it.
@@ -583,6 +663,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         timeout) the portal may or may not have saved it: 'publish_unconfirmed', never a retry
         here. A memory update that fails after a confirmed save leaves the note Published and
         says so; it never republishes."""
+        assert_lifecycle_unchanged(state)
+        assert_review_unchanged(state)
         d = state["draft"]
         args = {**d, "approval_token": state["published"]["approval_token"]}
         # Fix for Module 4 - Security (Fix 2 - use case 2)
@@ -596,10 +678,12 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
                     "published": {**state["published"], "error": msg},
                     "trace": _event("publish", ok=None, error=msg)}
         result = tool_json(raw)
-        ok = result.get("ok") is True and isinstance(result.get("note_id"), int)
+        note_id = result.get("note_id")
+        ok = (result.get("ok") is True and type(note_id) is int and note_id > 0
+              and result.get("note_sha256") == approval.note_hash(d["title"], d["body"], d["tickers"]))
         error = (result.get("error") or {}).get("message")
         if result.get("ok") is True and not ok:
-            error = "the portal reported success without a note id; check the portal before retrying"
+            error = "the portal returned an invalid or mismatched receipt; check the portal before retrying"
         remembered, memory_error = False, None
         if ok and state.get("memory_on", True):   # only approved, published notes are remembered
             from ..memory import remember_published_note
@@ -615,7 +699,7 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None) -> dict:
         outcome = "published" if ok else ("publish_unconfirmed" if result.get("ok") is True else "publish_failed")
         return {"outcome": outcome,
                 "published": {"result": json.dumps(result)[:500], "note_id": result.get("note_id"),
-                              "memory_error": memory_error},
+                              "error": error, "memory_error": memory_error},
                 "trace": _event("publish", ok=ok, note_id=result.get("note_id"), remembered=remembered,
                                 memory_error=memory_error, error=error)}
 
@@ -640,14 +724,15 @@ def add_common_tail(g: StateGraph, n: dict) -> None:
 
 # ── C1 ────────────────────────────────────────────────────────────────────────
 
-def build_graph(llm, tools: list, publish_tool, passage_text=None, hooks: Hooks | None = None):
+def build_graph(llm, tools: list, publish_tool, passage_text=None, hooks: Hooks | None = None,
+                critic=None, require_critic=False):
     """Assemble the C1 graph. tools: the research tools (no write tool);
     publish_tool: publish_note, used only by the publish node after approval."""
     own_hooks = hooks is None             # the run's budget is set from the plan (see research)
     hooks = hooks or Hooks(max_calls_per_agent=tool_budget(1))
     tool_node = ToolNode(tools, awrap_tool_call=wrap_for_toolnode(hooks, "single_agent"))
     research_llm = llm.bind_tools(tools)
-    n = common_nodes(llm, publish_tool, passage_text)
+    n = common_nodes(llm, publish_tool, passage_text, critic=critic, require_critic=require_critic)
 
     # 4. ReAct research loop
     async def research(state: AgentState):

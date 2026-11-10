@@ -40,7 +40,7 @@ load_dotenv(ROOT / ".env")
 
 from analystdesk import experiments  # noqa: E402
 from analystdesk.evaluation import (  # noqa: E402
-    PRICE_PER_M, RESULTS, evaluation_gate_failures, load_cases, run_one, summarise,
+    PRICE_PER_M, RESULTS, evaluation_gate_failures, evaluator_path, load_cases, run_one, summarise,
 )
 
 
@@ -49,6 +49,10 @@ async def main() -> None:
     ap.add_argument("--experiment", help="an experiments/*.toml file or its name; sets configs, split, switches")
     ap.add_argument("--configs", nargs="+", choices=["c0", "c1", "c2"])
     ap.add_argument("--split", choices=["dev", "heldout"])
+    ap.add_argument("--heldout-dir", type=Path,
+                    help="evaluator-controlled held-out directory outside the application repository")
+    ap.add_argument("--results-dir", type=Path,
+                    help="evaluator-controlled results directory (required for external held-out cases)")
     ap.add_argument("--cases", nargs="*", help="only these case ids")
     ap.add_argument("--tag")
     ap.add_argument("--no-lessons", action="store_true", help="E3 'before playbook' run")
@@ -78,7 +82,15 @@ async def main() -> None:
         ap.error("--tag must contain only letters, digits, '-' or '_'")
     if args.no_lessons:
         os.environ["AGENT_LESSONS"] = "0"
-    all_cases = load_cases(args.split)
+    if args.heldout_dir and args.split != "heldout":
+        ap.error("--heldout-dir requires --split heldout")
+    if args.heldout_dir and not args.results_dir:
+        ap.error("--heldout-dir requires an external --results-dir")
+    try:
+        results_dir = evaluator_path(args.results_dir) if args.heldout_dir else (args.results_dir or RESULTS)
+    except ValueError as exc:
+        ap.error(str(exc))
+    all_cases = load_cases(args.split, heldout_dir=args.heldout_dir)
     if args.cases:
         known = {c["id"] for c in all_cases}
         missing = set(args.cases) - known
@@ -93,8 +105,13 @@ async def main() -> None:
                 if frozen else {"frozen": False})
     if args.split == "heldout" and os.getenv("AGENT_LESSONS", "1") != "0" and not frozen:
         ap.error("freeze the playbook before a held-out run (Research tab -> Playbook -> Freeze)")
-    RESULTS.mkdir(parents=True, exist_ok=True)
-    path = RESULTS / f"eval_{args.split}_{args.tag}.json"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    path = results_dir / f"eval_{args.split}_{args.tag}.json"
+    try:
+        with path.open("x", encoding="utf-8") as file:
+            json.dump({"split": args.split, "tag": args.tag, "rows": {}}, file)
+    except FileExistsError:
+        ap.error(f"result file already exists: {path}; choose a new --tag")
     all_rows: dict[str, list] = {}
     for config in args.configs:
         rows = []
@@ -106,6 +123,8 @@ async def main() -> None:
                   flush=True)
             all_rows[config] = rows
             snapshot = json.dumps({"split": args.split, "tag": args.tag, "price_per_m": PRICE_PER_M,
+                                   "case_source": ("external-evaluator" if args.heldout_dir else
+                                                   "repository-exposed" if args.split == "heldout" else "development"),
                                    "lessons": os.getenv("AGENT_LESSONS", "1") != "0",
                                    "playbook": playbook,
                                    "experiment": {"file": experiment["file"], "name": experiment["name"],
@@ -123,7 +142,7 @@ async def main() -> None:
     print("\n" + f"{'':22}" + "".join(f"{c:>26}" for c in summary))
     for k in keys:
         print(f"{k:22}" + "".join(f"{str(summary[c][k]):>26}" for c in summary))
-    print(f"\nsaved {path.relative_to(ROOT)}")
+    print(f"\nsaved {path}")
     if args.min_success_rate is not None:
         failures = [
             f"{config}: {failure}"

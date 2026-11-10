@@ -16,7 +16,7 @@ the measured benefit of the agentic approach.
 
 from __future__ import annotations
 
-from .edgar import get_financials
+from .edgar import compatible_annual_facts, get_financials
 from .note import MetricRow, ResearchNote
 from .agent.figures import half_up
 from .scope import ResearchRequest
@@ -63,35 +63,44 @@ def run_baseline(request: ResearchRequest) -> ResearchNote:
             rev = data["revenue"]
             op = data["operating_income"]
             pretax = data.get("pretax_income")
+            if any(fact and fact.get("eligibility", "unverified") == "unverified"
+                   for fact in (rev, op, pretax)):
+                warnings.append(f"{company.name} FY{year}: source eligibility and non-reliance are unverified.")
 
             rev_m = _to_millions(rev["val"] if rev else None)
             op_m = _to_millions(op["val"] if op else None)
             pretax_m = _to_millions(pretax["val"] if pretax else None)
-            margin = _operating_margin(rev and rev["val"], op and op["val"])
+            margin = (_operating_margin(rev["val"], op["val"])
+                      if compatible_annual_facts(rev, op) else None)
             # Same ratio, different income line: pre-tax income / net revenue
-            pretax_margin = _operating_margin(rev and rev["val"], pretax and pretax["val"])
+            pretax_margin = (_operating_margin(rev["val"], pretax["val"])
+                             if compatible_annual_facts(rev, pretax) else None)
+            headline_income = pretax if company.margin_basis == "pretax" else op
+            if rev and headline_income and not compatible_annual_facts(rev, headline_income):
+                warnings.append(f"{company.name} FY{year}: margin unavailable because revenue and income "
+                                "do not have the same annual period and filing.")
 
             if rev is None:
                 warnings.append(
-                    f"{company.name} FY{year}: revenue not found in EDGAR"
+                    f"{company.name} FY{year}: revenue missing or not eligible under the source policy"
                 )
             for label, fact in (("revenue", rev), ("operating income", op), ("pre-tax income", pretax)):
                 if fact and fact.get("restated"):
                     later = fact["restated"]
                     warnings.append(
-                        f"{company.name} FY{year}: {label} as reported "
+                        f"{company.name} FY{year}: {label} selected value "
                         f"{_to_millions(fact['val']):,.1f}M; a later 10-K ({later['accn']}) reports "
                         f"{_to_millions(later['val']):,.1f}M for the same year (reason not "
-                        f"established); the note uses the as-reported figure"
+                        f"established); the note uses the selected figure"
                     )
             # Only the headline income line is required for this company
             if company.margin_basis == "pretax" and pretax is None:
                 warnings.append(
-                    f"{company.name} FY{year}: pre-tax income not found in EDGAR"
+                    f"{company.name} FY{year}: pre-tax income missing or not eligible under the source policy"
                 )
             if company.margin_basis == "operating" and op is None:
                 warnings.append(
-                    f"{company.name} FY{year}: operating income not found in EDGAR"
+                    f"{company.name} FY{year}: operating income missing or not eligible under the source policy"
                 )
 
             rows.append(MetricRow(

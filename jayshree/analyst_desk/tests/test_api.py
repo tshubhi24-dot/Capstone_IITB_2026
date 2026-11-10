@@ -9,6 +9,29 @@ from analystdesk.api import ResearchRequest, create_app
 
 
 class ApiTests(unittest.TestCase):
+    def test_stale_review_reports_restart_guidance_in_stream(self):
+        from analystdesk.agent.review_snapshot import ReviewStaleError
+        async def runner(run_id, payload, on_event):
+            raise ReviewStaleError("Evidence changed; start a fresh run.")
+        with TestClient(create_app(runner=runner)) as client:
+            response = client.post("/api/research", json={"request": "Microsoft FY2024"})
+        events = self._events(response)
+        error = next(data for name, data in events if name == "error")
+        self.assertEqual(error["error"], "review_stale")
+        self.assertIn("start a fresh run", error["detail"])
+
+    def test_lifecycle_api_reports_success_and_conflict(self):
+        from unittest.mock import patch
+        from analystdesk.servers.portal import LifecycleError
+        payload = {"action": "withdraw", "reason": "incorrect", "actor": "analyst"}
+        with patch("analystdesk.servers.portal.change_lifecycle",
+                   return_value={"note_id": 7, "action": "withdraw"}) as change:
+            response = self.client.post("/api/notes/7/lifecycle", json=payload)
+        self.assertEqual(response.status_code, 200)
+        change.assert_called_once_with(7, "withdraw", "incorrect", "analyst", None, None)
+        with patch("analystdesk.servers.portal.change_lifecycle", side_effect=LifecycleError("already inactive")):
+            response = self.client.post("/api/notes/7/lifecycle", json=payload)
+        self.assertEqual(response.status_code, 409)
     def setUp(self):
         self.saved_runs = {}
         self.runner_calls = []

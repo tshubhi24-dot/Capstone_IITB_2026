@@ -18,7 +18,6 @@ import asyncio
 import json
 import logging
 import re
-import sqlite3
 import uuid
 
 import gradio as gr
@@ -225,7 +224,9 @@ def _check_display(c: dict) -> str:
         head += f"\n**Judge**: {claims['error']}"
     if claims.get("uncited"):
         head += (f"\n{claims['uncited']} substantive line(s) cite no passage, so the judge could not "
-                 "check them: read them yourself before approving.")
+                 "check them; approval is blocked until they are addressed.")
+    if c.get("warnings"):
+        head += "\n\n**Source limitations**\n" + "\n".join(f"- {w}" for w in c["warnings"])
     if c["issues"]:
         head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
                  "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
@@ -235,17 +236,18 @@ def _check_display(c: dict) -> str:
 
 
 def _past_notes() -> list[list]:
-    from analystdesk.servers.portal import _db_path
+    from analystdesk.servers.portal import _connect, _db_path
     path = _db_path()
     if not path.exists():
         return []
-    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    try:
-        rows = con.execute("SELECT id, published_at, approver, tickers, title FROM notes "
-                           "ORDER BY id DESC LIMIT 50").fetchall()
-    finally:
-        con.close()
-    return [[r[0], r[1], r[2], ", ".join(json.loads(r[3])), r[4]] for r in rows]
+    with _connect() as con:
+        rows = con.execute(
+            "SELECT n.id, n.published_at, n.approver, n.tickers, n.title, l.action, l.replacement_id "
+            "FROM notes n LEFT JOIN note_lifecycle l ON l.note_id = n.id ORDER BY n.id DESC LIMIT 50"
+        ).fetchall()
+    return [[r[0], r[1], r[2], ", ".join(json.loads(r[3])), r[4],
+             ("superseded by #" + str(r[6]) if r[5] == "supersede" else
+              "withdrawn" if r[5] == "withdraw" else "active")] for r in rows]
 
 
 # ── team board ────────────────────────────────────────────────────────────────
@@ -366,6 +368,13 @@ async def _drive(run_id: str, payload):
                 pass
 
 
+def _run_failure_status(exc: Exception) -> str:
+    from analystdesk.agent.review_snapshot import ReviewStaleError
+    if isinstance(exc, ReviewStaleError):
+        return f"### Review expired\n{exc}"
+    return "### Run failed; check the server logs for details"
+
+
 def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None = None):
     """All tab outputs for a run state."""
     v = result.get("values", {})
@@ -410,6 +419,15 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
                       f"Approval is blocked.\nRun `{run_id}` · {usage}")
         note_md = f"# {gate['note']['title']}\n\n" + _note_display(gate["note"]["body"])
         check_md = _check_display(gate["check"])
+        if gate.get("review_context"):
+            check_md += "\n\n**Plan bound to this review**\n\n```json\n" + json.dumps(
+                gate["review_context"]["plan"], indent=2, ensure_ascii=False) + "\n```"
+            snapshot = gate["review_context"].get("evidence_snapshot")
+            if snapshot:
+                check_md += (f"\n\n**Evidence snapshot:** {len(snapshot['facts'])} cited fact(s), "
+                             f"{len(snapshot['passages'])} cited passage(s). Policy SHA-256: "
+                             f"`{snapshot['policy_sha256']}`. A change requires a fresh review; "
+                             "the snapshot does not independently establish source eligibility.")
         note_body = gate["note"]["body"]
         show_note = True
     else:
@@ -541,8 +559,9 @@ def build_agent_panel(workflow_mode):
             with gr.Row():
                 watchlist_box = gr.Textbox(
                     label="🔒 Private watchlist (tickers, comma-separated)", scale=4,
-                    info="Only the planner sees it. It never goes into a tool call, a search or a note "
-                         "unless you approve a plan that covers the company.")
+                    info="The saved list is not added to model prompts, but names in your request or "
+                         "preferences may be sent to the provider. Analyst names are not authenticated; "
+                         "use only in a trusted single-analyst environment.")
                 save_watchlist_btn = gr.Button("Save watchlist", scale=1)
             watchlist_status = gr.Markdown()
             prefs_table = gr.Dataframe(headers=["key", "preference", "added (UTC)"],
@@ -589,8 +608,56 @@ def build_agent_panel(workflow_mode):
                                           interactive=False, wrap=True, label="Rejected (kept as evidence)")
 
         with gr.Accordion("📚 Published notes (research portal)", open=False):
-            past = gr.Dataframe(headers=["id", "published", "approver", "tickers", "title"],
+            past = gr.Dataframe(headers=["id", "published", "approver", "tickers", "title", "status"],
                                 value=_past_notes, wrap=True)
+            gr.Markdown("Records are retained. For a correction, first publish a newly reviewed replacement "
+                        "with the same tickers, then supersede the original. Withdrawals and supersessions "
+                        "remove the original from future note retrieval, not old checkpoints.")
+            with gr.Row():
+                lifecycle_id = gr.Number(label="Original note ID", precision=0)
+                lifecycle_action = gr.Dropdown(["withdraw", "supersede"], value="withdraw", label="Action")
+                lifecycle_replacement = gr.Number(label="Replacement ID (supersede only)", precision=0)
+            lifecycle_reason = gr.Textbox(label="Reason")
+            lifecycle_signature = gr.Textbox(label="Ed25519 signature (required if approver keys are registered)")
+            lifecycle_confirm = gr.Checkbox(label="I confirm this action; the original remains in the audit history")
+            with gr.Row():
+                lifecycle_digest_btn = gr.Button("Show action digest for signing")
+                lifecycle_apply_btn = gr.Button("Apply lifecycle action", variant="stop")
+            lifecycle_status = gr.Markdown()
+
+            def lifecycle_args(note_id, action, replacement, reason, actor):
+                if note_id is None or int(note_id) != note_id or note_id < 1:
+                    raise ValueError("Enter a positive original note ID.")
+                if replacement is not None and (int(replacement) != replacement or replacement < 1):
+                    raise ValueError("Replacement ID must be a positive integer.")
+                return int(note_id), action, int(replacement) if replacement is not None else None, \
+                    (reason or "").strip(), (actor or "").strip()
+
+            def lifecycle_preview(note_id, action, replacement, reason, actor):
+                from analystdesk.servers.portal import lifecycle_digest
+                try:
+                    n, a, r, why, who = lifecycle_args(note_id, action, replacement, reason, actor)
+                    if not why or not who:
+                        raise ValueError("Enter the reason and actor before signing.")
+                    return f"Sign this exact action digest: `{lifecycle_digest(n, a, r, why, who)}`"
+                except ValueError as exc:
+                    return f"Cannot prepare action: {exc}"
+
+            def lifecycle_apply(note_id, action, replacement, reason, actor, signature, confirmed):
+                from analystdesk.servers.portal import LifecycleError, change_lifecycle
+                if not confirmed:
+                    return "Confirm the action before applying it.", _past_notes()
+                try:
+                    n, a, r, why, who = lifecycle_args(note_id, action, replacement, reason, actor)
+                    change_lifecycle(n, a, why, who, r, signature)
+                except (ValueError, LifecycleError) as exc:
+                    return f"Action refused: {exc}", _past_notes()
+                return f"Recorded {a} for note #{n}. Existing saved checkpoints are unchanged.", _past_notes()
+
+            lifecycle_inputs = [lifecycle_id, lifecycle_action, lifecycle_replacement, lifecycle_reason, approver]
+            lifecycle_digest_btn.click(lifecycle_preview, lifecycle_inputs, lifecycle_status)
+            lifecycle_apply_btn.click(lifecycle_apply, lifecycle_inputs + [lifecycle_signature, lifecycle_confirm],
+                                      [lifecycle_status, past])
 
         outputs = [run_id, status, activity, plan_md, plan_json, plan_box,
                    note_md, check_md, note_body, note_box, past, board,
@@ -635,10 +702,10 @@ def build_agent_panel(workflow_mode):
                     else:
                         yield (*_view(rid, item, log, events),
                                *start_control_updates(request_text, mode, False, rid))
-            except Exception:
+            except Exception as exc:
                 logging.getLogger(__name__).exception("Agent run failed")
                 failure_updates = [gr.update() for _ in outputs]
-                failure_updates[1] = "### Run failed; check the server logs for details"
+                failure_updates[1] = _run_failure_status(exc)
                 failure_updates[5] = gr.update(visible=False)
                 failure_updates[9] = gr.update(visible=False)
                 failure_updates[12] = gr.update(value="")

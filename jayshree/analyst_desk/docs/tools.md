@@ -70,8 +70,10 @@ Output fields: `ok`, `error`, `ticker`, `company`, `filings`
 
 Revenue, operating income and pre-tax income for one company and fiscal year.
 
-Values are as originally reported in that year's own 10-K. A different
-value in a later 10-K is shown in restated_value_usd and in warnings.
+By default the earliest matching cached annual 10-K or 10-K/A value is
+unverified. With a reviewed-source register configured, only explicitly
+eligible facts and versions are returned. The register does not itself verify
+reviewer identity, issuer evidence or non-reliance; see `product_spec.md`.
 
 Annotations: readOnlyHint=True, destructiveHint=False
 
@@ -88,6 +90,7 @@ Look up the exact value that a fact_id refers to.
 
 Matches the concept, the fiscal year and the very filing (accession) the
 fact_id names — used to verify every number cited in a note.
+Configured source-review decisions also restrict exact fact lookup.
 
 Annotations: readOnlyHint=True, destructiveHint=False
 

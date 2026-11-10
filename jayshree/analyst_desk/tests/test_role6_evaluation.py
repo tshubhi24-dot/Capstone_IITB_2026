@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from analystdesk.evaluation import evaluation_gate_failures, load_cases
+from analystdesk.evaluation import evaluation_gate_failures, evaluator_path, load_cases
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -40,6 +40,21 @@ class EvaluationAuditTests(unittest.TestCase):
 
     def validate(self):
         return validate_result(self.file, self.gold, ["c1"], min_cases=2)
+
+    def test_external_heldout_and_results_must_be_outside_repository(self):
+        heldout = self.root / "private"
+        heldout.mkdir()
+        (heldout / "cases.jsonl").write_text(json.dumps(
+            {"id": "external01", "split": "heldout", "type": "refusal",
+             "request": "test", "expect": {"refusal": "test"}}) + "\n", encoding="utf-8")
+        self.assertEqual(load_cases("heldout", heldout_dir=heldout)[0]["id"], "external01")
+        self.assertEqual(evaluator_path(self.root), self.root.resolve())
+        with self.assertRaisesRegex(ValueError, "outside"):
+            load_cases("heldout", heldout_dir=ROOT / "data" / "evaluation" / "heldout")
+        with self.assertRaisesRegex(ValueError, "outside"):
+            evaluator_path(ROOT / "data" / "evaluation" / "results")
+        with self.assertRaisesRegex(ValueError, "only valid"):
+            load_cases("dev", heldout_dir=heldout)
 
     def test_pooled_share_excludes_zero_division_rows(self):
         report = self.validate()

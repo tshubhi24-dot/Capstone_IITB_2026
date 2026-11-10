@@ -21,6 +21,9 @@ import urllib.request
 from datetime import date
 from pathlib import Path
 
+from . import source_review
+from .scope import COMPANIES
+
 EDGAR_FACTS_URL = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
 CACHE_DIR = Path(__file__).parent.parent / "data" / "edgar_cache"
 
@@ -107,6 +110,14 @@ PRETAX_INCOME_CONCEPT = (
 _parsed: dict[str, dict] = {}
 
 
+def compatible_annual_facts(first: dict | None, second: dict | None) -> bool:
+    """Require the same complete annual window and filing for a derived ratio."""
+    if not first or not second:
+        return False
+    return all(first.get(key) and first.get(key) == second.get(key)
+               for key in ("start", "end", "accn"))
+
+
 def _pad_cik(cik: str) -> str:
     """SEC API expects a 10-digit zero-padded CIK, e.g. '0000789019'."""
     return cik.lstrip("0").zfill(10)
@@ -148,8 +159,10 @@ def fetch_company_facts(cik: str) -> dict:
 def get_annual_fact(cik: str, concept: str, fiscal_year: int) -> dict | None:
     """Return the annual 10-K value for one XBRL concept and fiscal year.
 
-    Filters to full-year (fp=="FY") 10-K filings only. If multiple filings
-    exist for the same year (e.g. an amended 10-K/A), returns the latest one.
+    Filters to full-year (fp=="FY") 10-K and 10-K/A filings. If multiple
+    filings exist for the same year, returns the earliest and records a later
+    differing value separately. This does not establish source eligibility
+    or whether an earlier filing is subject to non-reliance.
 
     Returns None if the concept or year is not present in EDGAR.
 
@@ -160,6 +173,7 @@ def get_annual_fact(cik: str, concept: str, fiscal_year: int) -> dict | None:
         filed     filing date, e.g. "2024-07-30"
         fact_id   "{concept}/{fiscal_year}/{accession_number}"
     """
+    register = source_review.load_register()
     facts = fetch_company_facts(cik)
     entries = (
         facts.get("facts", {})
@@ -192,8 +206,25 @@ def get_annual_fact(cik: str, concept: str, fiscal_year: int) -> dict | None:
     # the fact_id points at the same document the passages come from. Later
     # 10-Ks restate prior years (BAC restated FY2023-24 revenue in its FY2025
     # 10-K); a restated value is reported alongside, never silently swapped in.
-    entry = min(annual, key=lambda e: e.get("filed", ""))
-    latest = max(annual, key=lambda e: e.get("filed", ""))
+    annual.sort(key=lambda e: (e.get("filed", ""), e.get("accn", "")))
+    company = next((c for c in COMPANIES if c.cik == _pad_cik(cik)), None)
+    if register is not None and company is None:
+        raise source_review.SourceReviewError(f"No supported ticker for CIK {_pad_cik(cik)}.")
+    statuses = [source_review.status(register, company.ticker if company else "", fiscal_year, concept, e)
+                for e in annual]
+    eligible = [(e, status) for e, status in zip(annual, statuses)
+                if register is None or status == "eligible"]
+    if not eligible:
+        return None
+    entry, eligibility = eligible[0]
+    visible_versions = [e for e, _ in eligible]
+    latest = visible_versions[-1]
+    versions = [
+        {"val": e["val"], "start": e.get("start"), "end": e["end"],
+         "accn": e["accn"], "filed": e.get("filed"), "form": e["form"],
+         "fact_id": f"{concept}/{fiscal_year}/{e['accn']}"}
+        for e in visible_versions
+    ]
     return {
         "val": entry["val"],
         "start": entry.get("start"),
@@ -201,6 +232,10 @@ def get_annual_fact(cik: str, concept: str, fiscal_year: int) -> dict | None:
         "accn": entry["accn"],
         "filed": entry["filed"],
         "fact_id": f"{concept}/{fiscal_year}/{entry['accn']}",
+        "versions": versions,
+        "eligibility": eligibility,
+        "source_review": (source_review.decision_for(register, company.ticker, fiscal_year, concept, entry)
+                          .model_dump(mode="json") if register is not None and company else None),
         "restated": (
             {"val": latest["val"], "accn": latest["accn"], "filed": latest["filed"]}
             if latest["val"] != entry["val"] else None
@@ -226,6 +261,9 @@ def get_quarterly_facts(cik: str, concept: str, fiscal_year: int) -> list[dict]:
     Returns a list of dicts sorted by period end date, one entry per quarter.
     Duplicate amended filings are deduplicated — latest filed wins.
     """
+    if source_review.load_register() is not None:
+        raise source_review.SourceReviewError(
+            "Quarterly facts are unavailable when annual source-review enforcement is enabled.")
     annual = get_annual_fact(cik, concept, fiscal_year)
     if annual is None:
         return []

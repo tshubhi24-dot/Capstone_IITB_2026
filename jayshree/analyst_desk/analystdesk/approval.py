@@ -71,13 +71,15 @@ def _unb64(text: str) -> bytes:
     return base64.urlsafe_b64decode(text + "=" * (-len(text) % 4))
 
 
-def sign(title: str, body: str, tickers: list[str], approver: str) -> str:
+def sign(title: str, body: str, tickers: list[str], approver: str, *, context: dict | None = None) -> str:
     """Issue an approval token for this exact note. Approval-gate side only."""
     claims = {
         "note_sha256": note_hash(title, body, tickers),
         "approver": approver,
         "approved_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
+    if context is not None:
+        claims["review_context"] = context
     payload = _b64(json.dumps(claims, sort_keys=True).encode())
     sig = _b64(hmac.new(_key(), payload.encode(), hashlib.sha256).digest())
     return f"{payload}.{sig}"

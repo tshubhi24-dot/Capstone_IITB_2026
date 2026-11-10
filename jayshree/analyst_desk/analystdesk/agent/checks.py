@@ -32,7 +32,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from ..edgar import OPERATING_INCOME_CONCEPT, PRETAX_INCOME_CONCEPT
+from ..edgar import OPERATING_INCOME_CONCEPT, PRETAX_INCOME_CONCEPT, REVENUE_CONCEPTS
+from ..scope import COMPANIES
 from ..servers.edgar_server import get_fact
 from .figures import PLACEHOLDER, half_up
 from .guards import defences_on, mentions
@@ -54,6 +55,8 @@ POINTS = re.compile(r"[+-]?\d+(?:\.\d+)?\s?(?:pp\b|percentage points?)")
 TEMPLATE_TOKEN = re.compile(r"\{([A-Z][A-Z_]{2,})\}")
 _SCALE_AFTER = r"(?!\s?(?:thousand|million|billion|[KMB]\b|bn\b|mn\b))"
 MARGIN_BASIS = {OPERATING_INCOME_CONCEPT: "operating", PRETAX_INCOME_CONCEPT: "pretax"}
+_COMPANIES = {company.ticker: company for company in COMPANIES}
+_REVENUE_CONCEPTS = frozenset(concept for concepts in REVENUE_CONCEPTS.values() for concept in concepts)
 ADVICE = re.compile(
     r"\b(buy|sell|hold rating|overweight|underweight|outperform|underperform|"
     r"price target|we recommend|strong buy|investors should)\b", re.I)
@@ -76,6 +79,8 @@ def _fact_value(fact_id: str, cache: dict) -> float | None:
         r = get_fact(fact_id)
         cache[fact_id] = r.fact.value_usd if r.ok else None
         cache[("ticker", fact_id)] = r.ticker if r.ok else None
+        if r.ok and r.fact:
+            cache[("period", fact_id)] = (r.fact.period_start, r.fact.period_end)
     return cache[fact_id]
 
 
@@ -88,6 +93,26 @@ def _mismatch(pairs: list[tuple[str, str]], cache: dict, same_year: bool = True)
             return f"mixes {ta} and {tb}"
         if same_year and a.split("/")[1] != b.split("/")[1]:
             return f"mixes FY{a.split('/')[1]} and FY{b.split('/')[1]}"
+        if same_year and a.split("/")[2] != b.split("/")[2]:
+            return "mixes filings"
+        pa, pb = cache.get(("period", a)), cache.get(("period", b))
+        if same_year and pa and pb and pa != pb:
+            return f"mixes annual periods {pa} and {pb}"
+    return None
+
+
+def _margin_inputs(numerator: str, denominator: str, cache: dict) -> str | None:
+    income, revenue = numerator.split("/")[0], denominator.split("/")[0]
+    ticker = cache.get(("ticker", numerator))
+    company = _COMPANIES.get(ticker)
+    if income not in MARGIN_BASIS:
+        return "numerator is not a supported income concept"
+    if revenue not in _REVENUE_CONCEPTS:
+        return "denominator is not a supported revenue concept"
+    if company:
+        expected = PRETAX_INCOME_CONCEPT if company.margin_basis == "pretax" else OPERATING_INCOME_CONCEPT
+        if income != expected or revenue not in REVENUE_CONCEPTS[company.cik]:
+            return f"concepts do not match {ticker}'s supported margin basis"
     return None
 
 
@@ -168,6 +193,8 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
             issues.append(f"{m.group(1)}% cites an unknown fact in [calc: {m.group(2)} / {m.group(3)}].")
         elif bad := _mismatch([(m.group(2), m.group(3))], cache):
             issues.append(f"{m.group(1)}% [calc] {bad}: a ratio needs one company and one fiscal year.")
+        elif bad := _margin_inputs(m.group(2), m.group(3), cache):
+            issues.append(f"{m.group(1)}% [calc] {bad}.")
         elif den <= 0:
             issues.append(f"{m.group(1)}% divides by revenue that is not positive; a margin is not meaningful.")
         elif not two_dp_matches(m.group(1), num / den * 100):
@@ -202,6 +229,13 @@ def check_note(body: str, passage_exists=None, passage_text=None, private: list[
         elif bad := (_mismatch([(m.group(2), m.group(3)), (m.group(4), m.group(5))], cache)
                      or _mismatch([(m.group(2), m.group(4))], cache, same_year=False)):
             issues.append(f"{m.group(1)} pp [diff] {bad}: it must compare one company's margins.")
+        elif bad := (_margin_inputs(m.group(2), m.group(3), cache)
+                     or _margin_inputs(m.group(4), m.group(5), cache)):
+            issues.append(f"{m.group(1)} pp [diff] {bad}.")
+        elif (m.group(2).split("/")[0] != m.group(4).split("/")[0]
+              or m.group(3).split("/")[0] != m.group(5).split("/")[0]
+              or m.group(2).split("/")[1] <= m.group(4).split("/")[1]):
+            issues.append(f"{m.group(1)} pp [diff] must compare the same margin concepts with an earlier year.")
         elif b <= 0 or d <= 0:
             issues.append(f"{m.group(1)} pp uses revenue that is not positive; a margin change is not meaningful.")
         elif not two_dp_matches(m.group(1), (a / b - c / d) * 100):

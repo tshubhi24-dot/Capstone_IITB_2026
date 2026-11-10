@@ -15,6 +15,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from .alerts import ActiveAlert, PrometheusUnavailable, fetch_active_alerts
+from .agent.review_snapshot import ReviewStaleError
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,14 @@ class ResearchDecision(BaseModel):
     confirm_years: bool = False
     approver: str = Field(default="analyst", min_length=1, max_length=80)
     reason: str = Field(default="", max_length=1000)
+
+
+class LifecycleDecision(BaseModel):
+    action: Literal["withdraw", "supersede"]
+    reason: str = Field(min_length=1, max_length=1000)
+    actor: str = Field(min_length=1, max_length=80)
+    replacement_id: int | None = Field(default=None, ge=1)
+    signature: str | None = None
 
 
 async def _run_until_gate(
@@ -111,6 +120,15 @@ def create_app(
     @app.get("/healthz", tags=["health"])
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.post("/api/notes/{note_id}/lifecycle", tags=["publication"])
+    async def note_lifecycle(note_id: int, decision: LifecycleDecision) -> dict[str, Any]:
+        from .servers.portal import LifecycleError, change_lifecycle
+        try:
+            return change_lifecycle(note_id, decision.action, decision.reason, decision.actor,
+                                    decision.replacement_id, decision.signature)
+        except LifecycleError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
 
     @app.get("/readyz", tags=["health"])
     async def readiness() -> dict[str, str]:
@@ -231,6 +249,9 @@ def create_app(
             yield _event("result", _run_summary(run_id, task.result()))
         except asyncio.CancelledError:
             raise
+        except ReviewStaleError as exc:
+            logger.warning("Research run %s needs a fresh review: %s", run_id, exc)
+            yield _event("error", {"run_id": run_id, "error": "review_stale", "detail": str(exc)})
         except Exception:
             logger.exception("Research run %s failed", run_id)
             yield _event(

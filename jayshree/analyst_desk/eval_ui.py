@@ -49,14 +49,6 @@ def _golden_rows() -> list[list]:
     return [[c["id"], c["type"], c["request"], _expected(c)] for c in load_cases("dev")]
 
 
-def _heldout_count() -> int:
-    from analystdesk.evaluation import load_cases
-    try:
-        return len(load_cases("heldout"))
-    except Exception:   # noqa: BLE001
-        return 0
-
-
 def _results_files() -> list[str]:
     return sorted((p.name for p in RESULTS.glob("eval_*.json")), reverse=True)
 
@@ -177,8 +169,8 @@ def build_eval_tab():
 
         # ── handlers ──────────────────────────────────────────────────────────
         def golden_header():
-            return (f"**{len(_golden_rows())} development cases.** Held-out cases: **{_heldout_count()}** "
-                    "(written by role 5, never shown here, so nobody tuning the system sees them).")
+            return (f"**{len(_golden_rows())} development cases.** "
+                    "Future held-out cases are managed separately by the evaluator and are not mounted in the app.")
 
         async def on_run(selected, cases):
             from analystdesk.evaluation import load_cases, run_one

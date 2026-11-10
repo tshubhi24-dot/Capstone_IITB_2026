@@ -26,6 +26,23 @@ class TempMemory(unittest.TestCase):
 
 
 class MemoryTests(TempMemory):
+    def test_inactive_notes_are_excluded_from_all_memory_views(self):
+        async def run():
+            await memory.remember_published_note(7, "Old", NOTE, ["MSFT"], "analyst", "desk",
+                                                 "2026-01-01T00:00:00")
+            await memory.remember_published_note(8, "New", NOTE, ["MSFT"], "analyst", "desk",
+                                                 "2026-01-02T00:00:00")
+            with patch("analystdesk.servers.portal.inactive_note_ids", return_value={8}):
+                last = await memory.last_note("MSFT")
+                coverage = await memory.coverage("desk")
+                all_notes = await memory.all_note_memories()
+            return last, coverage, all_notes
+        last, coverage, all_notes = asyncio.run(run())
+        self.assertEqual(last["note_id"], 7)
+        self.assertEqual(coverage[0]["notes"], [7])
+        self.assertEqual(coverage[0]["last_published"], "2026-01-01T00:00:00")
+        self.assertEqual([note["note_id"] for note in all_notes], [7])
+
     def test_figures_parsed_from_verified_tags(self):
         f = memory.figures_from_note(NOTE)["MSFT"]
         self.assertEqual(f["revenue_2024"]["value"], 245122.0)

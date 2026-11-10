@@ -23,6 +23,7 @@ analyst_desk/data/passages/
 analyst_desk/data/index/
 analyst_desk/data/10k/
 jayshree/analyst_desk/data/edgar_cache/filings/
+jayshree/analyst_desk/data/edgar_cache/source_reviews.json
 jayshree/analyst_desk/data/index/
 jayshree/analyst_desk/data/10k/
 # Portal DB and approval signing key (secret) stay local

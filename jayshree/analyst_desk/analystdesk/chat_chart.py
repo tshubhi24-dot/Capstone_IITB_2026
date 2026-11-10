@@ -6,7 +6,7 @@ import re
 
 import plotly.graph_objects as go
 
-from .edgar import get_financials, get_quarterly_financials
+from .edgar import compatible_annual_facts, get_financials, get_quarterly_financials
 from .query import find_companies
 from .scope import COMPANIES
 
@@ -49,7 +49,7 @@ def _metric_from_question(question: str) -> str | None:
     return matches[0][2] if len(metrics) == 1 else None
 
 
-def _financial_value(financials: dict, metric: str, margin_basis: str) -> float | None:
+def _financial_value(financials: dict, metric: str, margin_basis: str, *, annual: bool = True) -> float | None:
     revenue = financials.get("revenue")
     if metric == "revenue":
         value = revenue
@@ -63,6 +63,8 @@ def _financial_value(financials: dict, metric: str, margin_basis: str) -> float 
         ) else "operating_income"
         income = financials.get(income_key)
         if not revenue or not income or not revenue["val"]:
+            return None
+        if annual and not compatible_annual_facts(revenue, income):
             return None
         return round(income["val"] / revenue["val"] * 100, 2)
 
@@ -94,6 +96,10 @@ def build_chat_chart(
     )
     if quarterly and quarterly_pretax:
         return None, "Quarterly pre-tax data is not available from the current EDGAR chart source."
+    if quarterly:
+        from .source_review import load_register
+        if load_register() is not None:
+            return None, "Quarterly charts are unavailable under annual source-review enforcement."
     if metric == "operating_margin" and any(
         company.margin_basis != "operating" for company in companies
     ):
@@ -143,7 +149,7 @@ def build_chat_chart(
                         {},
                     )
                     values_by_company[company.ticker].append(
-                        _financial_value(record, metric, company.margin_basis)
+                        _financial_value(record, metric, company.margin_basis, annual=False)
                     )
         else:
             period_labels.append(f"FY{year}")
@@ -158,7 +164,8 @@ def build_chat_chart(
         for company_values in values_by_company.values()
         for value in company_values
     ):
-        return None, f"No EDGAR data was found for the requested {metric_label.lower()} period(s)."
+        return None, (f"No EDGAR data was found for the requested {metric_label.lower()} period(s); "
+                      "facts may be unavailable, ineligible, or from incompatible annual periods or filings.")
 
     figure = go.Figure()
     for index, company in enumerate(companies):
@@ -172,7 +179,7 @@ def build_chat_chart(
     unit = "%" if "margin" in metric else "USD millions"
     period_type = "Quarterly" if quarterly else "Annual"
     figure.update_layout(
-        title=f"{period_type} {metric_label} — EDGAR XBRL verified",
+        title=f"{period_type} {metric_label} — EDGAR XBRL",
         barmode="group",
         xaxis_title="Fiscal Period",
         yaxis_title=unit,
@@ -180,4 +187,7 @@ def build_chat_chart(
         height=420,
         margin=dict(t=70, b=40),
     )
-    return figure, None
+    missing = any(value is None for values in values_by_company.values() for value in values)
+    notice = ("Some requested values are unavailable, ineligible, or from incompatible annual periods or filings."
+              if missing else None)
+    return figure, notice

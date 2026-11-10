@@ -18,10 +18,11 @@ import os
 from pathlib import Path
 
 from .agent.figures import half_up
-from .edgar import get_financials, get_quarterly_financials
+from .edgar import compatible_annual_facts, get_financials, get_quarterly_financials
 from .llm_config import LLM_CONFIG
 from .query import decompose, find_companies, search_decomposed
 from .scope import COMPANIES, C0_COMPANIES
+from .source_review import load_register
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
@@ -43,6 +44,7 @@ def _format_passages(hits: list[dict]) -> str:
 
 def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
     lines = []
+    reviewed_only = load_register() is not None
     company_map = {c.ticker: c for c in COMPANIES}
     for ticker in companies_in_query:
         company = company_map.get(ticker)
@@ -53,6 +55,11 @@ def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
             data = get_financials(company.cik, year)
             rev = data["revenue"]
             op = data["operating_income"]
+            if any(fact and fact.get("eligibility", "unverified") == "unverified"
+                   for fact in data.values()):
+                lines.append(f"{ticker} FY{year}: source eligibility and non-reliance are unverified.")
+            if rev is None:
+                lines.append(f"{ticker} FY{year}: revenue unavailable (missing or not eligible for the selected source policy).")
             if rev:
                 rev_m = round(rev["val"] / 1_000_000, 1)
                 lines.append(
@@ -61,23 +68,32 @@ def _format_numbers(companies_in_query: list[str], years: list[int]) -> str:
                 )
             if op:
                 op_m = round(op["val"] / 1_000_000, 1)
-                margin = float(half_up(op["val"] / rev["val"] * 100)) if rev and rev["val"] > 0 else None
+                margin = (float(half_up(op["val"] / rev["val"] * 100))
+                          if compatible_annual_facts(rev, op) and rev["val"] > 0 else None)
                 lines.append(
                     f"{ticker} FY{year} Annual Operating Income: ${op_m:,.1f}M"
-                    + (f" → Margin: {margin}%" if margin else "")
+                    + (f" → Margin: {margin}%" if margin is not None else "")
                     + f" [fact_id: {op['fact_id']}]"
                 )
             pretax = data["pretax_income"]
             if company.margin_basis == "pretax" and pretax:
                 pt_m = round(pretax["val"] / 1_000_000, 1)
-                pt_margin = float(half_up(pretax["val"] / rev["val"] * 100)) if rev and rev["val"] > 0 else None
+                pt_margin = (float(half_up(pretax["val"] / rev["val"] * 100))
+                             if compatible_annual_facts(rev, pretax) and rev["val"] > 0 else None)
                 lines.append(
                     f"{ticker} FY{year} Annual Pre-tax Income: ${pt_m:,.1f}M"
                     + (f" → Pre-tax Margin: {pt_margin}% (banks report no operating income;"
-                       f" do not compare with operating margins)" if pt_margin else "")
+                       f" do not compare with operating margins)" if pt_margin is not None else "")
                     + f" [fact_id: {pretax['fact_id']}]"
                 )
+            headline_income = pretax if company.margin_basis == "pretax" else op
+            if rev and headline_income and not compatible_annual_facts(rev, headline_income):
+                lines.append(f"{ticker} FY{year}: margin unavailable: revenue and income "
+                             "do not have the same annual period and filing.")
             # Quarterly breakdown
+            if reviewed_only:
+                lines.append(f"{ticker} FY{year}: quarterly data is unavailable under annual source-review enforcement.")
+                continue
             qtrs = get_quarterly_financials(company.cik, year)
             for q in qtrs:
                 qrev = q["revenue"]
@@ -102,6 +118,10 @@ def answer(
     top_k: int = 5,
 ) -> dict:
     """Run the C0 fixed pipeline. Returns answer dict with citations."""
+    from .query import unsupported_period_reason
+    if reason := unsupported_period_reason(question):
+        return {"answer": reason, "refused": True, "passages": [], "years": [],
+                "model": LLM_CONFIG.model("c0"), "pipeline": "C0-fixed-RAG", "tokens": 0}
     years = years or [2022, 2023, 2024]
 
     # Step 1 — fixed retrieval (no agent decides what to retrieve). Same

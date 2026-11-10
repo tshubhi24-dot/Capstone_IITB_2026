@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from analystdesk.llm_config import (
@@ -7,10 +8,32 @@ from analystdesk.llm_config import (
     LLM_CONFIG,
     LLMConfigError,
     load_llm_config,
+    max_output_tokens,
 )
 
 
 class LLMConfigTests(unittest.TestCase):
+    def test_optional_output_limit_and_invalid_values(self):
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertIsNone(max_output_tokens())
+        with patch.dict("os.environ", {"AGENT_MAX_OUTPUT_TOKENS": "1024"}):
+            self.assertEqual(max_output_tokens(), 1024)
+        for value in ("0", "-1", "invalid", ""):
+            with self.subTest(value=value), patch.dict("os.environ", {"AGENT_MAX_OUTPUT_TOKENS": value}):
+                with self.assertRaises(LLMConfigError):
+                    max_output_tokens()
+
+    def test_output_limit_is_applied_to_agent_and_judge(self):
+        from analystdesk.agent.runtime import make_llm
+        from analystdesk.agent.team import make_judge_llm
+
+        with patch.dict("os.environ", {"AGENT_MAX_OUTPUT_TOKENS": "1024", "OPENROUTER_API_KEY": "test-key"}), \
+                patch("langchain_openai.ChatOpenAI") as constructor:
+            make_llm()
+            make_judge_llm()
+        self.assertEqual(constructor.call_count, 2)
+        self.assertTrue(all(call.kwargs["max_tokens"] == 1024 for call in constructor.call_args_list))
+
     def test_committed_config_contains_all_roles_and_prompts(self):
         self.assertEqual(LLM_CONFIG.version, 1)
         self.assertEqual(

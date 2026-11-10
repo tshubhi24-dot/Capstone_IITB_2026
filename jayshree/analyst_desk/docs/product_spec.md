@@ -35,7 +35,7 @@ Numerical verification supports the analyst's judgement; it does not prove every
 | 3. Update the model | Excel earnings and valuation model | Not covered |
 | 4. Inspect disclosures | Statements, commentary, risk factors | Compares risk factors across two years with passages from both |
 | 5. Reconcile inputs | Fiscal dates, metrics, units, filing versions | Code renders figures with their period end; a different later value is flagged |
-| 6. Prepare findings | Review figures, explanations, limitations | Drafts the note; code checks every number; in C2 a judge checks cited claims |
+| 6. Prepare findings | Review figures, explanations, limitations | Drafts the note; code checks numbers and live C1/C2 runs use a claim judge before approval |
 | 7. Retain and revisit | Save the reviewed note | Publishes the approved note and remembers it for "what changed since our last note" |
 
 **Measures of usefulness:** relevance, important omissions, the number and significance of corrections, total research and review time, source-checking effort and model cost. No improvement is claimed before it is measured.
@@ -60,7 +60,7 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 | Reported figures | Annual revenue and operating income (pre-tax income for banks), with the period end and the XBRL fact |
 | Ratios and trends | Margins, annual growth and margin changes in percentage points, calculated in code |
 | Peer comparisons | The same metric across selected companies, with their different fiscal year ends stated |
-| Risk-disclosure changes | Item 1A in the later year against the year before: added, removed or changed risks, citing passages from both years |
+| Risk-disclosure changes | Compare requested years using cited Item 1A excerpts from both years; excerpts cannot establish whole-section absence, additions or removals |
 | Management commentary | Item 7 MD&A explanations, attributed to management |
 | Previous-note follow-ups | "What changed since our last note": previous → current figures, computed by code from the remembered note |
 
@@ -108,9 +108,33 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 
 ### Filing versions
 
-- **As originally reported is the default.** When several 10-Ks report a value for the same year, the app uses that year's own 10-K, the same document the cited passages come from.
-- **A later restatement is shown, never swapped in.** The fact carries the restated value, C0 prints a warning, and a follow-up note says the figure for the same year differs between the two notes (a later presentation, reason not established) rather than treating it as a business change. Known cases: BAC FY2023 and FY2024, WFC FY2022.
+- **Default mode selects the earliest matching cached presentation.** Cached annual 10-K and 10-K/A versions are exposed, but the app has not independently established which is authoritative, whether an earlier filing is subject to non-reliance, or whether the cited commentary uses the same presentation. Do not equate earliest with verified original.
+- **Later differing values are flagged, not automatically selected.** A difference alone does not establish a restatement or its cause. A follow-up note describes it as a later presentation, not a business change.
 - A same-year difference between filings is a version change, not growth, and is not assumed to be an error correction.
+
+#### Optional reviewed annual-source register
+
+For a reviewed corpus, set `SOURCE_REVIEW_FILE` to an independently maintained JSON file. When configured, only annual XBRL facts with matching **eligible** records are returned; excluded and unreviewed facts are unavailable, including through exact fact lookup and the versions list. If multiple versions are eligible, the earliest is selected; to use a corrected version instead, the reviewer must mark the earlier affected presentation excluded. Revenue and income each need their own matching eligible record. The selected record and its review metadata are returned by the financial tool and included in the live C1/C2 approval snapshot. Changing the register invalidates an in-progress review.
+
+The register is strict JSON with `{"version": 1, "decisions": [...]}`. Each decision has the following fields (this example is synthetic and **is not issuer evidence**):
+
+```json
+{
+  "ticker": "MSFT", "fiscal_year": 2023,
+  "concept": "OperatingIncomeLoss", "accession": "0000789019-23-000001",
+  "period_start": "2022-07-01", "period_end": "2023-06-30",
+  "filed": "2023-07-27", "form": "10-K", "value_usd": 123,
+  "decision": "excluded", "reviewer": "example reviewer",
+  "reviewed_at": "2024-01-15", "evidence": "reference to independently reviewed issuer evidence",
+  "rationale": "example only"
+}
+```
+
+Decisions must match the ticker, concept, year, accession, annual period, filing date, form and exact USD value in the cache. Dates use `YYYY-MM-DD`; duplicate or malformed records, a missing configured file or a mismatched reviewed record stop the operation. For Compose, place the reviewed file in the existing read-only `data/edgar_cache` mount and set `SOURCE_REVIEW_FILE=/app/data/edgar_cache/source_reviews.json` in the Compose environment. The app and EDGAR service receive the same setting. An unset or empty variable leaves the historical demo mode active: facts are **unverified**, not approved by default. Quarterly charts are unavailable when the annual-only register is enforced.
+
+Annual margins and margin changes are withheld unless each income/revenue pair has the same complete period and filing accession. This conservative rule also applies without a register; eligible facts from different filings are not automatically treated as one presentation.
+
+This mechanism enforces the supplied decisions; it does not authenticate the reviewer, inspect the referenced issuer evidence, validate excerpts quoted by the model, or establish that a statement is reliable. Protect and independently review the register and its source documents. It is not a historical as-of selector: as-of requests remain unsupported. No real review decisions are supplied by this project.
 
 ## 5. Evidence and risk-change rules
 
@@ -119,9 +143,9 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 | Reported figure | XBRL fact or cited table cell | Code renders the figure from a placeholder and checks it against the fact |
 | Derived figure | Its source facts and an executed formula | Code recomputes every `[calc]`, `[growth]` and `[diff]` tag |
 | Quoted number | The passage cited on the same line contains it, with its unit | Code |
-| Narrative claim | A passage supporting the exact company, period and degree of certainty | C2: a judge from a different model family checks cited claims |
+| Narrative claim | A passage supporting the exact company, period and degree of certainty | Live C1 and C2: a judge checks cited claims; missing review blocks approval |
 | Business explanation | Evidence for the explanation itself; management's view attributed to management | Writer prompt; the analyst at the note gate |
-| Risk change | Passages from both years | The risk specialist (C2) searches both years first and cites both |
+| Risk change | Adequate evidence for both years | C2 records requested year pairs as missing evidence or excerpt-only; passage-level claims require review and whole-section conclusions are not established by excerpts |
 
 **Risk-change labels.** *Added*: in the later year and absent from the comparable earlier coverage. *Removed*: the reverse; it means removed from the disclosure, not that the risk ceased. *Changed*: in both years with a meaningful difference. Changed wording is evidence of a disclosure difference, not that an economic risk is new or worse. A failed search for the earlier year does not show the risk was absent; with no comparable earlier evidence, the change cannot be classified.
 
@@ -132,9 +156,9 @@ The list is fixed in [scope.py](../analystdesk/scope.py) and the years in `COVER
 ## 6. Acceptance and publication
 
 1. **Plan gate.** The analyst approves, edits or cancels the plan. Approving the plan authorises the research, not the result.
-2. **Checks.** Code checks every number; in C2 the judge also checks cited claims. Issues go back to the writer for **at most two automated revisions**.
+2. **Checks.** Code checks the title and body. Live C1 and C2 also review cited lines, including titles, headings and table rows; the judge receives cited XBRL fact identities and periods as well as passage text. Uncited text outside exact structural headings and code-generated suffixes blocks approval. Missing evidence, invalid verdicts and unavailable review also block approval. The conservative rule may reject harmless labels or numeric-only claims; it is not proof of semantic correctness. Issues go back to the writer for **at most two automated revisions**.
 3. **Note gate.** The analyst sees the full note and the check result. A note with remaining issues **cannot be approved** (the button is disabled, the API returns 409 and the graph refuses it): the analyst edits it, which re-runs the checks, or rejects it. An edited note must be approved again.
-4. **Exact-note approval.** Approval is an HMAC signature over the exact title, body and companies ([approval.py](../analystdesk/approval.py)). Any edit invalidates it.
+4. **Exact-note approval.** Live C1/C2 reviews capture cited fact records, passage text hashes, available source-file hashes, checking-policy file hashes and effective judge settings. The graph rechecks the snapshot before signing and before invoking publication; changes or missing snapshots require a fresh run. The signed context contains the snapshot, request, plan and check result, and the portal validates its shape and note hash ([approval.py](../analystdesk/approval.py)). Legacy tokens remain accepted for compatibility and do not provide this protection. This controlled-demo mechanism is not an atomic cross-service evidence lock: caches can predate capture, sources can change after the final check, and the portal does not independently reload the application's evidence. It does not establish source eligibility or identity.
 5. **Publication.** The portal verifies the signature itself before writing and refuses a second copy of the same note (`ALREADY_EXISTS`). Only a confirmed publication is written to memory.
 
 A 98% verified-number share is a monitoring alert threshold (`VerifiedShareBelow98`), not permission to publish known errors.
@@ -152,7 +176,7 @@ The specification defines short status messages for each situation. These are th
 | Company or year outside coverage | ⛔ Out of scope, with the reason and the covered tickers or years |
 | Investment-advice request or wording | "Requests for investment advice (buy/sell/price targets) are out of scope" / "Investment-advice wording … is not allowed in a research note" |
 | Number without a source, or wrong | The check panel lists each issue, e.g. "Number '$46.2 billion' has no source" or "44.10% is wrong: … = 44.64%" |
-| Judge unavailable (C2) | "Judge: judge unavailable", shown with the check result |
+| Judge unavailable (C1/C2) | Incomplete review is shown with the check result and approval is blocked |
 | Waiting for a decision | "⏸ Waiting for you: approve, edit or reject the note" |
 | Note failed its checks | "⛔ Note failed verification. Edit and re-check it, or reject it. Approval is blocked." |
 | Request carries instructions to the system | "The request contains instructions aimed at the system rather than a research question." |
@@ -172,10 +196,11 @@ The specification sets a higher bar than the app meets in some places. These are
 | Specification | The app today |
 |---|---|
 | A typed coverage record for each risk comparison | The risk specialist labels each point Added / Removed / Changed / Unchanged / Insufficient evidence with passages from both years, and code adds a Limitations line when one year's Item 1A evidence is missing; there is no per-section coverage record |
-| Every substantive claim is reviewed | The C2 judge reviews every cited claim and a missing verdict blocks approval; uncited narrative lines are counted and shown to the analyst but not judged; C1 has no judge (its numbers are still checked by code) |
-| Calendar-period requests and filing as-of cutoffs handled explicitly | Fiscal year-ends and 53-week years are stated in the note and "latest" is read as FY2024 at the plan gate, but a calendar-period request is not converted and no as-of cutoff is applied |
+| Every substantive claim is reviewed | Live C1/C2 use a conservative line inventory with fail-closed missing citations and verdicts. Exact structural headings and the unchanged code-generated suffix are exempt; automated semantic quality and financial claim associations still need independent validation |
+| Calendar-period requests and filing as-of cutoffs handled explicitly | Detected explicit calendar and as-of requests are declined instead of silently treated as fiscal years; the annual note workflow also declines explicit quarterly requests. Detection is pattern-based and does not implement calendar conversion or as-of filing selection |
+| Filing versions, amendments and non-reliance | Cached annual XBRL presentations, including amendments and their accessions, are exposed by the financials tool. Selection still uses the earliest matching cached filing, not an independently reviewed authoritative version. Eligibility and non-reliance are unverified and disclosed at the note gate |
 | Verified reviewer identity, per-analyst access and audiences | The approver and analyst are typed names, not verified identities. Preferences, coverage and the watchlist are kept per analyst name; past-note memory and published notes are shared by everyone using the app |
-| Corrections, supersession and withdrawal of published notes | A published note can't be corrected or withdrawn in the app; an unconfirmed save is reported as unknown and reconciled by hand |
+| Corrections, supersession and withdrawal of published notes | Original records are retained; withdrawal hides a note and supersession links it to a newly reviewed replacement. See [memory policy](memory_policy.md). An unconfirmed save remains unknown and is reconciled by hand |
 | Retention periods per record type | No automatic expiry; memory stays until it is deleted |
 
 None of these affects the guarantee that every number in a published note was checked against its source before the analyst saw it.

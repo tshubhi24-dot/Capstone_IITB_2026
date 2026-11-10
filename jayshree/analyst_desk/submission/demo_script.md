@@ -19,6 +19,8 @@ The brief's three demo steps (p.16) come first. Then come the minimum-bar demons
    - set the private watchlist to `NVDA`.
 4. Have one paused run ready for the resume step: start a request and leave it at the plan gate.
 
+The checks are deliberately conservative: a missing citation, unavailable judge or changed review evidence blocks approval. Rehearse with the actual configuration; do not promise a successful publication or a particular model output before it happens. Source eligibility and non-reliance are not independently verified. The demo is for a trusted single analyst using public data, not a private multi-user deployment.
+
 ## 1. Margin comparison, every number linked to its fact (brief demo 1)
 
 1. **Request, C2 team:** "Compare Microsoft's and Alphabet's operating margins over the last three fiscal years, and tell me what changed in their risk factors."
@@ -29,7 +31,7 @@ The brief's three demo steps (p.16) come first. Then come the minimum-bar demons
    - every figure carries a superscript linking to its XBRL fact (concept / year / accession);
    - the margins were computed by code (`calc`);
    - the Comparability section: Microsoft's year ends 30 June and Alphabet's 31 December;
-   - the code check reports N/N numbers verified.
+   - the code check, claim-review result, source limitations and evidence-snapshot summary.
 
 **Say:** "The model chooses which figure to mention; code decides what it says."
 
@@ -45,7 +47,7 @@ The brief's three demo steps (p.16) come first. Then come the minimum-bar demons
 1. **Request, C1:** "What changed in Microsoft's and Alphabet's operating margins since our last note?"
 2. **At the note gate,** show:
    - the "What changed since our last note" section, computed by code from the previous note's verified figures;
-   - the peer table that the saved preference asked for.
+   - whether the saved preference was followed. A table or uncited follow-up may need editing before it can pass the conservative claim review.
 3. **Click "↻ Re-run this request without memory".** The note has no comparison, and the run status says saved memory is off.
 
 ## 4. Resume after a stop (L8)
@@ -58,7 +60,7 @@ Request: "Compare Microsoft with Tesla's operating margin in fiscal 2024." Tesla
 
 ## 6. Approve and publish
 
-Edit the note back to the correct figure. The checks pass, so approve it. Show it in the research portal (Recent notes). Then show Grafana:
+Edit the note back to the correct figure and re-check. Only approve if all checks pass; otherwise show the blocking issues and do not claim publication. If approved, show it in the research portal (Recent notes). Then show Grafana:
 - verified share;
 - critic rejections;
 - tokens and cost per note;

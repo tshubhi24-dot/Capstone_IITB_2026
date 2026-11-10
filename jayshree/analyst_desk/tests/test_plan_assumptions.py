@@ -3,13 +3,32 @@
 import asyncio
 import unittest
 
-from analystdesk.agent.graph import build_graph, plan_assumptions
+from analystdesk.agent.graph import build_graph, common_nodes, plan_assumptions
 from tests.test_graph import _PlanModel
 
 PLAN = {"companies": ["MSFT", "GOOGL"], "fiscal_years": [2022, 2023, 2024]}
 
 
 class PlanAssumptionTests(unittest.TestCase):
+    def test_explicit_unsupported_periods_are_declined_before_planning(self):
+        guard = common_nodes(None, None)["input_guard"]
+        for request in ("Microsoft revenue calendar year 2024", "MSFT CY2024 revenue",
+                        "MSFT FY2024 as of 2024-08-01", "Microsoft revenue Q1 2024"):
+            with self.subTest(request=request):
+                result = guard({"request": request, "memory_on": False})
+                self.assertFalse(result["guard"]["ok"])
+                self.assertIn("not supported", result["guard"]["reason"])
+        self.assertTrue(guard({"request": "Microsoft FY2024 revenue", "memory_on": False})["guard"]["ok"])
+
+    def test_baseline_does_not_retrieve_or_call_model_for_unsupported_period(self):
+        from analystdesk.c0_pipeline import answer
+        from unittest.mock import Mock
+        retriever = Mock()
+        result = answer("Microsoft calendar year 2024 revenue", retriever)
+        self.assertTrue(result["refused"])
+        self.assertIn("not supported", result["answer"])
+        retriever.search.assert_not_called()
+
     def test_last_three_years_is_spelled_out(self):
         out = plan_assumptions("Compare Microsoft's and Alphabet's operating margins over the last three "
                                "fiscal years", PLAN)

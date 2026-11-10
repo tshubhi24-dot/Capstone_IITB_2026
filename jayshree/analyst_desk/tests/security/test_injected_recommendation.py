@@ -370,11 +370,8 @@ class KnownGapTests(unittest.TestCase):
         state = nodes["input_guard"]({"request": pasted})
         self.assertTrue(state["guard"]["ok"], "today the guard sees no advice wording here")
 
-    def test_the_c2_judge_is_never_shown_an_uncited_recommendation(self):
-        """C2's compliance critic is the only layer that reads prose, and it
-        collects claims by line *that carry a passage id*. A recommendation
-        cites nothing, so it is not an item: checked == 0, and the judge model is
-        not even called."""
+    def test_uncited_recommendation_blocks_c2_review(self):
+        """Uncited substantive prose cannot be judged, so it blocks approval."""
         class JudgeMustNotBeCalled:
             async def ainvoke(self, messages):
                 raise AssertionError("the judge was shown the recommendation")
@@ -382,7 +379,7 @@ class KnownGapTests(unittest.TestCase):
         critic = make_judge(JudgeMustNotBeCalled(), PASSAGES.get)
         out = asyncio.run(critic(PARAPHRASED))
         self.assertEqual(out["checked"], 0)
-        self.assertEqual(out["issues"], [])
+        self.assertTrue(any(issue.startswith("Review incomplete") for issue in out["issues"]))
 
     def test_an_unreachable_judge_now_blocks_the_note(self):
         """Even with a citation attached — which is what gets the claim in front
