@@ -871,7 +871,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - As originally reported, with restatements flagged.
 - Every number checked against XBRL or its cited passage, with the same unit.
 - No line sets an operating margin against a pre-tax margin; a Comparability section states differing fiscal year-ends, 53-week years (Apple FY2023, AMD FY2022) and mixed bases.
-- "Last three years" and similar readings are shown at the plan gate ("How your request was read").
+- "Last three years" and unspecified-year defaults are proposed at the plan gate; the analyst must confirm or edit and confirm the range before research starts.
 - Two approval gates, an HMAC signature over the exact note, approval refused while checks fail, and the portal refusing duplicates.
 - Memory off removes the `get_past_notes` tool from the run.
 

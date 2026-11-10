@@ -59,7 +59,9 @@ class DeploymentSmokeTests(unittest.TestCase):
                 gate = {"gate": "note", "note": {"title": "Test", "body": "text"},
                         "check": {"ok": verified}}
                 updates = agent_ui._view("run-1", {"values": {}, "interrupts": [gate]}, [])
-                self.assertEqual(updates[-1]["interactive"], verified)
+                self.assertEqual(updates[-3]["interactive"], verified)
+                self.assertFalse(updates[-2]["visible"])
+                self.assertFalse(updates[-1])
                 self.assertEqual("Approval is blocked" in updates[1], not verified)
 
     def test_api_agent_runner_uses_deployed_mcp_configuration(self):
