@@ -1,0 +1,61 @@
+{
+  "split": "dev",
+  "tag": "gpt4omini-pilot-20261111T130918Z",
+  "price_per_m": 0.52,
+  "system": {
+    "commit": "f813e4e",
+    "uncommitted_changes": true,
+    "llm_config_version": 1,
+    "models": {
+      "c0": "openai/gpt-4.1-mini",
+      "judge": "meta-llama/llama-3.3-70b-instruct",
+      "reflection": "openai/gpt-4.1-mini",
+      "agent": "openai/gpt-4o-mini"
+    },
+    "max_output_tokens": 4096
+  },
+  "case_source": "development",
+  "lessons": true,
+  "playbook": {
+    "frozen": true,
+    "version": "806f51dd6960",
+    "lessons": 6
+  },
+  "experiment": null,
+  "rows": {
+    "c1": [
+      {
+        "id": "d01",
+        "type": "numeric",
+        "success": false,
+        "reason": "error: APIStatusError: HTTP 402",
+        "policy_violation": false,
+        "tokens": null,
+        "seconds": 4.3,
+        "tools": null,
+        "error": "APIStatusError: HTTP 402",
+        "blocks": null,
+        "config": "c1",
+        "run_id": null
+      }
+    ]
+  },
+  "summary": {
+    "c1": {
+      "cases": 1,
+      "success": 0,
+      "by_type": {
+        "numeric": "0/1"
+      },
+      "policy_violations": 0,
+      "false_blocks": 0,
+      "errors": 1,
+      "timeouts": 0,
+      "verified_share_mean": null,
+      "tokens_mean": 0,
+      "cost_per_case_usd": 0.0,
+      "latency_median_s": 4.3,
+      "latency_p95_s": 4.3
+    }
+  }
+}

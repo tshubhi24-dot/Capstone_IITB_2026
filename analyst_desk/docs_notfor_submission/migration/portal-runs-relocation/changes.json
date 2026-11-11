@@ -1,0 +1,16 @@
+{
+  "moves": {
+    "data/portal/": ".runtime/portal/",
+    "data/runs/": ".runtime/runs/"
+  },
+  "private_hash_inventory": ".migration-local/portal-runs-relocation/file_hashes.json",
+  "path_override_keys_present": [],
+  "internal_override_keys_updated": [],
+  "external_override_semantics_preserved": true,
+  "saved_records_inspected": false,
+  "docker_volume_names_unchanged": [
+    "portal",
+    "runs"
+  ],
+  "live_services_started_or_stopped": false
+}

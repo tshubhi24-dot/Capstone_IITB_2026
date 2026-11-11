@@ -1,0 +1,15 @@
+{
+  "successful": true,
+  "run": 541,
+  "passed": 536,
+  "skipped": 5,
+  "existing_tests_preserved": true,
+  "new_regression_tests": [
+    "unit.test_experiments.AfterPlaybookPreflightTests.test_after_rejects_missing_empty_or_unversioned_snapshot_before_loading_cases",
+    "unit.test_experiments.AfterPlaybookPreflightTests.test_after_rejects_no_lessons_override",
+    "unit.test_experiments.AfterPlaybookPreflightTests.test_valid_after_and_before_without_snapshot_pass_preflight"
+  ],
+  "skip_reasons_unchanged": true,
+  "real_playbook_accessed": false,
+  "provider_calls": false
+}

@@ -1,0 +1,42 @@
+{
+  "d01": {
+    "score": {
+      "id": "d01",
+      "type": "numeric",
+      "success": false,
+      "reason": "error: APIStatusError: HTTP 402",
+      "policy_violation": false,
+      "tokens": null,
+      "seconds": 4.3,
+      "tools": null,
+      "error": "APIStatusError: HTTP 402",
+      "blocks": null,
+      "config": "c1",
+      "run_id": null
+    },
+    "run_id": "eval-gpt4omini-pilot-20261111T130918Z-c1-d01",
+    "next": [
+      "plan"
+    ],
+    "interrupts": [],
+    "draft": null,
+    "check": null,
+    "trace": [
+      {
+        "node": "input_guard",
+        "ok": true,
+        "reason": null,
+        "companies": [
+          "MSFT"
+        ],
+        "years": [
+          2024
+        ]
+      }
+    ],
+    "partial_tokens": 0,
+    "partial_tool_calls": 0,
+    "lessons_used": [],
+    "outcome": null
+  }
+}

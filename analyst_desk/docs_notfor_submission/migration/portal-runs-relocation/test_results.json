@@ -1,0 +1,34 @@
+{
+  "python": "3.13.11",
+  "platform": "win32",
+  "discovered": 538,
+  "run": 538,
+  "passed": 533,
+  "failures": [],
+  "errors": [],
+  "skipped": [
+    {
+      "id": "integration.test_tools.DockerSandboxTests.test_run_python_blocks_network_and_files",
+      "reason": "Docker or the analystdesk-sandbox image is not available"
+    },
+    {
+      "id": "integration.test_tools.DockerSandboxTests.test_run_python_calculates",
+      "reason": "Docker or the analystdesk-sandbox image is not available"
+    },
+    {
+      "id": "integration.test_tools.DockerSandboxTests.test_run_python_reports_errors_and_timeouts",
+      "reason": "Docker or the analystdesk-sandbox image is not available"
+    },
+    {
+      "id": "integration.test_tools.DockerSandboxTests.test_run_python_sees_no_secrets",
+      "reason": "Docker or the analystdesk-sandbox image is not available"
+    },
+    {
+      "id": "security.test_forced_approval_injection.Fix2RegistryTests.test_keygen_writes_a_private_key_only_its_owner_can_read",
+      "reason": "Windows has no Unix file modes; checked on Linux CI"
+    }
+  ],
+  "seconds": 40.059,
+  "successful": true,
+  "network_blocked": true
+}

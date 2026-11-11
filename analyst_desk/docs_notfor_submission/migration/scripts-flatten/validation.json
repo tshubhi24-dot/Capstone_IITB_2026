@@ -1,0 +1,18 @@
+{
+  "successful": true,
+  "run": 550,
+  "passed": 545,
+  "skipped": 5,
+  "test_ids_and_skips_unchanged": true,
+  "entrypoints": [
+    "scripts/run.py",
+    "scripts/report.py",
+    "scripts/ops.py",
+    "scripts/run_mock_tests.py"
+  ],
+  "old_subdirectories_removed": true,
+  "workflow_ast_preserved_except_roots_and_command_paths": true,
+  "standalone_help_passed": true,
+  "team_utilities_unchanged": true,
+  "provider_calls": false
+}

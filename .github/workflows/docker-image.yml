@@ -11,11 +11,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "jayshree/analyst_desk/**"
+      - "analyst_desk/**"
       - ".github/workflows/docker-image.yml"
   pull_request:
     paths:
-      - "jayshree/analyst_desk/**"
+      - "analyst_desk/**"
       - ".github/workflows/docker-image.yml"
   workflow_dispatch:
 
@@ -62,8 +62,8 @@ jobs:
       - name: Build (and publish from main)
         uses: docker/build-push-action@v6
         with:
-          context: jayshree/analyst_desk
-          file: jayshree/analyst_desk/Dockerfile
+          context: analyst_desk
+          file: analyst_desk/deployment/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           build-args: |
             BAKE_INDEX=${{ github.event_name == 'pull_request' && '0' || '1' }}

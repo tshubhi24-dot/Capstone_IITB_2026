@@ -1,0 +1,23 @@
+{
+  "frozen_source_test_config_build_files_checked": 123,
+  "changed_frozen_files": [],
+  "documented_local_command_paths_checked": [
+    "start.bat",
+    "start.sh",
+    "stop.bat",
+    "stop.sh",
+    "setup.bat",
+    "app.py",
+    "compose.yaml",
+    "Dockerfile",
+    ".env.example",
+    "requirements.txt",
+    "requirements.lock",
+    "scripts/run_mock_tests.py"
+  ],
+  "command_path_check_success": true,
+  "actual_startup_build_install_commands_executed": false,
+  "external_urls_checked": false,
+  "browser_or_mermaid_render_executed": false,
+  "live_api_calls": false
+}

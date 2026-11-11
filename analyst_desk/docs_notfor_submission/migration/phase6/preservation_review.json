@@ -1,0 +1,33 @@
+{
+  "unchanged_public_signatures": 243,
+  "unchanged_annotated_schemas": 41,
+  "file_move_destinations_verified": 72,
+  "required_entry_paths_exist": true,
+  "preserved_data_metadata_entries": 251,
+  "preserved_nonprotected_data_hashes": 191,
+  "preserved_manifest_bound_hashes": 47,
+  "protected_case_contents_read": false,
+  "unchanged_config_experiment_dependency_files": 10,
+  "recovery_archives_verified": [
+    ".migration-local/phase0/working_documents.zip",
+    ".migration-local/phase2/documentation_before.zip",
+    ".migration-local/phase2/consolidation_before.zip",
+    ".migration-local/phases3-5/source_before.zip",
+    ".migration-local/phases3-5/removed_files.zip"
+  ],
+  "submission_tree_and_local_state_exclusions_reviewed": true,
+  "actual_submission_archive_built": false,
+  "scripted_journey_test_ids": [
+    "integration.test_api.ApiTests.test_unverified_note_cannot_be_approved",
+    "integration.test_graph.GraphShapeTests.test_confirmed_relative_years_allow_research_in_c1_and_c2",
+    "integration.test_team_e2e.SingleAgentEndToEndTests.test_c1_runs_from_request_to_published_note_with_the_same_budget",
+    "integration.test_team_e2e.TeamEndToEndTests.test_c2_runs_from_request_to_published_note",
+    "unit.test_gap_fixes.JudgeCoverageTests.test_required_critic_unavailable_blocks_approval",
+    "unit.test_gap_fixes.PublishOutcomeTests.test_lost_response_is_unconfirmed_not_failed",
+    "unit.test_gap_fixes.PublishOutcomeTests.test_memory_failure_keeps_the_publication",
+    "unit.test_gap_fixes.StoreTests.test_frozen_playbook_is_a_fixed_snapshot",
+    "unit.test_lessons.PlaybookTests.test_frozen_playbook_blocks_changes",
+    "unit.test_memory_off.ResearchToolsTests.test_memory_off_drops_past_notes",
+    "unit.test_review_snapshot.SnapshotTests.test_source_change_after_review_blocks_approval_and_publication"
+  ]
+}

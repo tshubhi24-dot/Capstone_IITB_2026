@@ -1,0 +1,9 @@
+# Startup and deployment regrouping
+
+Moved eight files into `deployment/`: app.py, Dockerfile, compose.yaml, setup.bat and both start/stop platform pairs. No duplicate wrappers remain at the application root. Launchers now change to their parent application directory before checking .env, creating the virtual environment or invoking Docker.
+
+All current manual Compose instructions and launchers explicitly use `--project-directory . -f deployment/compose.yaml` from analyst_desk/. This preserves the project name, application-root build context, environment file, read-only data mounts and named-volume identities. The build points to deployment/Dockerfile; CI uses its new path. The image copies deployment/app.py and owns its default launcher command. Compose no longer overrides that command, so an older published image can still use its own original app.py launcher.
+
+The moved Python launcher adds the application root to sys.path before running the existing dashboard. A new mocked regression verifies launching from another working directory without starting a server. Updated current setup, stop, local-source, Docker build and troubleshooting instructions; historical evidence/checkpoint text remains unchanged. Recovery originals are in ignored .migration-local/deployment-regroup/originals.zip.
+
+Validation: resolved Compose before/after configs match apart from the intended Dockerfile location and image-owned launcher command, including all environment values, dependencies, ports, bind paths and volume identities. Only .env.example was used for config checks. Both shell scripts pass bash syntax checks. Offline suite: 551 tests, 546 passed, five unchanged skips, zero failures/errors; all 550 prior tests retained. No image build/pull, service start/stop, actual Windows launcher/setup execution, volume change or provider call was performed.

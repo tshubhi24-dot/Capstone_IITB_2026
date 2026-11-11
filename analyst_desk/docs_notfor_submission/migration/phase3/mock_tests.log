@@ -1,0 +1,658 @@
+Discovered 538 tests (network blocked).
+test_a_read_tool_is_not_inspected (security.test_forced_approval_injection.Fix2GuardrailTests.test_a_read_tool_is_not_inspected) ... ok
+test_a_signed_publish_passes_through (security.test_forced_approval_injection.Fix2GuardrailTests.test_a_signed_publish_passes_through) ... ok
+test_an_unsigned_publish_never_reaches_the_tool (security.test_forced_approval_injection.Fix2GuardrailTests.test_an_unsigned_publish_never_reaches_the_tool) ... ok
+test_both_guardrails_are_installed (security.test_forced_approval_injection.Fix2GuardrailTests.test_both_guardrails_are_installed)
+Fix 1 and Fix 2 are separate middlewares on the same onion; neither ... ok
+test_a_forged_hmac_still_fails_as_an_invalid_approval_first (security.test_forced_approval_injection.Fix2PortalTests.test_a_forged_hmac_still_fails_as_an_invalid_approval_first)
+Ordering matters for the error the analyst reads: a token that was ... ok
+test_a_signed_note_publishes (security.test_forced_approval_injection.Fix2PortalTests.test_a_signed_note_publishes) ... ok
+test_an_unsigned_note_is_refused_by_the_server (security.test_forced_approval_injection.Fix2PortalTests.test_an_unsigned_note_is_refused_by_the_server) ... ok
+test_with_no_key_registered_the_old_path_is_unchanged (security.test_forced_approval_injection.Fix2PortalTests.test_with_no_key_registered_the_old_path_is_unchanged)
+The limit, pinned: an empty registry means an HMAC token alone still ... ok
+test_a_file_that_is_not_an_ed25519_public_key_is_ignored (security.test_forced_approval_injection.Fix2RegistryTests.test_a_file_that_is_not_an_ed25519_public_key_is_ignored)
+A 32-byte key or nothing: a truncated or corrupt file must not ... ok
+test_an_approver_name_is_constrained (security.test_forced_approval_injection.Fix2RegistryTests.test_an_approver_name_is_constrained) ... ok
+test_keygen_refuses_to_overwrite_an_existing_key (security.test_forced_approval_injection.Fix2RegistryTests.test_keygen_refuses_to_overwrite_an_existing_key) ... ok
+test_keygen_writes_a_private_key_only_its_owner_can_read (security.test_forced_approval_injection.Fix2RegistryTests.test_keygen_writes_a_private_key_only_its_owner_can_read) ... skipped 'Windows has no Unix file modes; checked on Linux CI'
+test_the_repo_ships_with_no_approver_registered (security.test_forced_approval_injection.Fix2RegistryTests.test_the_repo_ships_with_no_approver_registered)
+So nothing changes until a deployment registers a key — which is the ... ok
+test_verification_needs_only_the_public_half (security.test_forced_approval_injection.Fix2RegistryTests.test_verification_needs_only_the_public_half)
+The whole claim in one test: delete every private key and the ... ok
+test_an_unsigned_publish_is_refused_once_a_key_is_registered (security.test_forced_approval_injection.Fix2SignatureTests.test_an_unsigned_publish_is_refused_once_a_key_is_registered) ... ok
+test_another_approver_s_signature_does_not_count (security.test_forced_approval_injection.Fix2SignatureTests.test_another_approver_s_signature_does_not_count)
+The name selects the key, which is what makes it a claim rather than ... ok
+test_editing_the_note_after_signing_invalidates_the_signature (security.test_forced_approval_injection.Fix2SignatureTests.test_editing_the_note_after_signing_invalidates_the_signature)
+The same property the HMAC has, now held by a key the agent cannot ... ok
+test_holding_everything_this_deployment_holds_is_not_enough_to_mint (security.test_forced_approval_injection.Fix2SignatureTests.test_holding_everything_this_deployment_holds_is_not_enough_to_mint)
+The point of the fix, as one assertion. With APPROVAL_SECRET and the ... ok
+test_junk_is_refused_rather_than_raised (security.test_forced_approval_injection.Fix2SignatureTests.test_junk_is_refused_rather_than_raised)
+common.py's contract reaches this layer too: the run must not end ... ok
+test_naming_an_unregistered_approver_does_not_get_round_it (security.test_forced_approval_injection.Fix2SignatureTests.test_naming_an_unregistered_approver_does_not_get_round_it)
+The obvious attack on a per-approver registry. Once any key is ... ok
+test_the_approver_s_own_signature_is_accepted (security.test_forced_approval_injection.Fix2SignatureTests.test_the_approver_s_own_signature_is_accepted) ... ok
+test_a_token_minted_with_a_guessed_secret_is_refused (security.test_forced_approval_injection.ForgedApprovalTests.test_a_token_minted_with_a_guessed_secret_is_refused)
+Without APPROVAL_SECRET the attacker cannot produce a signature the ... ok
+test_an_approved_token_does_not_cover_an_injected_body (security.test_forced_approval_injection.ForgedApprovalTests.test_an_approved_token_does_not_cover_an_injected_body)
+The analyst approves a clean note; injected text appends an ... ok
+test_an_approved_token_does_not_cover_extra_tickers (security.test_forced_approval_injection.ForgedApprovalTests.test_an_approved_token_does_not_cover_extra_tickers)
+An injection that widens the ticker list to publish against other ... ok
+test_an_invented_token_is_refused (security.test_forced_approval_injection.ForgedApprovalTests.test_an_invented_token_is_refused) ... ok
+test_the_note_hash_covers_every_field (security.test_forced_approval_injection.ForgedApprovalTests.test_the_note_hash_covers_every_field) ... ok
+test_a_denied_call_does_not_consume_budget (security.test_forced_approval_injection.HookDenialTests.test_a_denied_call_does_not_consume_budget)
+A refusal is returned before the counter moves, so an injection cannot ... ok
+test_hook_allows_the_publisher (security.test_forced_approval_injection.HookDenialTests.test_hook_allows_the_publisher)
+The denial is scoped to the caller, not a blanket block on the tool. ... ok
+test_hook_denies_publish_to_an_injected_agent (security.test_forced_approval_injection.HookDenialTests.test_hook_denies_publish_to_an_injected_agent) ... ok
+test_sandboxed_code_cannot_import_os (security.test_forced_approval_injection.SandboxSecretReachTests.test_sandboxed_code_cannot_import_os)
+Reading APPROVAL_SECRET from the environment needs os (or similar); ... ok
+test_submodule_and_relative_import_do_not_bypass_the_allowlist (security.test_forced_approval_injection.SandboxSecretReachTests.test_submodule_and_relative_import_do_not_bypass_the_allowlist)
+os.path and a relative import are both refused, so the guard cannot be ... ok
+test_the_import_allowlist_exposes_no_environment_or_process_module (security.test_forced_approval_injection.SandboxSecretReachTests.test_the_import_allowlist_exposes_no_environment_or_process_module) ... ok
+test_no_agent_that_reads_outside_text_can_publish (security.test_forced_approval_injection.ToolReachTests.test_no_agent_that_reads_outside_text_can_publish)
+The agents exposed to filing text are exactly the ones that must not ... ok
+test_only_the_publisher_holds_a_write_tool (security.test_forced_approval_injection.ToolReachTests.test_only_the_publisher_holds_a_write_tool) ... ok
+test_the_writer_holds_no_tools_at_all (security.test_forced_approval_injection.ToolReachTests.test_the_writer_holds_no_tools_at_all)
+The writer only ever sees hand-off messages, so an injection that ... ok
+test_a_rejected_note_cannot_reach_the_analyst_gate_unrevised (security.test_injected_recommendation.AdviceWordingTests.test_a_rejected_note_cannot_reach_the_analyst_gate_unrevised)
+ok=False is what sends the draft back to the writer: the note gate and ... ok
+test_each_rewording_of_the_recommendation_is_caught (security.test_injected_recommendation.AdviceWordingTests.test_each_rewording_of_the_recommendation_is_caught)
+An agent paraphrasing the payload into desk vocabulary is still ... ok
+test_the_obeyed_instruction_is_caught_word_by_word (security.test_injected_recommendation.AdviceWordingTests.test_the_obeyed_instruction_is_caught_word_by_word) ... ok
+test_a_valid_approval_does_not_exempt_the_text_it_approves (security.test_injected_recommendation.Fix1AuthorBlindTests.test_a_valid_approval_does_not_exempt_the_text_it_approves)
+The note is approved properly — the token verifies against this exact ... ok
+test_nothing_in_the_call_says_who_wrote_the_text (security.test_injected_recommendation.Fix1AuthorBlindTests.test_nothing_in_the_call_says_who_wrote_the_text)
+No author reaches the tool, so no exemption can be keyed on one. ... ok
+test_restating_a_past_note_s_recommendation_is_refused_too (security.test_injected_recommendation.Fix1AuthorBlindTests.test_restating_a_past_note_s_recommendation_is_refused_too)
+A cost of the rule, recorded rather than hidden: get_past_notes ... ok
+test_the_analyst_can_still_say_what_they_think (security.test_injected_recommendation.Fix1AuthorBlindTests.test_the_analyst_can_still_say_what_they_think)
+Judgement about the business is not a position on the security. The ... ok
+test_the_analyst_can_take_a_position_by_citing_it (security.test_injected_recommendation.Fix1AuthorBlindTests.test_the_analyst_can_take_a_position_by_citing_it) ... ok
+test_the_analyst_s_own_recommendation_is_refused_like_the_writer_s (security.test_injected_recommendation.Fix1AuthorBlindTests.test_the_analyst_s_own_recommendation_is_refused_like_the_writer_s) ... ok
+test_an_invented_passage_id_shape_is_not_a_source (security.test_injected_recommendation.Fix1DriftTests.test_an_invented_passage_id_shape_is_not_a_source) ... ok
+test_every_advice_word_is_also_a_stance_term (security.test_injected_recommendation.Fix1DriftTests.test_every_advice_word_is_also_a_stance_term) ... ok
+test_the_guardrail_covers_every_write_tool (security.test_injected_recommendation.Fix1DriftTests.test_the_guardrail_covers_every_write_tool) ... ok
+test_the_source_pattern_accepts_what_check_note_accepts (security.test_injected_recommendation.Fix1DriftTests.test_the_source_pattern_accepts_what_check_note_accepts) ... ok
+test_a_clean_note_still_publishes (security.test_injected_recommendation.Fix1EndToEndTests.test_a_clean_note_still_publishes) ... ok
+test_make_client_installs_the_guardrails_by_default (security.test_injected_recommendation.Fix1EndToEndTests.test_make_client_installs_the_guardrails_by_default)
+A guardrail you have to remember to pass is one that will be missing ... ok
+test_the_recommendation_never_reaches_the_portal (security.test_injected_recommendation.Fix1EndToEndTests.test_the_recommendation_never_reaches_the_portal) ... ok
+test_without_the_guardrail_the_same_note_publishes (security.test_injected_recommendation.Fix1EndToEndTests.test_without_the_guardrail_the_same_note_publishes)
+Teeth. Remove the interceptor and the paraphrase is published with a ... ok
+test_a_clean_note_reaches_the_tool_unchanged (security.test_injected_recommendation.Fix1MiddlewareTests.test_a_clean_note_reaches_the_tool_unchanged) ... ok
+test_a_read_tool_is_not_inspected_at_all (security.test_injected_recommendation.Fix1MiddlewareTests.test_a_read_tool_is_not_inspected_at_all)
+The guardrail stands in front of writes. A filing passage may well ... ok
+test_the_refusal_is_returned_not_raised (security.test_injected_recommendation.Fix1MiddlewareTests.test_the_refusal_is_returned_not_raised)
+common.py's contract: tools return, never raise, so the agent reads ... ok
+test_the_trace_records_it_as_a_denied_call (security.test_injected_recommendation.Fix1MiddlewareTests.test_the_trace_records_it_as_a_denied_call)
+hooks.post parses the same envelope, so a refusal shows up in the ... ok
+test_the_write_tool_is_never_reached (security.test_injected_recommendation.Fix1MiddlewareTests.test_the_write_tool_is_never_reached) ... ok
+test_a_clean_note_gets_no_warning (security.test_injected_recommendation.Fix1ModeTests.test_a_clean_note_gets_no_warning) ... ok
+test_a_misspelt_mode_enforces (security.test_injected_recommendation.Fix1ModeTests.test_a_misspelt_mode_enforces)
+"soft" is not a mode. A typo in a deployment variable must not be the ... ok
+test_a_warning_rides_along_with_the_tool_s_own_error (security.test_injected_recommendation.Fix1ModeTests.test_a_warning_rides_along_with_the_tool_s_own_error)
+Publishing the same note twice: the portal's ALREADY_EXISTS comes back ... ok
+test_an_empty_mode_enforces (security.test_injected_recommendation.Fix1ModeTests.test_an_empty_mode_enforces) ... ok
+test_enforce_is_the_default (security.test_injected_recommendation.Fix1ModeTests.test_enforce_is_the_default) ... ok
+test_the_mode_is_case_and_space_insensitive (security.test_injected_recommendation.Fix1ModeTests.test_the_mode_is_case_and_space_insensitive) ... ok
+test_the_mode_is_read_per_call (security.test_injected_recommendation.Fix1ModeTests.test_the_mode_is_read_per_call)
+Captured at import, the mode would be whatever the first importer's ... ok
+test_warn_carries_the_same_finding_back_on_the_result (security.test_injected_recommendation.Fix1ModeTests.test_warn_carries_the_same_finding_back_on_the_result)
+A warning nobody can read is not validation. It travels with the ... ok
+test_warn_does_not_soften_the_signature_guardrail (security.test_injected_recommendation.Fix1ModeTests.test_warn_does_not_soften_the_signature_guardrail)
+The mode belongs to the advice check alone. Fix 2 has no soft form: ... ok
+test_warn_publishes_the_note_it_warns_about (security.test_injected_recommendation.Fix1ModeTests.test_warn_publishes_the_note_it_warns_about)
+The cost of soft validation, in one assertion: the paraphrase that ... ok
+test_a_cited_recommendation_is_not_the_guardrail_s_business (security.test_injected_recommendation.Fix1PolicyTests.test_a_cited_recommendation_is_not_the_guardrail_s_business)
+The enforceable half is the sourcing, not the vocabulary. A ... ok
+test_only_note_prose_arguments_are_read (security.test_injected_recommendation.Fix1PolicyTests.test_only_note_prose_arguments_are_read)
+An approval token or a ticker list is not note text and is not scanned. ... ok
+test_only_the_offending_sentence_is_named (security.test_injected_recommendation.Fix1PolicyTests.test_only_the_offending_sentence_is_named) ... ok
+test_ordinary_note_prose_is_left_alone (security.test_injected_recommendation.Fix1PolicyTests.test_ordinary_note_prose_is_left_alone) ... ok
+test_the_instruction_said_plainly_is_refused_as_well (security.test_injected_recommendation.Fix1PolicyTests.test_the_instruction_said_plainly_is_refused_as_well)
+Defence in depth: check_note already rejects this one. The guardrail ... ok
+test_the_paraphrase_that_beat_every_rule_is_refused (security.test_injected_recommendation.Fix1PolicyTests.test_the_paraphrase_that_beat_every_rule_is_refused) ... ok
+test_the_refusal_names_the_sentence_and_the_term (security.test_injected_recommendation.Fix1PolicyTests.test_the_refusal_names_the_sentence_and_the_term) ... ok
+test_a_clean_note_is_passed_straight_through (security.test_injected_recommendation.Fix1ToolNodeBindingTests.test_a_clean_note_is_passed_straight_through) ... ok
+test_a_refusal_comes_back_as_a_tool_message (security.test_injected_recommendation.Fix1ToolNodeBindingTests.test_a_refusal_comes_back_as_a_tool_message) ... ok
+test_the_guard_and_the_note_check_share_one_rule (security.test_injected_recommendation.InputGuardTests.test_the_guard_and_the_note_check_share_one_rule)
+ADVICE is imported by graph.py from checks.py, so the inbound and ... ok
+test_the_pasted_article_is_refused_before_the_planner (security.test_injected_recommendation.InputGuardTests.test_the_pasted_article_is_refused_before_the_planner) ... ok
+test_the_same_request_without_the_payload_is_allowed (security.test_injected_recommendation.InputGuardTests.test_the_same_request_without_the_payload_is_allowed)
+The guard is keyed on the advice wording, not on the company: a ... ok
+test_a_real_citation_does_not_launder_the_figure (security.test_injected_recommendation.InventedFigureTests.test_a_real_citation_does_not_launder_the_figure)
+The writer attaching a genuine MSFT passage id to the injected number ... ok
+test_citing_the_article_itself_does_not_resolve (security.test_injected_recommendation.InventedFigureTests.test_citing_the_article_itself_does_not_resolve)
+An id invented to look like a passage fails the existence check. ... ok
+test_the_price_target_has_no_source (security.test_injected_recommendation.InventedFigureTests.test_the_price_target_has_no_source) ... ok
+test_a_paraphrased_article_passes_the_input_guard (security.test_injected_recommendation.KnownGapTests.test_a_paraphrased_article_passes_the_input_guard) ... ok
+test_a_paraphrased_recommendation_passes_the_note_check (security.test_injected_recommendation.KnownGapTests.test_a_paraphrased_recommendation_passes_the_note_check) ... ok
+test_an_unreachable_judge_now_blocks_the_note (security.test_injected_recommendation.KnownGapTests.test_an_unreachable_judge_now_blocks_the_note)
+Even with a citation attached — which is what gets the claim in front ... ok
+test_uncited_recommendation_blocks_c2_review (security.test_injected_recommendation.KnownGapTests.test_uncited_recommendation_blocks_c2_review)
+Uncited substantive prose cannot be judged, so it blocks approval. ... ok
+test_every_agent_that_reads_filing_text_is_told_it_is_data (security.test_injected_recommendation.PromptLayerTests.test_every_agent_that_reads_filing_text_is_told_it_is_data) ... ok
+test_the_writer_is_told_not_to_give_advice (security.test_injected_recommendation.PromptLayerTests.test_the_writer_is_told_not_to_give_advice) ... ok
+test_no_agent_holds_a_tool_that_reads_arbitrary_outside_text (security.test_injected_recommendation.ToolReachTests.test_no_agent_holds_a_tool_that_reads_arbitrary_outside_text)
+The eight tools are the whole attack surface for outside text: five ... ok
+test_a_cited_invented_figure_makes_rule_4_pass_while_rule_3_catches (security.test_injected_recommendation.VerdictMatrixTests.test_a_cited_invented_figure_makes_rule_4_pass_while_rule_3_catches)
+The one case where a rule runs and is satisfied: the citation resolves, ... ok
+test_either_rule_alone_rejects_the_note (security.test_injected_recommendation.VerdictMatrixTests.test_either_rule_alone_rejects_the_note)
+Defence in depth as an assertion: the recommendation without the ... ok
+test_the_obeyed_note_fires_exactly_two_of_the_five_rules (security.test_injected_recommendation.VerdictMatrixTests.test_the_obeyed_note_fires_exactly_two_of_the_five_rules) ... ok
+test_the_paraphrase_triggers_no_rule_at_all (security.test_injected_recommendation.VerdictMatrixTests.test_the_paraphrase_triggers_no_rule_at_all)
+The gap in one assertion: five rules, nothing to inspect, note ok. ... ok
+test_a_fact_claim_cannot_carry_a_value (security.test_quarantined_handoff.ChannelShapeTests.test_a_fact_claim_cannot_carry_a_value)
+The model names the fact; code reads what it says. Same division as ... ok
+test_a_passage_claim_must_cite_and_carries_nothing_else (security.test_quarantined_handoff.ChannelShapeTests.test_a_passage_claim_must_cite_and_carries_nothing_else) ... ok
+test_a_specialist_in_neither_set_hands_back_nothing (security.test_quarantined_handoff.ChannelShapeTests.test_a_specialist_in_neither_set_hands_back_nothing)
+The safe default for a specialist added later: no ask, no channel. ... ok
+test_the_handoff_schema_has_no_free_text_field (security.test_quarantined_handoff.ChannelShapeTests.test_the_handoff_schema_has_no_free_text_field)
+The whole fix in one assertion: there is nowhere for prose to sit. ... ok
+test_the_schema_constrains_shape_and_leaves_the_rest_to_verification (security.test_quarantined_handoff.ChannelShapeTests.test_the_schema_constrains_shape_and_leaves_the_rest_to_verification)
+The length bounds and the claim cap used to sit on these fields, ... ok
+test_the_specialist_message_has_no_findings_field_either (security.test_quarantined_handoff.ChannelShapeTests.test_the_specialist_message_has_no_findings_field_either)
+Removing it from Handoff would mean little if team.py kept its own. ... ok
+test_a_fact_id_that_does_not_resolve_is_dropped (security.test_quarantined_handoff.FactVerificationTests.test_a_fact_id_that_does_not_resolve_is_dropped) ... ok
+test_a_malformed_fact_id_is_dropped_before_any_lookup (security.test_quarantined_handoff.FactVerificationTests.test_a_malformed_fact_id_is_dropped_before_any_lookup) ... ok
+test_a_resolving_fact_id_crosses_with_the_value_code_read (security.test_quarantined_handoff.FactVerificationTests.test_a_resolving_fact_id_crosses_with_the_value_code_read) ... ok
+test_a_quote_at_each_bound_is_kept (security.test_quarantined_handoff.LengthAndCapTests.test_a_quote_at_each_bound_is_kept)
+The bounds are inclusive; a sentence exactly 10 or 300 characters ... ok
+test_a_short_quote_drops_alone (security.test_quarantined_handoff.LengthAndCapTests.test_a_short_quote_drops_alone) ... ok
+test_an_over_long_quote_drops_alone_and_reports_its_length (security.test_quarantined_handoff.LengthAndCapTests.test_an_over_long_quote_drops_alone_and_reports_its_length) ... ok
+test_ask_tells_the_model_the_limits_it_will_be_held_to (security.test_quarantined_handoff.LengthAndCapTests.test_ask_tells_the_model_the_limits_it_will_be_held_to)
+A limit the model is not told is a limit it will break. Pinned ... ok
+test_exactly_the_cap_is_not_a_drop (security.test_quarantined_handoff.LengthAndCapTests.test_exactly_the_cap_is_not_a_drop) ... ok
+test_length_is_checked_before_the_passage_is_looked_up (security.test_quarantined_handoff.LengthAndCapTests.test_length_is_checked_before_the_passage_is_looked_up)
+The default lookup loads every passage in data/passages on first ... ok
+test_the_cap_counts_what_it_refused (security.test_quarantined_handoff.LengthAndCapTests.test_the_cap_counts_what_it_refused) ... ok
+test_the_claims_past_the_cap_drop_alone (security.test_quarantined_handoff.LengthAndCapTests.test_the_claims_past_the_cap_drop_alone) ... ok
+test_the_fact_ids_past_the_cap_drop_alone (security.test_quarantined_handoff.LengthAndCapTests.test_the_fact_ids_past_the_cap_drop_alone) ... ok
+test_a_paraphrase_is_dropped (security.test_quarantined_handoff.QuoteVerificationTests.test_a_paraphrase_is_dropped)
+The ordinary case, and the one that matters: a true-but-reworded ... ok
+test_a_span_is_matched_across_the_line_breaks_a_filing_has (security.test_quarantined_handoff.QuoteVerificationTests.test_a_span_is_matched_across_the_line_breaks_a_filing_has)
+The quote above spans a newline in the passage. Matching on raw text ... ok
+test_a_span_that_really_is_in_the_filing_still_crosses (security.test_quarantined_handoff.QuoteVerificationTests.test_a_span_that_really_is_in_the_filing_still_crosses)
+The limit, pinned rather than hidden: an injection written into a ... ok
+test_a_verbatim_span_crosses (security.test_quarantined_handoff.QuoteVerificationTests.test_a_verbatim_span_crosses) ... ok
+test_an_invented_passage_id_is_dropped (security.test_quarantined_handoff.QuoteVerificationTests.test_an_invented_passage_id_is_dropped) ... ok
+test_citing_a_real_passage_does_not_launder_an_invented_quote (security.test_quarantined_handoff.QuoteVerificationTests.test_citing_a_real_passage_does_not_launder_an_invented_quote)
+The same evasion check_note rule 3 faces: attach a citation that ... ok
+test_poisoned_tool_prose_does_not_cross (security.test_quarantined_handoff.QuoteVerificationTests.test_poisoned_tool_prose_does_not_cross)
+use case 4: run_python can return a string, and the quant used to be ... ok
+test_the_injected_recommendation_does_not_cross (security.test_quarantined_handoff.QuoteVerificationTests.test_the_injected_recommendation_does_not_cross)
+use case 3: the wording that beats all five check_note rules. ... ok
+test_a_dropped_claim_is_counted_and_never_shown (security.test_quarantined_handoff.RenderTests.test_a_dropped_claim_is_counted_and_never_shown)
+The writer must not be handed the text code has just refused. ... ok
+test_an_empty_handoff_says_so_rather_than_looking_complete (security.test_quarantined_handoff.RenderTests.test_an_empty_handoff_says_so_rather_than_looking_complete) ... ok
+test_every_line_the_writer_sees_carries_its_source (security.test_quarantined_handoff.RenderTests.test_every_line_the_writer_sees_carries_its_source) ... ok
+test_the_value_shown_is_the_one_code_read (security.test_quarantined_handoff.RenderTests.test_the_value_shown_is_the_one_code_read)
+109433000000.0 from XBRL, rendered in $M the way check_note does. ... ok
+test_a_model_that_cannot_be_typed_hands_back_nothing (security.test_quarantined_handoff.SpecialistLoopTests.test_a_model_that_cannot_be_typed_hands_back_nothing)
+Fail closed: an empty hand-off starves the writer, which is the safe ... ok
+test_a_paraphrased_hand_off_arrives_empty (security.test_quarantined_handoff.SpecialistLoopTests.test_a_paraphrased_hand_off_arrives_empty) ... ok
+test_a_verbatim_quote_reaches_the_writer (security.test_quarantined_handoff.SpecialistLoopTests.test_a_verbatim_quote_reaches_the_writer) ... ok
+test_the_last_message_is_no_longer_what_crosses (security.test_quarantined_handoff.SpecialistLoopTests.test_the_last_message_is_no_longer_what_crosses)
+The model's closing prose is the recommendation; the typed hand-off ... ok
+test_the_passage_ids_code_extracted_are_kept_alongside (security.test_quarantined_handoff.SpecialistLoopTests.test_the_passage_ids_code_extracted_are_kept_alongside)
+The regex over tool results is independent of what the model claims, ... ok
+test_no_specialist_is_given_every_tool (security.test_tool_poisoning.DispatchTableTests.test_no_specialist_is_given_every_tool)
+If any specialist held everything, dispatch filtering would be moot. ... ok
+test_research_tools_has_not_drifted_from_the_permission_table (security.test_tool_poisoning.DispatchTableTests.test_research_tools_has_not_drifted_from_the_permission_table)
+runtime.py hardcodes RESEARCH_TOOLS instead of reading AGENT_TOOLS, so ... ok
+test_the_dispatch_table_holds_tools_the_caller_may_not_use (security.test_tool_poisoning.DispatchTableTests.test_the_dispatch_table_holds_tools_the_caller_may_not_use)
+team.py:185 keys every research tool; team.py:124 indexes that dict. ... ok
+test_a_non_edgar_tool_is_not_throttled (security.test_tool_poisoning.EdgarThrottleTests.test_a_non_edgar_tool_is_not_throttled) ... ok
+test_back_to_back_edgar_calls_are_spaced (security.test_tool_poisoning.EdgarThrottleTests.test_back_to_back_edgar_calls_are_spaced) ... ok
+test_edgar_tools_are_exactly_the_three_that_hit_sec (security.test_tool_poisoning.EdgarThrottleTests.test_edgar_tools_are_exactly_the_three_that_hit_sec) ... ok
+test_the_throttle_is_per_hooks_instance_not_global (security.test_tool_poisoning.EdgarThrottleTests.test_the_throttle_is_per_hooks_instance_not_global)
+KNOWN GAP, pinned so a fix flips this test rather than passing silently. ... ok
+test_the_throttle_never_refuses (security.test_tool_poisoning.EdgarThrottleTests.test_the_throttle_never_refuses) ... ok
+test_a_denied_escalation_does_not_consume_the_budget (security.test_tool_poisoning.EscalationTests.test_a_denied_escalation_does_not_consume_the_budget) ... ok
+test_the_denial_is_recorded_as_a_denial (security.test_tool_poisoning.EscalationTests.test_the_denial_is_recorded_as_a_denial) ... ok
+test_the_escalation_does_not_crash_the_specialist (security.test_tool_poisoning.EscalationTests.test_the_escalation_does_not_crash_the_specialist)
+Without the hook, tools_by_name[name] would raise KeyError on any name ... ok
+test_the_model_is_only_offered_its_own_tools (security.test_tool_poisoning.EscalationTests.test_the_model_is_only_offered_its_own_tools)
+The bind-time filter still works — it is just not the enforcement. ... ok
+test_the_quant_may_use_the_sandbox (security.test_tool_poisoning.EscalationTests.test_the_quant_may_use_the_sandbox)
+The denial is scoped to the caller, not a block on the tool. ... ok
+test_the_sandbox_is_never_reached (security.test_tool_poisoning.EscalationTests.test_the_sandbox_is_never_reached) ... ok
+test_an_unknown_agent_is_denied_every_tool (security.test_tool_poisoning.FailClosedTests.test_an_unknown_agent_is_denied_every_tool)
+allowed.get(agent, set()) — a typo'd or injected agent name gets nothing. ... ok
+test_honest_code_through_the_same_path_succeeds (security.test_tool_poisoning.InjectedArgumentEndToEndTests.test_honest_code_through_the_same_path_succeeds) ... ok
+test_the_quant_gets_a_refusal_and_keeps_going (security.test_tool_poisoning.InjectedArgumentEndToEndTests.test_the_quant_gets_a_refusal_and_keeps_going) ... ok
+test_a_refusal_is_a_result_not_an_exception (security.test_tool_poisoning.InjectedArgumentTests.test_a_refusal_is_a_result_not_an_exception)
+Tools return, never raise - so the quant can adapt and write up. ... ok
+test_every_injected_payload_is_refused_by_the_sandbox (security.test_tool_poisoning.InjectedArgumentTests.test_every_injected_payload_is_refused_by_the_sandbox) ... ok
+test_honest_quant_code_computes_the_two_margins (security.test_tool_poisoning.InjectedArgumentTests.test_honest_quant_code_computes_the_two_margins)
+The guard must not be 'refuse everything' - the real task still works. ... ok
+test_import_based_payloads_name_what_was_blocked (security.test_tool_poisoning.InjectedArgumentTests.test_import_based_payloads_name_what_was_blocked)
+os, socket and subprocess are refused by name, and reported, so a ... ok
+test_reading_the_signing_key_fails_for_lack_of_open (security.test_tool_poisoning.InjectedArgumentTests.test_reading_the_signing_key_fails_for_lack_of_open)
+A different mechanism from the import guard, worth knowing apart: ... ok
+test_the_hook_allows_the_quant_whatever_the_code_says (security.test_tool_poisoning.InjectedArgumentTests.test_the_hook_allows_the_quant_whatever_the_code_says)
+Not a bug: name-level permission is the whole contract of hooks.pre. ... ok
+test_the_hook_reads_arguments_only_for_the_watchlist_check (security.test_tool_poisoning.InjectedArgumentTests.test_the_hook_reads_arguments_only_for_the_watchlist_check)
+pre() gained args and context, for watchlist_leak - not for judging code. ... ok
+test_check_note_recomputes_and_catches_it (security.test_tool_poisoning.PoisonedArithmeticTests.test_check_note_recomputes_and_catches_it)
+rule 2: a [calc:] value must equal A / B x 100 from the XBRL facts. ... ok
+test_dropping_the_tag_to_hide_it_trips_rule_3_instead (security.test_tool_poisoning.PoisonedArithmeticTests.test_dropping_the_tag_to_hide_it_trips_rule_3_instead)
+Removing the [calc:] tag removes the recomputation, so the number has ... ok
+test_honest_and_poisoned_are_indistinguishable_to_the_sandbox (security.test_tool_poisoning.PoisonedArithmeticTests.test_honest_and_poisoned_are_indistinguishable_to_the_sandbox) ... ok
+test_prose_without_a_number_carries_nothing_to_check (security.test_tool_poisoning.PoisonedArithmeticTests.test_prose_without_a_number_carries_nothing_to_check)
+Same gap as 'Claims are not verified against the passages they cite': ... ok
+test_the_catch_is_at_the_note_not_at_the_tool (security.test_tool_poisoning.PoisonedArithmeticTests.test_the_catch_is_at_the_note_not_at_the_tool)
+The known limit, pinned: nothing between run_python returning and ... ok
+test_the_honest_figure_verifies_against_xbrl (security.test_tool_poisoning.PoisonedArithmeticTests.test_the_honest_figure_verifies_against_xbrl) ... ok
+test_the_poisoned_payload_needs_no_import (security.test_tool_poisoning.PoisonedArithmeticTests.test_the_poisoned_payload_needs_no_import) ... ok
+test_the_sandbox_runs_it_happily (security.test_tool_poisoning.PoisonedArithmeticTests.test_the_sandbox_runs_it_happily) ... ok
+test_and_it_is_announced_as_100_percent_verified (security.test_tool_poisoning.PoisonedProseTests.test_and_it_is_announced_as_100_percent_verified)
+verified_share returns 100.0 when total_numbers == 0 (checks.py:58-59), ... ok
+test_describing_the_figure_is_what_evades_the_code_checks (security.test_tool_poisoning.PoisonedProseTests.test_describing_the_figure_is_what_evades_the_code_checks)
+The contrast in one assertion: the same claim passes as prose and ... ok
+test_numberless_prose_satisfies_every_rule (security.test_tool_poisoning.PoisonedProseTests.test_numberless_prose_satisfies_every_rule)
+The residual risk, pinned. If this ever fails, a prose-level check was ... ok
+test_the_same_prose_carrying_a_number_is_caught (security.test_tool_poisoning.PoisonedProseTests.test_the_same_prose_carrying_a_number_is_caught)
+State the poisoned figure instead of describing it and rule 3 fires. ... ok
+test_the_same_prose_worded_as_advice_is_caught (security.test_tool_poisoning.PoisonedProseTests.test_the_same_prose_worded_as_advice_is_caught)
+Rule 5 is the one rule that inspects wording, and only 11 literal terms. ... ok
+test_the_sandbox_hands_back_a_string_unchanged (security.test_tool_poisoning.PoisonedProseTests.test_the_sandbox_hands_back_a_string_unchanged) ... ok
+test_an_empty_allow_list_denies_everything (security.test_tool_poisoning.TeethTests.test_an_empty_allow_list_denies_everything)
+The writer's case: holds no tools, so every name is refused. ... ok
+test_widening_the_allow_list_lets_the_same_table_run_it (security.test_tool_poisoning.TeethTests.test_widening_the_allow_list_lets_the_same_table_run_it) ... ok
+test_a_plain_success_is_ok (security.test_tool_poisoning.TraceTests.test_a_plain_success_is_ok) ... ok
+test_an_error_code_is_extracted (security.test_tool_poisoning.TraceTests.test_an_error_code_is_extracted) ... ok
+test_an_mcp_list_wrapped_result_is_unwrapped (security.test_tool_poisoning.TraceTests.test_an_mcp_list_wrapped_result_is_unwrapped)
+fastmcp returns [{"text": "<json>"}]; post() looks inside. ... ok
+test_an_unparseable_result_is_not_ok (security.test_tool_poisoning.TraceTests.test_an_unparseable_result_is_not_ok) ... ok
+test_every_call_is_recorded_including_denied_ones (security.test_tool_poisoning.TraceTests.test_every_call_is_recorded_including_denied_ones) ... ok
+test_the_event_keeps_the_company_but_the_metric_drops_it (security.test_tool_poisoning.TraceTests.test_the_event_keeps_the_company_but_the_metric_drops_it)
+record_tool labels on the role, so MSFT and GOOGL aggregate. ... ok
+test_add_preference_requires_nonblank_text (test_agent_ui.AgentPanelTests.test_add_preference_requires_nonblank_text) ... ok
+test_agent_panel_embeds_and_receives_selected_workflow (test_agent_ui.AgentPanelTests.test_agent_panel_embeds_and_receives_selected_workflow) ... ok
+test_cancel_plan_button_is_connected_to_plan_resume_handler (test_agent_ui.AgentPanelTests.test_cancel_plan_button_is_connected_to_plan_resume_handler) ... ok
+test_edited_plan_requires_valid_substantive_change (test_agent_ui.AgentPanelTests.test_edited_plan_requires_valid_substantive_change) ... ok
+test_expired_review_gives_specific_restart_guidance (test_agent_ui.AgentPanelTests.test_expired_review_gives_specific_restart_guidance) ... ok
+test_lesson_source_label_shows_all_merged_cases (test_agent_ui.AgentPanelTests.test_lesson_source_label_shows_all_merged_cases) ... ok
+test_load_and_rerun_enabled_only_when_run_id_is_nonblank (test_agent_ui.AgentPanelTests.test_load_and_rerun_enabled_only_when_run_id_is_nonblank) ... ok
+test_memory_delete_confirmation_flow_end_to_end (test_agent_ui.AgentPanelTests.test_memory_delete_confirmation_flow_end_to_end) ... ok
+test_playbook_controls_require_a_selected_row (test_agent_ui.AgentPanelTests.test_playbook_controls_require_a_selected_row) ... ok
+test_relative_year_plan_gate_requires_visible_confirmation (test_agent_ui.AgentPanelTests.test_relative_year_plan_gate_requires_visible_confirmation) ... ok
+test_start_enabled_only_for_nonblank_c1_or_c2_when_idle (test_agent_ui.AgentPanelTests.test_start_enabled_only_for_nonblank_c1_or_c2_when_idle) ... ok
+test_stopping_drive_cancels_agent_task (test_agent_ui.AgentPanelTests.test_stopping_drive_cancels_agent_task) ... ok
+test_fetch_active_alerts_maps_prometheus_response (test_alerts.AlertsTests.test_fetch_active_alerts_maps_prometheus_response) ... ok
+test_invalid_prometheus_response_is_reported (test_alerts.AlertsTests.test_invalid_prometheus_response_is_reported) ... ok
+test_invalid_prometheus_url_is_reported (test_alerts.AlertsTests.test_invalid_prometheus_url_is_reported) ... ok
+test_no_active_alerts_are_returned_as_empty_list (test_alerts.AlertsTests.test_no_active_alerts_are_returned_as_empty_list) ... ok
+test_panel_distinguishes_no_alerts_from_unavailable_monitoring (test_alerts.AlertsTests.test_panel_distinguishes_no_alerts_from_unavailable_monitoring) ... Unable to refresh in-app alerts: offline
+ok
+test_alerts_endpoint_reports_monitoring_unavailable (test_api.ApiTests.test_alerts_endpoint_reports_monitoring_unavailable) ... Prometheus alert query unavailable: connection refused
+ok
+test_alerts_endpoint_returns_active_prometheus_alerts (test_api.ApiTests.test_alerts_endpoint_returns_active_prometheus_alerts) ... ok
+test_ambiguous_plan_requires_year_confirmation_through_api (test_api.ApiTests.test_ambiguous_plan_requires_year_confirmation_through_api) ... ok
+test_api_can_run_without_gradio_ui (test_api.ApiTests.test_api_can_run_without_gradio_ui) ... ok
+test_blank_analyst_is_rejected (test_api.ApiTests.test_blank_analyst_is_rejected) ... ok
+test_blank_request_is_rejected (test_api.ApiTests.test_blank_request_is_rejected) ... ok
+test_client_disconnect_cancels_runner_task (test_api.ApiTests.test_client_disconnect_cancels_runner_task) ... ok
+test_decision_for_run_not_waiting_for_approval_conflicts (test_api.ApiTests.test_decision_for_run_not_waiting_for_approval_conflicts) ... ok
+test_decision_for_unknown_run_returns_not_found (test_api.ApiTests.test_decision_for_unknown_run_returns_not_found) ... ok
+test_existing_gradio_ui_is_mounted_at_root (test_api.ApiTests.test_existing_gradio_ui_is_mounted_at_root) ... ok
+test_health_and_readiness (test_api.ApiTests.test_health_and_readiness) ... ok
+test_invalid_mode_is_rejected (test_api.ApiTests.test_invalid_mode_is_rejected) ... ok
+test_lifecycle_api_reports_success_and_conflict (test_api.ApiTests.test_lifecycle_api_reports_success_and_conflict) ... ok
+test_note_approval_requires_nonblank_approver (test_api.ApiTests.test_note_approval_requires_nonblank_approver) ... ok
+test_note_edit_requires_a_string_body (test_api.ApiTests.test_note_edit_requires_a_string_body) ... ok
+test_note_rejection_is_forwarded_to_runner (test_api.ApiTests.test_note_rejection_is_forwarded_to_runner) ... ok
+test_plan_edit_requires_edited_plan (test_api.ApiTests.test_plan_edit_requires_edited_plan) ... ok
+test_plan_rejection_is_not_supported (test_api.ApiTests.test_plan_rejection_is_not_supported) ... ok
+test_readiness_check_exception_returns_server_error (test_api.ApiTests.test_readiness_check_exception_returns_server_error) ... ok
+test_readiness_waits_for_dependencies (test_api.ApiTests.test_readiness_waits_for_dependencies) ... ok
+test_research_streams_plan_draft_and_publication_gates (test_api.ApiTests.test_research_streams_plan_draft_and_publication_gates) ... ok
+test_run_loader_exception_returns_server_error (test_api.ApiTests.test_run_loader_exception_returns_server_error) ... ok
+test_runner_failure_is_reported_as_stream_error (test_api.ApiTests.test_runner_failure_is_reported_as_stream_error) ... ok
+test_stale_review_reports_restart_guidance_in_stream (test_api.ApiTests.test_stale_review_reports_restart_guidance_in_stream) ... Research run 463f5f14cbe64f828fdc7dc3c89e79be needs a fresh review: Evidence changed; start a fresh run.
+ok
+test_unknown_approval_gate_conflicts (test_api.ApiTests.test_unknown_approval_gate_conflicts) ... ok
+test_unverified_note_cannot_be_approved (test_api.ApiTests.test_unverified_note_cannot_be_approved) ... ok
+test_bank_uses_pretax_margin_and_counts_as_verified (test_baseline.TestBankRows.test_bank_uses_pretax_margin_and_counts_as_verified) ... ok
+test_operating_margin_correct (test_baseline.TestHelpers.test_operating_margin_correct) ... ok
+test_operating_margin_none_inputs (test_baseline.TestHelpers.test_operating_margin_none_inputs) ... ok
+test_operating_margin_zero_revenue (test_baseline.TestHelpers.test_operating_margin_zero_revenue) ... ok
+test_to_millions_none_input (test_baseline.TestHelpers.test_to_millions_none_input) ... ok
+test_to_millions_rounds_correctly (test_baseline.TestHelpers.test_to_millions_rounds_correctly) ... ok
+test_every_value_has_fact_id (test_baseline.TestRunBaseline.test_every_value_has_fact_id) ... ok
+test_margin_computed_from_row_values (test_baseline.TestRunBaseline.test_margin_computed_from_row_values) ... ok
+test_missing_year_adds_warning_not_crash (test_baseline.TestRunBaseline.test_missing_year_adds_warning_not_crash) ... ok
+test_produces_six_rows (test_baseline.TestRunBaseline.test_produces_six_rows) ... ok
+test_status_is_draft (test_baseline.TestRunBaseline.test_status_is_draft) ... ok
+test_to_dict_is_json_serialisable (test_baseline.TestRunBaseline.test_to_dict_is_json_serialisable) ... ok
+test_company_comparison_builds_annual_revenue_chart_without_chart_keyword (test_chat_chart.ChatChartTests.test_company_comparison_builds_annual_revenue_chart_without_chart_keyword) ... ok
+test_missing_edgar_values_return_clear_notice (test_chat_chart.ChatChartTests.test_missing_edgar_values_return_clear_notice) ... ok
+test_no_chart_for_non_metric_question (test_chat_chart.ChatChartTests.test_no_chart_for_non_metric_question) ... ok
+test_quarterly_chart_uses_companies_and_periods_from_question (test_chat_chart.ChatChartTests.test_quarterly_chart_uses_companies_and_periods_from_question) ... ok
+test_specific_margin_is_not_confused_with_generic_margin (test_chat_chart.ChatChartTests.test_specific_margin_is_not_confused_with_generic_margin) ... ok
+test_follow_up_includes_recent_context (test_chat_context.ChatContextTests.test_follow_up_includes_recent_context) ... ok
+test_follow_up_without_context_is_rejected (test_chat_context.ChatContextTests.test_follow_up_without_context_is_rejected) ... ok
+test_new_question_does_not_use_previous_context (test_chat_context.ChatContextTests.test_new_question_does_not_use_previous_context) ... ok
+test_unknown_question_mode_is_rejected (test_chat_context.ChatContextTests.test_unknown_question_mode_is_rejected) ... ok
+test_advice_wording_blocked (test_checks.CheckNoteTests.test_advice_wording_blocked) ... ok
+test_billions_form_and_uncited_numbers (test_checks.CheckNoteTests.test_billions_form_and_uncited_numbers) ... ok
+test_correct_note_passes (test_checks.CheckNoteTests.test_correct_note_passes) ... ok
+test_planted_wrong_number_is_caught (test_checks.CheckNoteTests.test_planted_wrong_number_is_caught) ... ok
+test_quoted_number_must_be_in_the_cited_passage (test_checks.CheckNoteTests.test_quoted_number_must_be_in_the_cited_passage) ... ok
+test_unknown_fact_and_missing_passage (test_checks.CheckNoteTests.test_unknown_fact_and_missing_passage) ... ok
+test_wrong_margin_is_caught (test_checks.CheckNoteTests.test_wrong_margin_is_caught) ... ok
+test_dashboard_dropdown_contains_supported_companies_and_defaults (test_dashboard.DashboardTests.test_dashboard_dropdown_contains_supported_companies_and_defaults) ... ok
+test_dashboard_rejects_empty_selection (test_dashboard.DashboardTests.test_dashboard_rejects_empty_selection) ... ok
+test_dashboard_uses_selected_companies_and_headline_metrics (test_dashboard.DashboardTests.test_dashboard_uses_selected_companies_and_headline_metrics) ... ok
+test_bac_uses_as_reported_revenue (test_data_integrity.CommittedDataTests.test_bac_uses_as_reported_revenue) ... ok
+test_every_row_verified (test_data_integrity.CommittedDataTests.test_every_row_verified) ... ok
+test_fact_ids_cite_the_years_own_10k (test_data_integrity.CommittedDataTests.test_fact_ids_cite_the_years_own_10k) ... ok
+test_uses_cache_on_second_call (test_edgar.TestFetchCompanyFacts.test_uses_cache_on_second_call)
+Second call must read from disk, not hit the network. ... ok
+test_fact_id_format (test_edgar.TestGetAnnualFact.test_fact_id_format) ... ok
+test_filters_out_quarterly_entries (test_edgar.TestGetAnnualFact.test_filters_out_quarterly_entries) ... ok
+test_ignores_quarterly_figures_tagged_in_a_10k (test_edgar.TestGetAnnualFact.test_ignores_quarterly_figures_tagged_in_a_10k) ... ok
+test_returns_annual_fact (test_edgar.TestGetAnnualFact.test_returns_annual_fact) ... ok
+test_returns_none_for_missing_year (test_edgar.TestGetAnnualFact.test_returns_none_for_missing_year) ... ok
+test_returns_none_for_unknown_concept (test_edgar.TestGetAnnualFact.test_returns_none_for_unknown_concept) ... ok
+test_missing_year_returns_none_values (test_edgar.TestGetFinancials.test_missing_year_returns_none_values) ... ok
+test_returns_both_metrics (test_edgar.TestGetFinancials.test_returns_both_metrics) ... ok
+test_leaves_full_cik_unchanged (test_edgar.TestPadCik.test_leaves_full_cik_unchanged) ... ok
+test_pads_short_cik (test_edgar.TestPadCik.test_pads_short_cik) ... ok
+test_amendment_with_unchanged_value_remains_visible (test_edgar.TestRestatedFacts.test_amendment_with_unchanged_value_remains_visible) ... ok
+test_keeps_original_and_reports_restatement (test_edgar.TestRestatedFacts.test_keeps_original_and_reports_restatement) ... ok
+test_baseline_success_rate_passes (test_eval_gate.EvaluationGateTests.test_baseline_success_rate_passes) ... ok
+test_below_threshold_fails (test_eval_gate.EvaluationGateTests.test_below_threshold_fails) ... ok
+test_empty_evaluation_fails (test_eval_gate.EvaluationGateTests.test_empty_evaluation_fails) ... ok
+test_incomplete_development_set_fails (test_eval_gate.EvaluationGateTests.test_incomplete_development_set_fails) ... ok
+test_minimum_case_count_must_be_positive (test_eval_gate.EvaluationGateTests.test_minimum_case_count_must_be_positive) ... ok
+test_policy_violation_fails_even_when_success_threshold_passes (test_eval_gate.EvaluationGateTests.test_policy_violation_fails_even_when_success_threshold_passes) ... ok
+test_threshold_outside_fraction_range_is_rejected (test_eval_gate.EvaluationGateTests.test_threshold_outside_fraction_range_is_rejected) ... ok
+test_critic_off_goes_straight_to_the_analyst (test_experiments.CriticSwitchTests.test_critic_off_goes_straight_to_the_analyst) ... ok
+test_failed_check_goes_back_to_the_writer (test_experiments.CriticSwitchTests.test_failed_check_goes_back_to_the_writer) ... ok
+test_apply_clears_the_previous_experiment (test_experiments.ExperimentFileTests.test_apply_clears_the_previous_experiment) ... ok
+test_by_name_and_switches (test_experiments.ExperimentFileTests.test_by_name_and_switches) ... ok
+test_every_experiment_file_loads (test_experiments.ExperimentFileTests.test_every_experiment_file_loads) ... ok
+test_unknown_switch_is_refused (test_experiments.ExperimentFileTests.test_unknown_switch_is_refused) ... ok
+test_plain_switch_loads_the_plain_chunks (test_experiments.PassageSwitchTests.test_plain_switch_loads_the_plain_chunks) ... ok
+test_bank_uses_pretax_figures (test_figures.FiguresTests.test_bank_uses_pretax_figures) ... ok
+test_checker_rejects_leftover_placeholders (test_figures.FiguresTests.test_checker_rejects_leftover_placeholders)
+A note edited by hand is re-checked without render(), so the checker must catch them. ... ok
+test_rendered_figures_always_pass_the_checker (test_figures.FiguresTests.test_rendered_figures_always_pass_the_checker) ... ok
+test_square_bracket_placeholders (test_figures.FiguresTests.test_square_bracket_placeholders)
+Live run 1cc35ab6 (3 Nov): the writer typed [GS_2024_margin] in a peer table; it was ... ok
+test_unknown_placeholder_reported (test_figures.FiguresTests.test_unknown_placeholder_reported) ... ok
+test_53_week_year_is_flagged (test_figures.LikeForLikeTests.test_53_week_year_is_flagged) ... ok
+test_notes_name_different_year_ends_and_mixed_bases (test_figures.LikeForLikeTests.test_notes_name_different_year_ends_and_mixed_bases) ... ok
+test_nothing_to_say_for_one_ordinary_company (test_figures.LikeForLikeTests.test_nothing_to_say_for_one_ordinary_company) ... ok
+test_one_line_must_not_set_operating_against_pretax_margin (test_figures.LikeForLikeTests.test_one_line_must_not_set_operating_against_pretax_margin) ... ok
+test_same_basis_on_one_line_is_fine (test_figures.LikeForLikeTests.test_same_basis_on_one_line_is_fine) ... ok
+test_undefined_kappa_is_none (test_gap_fixes.CalibrationTests.test_undefined_kappa_is_none) ... ok
+test_a_ratio_cannot_mix_companies (test_gap_fixes.DenominatorTests.test_a_ratio_cannot_mix_companies) ... ok
+test_a_ratio_cannot_mix_years (test_gap_fixes.DenominatorTests.test_a_ratio_cannot_mix_years) ... ok
+test_figures_offer_no_growth_from_a_loss_but_keep_change_from_zero (test_gap_fixes.DenominatorTests.test_figures_offer_no_growth_from_a_loss_but_keep_change_from_zero) ... ok
+test_growth_from_a_loss_is_refused (test_gap_fixes.DenominatorTests.test_growth_from_a_loss_is_refused) ... ok
+test_margin_difference_rejects_reversed_years (test_gap_fixes.DenominatorTests.test_margin_difference_rejects_reversed_years) ... ok
+test_margin_on_negative_revenue_is_refused (test_gap_fixes.DenominatorTests.test_margin_on_negative_revenue_is_refused) ... ok
+test_no_margin_on_non_positive_revenue (test_gap_fixes.DenominatorTests.test_no_margin_on_non_positive_revenue) ... ok
+test_ratio_rejects_different_annual_windows (test_gap_fixes.DenominatorTests.test_ratio_rejects_different_annual_windows) ... ok
+test_ratio_rejects_different_filings (test_gap_fixes.DenominatorTests.test_ratio_rejects_different_filings) ... ok
+test_ratio_rejects_reversed_or_wrong_concepts_even_if_arithmetic_matches (test_gap_fixes.DenominatorTests.test_ratio_rejects_reversed_or_wrong_concepts_even_if_arithmetic_matches) ... ok
+test_ratio_rejects_wrong_company_margin_basis (test_gap_fixes.DenominatorTests.test_ratio_rejects_wrong_company_margin_basis) ... ok
+test_a_judge_outage_blocks (test_gap_fixes.JudgeCoverageTests.test_a_judge_outage_blocks) ... ok
+test_all_cited_passages_are_shown_to_judge (test_gap_fixes.JudgeCoverageTests.test_all_cited_passages_are_shown_to_judge) ... ok
+test_an_empty_verdict_list_is_not_support (test_gap_fixes.JudgeCoverageTests.test_an_empty_verdict_list_is_not_support) ... ok
+test_code_verified_figures_are_masked_for_the_judge (test_gap_fixes.JudgeCoverageTests.test_code_verified_figures_are_masked_for_the_judge) ... ok
+test_code_verified_figures_do_not_exempt_surrounding_claims (test_gap_fixes.JudgeCoverageTests.test_code_verified_figures_do_not_exempt_surrounding_claims) ... ok
+test_duplicate_and_out_of_range_verdicts_do_not_count (test_gap_fixes.JudgeCoverageTests.test_duplicate_and_out_of_range_verdicts_do_not_count) ... ok
+test_every_cited_claim_is_judged_in_batches (test_gap_fixes.JudgeCoverageTests.test_every_cited_claim_is_judged_in_batches) ... ok
+test_invalid_verdict_container_and_boolean_index_fail_closed (test_gap_fixes.JudgeCoverageTests.test_invalid_verdict_container_and_boolean_index_fail_closed) ... ok
+test_judge_receives_fact_identity_for_verified_figures (test_gap_fixes.JudgeCoverageTests.test_judge_receives_fact_identity_for_verified_figures) ... ok
+test_live_c1_and_c2_require_the_judge (test_gap_fixes.JudgeCoverageTests.test_live_c1_and_c2_require_the_judge) ... ok
+test_long_claim_is_not_silently_truncated (test_gap_fixes.JudgeCoverageTests.test_long_claim_is_not_silently_truncated) ... ok
+test_missing_cited_passage_cannot_be_approved_by_judge (test_gap_fixes.JudgeCoverageTests.test_missing_cited_passage_cannot_be_approved_by_judge) ... ok
+test_note_review_blocks_stale_lifecycle_snapshot (test_gap_fixes.JudgeCoverageTests.test_note_review_blocks_stale_lifecycle_snapshot) ... ok
+test_only_exact_generated_suffix_is_exempt (test_gap_fixes.JudgeCoverageTests.test_only_exact_generated_suffix_is_exempt) ... ok
+test_required_critic_unavailable_blocks_approval (test_gap_fixes.JudgeCoverageTests.test_required_critic_unavailable_blocks_approval) ... ok
+test_short_claims_headings_and_tables_cannot_escape_review (test_gap_fixes.JudgeCoverageTests.test_short_claims_headings_and_tables_cannot_escape_review) ... ok
+test_title_is_checked_for_advice_and_uncited_claims (test_gap_fixes.JudgeCoverageTests.test_title_is_checked_for_advice_and_uncited_claims) ... ok
+test_uncited_lines_and_model_text_under_code_headings_are_counted (test_gap_fixes.JudgeCoverageTests.test_uncited_lines_and_model_text_under_code_headings_are_counted) ... ok
+test_uncited_substantive_line_blocks_approval (test_gap_fixes.JudgeCoverageTests.test_uncited_substantive_line_blocks_approval) ... ok
+test_a_recovered_error_is_not_a_limitation (test_gap_fixes.LimitationsTests.test_a_recovered_error_is_not_a_limitation) ... ok
+test_errors_and_missing_risk_year_become_limitations (test_gap_fixes.LimitationsTests.test_errors_and_missing_risk_year_become_limitations) ... ok
+test_risk_coverage_accounts_for_every_requested_pair (test_gap_fixes.LimitationsTests.test_risk_coverage_accounts_for_every_requested_pair) ... ok
+test_bank_operating_margin_request_is_explained (test_gap_fixes.PlanScopeTests.test_bank_operating_margin_request_is_explained) ... ok
+test_dropped_company_is_shown (test_gap_fixes.PlanScopeTests.test_dropped_company_is_shown) ... ok
+test_edited_plan_must_stay_in_coverage (test_gap_fixes.PlanScopeTests.test_edited_plan_must_stay_in_coverage) ... ok
+test_latest_request_discloses_historical_coverage (test_gap_fixes.PlanScopeTests.test_latest_request_discloses_historical_coverage) ... ok
+test_private_watchlist_is_not_sent_to_planner (test_gap_fixes.PlanScopeTests.test_private_watchlist_is_not_sent_to_planner) ... ok
+test_lost_response_is_unconfirmed_not_failed (test_gap_fixes.PublishOutcomeTests.test_lost_response_is_unconfirmed_not_failed) ... ok
+test_memory_failure_keeps_the_publication (test_gap_fixes.PublishOutcomeTests.test_memory_failure_keeps_the_publication) ... ok
+test_receipt_must_match_note_and_have_a_positive_integer_id (test_gap_fixes.PublishOutcomeTests.test_receipt_must_match_note_and_have_a_positive_integer_id) ... ok
+test_success_needs_a_note_id (test_gap_fixes.PublishOutcomeTests.test_success_needs_a_note_id) ... ok
+test_a_bare_amount_does_not_match_a_scaled_one (test_gap_fixes.QuoteScaleTests.test_a_bare_amount_does_not_match_a_scaled_one) ... ok
+test_same_scale_passes (test_gap_fixes.QuoteScaleTests.test_same_scale_passes) ... ok
+test_thousands_never_match_billions (test_gap_fixes.QuoteScaleTests.test_thousands_never_match_billions) ... ok
+test_risk_years (test_gap_fixes.RiskYearTests.test_risk_years) ... ok
+test_half_up (test_gap_fixes.RoundingAndSignTests.test_half_up) ... ok
+test_money_keeps_the_sign_in_front (test_gap_fixes.RoundingAndSignTests.test_money_keeps_the_sign_in_front) ... ok
+test_negative_fact_is_counted_and_verified (test_gap_fixes.RoundingAndSignTests.test_negative_fact_is_counted_and_verified) ... ok
+test_incomplete_review_fails_the_case (test_gap_fixes.ScorerTests.test_incomplete_review_fails_the_case) ... ok
+test_rounding_must_be_correct_at_the_shown_precision (test_gap_fixes.ScorerTests.test_rounding_must_be_correct_at_the_shown_precision) ... ok
+test_sign_matters_for_percentage_points (test_gap_fixes.ScorerTests.test_sign_matters_for_percentage_points) ... ok
+test_the_figure_must_belong_to_the_right_company (test_gap_fixes.ScorerTests.test_the_figure_must_belong_to_the_right_company) ... ok
+test_deleted_note_memory_is_not_restored (test_gap_fixes.StoreTests.test_deleted_note_memory_is_not_restored) ... ok
+test_frozen_playbook_is_a_fixed_snapshot (test_gap_fixes.StoreTests.test_frozen_playbook_is_a_fixed_snapshot) ... ok
+test_template_token_is_an_issue (test_gap_fixes.UnfinishedNoteTests.test_template_token_is_an_issue) ... ok
+test_c1_cancel_at_plan_gate_stops_before_research (test_graph.GraphShapeTests.test_c1_cancel_at_plan_gate_stops_before_research) ... ok
+test_confirmed_relative_years_allow_research_in_c1_and_c2 (test_graph.GraphShapeTests.test_confirmed_relative_years_allow_research_in_c1_and_c2) ... ok
+test_edited_plan_rejects_uncovered_years (test_graph.GraphShapeTests.test_edited_plan_rejects_uncovered_years) ... ok
+test_editing_and_confirming_relative_years_records_selected_range (test_graph.GraphShapeTests.test_editing_and_confirming_relative_years_records_selected_range) ... ok
+test_invalid_plan_decision_does_not_start_research (test_graph.GraphShapeTests.test_invalid_plan_decision_does_not_start_research) ... ok
+test_nodes_gates_and_loops (test_graph.GraphShapeTests.test_nodes_gates_and_loops) ... ok
+test_relative_years_block_research_without_explicit_confirmation (test_graph.GraphShapeTests.test_relative_years_block_research_without_explicit_confirmation) ... ok
+test_permission_budget_and_logging (test_graph.HooksTests.test_permission_budget_and_logging) ... ok
+test_budget_grows_with_companies (test_graph.SameBudgetTests.test_budget_grows_with_companies) ... ok
+test_fixed_override_applies_to_both (test_graph.SameBudgetTests.test_fixed_override_applies_to_both) ... ok
+test_one_and_three_company_splits (test_graph.SameBudgetTests.test_one_and_three_company_splits)
+Change 2b: one company leaves the quant 3 fetches + 3 sandbox calls (was 3 + 1). ... ok
+test_quant_can_retry_the_sandbox (test_graph.SameBudgetTests.test_quant_can_retry_the_sandbox)
+Live run 0c8cbf5f: run_python timed out twice and the third call was refused. ... ok
+test_team_shares_add_up_to_the_single_agent_budget (test_graph.SameBudgetTests.test_team_shares_add_up_to_the_single_agent_budget) ... ok
+test_two_company_split (test_graph.SameBudgetTests.test_two_company_split) ... ok
+test_specialist_records_its_own_cost (test_graph.SpecialistMeteringTests.test_specialist_records_its_own_cost) ... ok
+test_every_search_filings_example_shows_a_query (test_graph.SpecialistPromptTests.test_every_search_filings_example_shows_a_query) ... ok
+test_prompts_render (test_graph.SpecialistPromptTests.test_prompts_render) ... ok
+test_prompts_say_search_results_already_hold_the_text (test_graph.SpecialistPromptTests.test_prompts_say_search_results_already_hold_the_text)
+Change 2b: live runs c2test and 0c8cbf5f - risk-diffs spent their budget re-reading ... ok
+test_search_results_carry_the_full_passage_text (test_graph.SpecialistPromptTests.test_search_results_carry_the_full_passage_text)
+The prompt's claim is true at the real MCP server: search_filings returns full text. ... ok
+test_search_without_query_is_rejected_by_the_tool (test_graph.SpecialistPromptTests.test_search_without_query_is_rejected_by_the_tool)
+Reproduces the live failure at the real MCP server: no query -> not ok; with query -> ok. ... [11/11/26 13:55:27] WARNING  Invalid arguments for tool          server.py:1403
+                             'search_filings': [{'type':                       
+                             'missing_argument', 'loc':                        
+                             ('query',), 'msg': 'Missing                       
+                             required argument', 'input':                      
+                             {'company': 'MSFT', 'item':                       
+                             'item7', 'fiscal_year': 2024}}]                   
+ok
+test_c2_cancel_at_plan_gate_prevents_team_fanout (test_graph.TeamGraphTests.test_c2_cancel_at_plan_gate_prevents_team_fanout) ... ok
+test_team_shape (test_graph.TeamGraphTests.test_team_shape) ... ok
+test_parses_adapter_content_blocks (test_graph.ToolJsonTests.test_parses_adapter_content_blocks) ... ok
+test_bare_placeholder_gets_the_heading (test_graph.WhatChangedSectionTests.test_bare_placeholder_gets_the_heading) ... ok
+test_no_placeholder_appends_the_section (test_graph.WhatChangedSectionTests.test_no_placeholder_appends_the_section) ... ok
+test_writer_heading_is_not_repeated (test_graph.WhatChangedSectionTests.test_writer_heading_is_not_repeated) ... ok
+test_budget_is_not_a_defence_and_stays_on (test_guards.DefencesOffTests.test_budget_is_not_a_defence_and_stays_on) ... ok
+test_permission_watchlist_and_output_rules_all_switch_off (test_guards.DefencesOffTests.test_permission_watchlist_and_output_rules_all_switch_off) ... ok
+test_defences_off_lets_everything_in (test_guards.InputGuardTests.test_defences_off_lets_everything_in) ... ok
+test_injection_wording_check (test_guards.InputGuardTests.test_injection_wording_check) ... ok
+test_instructions_in_the_request_are_refused (test_guards.InputGuardTests.test_instructions_in_the_request_are_refused) ... ok
+test_normal_request_passes (test_guards.InputGuardTests.test_normal_request_passes) ... ok
+test_clean_results_are_untouched (test_guards.ScreenTests.test_clean_results_are_untouched) ... ok
+test_defences_off_lets_it_through (test_guards.ScreenTests.test_defences_off_lets_it_through) ... ok
+test_planted_instruction_is_withheld_and_the_rest_kept (test_guards.ScreenTests.test_planted_instruction_is_withheld_and_the_rest_kept) ... ok
+test_question_about_the_watchlist_is_an_injection (test_guards.ScreenTests.test_question_about_the_watchlist_is_an_injection) ... ok
+test_a_watchlist_company_the_analyst_put_in_the_plan_is_fine (test_guards.WatchlistTests.test_a_watchlist_company_the_analyst_put_in_the_plan_is_fine) ... ok
+test_hook_blocks_the_call (test_guards.WatchlistTests.test_hook_blocks_the_call) ... ok
+test_leak_is_found_by_ticker_or_name (test_guards.WatchlistTests.test_leak_is_found_by_ticker_or_name) ... ok
+test_note_must_not_name_it (test_guards.WatchlistTests.test_note_must_not_name_it) ... ok
+test_backward_item_reference_stays_in_section (test_ingest.SplitSectionsTests.test_backward_item_reference_stays_in_section) ... ok
+test_bare_item_link_is_not_a_heading (test_ingest.SplitSectionsTests.test_bare_item_link_is_not_a_heading) ... ok
+test_mdna_ends_at_auditor_report (test_ingest.SplitSectionsTests.test_mdna_ends_at_auditor_report) ... ok
+test_running_page_header_continues_section (test_ingest.SplitSectionsTests.test_running_page_header_continues_section) ... ok
+test_title_headings_for_unnumbered_filers (test_ingest.SplitSectionsTests.test_title_headings_for_unnumbered_filers) ... ok
+test_toc_entries_lose_to_real_sections (test_ingest.SplitSectionsTests.test_toc_entries_lose_to_real_sections) ... ok
+test_data_table_becomes_marked_rows_with_merged_cells (test_ingest.TableTests.test_data_table_becomes_marked_rows_with_merged_cells) ... ok
+test_item_text_and_tables_become_separate_passages (test_ingest.TableTests.test_item_text_and_tables_become_separate_passages) ... ok
+test_large_table_split_by_rows_repeats_header (test_ingest.TableTests.test_large_table_split_by_rows_repeats_header) ... ok
+test_layout_table_stays_plain_text (test_ingest.TableTests.test_layout_table_stays_plain_text) ... ok
+test_toc_rows_inside_table_are_not_headings (test_ingest.TableTests.test_toc_rows_inside_table_are_not_headings) ... ok
+test_conflicting_legacy_duplicates_return_to_pending_review (test_lessons.PlaybookTests.test_conflicting_legacy_duplicates_return_to_pending_review) ... ok
+test_exact_duplicate_lessons_merge_sources_and_keep_one_review_status (test_lessons.PlaybookTests.test_exact_duplicate_lessons_merge_sources_and_keep_one_review_status) ... ok
+test_frozen_playbook_blocks_changes (test_lessons.PlaybookTests.test_frozen_playbook_blocks_changes) ... ok
+test_only_relevant_lessons_retrieved (test_lessons.PlaybookTests.test_only_relevant_lessons_retrieved) ... ok
+test_pending_lessons_are_not_used_until_approved (test_lessons.PlaybookTests.test_pending_lessons_are_not_used_until_approved) ... ok
+test_rejected_lesson_kept_with_reason (test_lessons.PlaybookTests.test_rejected_lesson_kept_with_reason) ... ok
+test_committed_config_contains_all_roles_and_prompts (test_llm_config.LLMConfigTests.test_committed_config_contains_all_roles_and_prompts) ... ok
+test_config_templates_render_required_fields (test_llm_config.LLMConfigTests.test_config_templates_render_required_fields) ... ok
+test_env_example_contains_only_api_key_setting (test_llm_config.LLMConfigTests.test_env_example_contains_only_api_key_setting) ... ok
+test_formatting_missing_value_fails_clearly (test_llm_config.LLMConfigTests.test_formatting_missing_value_fails_clearly) ... ok
+test_invalid_prompt_placeholder_fails_validation (test_llm_config.LLMConfigTests.test_invalid_prompt_placeholder_fails_validation) ... ok
+test_missing_config_fails_clearly (test_llm_config.LLMConfigTests.test_missing_config_fails_clearly) ... ok
+test_optional_output_limit_and_invalid_values (test_llm_config.LLMConfigTests.test_optional_output_limit_and_invalid_values) ... ok
+test_output_limit_is_applied_to_agent_and_judge (test_llm_config.LLMConfigTests.test_output_limit_is_applied_to_agent_and_judge) ... ok
+test_reply_length_is_capped (test_llm_config.LLMConfigTests.test_reply_length_is_capped) ... ok
+test_unknown_config_version_fails_validation (test_llm_config.LLMConfigTests.test_unknown_config_version_fails_validation) ... ok
+test_current_figures_round_trip_through_parser (test_memory.MemoryTests.test_current_figures_round_trip_through_parser) ... ok
+test_figures_parsed_from_verified_tags (test_memory.MemoryTests.test_figures_parsed_from_verified_tags) ... ok
+test_inactive_notes_are_excluded_from_all_memory_views (test_memory.MemoryTests.test_inactive_notes_are_excluded_from_all_memory_views) ... ok
+test_preferences_add_and_forget (test_memory.MemoryTests.test_preferences_add_and_forget) ... ok
+test_remember_note_then_recall_and_coverage (test_memory.MemoryTests.test_remember_note_then_recall_and_coverage) ... ok
+test_restated_figure_is_flagged_not_called_a_change (test_memory.MemoryTests.test_restated_figure_is_flagged_not_called_a_change) ... ok
+test_unchanged_when_same_year_and_value (test_memory.MemoryTests.test_unchanged_when_same_year_and_value) ... ok
+test_watchlist_keeps_covered_tickers_and_clears (test_memory.MemoryTests.test_watchlist_keeps_covered_tickers_and_clears) ... ok
+test_what_changed_is_computed_by_code (test_memory.MemoryTests.test_what_changed_is_computed_by_code) ... ok
+test_small_context_untouched (test_memory.TrimTests.test_small_context_untouched) ... ok
+test_trim_keeps_head_and_starts_on_ai_message (test_memory.TrimTests.test_trim_keeps_head_and_starts_on_ai_message) ... ok
+test_specialist_gets_an_error_not_a_crash_for_a_tool_the_run_lacks (test_memory_off.MissingToolTests.test_specialist_gets_an_error_not_a_crash_for_a_tool_the_run_lacks) ... ok
+test_evaluation_runs_never_get_past_notes (test_memory_off.ResearchToolsTests.test_evaluation_runs_never_get_past_notes) ... ok
+test_memory_off_drops_past_notes (test_memory_off.ResearchToolsTests.test_memory_off_drops_past_notes) ... ok
+test_memory_on_keeps_past_notes_and_never_the_write_tool (test_memory_off.ResearchToolsTests.test_memory_on_keeps_past_notes_and_never_the_write_tool) ... ok
+test_api_agent_runner_uses_deployed_mcp_configuration (test_ops_smoke.DeploymentSmokeTests.test_api_agent_runner_uses_deployed_mcp_configuration) ... ok
+test_smoke_fails_when_accuracy_alert_is_missing (test_ops_smoke.DeploymentSmokeTests.test_smoke_fails_when_accuracy_alert_is_missing) ... ok
+test_smoke_fails_when_metrics_are_not_scraped (test_ops_smoke.DeploymentSmokeTests.test_smoke_fails_when_metrics_are_not_scraped) ... ok
+test_smoke_passes_only_when_every_service_is_healthy (test_ops_smoke.DeploymentSmokeTests.test_smoke_passes_only_when_every_service_is_healthy) ... ok
+test_ui_blocks_approval_until_note_is_verified (test_ops_smoke.DeploymentSmokeTests.test_ui_blocks_approval_until_note_is_verified) ... ok
+test_banks_are_on_pretax_margin (test_plan_assumptions.PlanAssumptionTests.test_banks_are_on_pretax_margin) ... ok
+test_baseline_does_not_retrieve_or_call_model_for_unsupported_period (test_plan_assumptions.PlanAssumptionTests.test_baseline_does_not_retrieve_or_call_model_for_unsupported_period) ... ok
+test_explicit_unsupported_periods_are_declined_before_planning (test_plan_assumptions.PlanAssumptionTests.test_explicit_unsupported_periods_are_declined_before_planning) ... ok
+test_explicit_years_do_not_require_extra_confirmation (test_plan_assumptions.PlanAssumptionTests.test_explicit_years_do_not_require_extra_confirmation) ... ok
+test_last_three_years_is_spelled_out (test_plan_assumptions.PlanAssumptionTests.test_last_three_years_is_spelled_out) ... ok
+test_named_years_need_no_explanation (test_plan_assumptions.PlanAssumptionTests.test_named_years_need_no_explanation) ... ok
+test_no_year_named (test_plan_assumptions.PlanAssumptionTests.test_no_year_named) ... ok
+test_relative_period_selects_latest_covered_years (test_plan_assumptions.PlanAssumptionTests.test_relative_period_selects_latest_covered_years) ... ok
+test_the_plan_gate_carries_them (test_plan_assumptions.PlanAssumptionTests.test_the_plan_gate_carries_them) ... ok
+test_no_company_searches_question_as_is (test_query.DecomposeTests.test_no_company_searches_question_as_is) ... ok
+test_one_subquery_per_company_year (test_query.DecomposeTests.test_one_subquery_per_company_year) ... ok
+test_rewrite_keeps_question_if_nothing_left (test_query.DecomposeTests.test_rewrite_keeps_question_if_nothing_left) ... ok
+test_rewrite_strips_names_tickers_and_years (test_query.DecomposeTests.test_rewrite_strips_names_tickers_and_years) ... ok
+test_lowercase_short_tickers_are_not_companies (test_query.FindTests.test_lowercase_short_tickers_are_not_companies) ... ok
+test_multiword_names (test_query.FindTests.test_multiword_names) ... ok
+test_names_and_tickers_in_order (test_query.FindTests.test_names_and_tickers_in_order) ... ok
+test_years (test_query.FindTests.test_years) ... ok
+test_round_robin_gives_every_company_evidence (test_query.SearchDecomposedTests.test_round_robin_gives_every_company_evidence) ... ok
+test_load_and_validate (test_redteam.AttackFileTests.test_load_and_validate) ... ok
+test_guard_events_are_listed (test_redteam.FalseBlockTests.test_guard_events_are_listed) ... ok
+test_summary_counts_false_blocks_outside_refusal_cases (test_redteam.FalseBlockTests.test_summary_counts_false_blocks_outside_refusal_cases) ... ok
+test_advice_counts_only_in_a_note_that_passed_its_checks (test_redteam.OutcomeTests.test_advice_counts_only_in_a_note_that_passed_its_checks) ... ok
+test_c2_sandbox_result_from_the_handoff_log (test_redteam.OutcomeTests.test_c2_sandbox_result_from_the_handoff_log) ... ok
+test_refused_request_is_not_answered (test_redteam.OutcomeTests.test_refused_request_is_not_answered) ... ok
+test_watchlist_in_a_search_that_reached_the_server (test_redteam.OutcomeTests.test_watchlist_in_a_search_that_reached_the_server) ... ok
+test_passage_for_an_uncovered_company_is_refused (test_redteam.PlantTests.test_passage_for_an_uncovered_company_is_refused) ... ok
+test_planted_passage_joins_keyword_search_and_lookup_then_leaves (test_redteam.PlantTests.test_planted_passage_joins_keyword_search_and_lookup_then_leaves) ... ok
+test_change_during_review_makes_check_incomplete (test_review_snapshot.SnapshotTests.test_change_during_review_makes_check_incomplete) ... ok
+test_missing_evidence_fails_closed (test_review_snapshot.SnapshotTests.test_missing_evidence_fails_closed) ... ok
+test_old_checkpoint_without_snapshot_cannot_be_approved (test_review_snapshot.SnapshotTests.test_old_checkpoint_without_snapshot_cannot_be_approved) ... ok
+test_snapshot_binds_fact_passage_policy_and_exact_note (test_review_snapshot.SnapshotTests.test_snapshot_binds_fact_passage_policy_and_exact_note) ... ok
+test_source_change_after_review_blocks_approval_and_publication (test_review_snapshot.SnapshotTests.test_source_change_after_review_blocks_approval_and_publication) ... ok
+test_source_file_change_invalidates_snapshot_even_with_cached_passage (test_review_snapshot.SnapshotTests.test_source_file_change_invalidates_snapshot_even_with_cached_passage) ... ok
+test_citations_alone_are_not_a_pass (test_risk_semantic.RiskSemanticTests.test_citations_alone_are_not_a_pass) ... ok
+test_incorrect_answer_fails_even_with_both_citations (test_risk_semantic.RiskSemanticTests.test_incorrect_answer_fails_even_with_both_citations) ... ok
+test_judge_receives_reference_only_at_evaluation_boundary (test_risk_semantic.RiskSemanticTests.test_judge_receives_reference_only_at_evaluation_boundary) ... ok
+test_malformed_and_unavailable_judge_fail_closed (test_risk_semantic.RiskSemanticTests.test_malformed_and_unavailable_judge_fail_closed) ... ok
+test_missing_labels_or_passages_fail_closed (test_risk_semantic.RiskSemanticTests.test_missing_labels_or_passages_fail_closed) ... ok
+test_run_errors_do_not_record_secret_bearing_provider_messages (test_risk_semantic.RiskSemanticTests.test_run_errors_do_not_record_secret_bearing_provider_messages) ... ok
+test_development_fixture_works (test_role6_evaluation.EvaluationAuditTests.test_development_fixture_works) ... ok
+test_duplicate_row_fails (test_role6_evaluation.EvaluationAuditTests.test_duplicate_row_fails) ... ok
+test_error_cannot_be_marked_success (test_role6_evaluation.EvaluationAuditTests.test_error_cannot_be_marked_success) ... ok
+test_error_with_unavailable_tokens_is_auditable (test_role6_evaluation.EvaluationAuditTests.test_error_with_unavailable_tokens_is_auditable) ... ok
+test_external_heldout_and_results_must_be_outside_repository (test_role6_evaluation.EvaluationAuditTests.test_external_heldout_and_results_must_be_outside_repository) ... ok
+test_heldout_aggregator_happy_path (test_role6_evaluation.EvaluationAuditTests.test_heldout_aggregator_happy_path) ... ok
+test_incorrect_percent_fails (test_role6_evaluation.EvaluationAuditTests.test_incorrect_percent_fails) ... ok
+test_missing_case_fails (test_role6_evaluation.EvaluationAuditTests.test_missing_case_fails) ... ok
+test_pooled_share_excludes_zero_division_rows (test_role6_evaluation.EvaluationAuditTests.test_pooled_share_excludes_zero_division_rows) ... ok
+test_saved_summary_mismatch_fails (test_role6_evaluation.EvaluationAuditTests.test_saved_summary_mismatch_fails) ... ok
+test_three_run_aggregator_requires_real_distinct_heldout_data (test_role6_evaluation.EvaluationAuditTests.test_three_run_aggregator_requires_real_distinct_heldout_data) ... ok
+test_wrong_gold_type_fails (test_role6_evaluation.EvaluationAuditTests.test_wrong_gold_type_fails) ... ok
+test_ci_allows_verified_success_with_zero_errors (test_role6_evaluation.EvaluationRunnerSafetyTests.test_ci_allows_verified_success_with_zero_errors) ... ok
+test_ci_fails_if_any_agent_run_errors (test_role6_evaluation.EvaluationRunnerSafetyTests.test_ci_fails_if_any_agent_run_errors) ... ok
+test_missing_heldout_is_explicit_error (test_role6_evaluation.EvaluationRunnerSafetyTests.test_missing_heldout_is_explicit_error) ... ok
+test_accepts_any_supported_company_and_year_count (test_scope.ScopeTests.test_accepts_any_supported_company_and_year_count) ... ok
+test_direct_construction_cannot_bypass_scope (test_scope.ScopeTests.test_direct_construction_cannot_bypass_scope) ... ok
+test_normalizes_names_tickers_and_year_order (test_scope.ScopeTests.test_normalizes_names_tickers_and_year_order) ... ok
+test_rejects_invalid_years (test_scope.ScopeTests.test_rejects_invalid_years) ... ok
+test_rejects_unsupported_or_duplicate_companies (test_scope.ScopeTests.test_rejects_unsupported_or_duplicate_companies) ... ok
+test_approval_secret_reaches_only_the_portal (test_secrets.SecretScopeTests.test_approval_secret_reaches_only_the_portal) ... ok
+test_model_key_reaches_no_server (test_secrets.SecretScopeTests.test_model_key_reaches_no_server) ... ok
+test_ordinary_config_is_still_passed (test_secrets.SecretScopeTests.test_ordinary_config_is_still_passed)
+Only secrets are scoped; normal knobs still reach every server. ... ok
+test_changed_register_invalidates_review_snapshot (test_source_review.SourceReviewTests.test_changed_register_invalidates_review_snapshot) ... ok
+test_changed_reviewed_fact_and_bad_register_fail_closed (test_source_review.SourceReviewTests.test_changed_reviewed_fact_and_bad_register_fail_closed) ... ok
+test_excluded_original_and_reviewed_replacement_across_tool_paths (test_source_review.SourceReviewTests.test_excluded_original_and_reviewed_replacement_across_tool_paths) ... ok
+test_incompatible_reviewed_inputs_do_not_generate_margins (test_source_review.SourceReviewTests.test_incompatible_reviewed_inputs_do_not_generate_margins) ... ok
+test_missing_registry_and_quarterly_data_fail_explicitly (test_source_review.SourceReviewTests.test_missing_registry_and_quarterly_data_fail_explicitly) ... ok
+test_quarterly_chart_and_c0_disclose_enforced_limit (test_source_review.SourceReviewTests.test_quarterly_chart_and_c0_disclose_enforced_limit) ... ok
+test_unconfigured_mode_is_marked_unverified (test_source_review.SourceReviewTests.test_unconfigured_mode_is_marked_unverified) ... ok
+test_unreviewed_later_value_is_never_used_as_a_replacement (test_source_review.SourceReviewTests.test_unreviewed_later_value_is_never_used_as_a_replacement) ... ok
+test_c1_runs_from_request_to_published_note_with_the_same_budget (test_team_e2e.SingleAgentEndToEndTests.test_c1_runs_from_request_to_published_note_with_the_same_budget) ... ok
+test_c1_stops_researching_when_a_turn_would_exceed_the_budget (test_team_e2e.SingleAgentEndToEndTests.test_c1_stops_researching_when_a_turn_would_exceed_the_budget) ... ok
+test_c2_runs_from_request_to_published_note (test_team_e2e.TeamEndToEndTests.test_c2_runs_from_request_to_published_note) ... ok
+test_c2_specialist_budget_is_enforced_by_the_hook (test_team_e2e.TeamEndToEndTests.test_c2_specialist_budget_is_enforced_by_the_hook) ... ok
+test_run_python_blocks_network_and_files (test_tools.DockerSandboxTests.test_run_python_blocks_network_and_files) ... skipped 'Docker or the analystdesk-sandbox image is not available'
+test_run_python_calculates (test_tools.DockerSandboxTests.test_run_python_calculates) ... skipped 'Docker or the analystdesk-sandbox image is not available'
+test_run_python_reports_errors_and_timeouts (test_tools.DockerSandboxTests.test_run_python_reports_errors_and_timeouts) ... skipped 'Docker or the analystdesk-sandbox image is not available'
+test_run_python_sees_no_secrets (test_tools.DockerSandboxTests.test_run_python_sees_no_secrets) ... skipped 'Docker or the analystdesk-sandbox image is not available'
+test_get_fact_rejects_non_annual_or_ineligible_form (test_tools.EdgarTests.test_get_fact_rejects_non_annual_or_ineligible_form) ... ok
+test_get_fact_verifies_exact_filing (test_tools.EdgarTests.test_get_fact_verifies_exact_filing) ... ok
+test_get_financials (test_tools.EdgarTests.test_get_financials) ... ok
+test_get_financials_bank_and_restatement (test_tools.EdgarTests.test_get_financials_bank_and_restatement) ... ok
+test_get_financials_out_of_coverage (test_tools.EdgarTests.test_get_financials_out_of_coverage) ... ok
+test_list_filings (test_tools.EdgarTests.test_list_filings) ... ok
+test_get_passage (test_tools.FilingsKbTests.test_get_passage) ... ok
+test_search_filings_decomposes_without_filters (test_tools.FilingsKbTests.test_search_filings_decomposes_without_filters) ... ok
+test_search_filings_out_of_coverage_is_an_error_result (test_tools.FilingsKbTests.test_search_filings_out_of_coverage_is_an_error_result) ... ok
+test_search_filings_with_filters (test_tools.FilingsKbTests.test_search_filings_with_filters) ... ok
+test_edit_after_approval_invalidates_it (test_tools.PortalTests.test_edit_after_approval_invalidates_it) ... ok
+test_forged_token_is_refused (test_tools.PortalTests.test_forged_token_is_refused) ... ok
+test_get_past_notes (test_tools.PortalTests.test_get_past_notes) ... ok
+test_graph_review_context_requires_passing_check_and_bound_snapshot (test_tools.PortalTests.test_graph_review_context_requires_passing_check_and_bound_snapshot) ... ok
+test_publication_rejects_context_if_lifecycle_changes_after_approval (test_tools.PortalTests.test_publication_rejects_context_if_lifecycle_changes_after_approval) ... ok
+test_publish_note_with_valid_approval (test_tools.PortalTests.test_publish_note_with_valid_approval) ... ok
+test_real_signature_binds_lifecycle_fields (test_tools.PortalTests.test_real_signature_binds_lifecycle_fields) ... ok
+test_registered_key_enforces_signature_on_lifecycle_digest (test_tools.PortalTests.test_registered_key_enforces_signature_on_lifecycle_digest) ... ok
+test_signed_review_context_is_persisted_without_exposing_it_to_past_notes (test_tools.PortalTests.test_signed_review_context_is_persisted_without_exposing_it_to_past_notes) ... ok
+test_supersession_requires_new_reviewed_active_same_ticker_note (test_tools.PortalTests.test_supersession_requires_new_reviewed_active_same_ticker_note) ... ok
+test_tampering_with_signed_review_context_invalidates_token (test_tools.PortalTests.test_tampering_with_signed_review_context_invalidates_token) ... ok
+test_withdrawal_preserves_audit_and_hides_note_from_retrieval (test_tools.PortalTests.test_withdrawal_preserves_audit_and_hides_note_from_retrieval) ... ok
+test_every_tool_is_typed_and_marked_read_or_write (test_tools.RegistryTests.test_every_tool_is_typed_and_marked_read_or_write) ... ok
+test_only_publisher_can_write (test_tools.RegistryTests.test_only_publisher_can_write) ... ok
+test_run_python_blocks_network_and_files (test_tools.SandboxTests.test_run_python_blocks_network_and_files) ... ok
+test_run_python_calculates (test_tools.SandboxTests.test_run_python_calculates) ... ok
+test_run_python_reports_errors_and_timeouts (test_tools.SandboxTests.test_run_python_reports_errors_and_timeouts) ... ok
+test_run_python_sees_no_secrets (test_tools.SandboxTests.test_run_python_sees_no_secrets) ... ok
+
+----------------------------------------------------------------------
+Ran 538 tests in 32.143s
+
+OK (skipped=5)

@@ -1,0 +1,13 @@
+{
+  "successful": true,
+  "run": 550,
+  "passed": 545,
+  "skipped": 5,
+  "previous_test_ids_preserved": true,
+  "new_command_tests": 3,
+  "single_operations_entrypoint": "scripts/operations/ops.py",
+  "existing_smoke_and_recovery_bodies_preserved": true,
+  "old_scripts_removed": true,
+  "live_http_or_memory_recovery_executed": false,
+  "provider_calls": false
+}

@@ -1,0 +1,7 @@
+{
+  "old": "data/evaluation/retrieval_queries.jsonl",
+  "new": "data/evaluation/retrieval_cases.jsonl",
+  "sha256_before_and_after": "4069edf7454939e884d744999fb90c13d57c3b1df37aa619429eda932cf6ba96",
+  "contents_unchanged": true,
+  "archived_runs_and_query_snapshots_unchanged": true
+}

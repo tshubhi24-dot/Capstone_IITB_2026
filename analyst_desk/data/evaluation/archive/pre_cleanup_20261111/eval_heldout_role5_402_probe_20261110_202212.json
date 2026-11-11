@@ -1,0 +1,48 @@
+{
+ "split": "heldout",
+ "tag": "role5_402_probe_20261110_202212",
+ "price_per_m": 0.52,
+ "lessons": true,
+ "playbook": {
+  "frozen": true,
+  "version": "8f1608da4cec",
+  "lessons": 3
+ },
+ "experiment": null,
+ "rows": {
+  "c2": [
+   {
+    "id": "h-r04",
+    "type": "risk_change",
+    "success": false,
+    "reason": "error: APIStatusError: HTTP 402",
+    "policy_violation": false,
+    "tokens": null,
+    "seconds": 6.0,
+    "tools": null,
+    "error": "APIStatusError: HTTP 402",
+    "blocks": null,
+    "config": "c2",
+    "run_id": null
+   }
+  ]
+ },
+ "summary": {
+  "c2": {
+   "cases": 1,
+   "success": 0,
+   "by_type": {
+    "risk_change": "0/1"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 1,
+   "timeouts": 0,
+   "verified_share_mean": null,
+   "tokens_mean": 0,
+   "cost_per_case_usd": 0.0,
+   "latency_median_s": 6.0,
+   "latency_p95_s": 6.0
+  }
+ }
+}

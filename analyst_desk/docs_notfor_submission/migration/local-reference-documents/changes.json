@@ -1,0 +1,19 @@
+{
+  "moves": {
+    "analyst_desk/capstone_projects_Analyst_Desk.pdf": "analyst_desk/not_for_submission/documents/capstone_projects_Analyst_Desk.pdf",
+    "analyst_desk/CURRENT_IMPLEMENTATION_GAP_ANALYSIS.docx": "analyst_desk/not_for_submission/documents/CURRENT_IMPLEMENTATION_GAP_ANALYSIS.docx",
+    "AGENTS.md": "analyst_desk/not_for_submission/documents/AGENTS.md"
+  },
+  "original_file_hashes": {
+    "capstone_projects_Analyst_Desk.pdf": "77b5180f65951bb3f5665d42fc972d4b180c2648f60cb3c600f4b2e085f43acb",
+    "CURRENT_IMPLEMENTATION_GAP_ANALYSIS.docx": "f478a4ad2f1329da1ff6728801ee1d6e81fb4a2ff0474fcdce0d62fa7e870c18",
+    "AGENTS.md": "4a609ca539f7e3f9f3dcbbdac76d2b81640ffc5cfc10c1728cfa4c10011cc2cd"
+  },
+  "bytes_preserved": true,
+  "root_agents_discovery_pointer_retained": true,
+  "updated_current_consumers": [
+    "README.md",
+    "analyst_desk/docs_notfor_submission/PROJECT_CLEANUP_PLAN.md",
+    "analyst_desk/docs_notfor_submission/README.md"
+  ]
+}

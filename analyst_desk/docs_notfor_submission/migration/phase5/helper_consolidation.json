@@ -1,0 +1,7 @@
+{
+  "removed_duplicate": "analystdesk/memory/playbook.py::_now",
+  "canonical": "analystdesk/memory/store.py::_now",
+  "equivalence": "AST including signature/body identical before extraction",
+  "new_dependency": "none; playbook already imports store.open_store",
+  "format": "UTC ISO timestamp with seconds, unchanged"
+}

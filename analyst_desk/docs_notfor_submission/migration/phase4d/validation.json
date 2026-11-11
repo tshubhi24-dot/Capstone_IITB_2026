@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "checkpoint": "phase4d",
+  "run": 538,
+  "passed": 533,
+  "errors": [],
+  "failures": [],
+  "skipped": 5,
+  "seconds": 31.67,
+  "exit_code": 0,
+  "all_original_test_ids_preserved_after_explicit_mapping": true,
+  "skip_reasons_unchanged": true,
+  "no_paid_api_calls": true
+}

@@ -1,0 +1,28 @@
+{
+  "moves": {
+    "scripts/data/__init__.py": "not_for_submission/scripts/data/__init__.py",
+    "scripts/data/make_dev_cases.py": "not_for_submission/scripts/data/make_dev_cases.py",
+    "scripts/data/make_heldout_cases.py": "not_for_submission/scripts/data/make_heldout_cases.py",
+    "scripts/data/make_redteam_attacks.py": "not_for_submission/scripts/data/make_redteam_attacks.py",
+    "scripts/operations/list_tools.py": "not_for_submission/scripts/operations/list_tools.py"
+  },
+  "removed": {
+    "scripts/evaluation/eval_report.py": "Legacy report duplicates current audit reporting; hardcoded 20-case narrative and current-config provenance are obsolete.",
+    "scripts/evaluation/results_tables.py": "Legacy report pins old run filenames/24-case held-out and selects only first red-team config; unsupported for current runs."
+  },
+  "updated_consumers": [
+    "analyst_desk/docs_notfor_submission/architecture/viva_notes.md",
+    "analyst_desk/README.md",
+    "analyst_desk/submission/experiment_log.md",
+    "analyst_desk/analystdesk/ui/research.py",
+    "analyst_desk/docs_notfor_submission/evaluation_guide.md",
+    "analyst_desk/docs_notfor_submission/tools.md",
+    "analyst_desk/submission/viva_prep.md",
+    "analyst_desk/docs_notfor_submission/CONSOLIDATED_SPECIFICATION_REVIEW.md",
+    "analyst_desk/analystdesk/memory/playbook.py",
+    "analyst_desk/docs_notfor_submission/README.md",
+    "analyst_desk/docs_notfor_submission/policies/memory_policy.md",
+    "analyst_desk/submission/work_log.md"
+  ],
+  "archive": ".migration-local/scripts-classification/originals.zip"
+}

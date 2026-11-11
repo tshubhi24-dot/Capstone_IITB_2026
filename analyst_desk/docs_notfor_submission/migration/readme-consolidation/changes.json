@@ -1,0 +1,12 @@
+{
+  "removed": "analyst_desk/README.md",
+  "canonical": "README.md",
+  "updated_current_consumers": [
+    "analyst_desk/submission/README.md",
+    "analyst_desk/docs_notfor_submission/PRODUCT_CHECKLIST.md",
+    "analyst_desk/docs_notfor_submission/SETUP.md"
+  ],
+  "new_missing_file_links": [],
+  "preexisting_missing_file_links": [],
+  "recovery_archive": ".migration-local/readme-consolidation/originals.zip"
+}

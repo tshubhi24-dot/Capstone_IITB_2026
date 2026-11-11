@@ -1,0 +1,8 @@
+{
+  "manifest_bound_backup_records_unchanged": 21,
+  "actual_moves": 6,
+  "retained_originals": 16,
+  "binary_editions_unchanged": 7,
+  "moved_markdown_content_preserved_except_relative_link_targets": true,
+  "recovery_archive_valid": true
+}

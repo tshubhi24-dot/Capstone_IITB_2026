@@ -1,0 +1,14 @@
+{
+  "moves": {
+    "analystdesk/api.py": "analystdesk/web/api.py"
+  },
+  "module_map": {
+    "analystdesk.api": "analystdesk.web.api"
+  },
+  "updated_python_files": [
+    "analystdesk\\web\\api.py",
+    "analystdesk\\ui\\dashboard.py",
+    "tests\\integration\\test_api.py",
+    "tests\\integration\\test_ops_smoke.py"
+  ]
+}

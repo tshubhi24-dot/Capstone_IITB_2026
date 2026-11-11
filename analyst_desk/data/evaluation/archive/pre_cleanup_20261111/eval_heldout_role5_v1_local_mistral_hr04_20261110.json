@@ -1,0 +1,57 @@
+{
+ "split": "heldout",
+ "tag": "role5_v1_local_mistral_hr04_20261110",
+ "price_per_m": 0,
+ "lessons": true,
+ "playbook": {
+  "frozen": true,
+  "version": "8f1608da4cec",
+  "lessons": 3
+ },
+ "experiment": null,
+ "rows": {
+  "c2": [
+   {
+    "id": "h-r04",
+    "type": "risk_change",
+    "success": false,
+    "reason": "error: OpenAITimeoutError: Request timed out.",
+    "policy_violation": false,
+    "tokens": null,
+    "seconds": 451.3,
+    "tools": null,
+    "error": "OpenAITimeoutError: Request timed out.",
+    "blocks": null,
+    "config": "c2",
+    "run_id": null
+   }
+  ]
+ },
+ "summary": {
+  "c2": {
+   "cases": 1,
+   "success": 0,
+   "by_type": {
+    "risk_change": "0/1"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 1,
+   "timeouts": 0,
+   "verified_share_mean": null,
+   "tokens_mean": 0,
+   "cost_per_case_usd": 0.0,
+   "latency_median_s": 451.3,
+   "latency_p95_s": 451.3
+  }
+ },
+ "diagnostic": {
+  "provider": "local Ollama",
+  "base_url": "http://127.0.0.1:11434/v1",
+  "agent_model": "mistral:latest",
+  "judge_model": "mistral:latest",
+  "same_model_for_agent_and_judge": true,
+  "not_comparable_to_original_c2": true,
+  "cost_note": "No provider inference charge; local compute/electricity costs excluded."
+ }
+}

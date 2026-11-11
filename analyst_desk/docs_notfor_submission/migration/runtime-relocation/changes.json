@@ -1,0 +1,13 @@
+{
+  "moves": {
+    "data/index/": ".runtime/index/",
+    "data/memory/": ".runtime/memory/"
+  },
+  "shared_locator": "analystdesk.paths.RUNTIME_ROOT",
+  "memory_override": "Existing MEMORY_DB override preserved",
+  "docker_volume_names": "index and memory unchanged; container mount destinations updated",
+  "records_inspected": false,
+  "all_original_file_hashes_verified_locally": true,
+  "private_hash_inventory": ".migration-local/runtime-relocation/file_hashes.json",
+  "live_services_started_or_stopped": false
+}

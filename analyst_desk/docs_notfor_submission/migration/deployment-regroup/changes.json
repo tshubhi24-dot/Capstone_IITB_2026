@@ -1,0 +1,27 @@
+{
+  "moves": {
+    "start.sh": "deployment/start.sh",
+    "stop.sh": "deployment/stop.sh",
+    "start.bat": "deployment/start.bat",
+    "stop.bat": "deployment/stop.bat",
+    "app.py": "deployment/app.py",
+    "Dockerfile": "deployment/Dockerfile",
+    "setup.bat": "deployment/setup.bat",
+    "compose.yaml": "deployment/compose.yaml"
+  },
+  "updated_consumers": [
+    "analyst_desk/not_for_submission/documents/AGENTS.md",
+    "analyst_desk/docs_notfor_submission/SETUP.md",
+    "README.md",
+    "analyst_desk/docs_notfor_submission/architecture/architecture.md",
+    ".github/workflows/ci.yml",
+    "analyst_desk/analystdesk/ui/dashboard.py",
+    ".github/workflows/docker-image.yml",
+    "analyst_desk/docs_notfor_submission/plan.md",
+    "analyst_desk/submission/demo_script.md",
+    "analyst_desk/docs_notfor_submission/architecture/viva_notes.md",
+    "analyst_desk/submission/README.md"
+  ],
+  "compose_project_directory": "analyst_desk/",
+  "image_owns_app_launcher_command": true
+}

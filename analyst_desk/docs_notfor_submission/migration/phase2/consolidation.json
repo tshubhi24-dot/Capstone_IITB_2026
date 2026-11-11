@@ -1,0 +1,39 @@
+{
+  "merged_navigation_files": [
+    "jayshree/analyst_desk/docs/architecture/README.md",
+    "jayshree/analyst_desk/docs/policies/README.md",
+    "jayshree/analyst_desk/docs/reviews/README.md",
+    "jayshree/analyst_desk/docs/evidence/README.md",
+    "jayshree/analyst_desk/docs/DOCUMENT_SOURCES.md"
+  ],
+  "removed_grouped_aliases": {
+    "jayshree/analyst_desk/docs/reviews/C0_C1_C2_COMPARISON.md": "jayshree/analyst_desk/docs/C0_C1_C2_COMPARISON.md",
+    "jayshree/analyst_desk/docs/reviews/CONSOLIDATED_SPECIFICATION_REVIEW.md": "jayshree/analyst_desk/docs/CONSOLIDATED_SPECIFICATION_REVIEW.md",
+    "jayshree/analyst_desk/docs/reviews/DEVELOPMENT_CASE_DOMAIN_REVIEW.md": "jayshree/analyst_desk/docs/DEVELOPMENT_CASE_DOMAIN_REVIEW.md",
+    "jayshree/analyst_desk/docs/reviews/FINAL_PRODUCT_ASSESSMENT.md": "jayshree/analyst_desk/docs/FINAL_PRODUCT_ASSESSMENT.md",
+    "jayshree/analyst_desk/docs/reviews/FINAL_SUBMISSION_OVERVIEW.md": "jayshree/analyst_desk/docs/FINAL_SUBMISSION_OVERVIEW.md",
+    "jayshree/analyst_desk/docs/reviews/PRODUCT_ACCEPTANCE_REVIEW.md": "jayshree/analyst_desk/docs/PRODUCT_ACCEPTANCE_REVIEW.md",
+    "jayshree/analyst_desk/docs/policies/FRONTEND_MESSAGES_AND_CONDITIONS.md": "jayshree/analyst_desk/docs/FRONTEND_MESSAGES_AND_CONDITIONS.md",
+    "jayshree/analyst_desk/docs/policies/GOLDEN_ANSWERS_AND_SCORING_RULES.md": "jayshree/analyst_desk/docs/GOLDEN_ANSWERS_AND_SCORING_RULES.md",
+    "jayshree/analyst_desk/docs/presentation/THREE_STORY_DEMO_SCRIPT.md": "jayshree/analyst_desk/docs/THREE_STORY_DEMO_SCRIPT.md"
+  },
+  "renamed": {
+    "jayshree/analyst_desk/docs/getting-started/README.md": "jayshree/analyst_desk/docs/SETUP.md",
+    "jayshree/analyst_desk/docs/migration/phase0/README.md": "jayshree/analyst_desk/docs/migration/phase0/REPORT.md",
+    "jayshree/analyst_desk/docs/migration/phase1/README.md": "jayshree/analyst_desk/docs/migration/phase1/REPORT.md",
+    "jayshree/analyst_desk/docs/migration/phase2/README.md": "jayshree/analyst_desk/docs/migration/phase2/REPORT.md"
+  },
+  "backup": ".migration-local/phase2/consolidation_before.zip",
+  "backup_sha256": "35b86f948ab11b0edef8b138519618d2726e59a65bc086085aae355c9c36f794",
+  "deleted_pages": 14,
+  "protected_evidence_documents_modified": false,
+  "validation": "passed",
+  "tests_run": 538,
+  "passed": 533,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 5,
+  "test_ids_and_skips_identical_to_phase0": true,
+  "new_missing_links": 0,
+  "source_files_changed": false
+}

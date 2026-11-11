@@ -1,0 +1,31 @@
+{
+  "evidence_kind": "pilot-only, incomplete; not a scored full benchmark",
+  "requested_case_ids": [
+    "d01",
+    "d14"
+  ],
+  "configuration": "c1",
+  "agent_model": "openai/gpt-4o-mini",
+  "judge_model": "meta-llama/llama-3.3-70b-instruct",
+  "case_status": {
+    "d01": "blocked by provider HTTP 402 before planner completion",
+    "d14": "not attempted; stopped after provider rejection"
+  },
+  "provider_explanation": "Insufficient credits; provider reports the account associated with the configured key has never purchased credits. Verify intended account/organization and billing.",
+  "two_case_coverage_audit_passed": false,
+  "attempted_single_case_record_audit_passed": true,
+  "completed_model_outputs": 0,
+  "recorded_case_seconds": 4.3,
+  "reported_tokens": null,
+  "partial_checkpoint_tokens": 0,
+  "actual_provider_billing_verified": false,
+  "original_model_config_unchanged": true,
+  "frozen_playbook_unchanged": true,
+  "playbook": {
+    "version": "806f51dd6960",
+    "lessons": 6
+  },
+  "research_notes_published": false,
+  "fallback_model_used": false,
+  "automatic_full_case_retries": 0
+}

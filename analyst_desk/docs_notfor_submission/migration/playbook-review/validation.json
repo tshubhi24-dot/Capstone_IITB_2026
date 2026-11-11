@@ -1,0 +1,14 @@
+{
+  "successful": true,
+  "run": 547,
+  "passed": 542,
+  "skipped": 5,
+  "test_ids_and_skips_unchanged": true,
+  "frozen_lesson_count": 6,
+  "new_version": "806f51dd6960",
+  "retrieval_probes_passed": 6,
+  "active_playbook_unchanged_by_test_suite": true,
+  "nonlesson_memory_unchanged_at_activation": true,
+  "api_calls": false,
+  "docker_volumes_changed": false
+}

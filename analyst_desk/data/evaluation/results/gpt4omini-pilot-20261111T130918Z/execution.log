@@ -1,0 +1,11 @@
+Building retriever over 12586 passages...
+  Loading embedding model (first run downloads ~90MB)...
+Could not reach the Hub (Cannot reach https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'sentence-transformers/all-MiniLM-L6-v2'.
+
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 103/103 [00:00<00:00, 2896.06it/s]
+Could not reach the Hub (Cannot reach https://huggingface.co/api/models/cross-encoder/ms-marco-MiniLM-L-6-v2: offline mode is enabled. To disable it, please unset the `HF_HUB_OFFLINE` environment variable.). Using cached commit hash for 'cross-encoder/ms-marco-MiniLM-L-6-v2'.
+
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 105/105 [00:00<00:00, 2753.29it/s]
+c1 d01  fail     4.3s  tokens      0  verified      -  error: APIStatusError: HTTP 402

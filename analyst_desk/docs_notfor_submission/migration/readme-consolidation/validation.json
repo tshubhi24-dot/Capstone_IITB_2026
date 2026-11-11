@@ -1,0 +1,12 @@
+{
+  "successful": true,
+  "run": 550,
+  "passed": 545,
+  "skipped": 5,
+  "test_ids_and_skips_unchanged": true,
+  "single_canonical_readme": "README.md",
+  "application_readme_removed": true,
+  "all_local_file_and_internal_anchor_links_valid": true,
+  "new_missing_links": 0,
+  "provider_calls": false
+}

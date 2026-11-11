@@ -1,0 +1,6 @@
+{
+  "archive": ".migration-local/phase2/documentation_before.zip",
+  "sha256": "ce997d6b784a9b0f2c45cc5cc3cb213b9581714989095c3a6ab492e332cdf9de",
+  "scope": "Pre-phase documentation including moved binary editions; excludes credentials, cases and runtime stores",
+  "rollback": "Restore only affected documents from archive into a comparison directory, consult document_moves.json, and preserve user changes. Do not reset repository or delete runtime data."
+}

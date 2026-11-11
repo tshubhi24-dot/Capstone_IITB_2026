@@ -1,0 +1,178 @@
+[
+  {
+    "old": "jayshree/analyst_desk/docs/architecture.md",
+    "new": "jayshree/analyst_desk/docs/architecture/architecture.md",
+    "sha256_before": "50f5516003a9cb202e6ef418a0385225bba7d470a09cb6ecfde275eeb95e1b09",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/architecture/architecture.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/workflow_steps.md",
+    "new": "jayshree/analyst_desk/docs/architecture/workflow_steps.md",
+    "sha256_before": "4824c1986518e96e700f6020b86f2889e845f4b5f6fcb78f814345072a070f08",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/architecture/workflow_steps.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/viva_notes.md",
+    "new": "jayshree/analyst_desk/docs/architecture/viva_notes.md",
+    "sha256_before": "9b67d5ab4efe5452f3bed5da05e932b0e324c2b9e519faebd1b9b35f380eff6c",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/architecture/viva_notes.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/product_spec.md",
+    "new": "jayshree/analyst_desk/docs/policies/product_spec.md",
+    "sha256_before": "5b09ddad85af153ca321cc9aef0c1432c044606e0e9286bc9d6e9ed9fa1675bc",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/policies/product_spec.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/memory_policy.md",
+    "new": "jayshree/analyst_desk/docs/policies/memory_policy.md",
+    "sha256_before": "594372bd4d740311a8c7d951049db767d6b7ff55bd6d8aad165c2cd801e8e00b",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/policies/memory_policy.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/threat_model.md",
+    "new": "jayshree/analyst_desk/docs/policies/threat_model.md",
+    "sha256_before": "d95b683d0b7c0df9b81b0fad0d105d510c63b47e98b4ecedcd6813dc8b48832e",
+    "compatibility_page": true,
+    "action": "move_with_legacy_markdown_forwarder",
+    "canonical_path": "jayshree/analyst_desk/docs/policies/threat_model.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/FRONTEND_MESSAGES_AND_CONDITIONS.md",
+    "new": "jayshree/analyst_desk/docs/policies/FRONTEND_MESSAGES_AND_CONDITIONS.md",
+    "sha256_before": "e7dd32c0364d83235d7e4b123a1af54de155303ee76760a4a102cdf3ac5fc6ee",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/FRONTEND_MESSAGES_AND_CONDITIONS.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/GOLDEN_ANSWERS_AND_SCORING_RULES.md",
+    "new": "jayshree/analyst_desk/docs/policies/GOLDEN_ANSWERS_AND_SCORING_RULES.md",
+    "sha256_before": "9aed9445a59cbd0a2d73945cd1e0f3e85a8e89546cb3cd80ca7655d77907954b",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/GOLDEN_ANSWERS_AND_SCORING_RULES.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/GOLDEN_ANSWERS_AND_SCORING_RULES.docx",
+    "new": "jayshree/analyst_desk/docs/policies/GOLDEN_ANSWERS_AND_SCORING_RULES.docx",
+    "sha256_before": "888f3facda0b370a49033d67185873ec40fe72e32069b098008bd233657d6cb1",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/GOLDEN_ANSWERS_AND_SCORING_RULES.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/C0_C1_C2_COMPARISON.md",
+    "new": "jayshree/analyst_desk/docs/reviews/C0_C1_C2_COMPARISON.md",
+    "sha256_before": "32a1b5471eb9730e5c58e8210021ba441a198bc83b5c4d73dccf2af545dbb79a",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/C0_C1_C2_COMPARISON.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/C0_C1_C2_COMPARISON.docx",
+    "new": "jayshree/analyst_desk/docs/reviews/C0_C1_C2_COMPARISON.docx",
+    "sha256_before": "7a160cd59d844e084f526df1b8fdf2553b13854aa67a4c868a7e5809b4fb2a65",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/C0_C1_C2_COMPARISON.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/CONSOLIDATED_SPECIFICATION_REVIEW.md",
+    "new": "jayshree/analyst_desk/docs/reviews/CONSOLIDATED_SPECIFICATION_REVIEW.md",
+    "sha256_before": "56febaa6cf1815cac092a7b4bac09e3bdc74859f4b8cdbe0b01b46b2832169d1",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/CONSOLIDATED_SPECIFICATION_REVIEW.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/CONSOLIDATED_SPECIFICATION_REVIEW.docx",
+    "new": "jayshree/analyst_desk/docs/reviews/CONSOLIDATED_SPECIFICATION_REVIEW.docx",
+    "sha256_before": "9caeb4514d28cdd3742bd5a8b7949ecc5c9c71239b0f27b42c16ee91dd362080",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/CONSOLIDATED_SPECIFICATION_REVIEW.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/DEVELOPMENT_CASE_DOMAIN_REVIEW.md",
+    "new": "jayshree/analyst_desk/docs/reviews/DEVELOPMENT_CASE_DOMAIN_REVIEW.md",
+    "sha256_before": "607c793707ddfb67b577b377b7e49da33608f6efe4bc4e0ae9a17f3a22be8e1a",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/DEVELOPMENT_CASE_DOMAIN_REVIEW.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/DEVELOPMENT_CASE_DOMAIN_REVIEW.docx",
+    "new": "jayshree/analyst_desk/docs/reviews/DEVELOPMENT_CASE_DOMAIN_REVIEW.docx",
+    "sha256_before": "b0f9da19ade7f3d26c5bf819f8ddfaab95d24fce023236839c4a115596a05367",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/DEVELOPMENT_CASE_DOMAIN_REVIEW.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/FINAL_PRODUCT_ASSESSMENT.md",
+    "new": "jayshree/analyst_desk/docs/reviews/FINAL_PRODUCT_ASSESSMENT.md",
+    "sha256_before": "49694e4a08b63a5f9bf643a6cf55eeb9a51ffcaeb3ee30f889af98c3bb9da014",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/FINAL_PRODUCT_ASSESSMENT.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/FINAL_SUBMISSION_OVERVIEW.md",
+    "new": "jayshree/analyst_desk/docs/reviews/FINAL_SUBMISSION_OVERVIEW.md",
+    "sha256_before": "f3e642f375748d673cf7d4ef37f9b138cbf0b009c97a12941df6e7dc1e396f94",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/FINAL_SUBMISSION_OVERVIEW.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/FINAL_SUBMISSION_OVERVIEW.docx",
+    "new": "jayshree/analyst_desk/docs/reviews/FINAL_SUBMISSION_OVERVIEW.docx",
+    "sha256_before": "22013109f50ce69020eacf9a74eddbb2317476415a80dba020ce5da4cfb43968",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/FINAL_SUBMISSION_OVERVIEW.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/PRODUCT_ACCEPTANCE_REVIEW.md",
+    "new": "jayshree/analyst_desk/docs/reviews/PRODUCT_ACCEPTANCE_REVIEW.md",
+    "sha256_before": "7bbe3ba23df07b0e84fbb2d326f9435d323027775530d2dc271b289273c25782",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/PRODUCT_ACCEPTANCE_REVIEW.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/PRODUCT_ACCEPTANCE_REVIEW.docx",
+    "new": "jayshree/analyst_desk/docs/reviews/PRODUCT_ACCEPTANCE_REVIEW.docx",
+    "sha256_before": "1ed509be05576d72b44286c05e6d970c710c65fa1b778337b8d2bef31379ae1f",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/PRODUCT_ACCEPTANCE_REVIEW.docx"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/THREE_STORY_DEMO_SCRIPT.md",
+    "new": "jayshree/analyst_desk/docs/presentation/THREE_STORY_DEMO_SCRIPT.md",
+    "sha256_before": "a198bd17138782f596677f124e2a5d9d08d972c7c858ad323cab99791efaa2a0",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/THREE_STORY_DEMO_SCRIPT.md"
+  },
+  {
+    "old": "jayshree/analyst_desk/docs/THREE_STORY_DEMO_SCRIPT.docx",
+    "new": "jayshree/analyst_desk/docs/presentation/THREE_STORY_DEMO_SCRIPT.docx",
+    "sha256_before": "0ca6767a54c144f02e141a10879ac7947a15caefe3ff8051ff034e3f494d7d73",
+    "compatibility_page": false,
+    "action": "retain_original_manifest_bound",
+    "canonical_path": "jayshree/analyst_desk/docs/THREE_STORY_DEMO_SCRIPT.docx"
+  }
+]

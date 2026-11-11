@@ -1,0 +1,27 @@
+{
+  "moves": [
+    {
+      "old": "core_cases.jsonl",
+      "new": "dev_cases.jsonl",
+      "sha256": "883b3f2a426cf0fdcfdc817ccd85f35a44ee419f4c4528e2784b964b07d884fc"
+    },
+    {
+      "old": "supplementary_cases.jsonl",
+      "new": "additonal_dev_cases.jsonl",
+      "sha256": "54d01066a8ac9c1c44904bf85ed7f6384482198f30ad1f7869bf7d9e5b93d771"
+    }
+  ],
+  "spelling": "additonal_dev_cases.jsonl exactly as requested",
+  "case_contents_unchanged": true,
+  "loading_order": "original 20 first, additional 24 second",
+  "validation": {
+    "run": 538,
+    "passed": 533,
+    "skipped": 5,
+    "failures": [],
+    "errors": [],
+    "case_hashes_unchanged": true,
+    "test_ids_and_skips_unchanged": true,
+    "api_calls": false
+  }
+}

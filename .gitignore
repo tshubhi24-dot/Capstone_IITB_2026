@@ -1,4 +1,7 @@
 # Secrets
+# Local migration recovery copies (may contain original working documents)
+.migration-local/
+
 .env
 .env.*
 !.env.example
@@ -16,26 +19,27 @@ __pycache__/
 outputs/
 logs/
 
-# Large generated data. Passages and XBRL/submissions JSON are committed so the
-# team shares identical inputs; raw 10-K HTML and the Chroma index are rebuilt locally.
-analyst_desk/data/edgar_cache/
-analyst_desk/data/passages/
+# Corpus JSON/passages are committed. Only generated/raw downloads and local state are ignored.
+analyst_desk/data/edgar_cache/filings/
+analyst_desk/data/edgar_cache/source_reviews.json
 analyst_desk/data/index/
 analyst_desk/data/10k/
-jayshree/analyst_desk/data/edgar_cache/filings/
-jayshree/analyst_desk/data/edgar_cache/source_reviews.json
-jayshree/analyst_desk/data/index/
-jayshree/analyst_desk/data/10k/
-# Portal DB and approval signing key (secret) stay local
-jayshree/analyst_desk/data/portal/
-jayshree/analyst_desk/data/approval/
-jayshree/analyst_desk/data/runs/
-jayshree/analyst_desk/data/memory/
+analyst_desk/data/portal/
+analyst_desk/data/approval/
+analyst_desk/data/runs/
+analyst_desk/data/memory/
+analyst_desk/data/external/
+.review_dependencies/
+~$*
 
 # Notebook checkpoints
 .ipynb_checkpoints/
 
 # macOS
 .DS_Store
-# Third-party datasets downloaded at run time (FinanceBench, CC BY-NC): not redistributed
-jayshree/analyst_desk/data/external/
+
+# Evaluator candidates are not part of the canonical held-out release.
+analyst_desk/data/evaluation/candidates/
+
+# Local runtime cache/state, never source or submission data.
+analyst_desk/.runtime/

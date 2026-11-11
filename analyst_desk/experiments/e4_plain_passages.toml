@@ -1,0 +1,8 @@
+name = "E4: signature ablation, plain-text chunks"
+question = "Tables flattened into text (data/passages_plain) instead of kept as tables. Compare with E1 (table-aware)."
+runner = "eval"
+configs = ["c0", "c1", "c2"]
+split = "heldout"  # match E1; override BOTH runs with --split dev during development
+
+[env]
+AGENT_PASSAGES = "plain"

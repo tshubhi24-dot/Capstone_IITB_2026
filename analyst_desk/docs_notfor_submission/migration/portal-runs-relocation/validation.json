@@ -1,0 +1,12 @@
+{
+  "complete": true,
+  "files_preserved": 2,
+  "bytes_unchanged_after_tests": true,
+  "git_ignored": true,
+  "test_ids_and_skips_unchanged": true,
+  "passed": 533,
+  "skipped": 5,
+  "compose_dummy_config_exit_code": 0,
+  "saved_records_inspected": false,
+  "services_started_or_stopped": false
+}

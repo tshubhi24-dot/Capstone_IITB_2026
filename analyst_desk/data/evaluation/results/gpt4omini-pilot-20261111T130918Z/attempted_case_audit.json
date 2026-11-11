@@ -1,0 +1,39 @@
+{
+  "evaluation_type": "audit_of_recorded_development_results",
+  "not_an_agent_rerun": true,
+  "not_an_independent_scoring_replay": true,
+  "split": "dev",
+  "results_source": "data/evaluation/results/gpt4omini-pilot-20261111T130918Z/eval_dev_gpt4omini-pilot-20261111T130918Z.json",
+  "results_sha256": "26277a9ca3fc33661fb4dbcad3b762cb51a9e92a002eadff2c324292c809567c",
+  "gold_source": "attempted_cases.jsonl",
+  "gold_sha256": "86f5b3364446ae6ad0b923617c4a6ad07c66e2a9151d838e3635ba854d933398",
+  "configurations": {
+    "c1": {
+      "cases": 1,
+      "success": 0,
+      "failures": 1,
+      "success_rate_pct": 0.0,
+      "policy_violations": 0,
+      "errors": 1,
+      "timeouts": 0,
+      "verified_numbers": 0,
+      "total_numbers": 0,
+      "cases_with_numeric_checks": 0,
+      "verified_share_pooled_pct": null,
+      "zero_number_cases": 0,
+      "verified_share_mean_with_numbers_only_pct": null,
+      "verified_share_case_mean_pct": null,
+      "tokens_mean": 0,
+      "tokens_recorded_cases": 0,
+      "tokens_unreported_cases": 1,
+      "latency_median_s": 4.3,
+      "latency_p95_s": 4.3,
+      "by_type": {
+        "numeric": {
+          "success": 0,
+          "cases": 1
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "application_root": "analyst_desk/",
+  "phase_reports": {
+    "0": "../phase0/REPORT.md",
+    "1": "../phase1/REPORT.md",
+    "2": "../phase2/REPORT.md",
+    "3": "../phase3/REPORT.md",
+    "4": "../phase4/REPORT.md",
+    "5": "../phase5/REPORT.md"
+  },
+  "move_registers": [
+    "../phase4a/changes.json",
+    "../phase4b/changes.json",
+    "../phase4c/changes.json",
+    "../phase4d/changes.json",
+    "../phase4e/changes.json"
+  ],
+  "document_reorganization": "../phase2/document_moves.json",
+  "documentation_consolidation": "../phase2/consolidation.json",
+  "removal_manifest": "../phase5/removal_manifest.json",
+  "code_consolidation": "../phase5/helper_consolidation.json",
+  "import_cleanup": "../phase5/import_cleanup.json",
+  "test_rename_map": "../phase4e/test_id_map.json",
+  "recovery_root": ".migration-local/",
+  "retained_compatibility_files": [
+    "app.py",
+    "docs/architecture.md",
+    "docs/viva_notes.md",
+    "docs/product_spec.md",
+    "docs/memory_policy.md",
+    "docs/threat_model.md"
+  ],
+  "compatibility_reason": "One app launcher; five historical document paths referenced by original evidence. No duplicate implementation modules retained.",
+  "source_rollback": "Recover only affected paths from .migration-local/phases3-5/source_before.zip, compare with current files, and account for the old root in archive paths. Never reset unrelated user changes or restore/delete live stores.",
+  "document_rollback": "Use phase0/phase2 archives and exact removal/move manifests for comparison; preserve historical snapshots and later edits.",
+  "no_new_submission_archive_or_image": true
+}

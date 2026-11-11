@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "purpose": "Public development JPMorgan/Meta risk reference evidence; packaging consolidation only, not a new review or evaluation.",
+  "source_artifacts": [
+    {
+      "section": "domain_contracts",
+      "original_path": "evaluation/development/evidence/risk_jpm_meta/DOMAIN_CONTRACTS.json",
+      "sha256": "8fe4a93ca3011bbc85ff23da1df998c5b13bc7f9212663f0f97f7ae5083c3e59"
+    },
+    {
+      "section": "review_metadata",
+      "original_path": "evaluation/development/evidence/risk_jpm_meta/REVIEW_METADATA.json",
+      "sha256": "3e72ff3ae8599cb6eca1283371e7bb183404cff34d4113ad9595321229c9160d"
+    },
+    {
+      "section": "source_passages",
+      "original_path": "evaluation/development/evidence/risk_jpm_meta/SOURCE_PASSAGES.json",
+      "sha256": "74c2f075073f3100e5b0897691ae23656b019c18b9f7bedbd79dc1054d9a8ac1"
+    }
+  ],
+  "domain_contracts": {
+    "d16": {
+      "case": {
+        "id": "d16",
+        "split": "dev",
+        "type": "risk_change",
+        "request": "What changed in JPMorgan's risk factors from 2022 to 2023?",
+        "expect": {
+          "risk_change": {
+            "ticker": "JPM",
+            "years": [
+              2022,
+              2023
+            ]
+          }
+        }
+      },
+      "reference_answer": "In the reviewed cached Item 1A passages, JPMorgan made its cybersecurity risk-driver discussion more specific in FY2023. The FY2022 list discussed mobile/internet/cloud expansion, acquisitions and remote-work access; the FY2023 counterpart explicitly includes malicious use of machine learning/generative AI for social-engineering and targeted-phishing attacks and quantum-computing threats to information protections [JPM_2022_item1a_085; JPM_2023_item1a_085]. I classify that as Changed detail in an existing cyber-risk topic, not as proof that the risk category was wholly new.\n\nThe reviewed economic/market-risk paragraph retains substantially the same themes, including inflation/deflation/recession, capital/liquidity/credit and market volatility; its minor wording/pagination differences do not establish a substantive thematic change [JPM_2022_item1a_037; JPM_2023_item1a_037]. This is Unchanged within that reviewed paragraph only. These cached pairs are examples, not an exhaustive original-filing comparison, and do not establish global Added or Removed labels.",
+      "reference_findings": [
+        {
+          "id": "d16-R1",
+          "topic": "Cybersecurity risk drivers",
+          "classification": "Changed",
+          "prior": [
+            "JPM_2022_item1a_085"
+          ],
+          "later": [
+            "JPM_2023_item1a_085"
+          ],
+          "reference_finding": "Within the matched security-breach driver list, FY2023 explicitly discusses malicious actors using machine learning/generative AI for more advanced social-engineering and targeted-phishing attacks, and quantum-computing advances that may defeat information protections. The FY2022 matched list instead explicitly identifies mobile/internet/cloud expansion, acquisitions/integration and remote-access/video-conferencing arrangements. This is changed detail in an existing cyber-risk disclosure, not proof that cybersecurity or AI risk was wholly new across the filing.",
+          "prior_excerpt": "The risk of a security breach due to a cyber attack could increase in the future due to factors such as:",
+          "prior_detail_excerpt": "the increased use of remote access and third party video conferencing solutions to facilitate work-from-home arrangements for employees.",
+          "later_excerpt": "advances in artificial intelligence, such as the use of machine learning and generative artificial intelligence by malicious actors to develop more advanced social engineering attacks, including targeted phishing attacks",
+          "limit": "The comparison is this matched list/topic. No Removed conclusion follows from omission of the remote-access bullet here; absence elsewhere was not established."
+        },
+        {
+          "id": "d16-R2",
+          "topic": "Economic and market risk themes",
+          "classification": "ScopedUnchanged",
+          "prior": [
+            "JPM_2022_item1a_037"
+          ],
+          "later": [
+            "JPM_2023_item1a_037"
+          ],
+          "reference_finding": "The reviewed economic/market-risk paragraph retains the same substantive exposure categories: sentiment/confidence, inflation/deflation/recession, employment, capital/liquidity/credit, interest-rate and market-price volatility, extraordinary/geopolitical events and economic strength. There are minor wording and pagination differences. These themes are substantially unchanged within this paragraph; this is not a claim that all JPMorgan risk factors were unchanged.",
+          "prior_excerpt": "inflation, deflation or recession",
+          "later_excerpt": "inflation, deflation or recession",
+          "additional_shared_excerpt": "the availability and cost of capital, liquidity and credit",
+          "limit": "Scoped thematic continuity, not verbatim identity, section equivalence or proof of unchanged economic risk severity."
+        }
+      ],
+      "required_domain_content": [
+        "Retain the exact issuer and chronological year pair named in the request.",
+        "Give at least one substantive, source-supported paired comparison with real passage IDs and topic-appropriate before/after evidence.",
+        "Classify changes conservatively: Changed for demonstrated wording/detail; Unchanged only within an explicit reviewed scope; Unverified when prior comparable evidence or completeness is missing.",
+        "State cached-excerpt coverage limits; do not convert an absent keyword/search result into full-filing absence.",
+        "Distinguish disclosure wording from realised business effects, increased economic risk or legal materiality; do not invent investment advice.",
+        "Allow validated alternative topics/passage pairs; exact wording or these particular reference topics is not the only passing answer."
+      ],
+      "domain_outcomes": {
+        "Pass": "A completed answer meets the mandatory issuer/year/topic/evidence/uncertainty rules, with at least one demonstrated change or an adequately supported challenge to the requested newness premise. Optional continuity examples remain scoped. The approved reference answer is an example, not a string-match answer key.",
+        "Fail": "An identifiable wrong issuer/year/topic, invented/nonexistent or non-supporting citation, unsupported full-filing Added/Removed/Unchanged assertion, causal/materiality overclaim, or investment recommendation remains. A known wrong assertion stays Fail even if the run also times out.",
+        "Incomplete": "No definite false assertion is established, but retrieval, required paired evidence, run execution or substantive review is unfinished. An honest inability to classify is not a false Added claim, but does not by itself complete the requested comparison. Preserve incomplete attempts in the denominator."
+      },
+      "existing_harness": {
+        "source": "analystdesk/evaluation.py:93-109",
+        "actual_rule": "If out.error is absent, success is based on seeing an issuer-specific Item1A-shaped citation for each expected year; it does not establish topic relevance, source existence, paired support, change-label correctness or completeness. Later numeric checking does not repair this semantic scoring gap.",
+        "separate_domain_review_required": true
+      },
+      "source_scope": "Current Main cached public Item1A JSONL only; original HTML, full section boundaries, cross-references, amendments and global absence were not authenticated.",
+      "independence": "R1 assistant-assisted development reference review. Not R5 independent held-out material, not ten-company-year human risk labels, not a calibrated human annotation set."
+    },
+    "d17": {
+      "case": {
+        "id": "d17",
+        "split": "dev",
+        "type": "risk_change",
+        "request": "What new risks did Meta add in its 2024 risk factors compared with 2023?",
+        "expect": {
+          "risk_change": {
+            "ticker": "META",
+            "years": [
+              2023,
+              2024
+            ]
+          }
+        }
+      },
+      "reference_answer": "The question presupposes new risks, but these cached passages do not support calling AI risk wholly new in FY2024: Meta already described AI and generative-AI deployment risks in FY2023 [META_2023_item1a_026; META_2023_item1a_027]. The comparable FY2024 discussion retains that topic and makes the list more explicit about misinformation/deepfakes and consumer protection [META_2024_item1a_028; META_2024_item1a_029]. This is Changed detail within an existing risk, not proof that those themes were absent everywhere in the earlier filing.\n\nA second supported change is strategy-risk framing: FY2023 refers to the metaverse strategy and investments; FY2024 refers to the Reality Labs strategy and explicitly includes metaverse and wearables, with AI/wearables/devices in its development direction [META_2023_item1a_035; META_2024_item1a_037]. I classify that as Changed wording/scope in the reviewed strategy paragraph. Full-filing additions/removals and economic materiality remain unverified; I would not force an Added label from this evidence.",
+      "reference_findings": [
+        {
+          "id": "d17-R1",
+          "topic": "Generative-AI risk disclosure detail",
+          "classification": "Changed",
+          "prior": [
+            "META_2023_item1a_026",
+            "META_2023_item1a_027"
+          ],
+          "later": [
+            "META_2024_item1a_028",
+            "META_2024_item1a_029"
+          ],
+          "reference_finding": "The question's premise must be qualified: Meta already disclosed risks of AI initiatives, including generative AI, in FY2023. Both years discuss infrastructure/headcount investment and risks such as harmful content, accuracy, bias, IP, privacy and cybersecurity. In the matched FY2024 risk-list paragraph, misinformation wording explicitly includes deepfakes and the list explicitly includes consumer protection. Classify this as changed or more specific wording within an existing AI risk, not a wholly new AI risk added in FY2024.",
+          "prior_excerpt": "our AI-related efforts, particularly those related to generative AI, subject us to risks related to harmful or illegal content, accuracy, misinformation (including related to elections), bias, discrimination, toxicity, intellectual property infringement or misappropriation",
+          "later_excerpt": "misinformation and deepfakes (including related to elections), bias, discrimination, toxicity, consumer protection, intellectual property infringement or misappropriation",
+          "limit": "Specific phrases are newly explicit in this matched paragraph. The review does not establish that deepfakes or consumer-protection topics were absent everywhere in the FY2023 filing."
+        },
+        {
+          "id": "d17-R2",
+          "topic": "Metaverse versus Reality Labs strategy framing",
+          "classification": "Changed",
+          "prior": [
+            "META_2023_item1a_035"
+          ],
+          "later": [
+            "META_2024_item1a_037"
+          ],
+          "reference_finding": "The comparable strategy/investment-risk wording changes from possible failure of the metaverse strategy in FY2023 to possible failure of the Reality Labs strategy in FY2024. The FY2024 passage explicitly says Reality Labs includes metaverse and wearables and describes directing efforts toward AI, wearables and devices. This supports a change in framing/detail of the reviewed strategy risk, not a finding that wearables or Reality Labs economic exposure first arose in 2024.",
+          "prior_excerpt": "We may not be successful in our metaverse strategy and investments, which could adversely affect our business, reputation, or financial results.",
+          "later_excerpt": "We may not be successful in our Reality Labs strategy and investments, which could adversely affect our business, reputation, or financial results. Our Reality Labs efforts include our metaverse and wearables initiatives.",
+          "limit": "The matched paragraphs support the wording/scope shift. Full-filing Added/Removed status and economic materiality remain unverified."
+        }
+      ],
+      "required_domain_content": [
+        "Retain the exact issuer and chronological year pair named in the request.",
+        "Give at least one substantive, source-supported paired comparison with real passage IDs and topic-appropriate before/after evidence.",
+        "Classify changes conservatively: Changed for demonstrated wording/detail; Unchanged only within an explicit reviewed scope; Unverified when prior comparable evidence or completeness is missing.",
+        "State cached-excerpt coverage limits; do not convert an absent keyword/search result into full-filing absence.",
+        "Distinguish disclosure wording from realised business effects, increased economic risk or legal materiality; do not invent investment advice.",
+        "Allow validated alternative topics/passage pairs; exact wording or these particular reference topics is not the only passing answer.",
+        "Explicitly permit a paired-evidence answer that challenges the request's blanket newness premise. Do not require any Added label."
+      ],
+      "domain_outcomes": {
+        "Pass": "A completed answer meets the mandatory issuer/year/topic/evidence/uncertainty rules, with at least one demonstrated change or an adequately supported challenge to the requested newness premise. Optional continuity examples remain scoped. The approved reference answer is an example, not a string-match answer key.",
+        "Fail": "An identifiable wrong issuer/year/topic, invented/nonexistent or non-supporting citation, unsupported full-filing Added/Removed/Unchanged assertion, causal/materiality overclaim, or investment recommendation remains. A known wrong assertion stays Fail even if the run also times out.",
+        "Incomplete": "No definite false assertion is established, but retrieval, required paired evidence, run execution or substantive review is unfinished. An honest inability to classify is not a false Added claim, but does not by itself complete the requested comparison. Preserve incomplete attempts in the denominator."
+      },
+      "existing_harness": {
+        "source": "analystdesk/evaluation.py:93-109",
+        "actual_rule": "If out.error is absent, success is based on seeing an issuer-specific Item1A-shaped citation for each expected year; it does not establish topic relevance, source existence, paired support, change-label correctness or completeness. Later numeric checking does not repair this semantic scoring gap.",
+        "separate_domain_review_required": true
+      },
+      "source_scope": "Current Main cached public Item1A JSONL only; original HTML, full section boundaries, cross-references, amendments and global absence were not authenticated.",
+      "independence": "R1 assistant-assisted development reference review. Not R5 independent held-out material, not ten-company-year human risk labels, not a calibrated human annotation set."
+    }
+  },
+  "review_metadata": {
+    "revision": "33fef7f94c0b1703265cc8057066b8456122bd54",
+    "review_type": "R1 public development-case domain contracts and source-backed reference examples",
+    "case_ids": [
+      "d16",
+      "d17"
+    ],
+    "case_file": "data/evaluation/dev_cases.jsonl",
+    "case_file_sha256": "926212f391ca3d08e73b30bb43e59a047c01159b32f8551c5724d6934fe17ff3",
+    "scorer_source_sha256": "7f961865060efdde47da769acd12706e38092b92f6c24aea49209eac0fc45031",
+    "source_inventory": {
+      "JPM_2022": {
+        "cached_item1a_rows": 149,
+        "path": "data/passages/JPM_2022.jsonl",
+        "file_sha256": "f58bc94e56a679f68886cae6f48d22f953357e108c16b99aeda566cba4659ca7",
+        "original_html_section_completeness_verified": false
+      },
+      "JPM_2023": {
+        "cached_item1a_rows": 151,
+        "path": "data/passages/JPM_2023.jsonl",
+        "file_sha256": "b2b13b37aa5bc6852a892db8c677fdc2a3d7456594299a49becedb9274d2e3cc",
+        "original_html_section_completeness_verified": false
+      },
+      "META_2023": {
+        "cached_item1a_rows": 200,
+        "path": "data/passages/META_2023.jsonl",
+        "file_sha256": "06a878e4e0effd5a2ebe7a4504edc31870dc941fc11547fa446d18720635cbb6",
+        "original_html_section_completeness_verified": false
+      },
+      "META_2024": {
+        "cached_item1a_rows": 208,
+        "path": "data/passages/META_2024.jsonl",
+        "file_sha256": "02c5860545f24bd9f2cfca478c1e3e22e9e1ab84af306bc4f7ab68fd2e462d91",
+        "original_html_section_completeness_verified": false
+      }
+    },
+    "scope_limit": "Cached rows are not a verified original-HTML coverage denominator. Only the selected topic pairs were adjudicated. No model/network/credential/protected-case access, no source/runtime edits.",
+    "not_claimed": [
+      "Complete original filing comparison",
+      "Global Added or Removed truth",
+      "Ten company-year human labels",
+      "Independent R5 gold or held-out authorship",
+      "App execution or evaluation rerun"
+    ]
+  },
+  "source_passages": {
+    "JPM_2022_item1a_037": {
+      "passage_id": "JPM_2022_item1a_037",
+      "company": "JPM",
+      "fiscal_year": 2022,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000019617-23-000231",
+      "kind": "text",
+      "text": "as boycotting or other discriminatory business behavior. Market\nEconomic and market events and conditions can materially affect JPMorgan Chase’s businesses and investment and market-making positions.\n\nas boycotting or other discriminatory business behavior. Market\nEconomic and market events and conditions can materially affect JPMorgan Chase’s businesses and investment and market-making positions. JPMorgan Chase’s results of operations can be negatively affected by adverse changes in any of the following:\n•\ninvestor, consumer and business sentiment\n•\nevents that reduce confidence in the financial markets\n•\ninflation, deflation or recession\n•\nhigh unemployment or, conversely, a tightening labor market\n•\nthe availability and cost of capital, liquidity and credit\n•\nlevels and volatility of interest rates, credit spreads and market prices for currencies, equities and commodities, and the duration of any changes in levels or volatility\n•\nthe economic effects of an outbreak or escalation of hostilities, terrorism or other geopolitical instabilities, cyber attacks, climate change, natural disasters, severe weather conditions, health emergencies, the spread of infectious diseases, epidemics or pandemics or other extraordinary events beyond JPMorgan Chase’s control, and\n•\nthe strength of the U.S. and global economies.",
+      "local_file": "data/passages/JPM_2022.jsonl",
+      "line": 38,
+      "file_sha256": "f58bc94e56a679f68886cae6f48d22f953357e108c16b99aeda566cba4659ca7",
+      "text_sha256": "d994ebe37c030d646cab67f730437cd5dfe12394337f3170087e865045d49a12",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "JPM_2022_item1a_085": {
+      "passage_id": "JPM_2022_item1a_085",
+      "company": "JPM",
+      "fiscal_year": 2022,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000019617-23-000231",
+      "kind": "text",
+      "text": "rs with which it does business, and\n•\nit is possible that a third party, after establishing a foothold on an internal network without being detected, might obtain access to other networks and systems.\n\nrs with which it does business, and\n•\nit is possible that a third party, after establishing a foothold on an internal network without being detected, might obtain access to other networks and systems. The risk of a security breach due to a cyber attack could increase in the future due to factors such as: \n•\nJPMorgan Chase’s ongoing expansion of its mobile banking and other internet-based product offerings and its internal use of internet-based products and applications, including those that use cloud computing services\n•\nthe acquisition and integration of new businesses, and\n•\nthe increased use of remote access and third party video conferencing solutions to facilitate work-from-home arrangements for employees. In addition, a third party could misappropriate confidential information obtained by intercepting signals or \ncommunications from mobile devices used by JPMorgan Chase’s employees.",
+      "local_file": "data/passages/JPM_2022.jsonl",
+      "line": 86,
+      "file_sha256": "f58bc94e56a679f68886cae6f48d22f953357e108c16b99aeda566cba4659ca7",
+      "text_sha256": "494a0902d0e177ea1a7b7aeed4009d628c757c3527c326764a48f8db85c48996",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "JPM_2023_item1a_037": {
+      "passage_id": "JPM_2023_item1a_037",
+      "company": "JPM",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000019617-24-000225",
+      "kind": "text",
+      "text": "as boycotting or other discriminatory business behavior. Market\nEconomic and market events and conditions can materially affect JPMorgan Chase’s businesses and investment and market-making positions.\n\nas boycotting or other discriminatory business behavior. Market\nEconomic and market events and conditions can materially affect JPMorgan Chase’s businesses and investment and market-making positions. JPMorgan Chase’s results of operations can be negatively affected by adverse changes in any of the following:\n•\ninvestor, consumer and business sentiment\n•\nevents that reduce confidence in the financial markets\n•\ninflation, deflation or recession\n14\n•\nhigh unemployment or, conversely, a tightening labor market\n•\nthe availability and cost of capital, liquidity and credit\n•\nlevels and volatility of interest rates, credit spreads and market prices for currencies, equities and commodities, as well as the duration of any such changes\n•\nthe economic effects of an outbreak or escalation of hostilities, terrorism or other geopolitical instabilities, cyber attacks, climate change, natural disasters, severe weather conditions, health emergencies, the spread of infectious diseases, epidemics or pandemics or other extraordinary events beyond JPMorgan Chase’s control, and\n•\nthe strength of the U.S. and global economies.",
+      "local_file": "data/passages/JPM_2023.jsonl",
+      "line": 38,
+      "file_sha256": "b2b13b37aa5bc6852a892db8c677fdc2a3d7456594299a49becedb9274d2e3cc",
+      "text_sha256": "bbc419ad31dfa279d28af5e090c69e12402d07ded9a40a30d3c369f724a857ca",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "JPM_2023_item1a_085": {
+      "passage_id": "JPM_2023_item1a_085",
+      "company": "JPM",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0000019617-24-000225",
+      "kind": "text",
+      "text": "viders with which it does business, and\n•\nit is possible that a third party, after establishing a foothold on an internal network without being detected, may gain access to other networks and systems.\n\nviders with which it does business, and\n•\nit is possible that a third party, after establishing a foothold on an internal network without being detected, may gain access to other networks and systems. The risk of a security breach due to a cyber attack could increase in the future due to factors such as: \n•\nJPMorgan Chase’s ongoing expansion of its mobile banking and other internet-based product offerings and its internal use of internet-based products and applications, including those that use cloud computing services\n•\nadvances in artificial intelligence, such as the use of machine learning and generative artificial intelligence by malicious actors to develop more advanced social engineering attacks, including targeted phishing attacks\n•\nthe inability to maintain the security of information transmitted by JPMorgan Chase due to advances in quantum computing that may counteract or nullify existing information protections, and\n•\nthe acquisition and integration of new businesses. 22\nIn addition, a third party could misappropriate confidential information obtained by intercepting signals or communications from mobile devices used by JPMorgan Chase’s employees.",
+      "local_file": "data/passages/JPM_2023.jsonl",
+      "line": 86,
+      "file_sha256": "b2b13b37aa5bc6852a892db8c677fdc2a3d7456594299a49becedb9274d2e3cc",
+      "text_sha256": "3acad99e5a216622560ea337c050213dd934a84fa5d531cd3b1e8718f848034a",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2023_item1a_026": {
+      "passage_id": "META_2023_item1a_026",
+      "company": "META",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-24-000012",
+      "kind": "text",
+      "text": "tly commenced implementation of end-to-end encryption across our messaging services on Facebook and Instagram, which has been subject to governmental and regulatory scrutiny in multiple jurisdictions.\n\ntly commenced implementation of end-to-end encryption across our messaging services on Facebook and Instagram, which has been subject to governmental and regulatory scrutiny in multiple jurisdictions. 21\nTable of \nContents\nIf our new products or changes to existing products fail to engage users, marketers, or developers, or if our business plans are unsuccessful, we may fail to attract or retain users or to generate sufficient revenue, operating margin, or other value to justify our investments, and our business may be adversely affected. We may not be successful in our artificial intelligence initiatives, which could adversely affect our business, reputation, or financial results. We are making significant investments in AI initiatives, including generative AI, to, among other things, recommend relevant content across our products, enhance our advertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount.",
+      "local_file": "data/passages/META_2023.jsonl",
+      "line": 27,
+      "file_sha256": "06a878e4e0effd5a2ebe7a4504edc31870dc941fc11547fa446d18720635cbb6",
+      "text_sha256": "dc656e630fd2d0e209497b05c047744f26fc1b357a0710d77e79bc0721c2df7d",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2023_item1a_027": {
+      "passage_id": "META_2023_item1a_027",
+      "company": "META",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-24-000012",
+      "kind": "text",
+      "text": "advertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount.\n\nadvertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount. There are significant risks involved in developing and deploying AI and there can be no assurance that the usage of AI will enhance our products or services or be beneficial to our business, including our efficiency or profitability. For example, our AI-related efforts, particularly those related to generative AI, subject us to risks related to harmful or illegal content, accuracy, misinformation (including related to elections), bias, discrimination, toxicity, intellectual property infringement or misappropriation, defamation, data privacy, cybersecurity, and sanctions and export controls, among others. It is also uncertain how various laws related to online services, intermediary liability, and other issues will apply to content generated by AI.",
+      "local_file": "data/passages/META_2023.jsonl",
+      "line": 28,
+      "file_sha256": "06a878e4e0effd5a2ebe7a4504edc31870dc941fc11547fa446d18720635cbb6",
+      "text_sha256": "002813d145fec66a14444f52cc9de390bff23775c61e35626600b6123014cca7",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2023_item1a_035": {
+      "passage_id": "META_2023_item1a_035",
+      "company": "META",
+      "fiscal_year": 2023,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-24-000012",
+      "kind": "text",
+      "text": "te than our feed and Stories products for the foreseeable future. These decisions may adversely affect our business and results of operations and may not produce the long-term benefits that we expect.\n\nte than our feed and Stories products for the foreseeable future. These decisions may adversely affect our business and results of operations and may not produce the long-term benefits that we expect. We may not be successful in our metaverse strategy and investments, which could adversely affect our business, reputation, or financial results. We believe the metaverse, an embodied internet where people have immersive experiences beyond two-dimensional screens, is the next evolution in social technology. In 2021, we announced a shift in our business and product strategy to focus on helping to bring the metaverse to life. We expect this will be a complex, evolving, and long-term initiative that will involve the development of new and emerging technologies, continued investment in infrastructure as well as privacy, safety, and security efforts, and collaboration with other companies, developers, partners, and other participants. However, the metaverse may not develop in accordance with our expectations, and market acceptance of features, products, or services we build for the metaverse is uncertain.",
+      "local_file": "data/passages/META_2023.jsonl",
+      "line": 36,
+      "file_sha256": "06a878e4e0effd5a2ebe7a4504edc31870dc941fc11547fa446d18720635cbb6",
+      "text_sha256": "8cf7b14b9b329d1b98eca3f01b6de83213a214294fce9675e4dd9591c0cc27fb",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2024_item1a_028": {
+      "passage_id": "META_2024_item1a_028",
+      "company": "META",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-25-000017",
+      "kind": "text",
+      "text": "erm. Our efforts to implement default end-to-end encryption across our messaging services on Facebook and Instagram have been subject to governmental and regulatory scrutiny in multiple jurisdictions.\n\nerm. Our efforts to implement default end-to-end encryption across our messaging services on Facebook and Instagram have been subject to governmental and regulatory scrutiny in multiple jurisdictions. For example, the Nevada Attorney General is seeking to enjoin our offering of default end-to-end encryption on Messenger for all Nevada residents under the age of 18. If our new products or changes to existing products fail to engage users, marketers, or developers, or if our business plans are unsuccessful, we may fail to attract or retain users or to generate sufficient revenue, operating margin, or other value to justify our investments, and our business may be adversely affected. We may not be successful in our artificial intelligence initiatives, which could adversely affect our business, reputation, or financial results. We are making significant investments in AI initiatives, including generative AI, to, among other things, recommend relevant content across our products, enhance our advertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount.",
+      "local_file": "data/passages/META_2024.jsonl",
+      "line": 29,
+      "file_sha256": "02c5860545f24bd9f2cfca478c1e3e22e9e1ab84af306bc4f7ab68fd2e462d91",
+      "text_sha256": "2189ec438a873245852ca0a7c069f729b1c947ea4ddeefe3e528ffa08ecfd7fc",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2024_item1a_029": {
+      "passage_id": "META_2024_item1a_029",
+      "company": "META",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-25-000017",
+      "kind": "text",
+      "text": "advertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount.\n\nadvertising tools, develop new products, and develop new features for existing products. In particular, we expect our AI initiatives will require increased investment in infrastructure and headcount. If our investments are not successful longer-term, our business and financial performance could be harmed. 20\nTable of \nContents\nThere are significant risks involved in developing and deploying AI and there can be no assurance that the usage of AI will enhance our products or services or be beneficial to our business, including our efficiency or profitability. For example, our AI-related efforts, particularly those related to generative AI, subject us to risks related to harmful or illegal content, accuracy, misinformation and deepfakes (including related to elections), bias, discrimination, toxicity, consumer protection, intellectual property infringement or misappropriation, defamation, data privacy, cybersecurity, and sanctions and export controls, among others. It is also uncertain how various laws related to online services, intermediary liability, and other issues will apply to content generated by AI.",
+      "local_file": "data/passages/META_2024.jsonl",
+      "line": 30,
+      "file_sha256": "02c5860545f24bd9f2cfca478c1e3e22e9e1ab84af306bc4f7ab68fd2e462d91",
+      "text_sha256": "90d1f06a1649b835118a28698d38386c52485f8ef2b44fbee05804e2842d3e51",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    },
+    "META_2024_item1a_037": {
+      "passage_id": "META_2024_item1a_037",
+      "company": "META",
+      "fiscal_year": 2024,
+      "item": "item1a",
+      "item_label": "Risk Factors",
+      "accession": "0001326801-25-000017",
+      "kind": "text",
+      "text": "e reduced, and may in the future reduce, engagement with one or more products and services in favor of other products or services that we monetize less successfully or that are not growing as quickly.\n\ne reduced, and may in the future reduce, engagement with one or more products and services in favor of other products or services that we monetize less successfully or that are not growing as quickly. For example, we plan to continue to promote Reels, which we expect will continue to monetize at a lower rate than our Feed and Stories products for the foreseeable future. These decisions may adversely affect our business and results of operations and may not produce the long-term benefits that we expect. We may not be successful in our Reality Labs strategy and investments, which could adversely affect our business, reputation, or financial results. Our Reality Labs efforts include our metaverse and wearables initiatives. We believe the metaverse, an embodied internet where people have immersive experiences beyond two-dimensional screens, is the next evolution in social technology. In 2021, we announced a shift in our business and product strategy to focus on helping to bring the metaverse to life, and we are directing our efforts toward innovations in AI, wearables, and devices to help build next-generation interfaces.",
+      "local_file": "data/passages/META_2024.jsonl",
+      "line": 38,
+      "file_sha256": "02c5860545f24bd9f2cfca478c1e3e22e9e1ab84af306bc4f7ab68fd2e462d91",
+      "text_sha256": "1dcfb90f2b9b44037cea1b7aa00fdd02b14f07705634d0e66f5224579da59300",
+      "source_scope": "Public cached Item1A chunk; overlap, page/footer noise and extraction gaps possible; not verified complete original HTML."
+    }
+  }
+}

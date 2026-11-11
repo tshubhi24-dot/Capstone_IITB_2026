@@ -1,0 +1,13 @@
+{
+  "unused_path_imports_removed_from": [
+    "analystdesk/governance/approval.py",
+    "analystdesk/research/c0_pipeline.py",
+    "analystdesk/finance/edgar.py",
+    "analystdesk/retrieval/retrieve.py",
+    "analystdesk/ui/dashboard.py",
+    "analystdesk/ui/evaluation.py"
+  ],
+  "duplicate_bootstrap_sys_and_path_imports_removed": true,
+  "obsolete_role6_test_sys_path_hack_removed": true,
+  "basis": "AST use scan and original source comparison; no functions/assertions removed"
+}

@@ -1,0 +1,9 @@
+{
+  "starting_commit": "f813e4e61bfcb712d37756b98e1bbded92230f8e",
+  "old_root": "C:\\Users\\shubhi.DESKTOP-8FJ6QQI\\Documents\\GitHub\\Capstone_IITB_2026\\jayshree\\analyst_desk",
+  "new_root": "C:\\Users\\shubhi.DESKTOP-8FJ6QQI\\Documents\\GitHub\\Capstone_IITB_2026\\analyst_desk",
+  "backup": ".migration-local/phases3-5/source_before.zip",
+  "backup_sha256": "bd9b1529b078e36032e392576fb6bb6295be87c0ceae4145250da2a8220e6ceb",
+  "ignored_files": "Moved intact with directory, including existing environment and runtime stores; no credential values inspected",
+  "compose_project": "Both old/new directory basenames are analyst_desk; implicit project name remains unchanged"
+}

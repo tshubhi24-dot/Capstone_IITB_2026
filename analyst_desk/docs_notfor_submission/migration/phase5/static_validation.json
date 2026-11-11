@@ -1,0 +1,21 @@
+{
+  "python_files_parsed": 120,
+  "invalid_project_import_bases": [],
+  "baseline_data_files_checked": 251,
+  "nonprotected_data_hashes_verified": 191,
+  "protected_data_check": "path/size metadata only",
+  "changed_or_missing_data": [],
+  "local_markdown_targets_checked": 575,
+  "inherited_missing_targets": 41,
+  "new_missing_targets": [],
+  "ignore_rule_checks": {
+    "analyst_desk/.env": true,
+    "analyst_desk/data/approval/approval.key": true,
+    "analyst_desk/data/runs/checkpoints.sqlite": true,
+    "analyst_desk/.env.example": false,
+    "analyst_desk/data/passages/AAPL_2022.jsonl": false,
+    "analyst_desk/data/edgar_cache/0000002488.json": false
+  },
+  "policy_source_paths_checked": 16,
+  "baseline_manifest_bound_file_hashes_unchanged": 47
+}

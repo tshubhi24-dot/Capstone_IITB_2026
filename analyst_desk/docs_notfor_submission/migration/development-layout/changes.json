@@ -1,0 +1,26 @@
+{
+  "moves": [
+    {
+      "old": "data/evaluation/dev_cases.jsonl",
+      "new": "data/evaluation/development/core_cases.jsonl",
+      "sha256": "883b3f2a426cf0fdcfdc817ccd85f35a44ee419f4c4528e2784b964b07d884fc",
+      "cases": 20
+    },
+    {
+      "old": "data/evaluation/dev_extra/former_heldout_v1.jsonl",
+      "new": "data/evaluation/development/former_heldout_v1.jsonl",
+      "sha256": "54d01066a8ac9c1c44904bf85ed7f6384482198f30ad1f7869bf7d9e5b93d771",
+      "cases": 24
+    }
+  ],
+  "provenance": "docs/README.md#development-cases",
+  "backup": ".migration-local/development-layout/before.zip",
+  "removed_redundant_document": "data/evaluation/development/PROVENANCE.md",
+  "followup_development_filename": {
+    "from": "data/evaluation/development/former_heldout_v1.jsonl",
+    "to": "data/evaluation/development/supplementary_cases.jsonl",
+    "sha256": "54d01066a8ac9c1c44904bf85ed7f6384482198f30ad1f7869bf7d9e5b93d771",
+    "classification": "development; unchanged",
+    "reason": "Avoid confusing previously exposed development cases with the current held-out set"
+  }
+}

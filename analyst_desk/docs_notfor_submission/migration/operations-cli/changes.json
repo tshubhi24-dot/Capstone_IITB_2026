@@ -1,0 +1,16 @@
+{
+  "commands": {
+    "ops_smoke.py": "ops.py smoke",
+    "backfill_memory.py": "ops.py backfill-memory"
+  },
+  "updated_consumers": [
+    "analyst_desk/analystdesk/ui/research.py",
+    "analyst_desk/README.md",
+    "analyst_desk/docs_notfor_submission/policies/memory_policy.md",
+    "analyst_desk/tests/integration/test_ops_smoke.py",
+    "analyst_desk/docs_notfor_submission/evaluation_guide.md",
+    "analyst_desk/docs_notfor_submission/architecture/viva_notes.md",
+    "analyst_desk/docs_notfor_submission/CONSOLIDATED_SPECIFICATION_REVIEW.md"
+  ],
+  "old_entrypoints_removed": true
+}

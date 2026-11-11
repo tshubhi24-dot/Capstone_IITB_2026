@@ -1,0 +1,138 @@
+{
+  "review_kind": "assistant-assisted development review at user request; not independent human or Role 5 validation",
+  "basis": "Existing pending/approved development reflection records and archived development missing-year evidence; no held-out/red-team answers or model calls used.",
+  "lessons": [
+    {
+      "id": "verified_figures",
+      "when": "drafting revenue, income or margin figures with tool-provided placeholders",
+      "do": "Use only registered figure placeholders returned by the calculation tools and retain their fact or calculation provenance. Do not invent placeholder names or replace verified output with unsupported handwritten numbers. If a requested placeholder is unavailable, retrieve or calculate eligible inputs, or state the missing result.",
+      "applies_to": [
+        "numeric",
+        "figures",
+        "margin",
+        "margins",
+        "revenue",
+        "income"
+      ],
+      "source_keys": [
+        "1775a755",
+        "644c896a",
+        "2f0c2595",
+        "4ca3cfaf",
+        "4fa6a6fc",
+        "fd575bab",
+        "d686ca70",
+        "204423ab",
+        "4c47c313"
+      ]
+    },
+    {
+      "id": "derived_calculations",
+      "when": "calculating growth, absolute changes or margin differences between fiscal periods",
+      "do": "Calculate derived results with the deterministic tools from compatible verified inputs. Preserve issuer, metric, units and fiscal-period associations; distinguish percent growth from percentage-point change and round only the final display. A derived result needs calculation provenance, not an invented verbatim quotation.",
+      "applies_to": [
+        "growth",
+        "change",
+        "changes",
+        "margin",
+        "margins",
+        "comparison"
+      ],
+      "source_keys": [
+        "34174848"
+      ]
+    },
+    {
+      "id": "exact_quotes",
+      "when": "quoting numeric values from a filing passage",
+      "do": "Check that the cited passage actually contains the quoted value for the claimed metric, issuer, period and unit, and place the supporting citation on the claim line. Do not cite a section opening or unrelated passage as numerical evidence. Use verified calculation output for derived or converted figures rather than presenting them as verbatim quotations.",
+      "applies_to": [
+        "quote",
+        "quoting",
+        "quoted",
+        "numbers",
+        "citation"
+      ],
+      "source_keys": [
+        "8de4b75c",
+        "b58a621b",
+        "029296a9",
+        "faaf369e",
+        "97152bdb",
+        "306b25d2",
+        "dcd0deef",
+        "b1df28ed",
+        "ab9e2800",
+        "6757b84e",
+        "f9f4db10",
+        "dfa4c614",
+        "a22c837d",
+        "4ee9752c",
+        "cae1f5a2",
+        "43b281f3"
+      ]
+    },
+    {
+      "id": "claim_support",
+      "when": "writing financial summaries, segment claims or explanations of revenue drivers",
+      "do": "Check each substantive claim against the exact supporting passage. Keep verified calculations separate from narrative explanations; do not add a cause, segment detail or business interpretation merely because nearby figures are correct. Remove or qualify unsupported claims instead of attaching unrelated citations.",
+      "applies_to": [
+        "claims",
+        "claim",
+        "summary",
+        "summarize",
+        "drivers",
+        "causes"
+      ],
+      "source_keys": [
+        "44f7e596",
+        "be54050b",
+        "f5568df3",
+        "357de961",
+        "4be53dda",
+        "1dfa5f9e",
+        "c222c026",
+        "e4bbc6c9"
+      ]
+    },
+    {
+      "id": "paired_risk_evidence",
+      "when": "comparing risk factors between two fiscal years",
+      "do": "Retrieve and read matching-topic evidence from both requested years before drafting the comparison. Attach real earlier and later passage identifiers to each substantive comparison; a bare citation list or evidence from only one year is not a completed comparison. State incomplete coverage rather than inventing the missing side.",
+      "applies_to": [
+        "risk",
+        "risks",
+        "years",
+        "comparison",
+        "changed"
+      ],
+      "source_keys": [
+        "e006575a",
+        "31d9fcfa"
+      ]
+    },
+    {
+      "id": "bounded_risk_labels",
+      "when": "classifying new, changed, added or removed risks",
+      "do": "Describe only the change supported by the paired source text. More specific wording within an existing topic is not proof of a wholly new risk; absence from retrieved excerpts is not proof of full-filing removal. Scope labels to the reviewed evidence, challenge unsupported newness premises, and do not infer economic impact or investment advice from wording alone.",
+      "applies_to": [
+        "risk",
+        "risks",
+        "new",
+        "added",
+        "removed",
+        "changed"
+      ],
+      "source_keys": [
+        "6eda7e63",
+        "31d9fcfa"
+      ]
+    }
+  ],
+  "activation": "Supersedes overlapping development lessons in a new frozen local playbook. Previous frozen snapshots and source records retained in ignored recovery evidence.",
+  "limitations": [
+    "These generic process lessons contain no benchmark answers.",
+    "No learning benefit is established without matched controlled evaluation.",
+    "Independent review requirements for submission remain separate."
+  ]
+}

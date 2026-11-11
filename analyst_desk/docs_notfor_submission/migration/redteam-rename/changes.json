@@ -1,0 +1,8 @@
+{
+  "old": "data/evaluation/redteam/attacks_v1.jsonl",
+  "new": "data/evaluation/redteam/redteam_attacks_cases.jsonl",
+  "checkout_sha256_before_and_after": "79fdf2cc1edfdc65499eb49e9c199f37a1e3ac82f745627a120e97880359e303",
+  "contents_unchanged": true,
+  "expected_attack_conditions_inspected": false,
+  "loader": "existing JSONL directory loader; no code change needed"
+}

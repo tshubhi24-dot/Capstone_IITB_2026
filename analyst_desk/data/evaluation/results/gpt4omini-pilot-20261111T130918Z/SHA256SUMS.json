@@ -1,0 +1,15 @@
+{
+  "attempted_case_audit.json": "af2d532500232b38a13f9e9a39be7878bd6fb3ddcc611324c4e518338ba02185",
+  "attempted_case_audit.md": "f5f21694908e8a0b673843a7c1e228512317822d186e0a67ad48cbb531a5fe25",
+  "audit.json": "12de86108e31fb9532a153a6898ad64c051f3412ae6355aa087d2ebe697f5d3e",
+  "case_diagnostics.json": "7557cbafe11506e9a64e758ebddd296e822c9355c2f63cbecbd046fea86d8580",
+  "effective_llm.toml": "a11b52ad9dbf4a88d76dd9e1a0e7fae30f4b6eeb5adf38cbead946bf13e20588",
+  "eval_dev_gpt4omini-pilot-20261111T130918Z.json": "26277a9ca3fc33661fb4dbcad3b762cb51a9e92a002eadff2c324292c809567c",
+  "execution.log": "bd0f076d141271229c6388e42ce3bb610d414567d6c08ac9c4b3df9aaa63b8e3",
+  "manifest.json": "5dec2a26f13ecd693d741508e43c0997d128e923a24159c82b1e46d10665e799",
+  "pilot_summary.json": "17161321a537bb0b33998bd2b1925199f19c581b3282167dbf312eed3cae0706",
+  "provider_errors.json": "7b3ff536a0d52bc94b89c98a38393767d1973ac5944c272281ceb97700257b3b",
+  "provider_preflight.json": "befa9d96f976c8d1329fead466563887d57394cd0fd7d9041eb196ab7e3175c2",
+  "REPORT.md": "15b6e15407b70289c6c6eca1a44345ad5415c8ef56bcf1fe8d98ac7e95d5a73c",
+  "stop_reason.json": "5ba643f26ff50171ccf80bf0fb72273f94752181aba03b5325c0fec1abe9b00c"
+}

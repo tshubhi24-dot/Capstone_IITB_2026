@@ -1,0 +1,22 @@
+{
+  "compose_resolved_equal_except_dockerfile_and_image_owned_launcher": true,
+  "compose_project_name": "analyst_desk",
+  "volume_identities_unchanged": true,
+  "bind_mounts_and_environments_unchanged": true,
+  "shell_syntax_checks": {
+    "start.sh": true,
+    "stop.sh": true
+  },
+  "dummy_environment_only": true,
+  "services_started_or_stopped": false,
+  "successful": true,
+  "run": 551,
+  "passed": 546,
+  "skipped": 5,
+  "all_previous_tests_preserved": true,
+  "new_mock_launcher_regressions": 1,
+  "windows_launchers_or_setup_executed": false,
+  "images_built_or_pulled": false,
+  "docker_volumes_modified": false,
+  "provider_calls": false
+}

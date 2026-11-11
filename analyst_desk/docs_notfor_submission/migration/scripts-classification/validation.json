@@ -1,0 +1,14 @@
+{
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "successful": true,
+  "test_ids_and_skips_unchanged": true,
+  "retained_runnable_scripts": 12,
+  "moved_team_utilities": 4,
+  "removed_obsolete_scripts": 2,
+  "moved_script_links_checked": 2,
+  "authoring_scripts_not_executed": true,
+  "api_calls": false,
+  "docker_team_exclusion": true
+}

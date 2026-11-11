@@ -1,0 +1,8 @@
+{
+  "loaded_development_cases": 44,
+  "objects_and_order_identical_to_before": true,
+  "case_files_byte_identical": true,
+  "audit_outcomes_and_hash_unchanged": true,
+  "audit_change": "gold_source path only",
+  "model_or_provider_calls": false
+}

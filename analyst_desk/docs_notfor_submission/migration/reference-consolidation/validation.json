@@ -1,0 +1,12 @@
+{
+  "successful": true,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "test_ids_and_skips_unchanged": true,
+  "byte_identical_detailed_evidence_and_heldout_files": 16,
+  "original_json_objects_unchanged": true,
+  "core_development_contract_count": 20,
+  "live_evaluations_run": false,
+  "provider_calls": false
+}

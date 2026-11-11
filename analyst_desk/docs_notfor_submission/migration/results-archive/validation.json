@@ -1,0 +1,30 @@
+{
+  "complete": true,
+  "archived_files": 28,
+  "all_archive_hashes_and_sizes_verified": true,
+  "failed_and_partial_runs_preserved": true,
+  "active_result_outputs": 0,
+  "placeholder_only": ".gitkeep",
+  "archived_baseline_readonly_ci_audit_exit_code": 0,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "failures": [],
+  "errors": [],
+  "test_ids_and_skips_unchanged": true,
+  "fresh_runs_pending": [
+    "development",
+    "red-team",
+    "retrieval"
+  ],
+  "live_evaluations_executed": false,
+  "reminder": "docs/README.md#pre-submission-fresh-runs",
+  "reminder_linked_from": [
+    "README.md",
+    "analyst_desk/submission/README.md"
+  ],
+  "scheduled_task_created": false,
+  "new_missing_local_links": [],
+  "immutable_historical_links_resolved_by_archive_map": [],
+  "paid_api_calls": false
+}

@@ -1,0 +1,11 @@
+ M .gitignore
+ M jayshree/analyst_desk/docs/plan.md
+?? AGENTS.md
+?? jayshree/analyst_desk/CURRENT_IMPLEMENTATION_GAP_ANALYSIS.docx
+?? jayshree/analyst_desk/data/evaluation/results/eval_dev_20261102-002051.json
+?? jayshree/analyst_desk/data/evaluation/results/eval_heldout_role5_402_probe_20261110_202212.json
+?? jayshree/analyst_desk/data/evaluation/results/eval_heldout_role5_v1_local_mistral_hr04_20261110.json
+?? jayshree/analyst_desk/docs/PROJECT_CLEANUP_PLAN.md
+?? jayshree/analyst_desk/docs/migration/
+?? jayshree/analyst_desk/migration_mock_baseline.log
+?? jayshree/analyst_desk/scripts/run_mock_tests.py

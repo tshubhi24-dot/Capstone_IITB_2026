@@ -1,0 +1,46 @@
+{
+  "complete": true,
+  "checkpoint": "phase5",
+  "run": 538,
+  "passed": 533,
+  "errors": [],
+  "failures": [],
+  "skipped": 5,
+  "seconds": 33.042,
+  "exit_code": 0,
+  "all_original_test_ids_preserved_after_explicit_mapping": true,
+  "skip_reasons_unchanged": true,
+  "no_paid_api_calls": true,
+  "helper_gate_passed": true,
+  "removal_gate_passed": true,
+  "static_validation": {
+    "python_files_parsed": 120,
+    "invalid_project_import_bases": [],
+    "baseline_data_files_checked": 251,
+    "nonprotected_data_hashes_verified": 191,
+    "protected_data_check": "path/size metadata only",
+    "changed_or_missing_data": [],
+    "local_markdown_targets_checked": 575,
+    "inherited_missing_targets": 41,
+    "new_missing_targets": [],
+    "ignore_rule_checks": {
+      "analyst_desk/.env": true,
+      "analyst_desk/data/approval/approval.key": true,
+      "analyst_desk/data/runs/checkpoints.sqlite": true,
+      "analyst_desk/.env.example": false,
+      "analyst_desk/data/passages/AAPL_2022.jsonl": false,
+      "analyst_desk/data/edgar_cache/0000002488.json": false
+    },
+    "policy_source_paths_checked": 16,
+    "baseline_manifest_bound_file_hashes_unchanged": 47
+  },
+  "contract_validation": {
+    "public_function_signatures_checked": 243,
+    "annotated_schemas_checked": 41,
+    "changed_contracts": [],
+    "basis": "Static Phase 1 interface inventory, mapped through actual file moves"
+  },
+  "compose_dummy_configuration_validated": true,
+  "compose_warning": "Docker user config unreadable; config parser exited 0, no engine/registry actions",
+  "phase6_started": false
+}

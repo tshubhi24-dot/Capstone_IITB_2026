@@ -1,0 +1,17 @@
+{
+  "previous_version": "8f1608da4cec",
+  "previous_snapshot_lessons": 3,
+  "new_version": "806f51dd6960",
+  "new_snapshot_lessons": 6,
+  "namespace_counts": {
+    "lessons.approved": 6,
+    "lessons.meta": 1,
+    "lessons.rejected": 39
+  },
+  "nonlesson_memory_unchanged": true,
+  "atomic_activation": true,
+  "review_kind": "assistant-assisted development review at user request; not independent human or Role 5 validation",
+  "provider_calls": false,
+  "protected_cases_used": false,
+  "retrieval_probes_passed": 6
+}

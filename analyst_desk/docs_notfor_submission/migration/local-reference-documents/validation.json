@@ -1,0 +1,12 @@
+{
+  "successful": true,
+  "run": 550,
+  "passed": 545,
+  "skipped": 5,
+  "test_ids_and_skips_unchanged": true,
+  "all_three_original_document_bytes_preserved": true,
+  "root_agents_discovery_pointer_retained": true,
+  "updated_links_valid": true,
+  "docker_context_exclusion_retained": true,
+  "provider_calls": false
+}

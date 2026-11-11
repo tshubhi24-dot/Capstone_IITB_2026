@@ -1,0 +1,21 @@
+{
+  "records": 64,
+  "unique_ids": 64,
+  "by_type": {
+    "numeric": 22,
+    "comparison": 16,
+    "risk_change": 16,
+    "refusal": 10
+  },
+  "normalized_source_lines_and_order_preserved": true,
+  "raw_original_source_bytes_archived_and_hash_verified": true,
+  "source_byte_ranges_verified": true,
+  "combined_sha256_verified": true,
+  "loader_count_verified_without_evaluating_cases": 64,
+  "expected_answer_fields_inspected": false,
+  "question_semantics_inspected": false,
+  "model_calls": false,
+  "active_jsonl_files": 1,
+  "historical_scores_regenerated": false,
+  "new_blind_independence_claim": false
+}

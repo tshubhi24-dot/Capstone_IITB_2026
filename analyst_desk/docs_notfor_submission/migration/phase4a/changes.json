@@ -1,0 +1,40 @@
+{
+  "moves": {
+    "app.py": "analystdesk/ui/dashboard.py",
+    "agent_ui.py": "analystdesk/ui/research.py",
+    "eval_ui.py": "analystdesk/ui/evaluation.py",
+    "analystdesk/baseline.py": "analystdesk/research/baseline.py",
+    "analystdesk/c0_pipeline.py": "analystdesk/research/c0_pipeline.py",
+    "analystdesk/chat_chart.py": "analystdesk/research/chat_chart.py",
+    "analystdesk/chat_context.py": "analystdesk/research/chat_context.py"
+  },
+  "module_map": {
+    "app": "analystdesk.ui.dashboard",
+    "agent_ui": "analystdesk.ui.research",
+    "eval_ui": "analystdesk.ui.evaluation",
+    "analystdesk.baseline": "analystdesk.research.baseline",
+    "analystdesk.c0_pipeline": "analystdesk.research.c0_pipeline",
+    "analystdesk.chat_chart": "analystdesk.research.chat_chart",
+    "analystdesk.chat_context": "analystdesk.research.chat_context"
+  },
+  "updated_python_files": [
+    "analystdesk\\ui\\research.py",
+    "analystdesk\\__main__.py",
+    "analystdesk\\research\\baseline.py",
+    "analystdesk\\research\\c0_pipeline.py",
+    "analystdesk\\research\\chat_chart.py",
+    "analystdesk\\research\\chat_context.py",
+    "analystdesk\\evaluation.py",
+    "analystdesk\\ui\\dashboard.py",
+    "analystdesk\\ui\\evaluation.py",
+    "tests\\test_agent_ui.py",
+    "tests\\test_baseline.py",
+    "tests\\test_chat_chart.py",
+    "tests\\test_chat_context.py",
+    "tests\\test_dashboard.py",
+    "tests\\test_data_integrity.py",
+    "tests\\test_ops_smoke.py",
+    "tests\\test_plan_assumptions.py",
+    "tests\\test_source_review.py"
+  ]
+}

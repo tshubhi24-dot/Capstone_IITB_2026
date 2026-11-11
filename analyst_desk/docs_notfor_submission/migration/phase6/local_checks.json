@@ -1,0 +1,191 @@
+{
+  "python_files_parsed": 120,
+  "project_import_bases_valid": true,
+  "docker_copy_sources": [
+    "requirements.txt",
+    "requirements.lock",
+    "analystdesk/",
+    "config/",
+    "scripts/",
+    "experiments/",
+    "app.py",
+    "data/passages/"
+  ],
+  "workflow_paths_match_new_root": true,
+  "compose_config_exit_code": 0,
+  "compose_warning": "Docker user config unreadable; quiet configuration validation succeeded",
+  "real_env_file_used_for_compose": false,
+  "services_or_images_started_or_built": false,
+  "markdown_targets_checked": 592,
+  "inherited_missing_targets": [
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "PROBLEM_STATEMENT.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "PROBLEM_STATEMENT.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "FILING_VERSION_POLICY.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "FILING_VERSION_POLICY.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.docx"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md"
+    },
+    {
+      "document": "docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "PROBLEM_STATEMENT.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "PROBLEM_STATEMENT.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "FILING_VERSION_POLICY.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "FILING_VERSION_POLICY.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.docx"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md"
+    },
+    {
+      "document": "docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx"
+    },
+    {
+      "document": "submission/viva_prep.md",
+      "target": "redteam_results.md"
+    }
+  ],
+  "new_missing_targets": [],
+  "mermaid_source_reviewed": true,
+  "mermaid_browser_render_executed": false,
+  "external_urls_checked": false,
+  "git_diff_check_exit_code": 0
+}

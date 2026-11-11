@@ -1,0 +1,49 @@
+{
+  "moves": {
+    "analystdesk/approval.py": "analystdesk/governance/approval.py",
+    "analystdesk/agent/checks.py": "analystdesk/governance/checks.py",
+    "analystdesk/agent/review_snapshot.py": "analystdesk/governance/review_snapshot.py",
+    "analystdesk/memory.py": "analystdesk/memory/store.py",
+    "analystdesk/lessons.py": "analystdesk/memory/playbook.py"
+  },
+  "module_map": {
+    "analystdesk.approval": "analystdesk.governance.approval",
+    "analystdesk.agent.checks": "analystdesk.governance.checks",
+    "analystdesk.agent.review_snapshot": "analystdesk.governance.review_snapshot",
+    "analystdesk.memory": "analystdesk.memory.store",
+    "analystdesk.lessons": "analystdesk.memory.playbook"
+  },
+  "updated_python_files": [
+    "analystdesk\\governance\\checks.py",
+    "analystdesk\\agent\\graph.py",
+    "analystdesk\\governance\\review_snapshot.py",
+    "analystdesk\\agent\\team.py",
+    "analystdesk\\api.py",
+    "analystdesk\\governance\\approval.py",
+    "analystdesk\\evaluation.py",
+    "analystdesk\\memory\\playbook.py",
+    "analystdesk\\memory\\store.py",
+    "analystdesk\\redteam.py",
+    "analystdesk\\servers\\portal.py",
+    "analystdesk\\servers\\signing.py",
+    "analystdesk\\ui\\research.py",
+    "scripts\\backfill_memory.py",
+    "scripts\\calibrate_judge.py",
+    "scripts\\reflect.py",
+    "scripts\\run_eval.py",
+    "tests\\security\\test_forced_approval_injection.py",
+    "tests\\security\\test_injected_recommendation.py",
+    "tests\\security\\test_tool_poisoning.py",
+    "tests\\test_agent_ui.py",
+    "tests\\test_api.py",
+    "tests\\test_checks.py",
+    "tests\\test_figures.py",
+    "tests\\test_gap_fixes.py",
+    "tests\\test_guards.py",
+    "tests\\test_lessons.py",
+    "tests\\test_memory.py",
+    "tests\\test_review_snapshot.py",
+    "tests\\test_source_review.py",
+    "tests\\test_tools.py"
+  ]
+}

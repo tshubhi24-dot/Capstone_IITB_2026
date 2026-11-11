@@ -1,0 +1,572 @@
+[
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 2,
+    "reference": "# command for each service. (The python-sandbox *code runner* image is"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 7,
+    "reference": "# Build locally: docker compose build      (or: docker build -t analystdesk .)"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 13,
+    "reference": "FROM python:3.12.16-slim-trixie"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 28,
+    "reference": "COPY requirements.txt requirements.lock ./"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 40,
+    "reference": "RUN python -c \"from huggingface_hub import snapshot_download; \\"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 49,
+    "reference": "&& HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 python -c \"from sentence_transformers import \\"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 61,
+    "reference": "&& mkdir -p data/index data/runs data/memory data/portal data/approval data/evaluation && chown -R desk data"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 63,
+    "reference": "COPY analystdesk/ analystdesk/"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 64,
+    "reference": "COPY config/ config/"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 65,
+    "reference": "COPY scripts/ scripts/"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 66,
+    "reference": "COPY experiments/ experiments/"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 67,
+    "reference": "COPY app.py agent_ui.py eval_ui.py ./"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 71,
+    "reference": "# time compose still mounts data/ from the repo: the index is named after a"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 77,
+    "reference": "COPY --chown=desk data/passages/ data/passages/"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 79,
+    "reference": "python -c \"from analystdesk.retrieve import get_retriever; get_retriever()\"; \\"
+  },
+  {
+    "path": "jayshree/analyst_desk/Dockerfile",
+    "line": 83,
+    "reference": "CMD [\"python\", \"app.py\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 4,
+    "reference": "#   docker compose pull            get the exact image CI built from main"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 5,
+    "reference": "#   docker compose up              start; open http://127.0.0.1:7861"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 8,
+    "reference": "#   docker compose up --build      builds the image from this folder"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 24,
+    "reference": "- ./data/passages:/app/data/passages:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 25,
+    "reference": "- ./data/edgar_cache:/app/data/edgar_cache:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 26,
+    "reference": "- index:/app/data/index"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 36,
+    "reference": "test: [\"CMD\", \"python\", \"-c\", \"import socket; socket.create_connection(('127.0.0.1', 8000), 2)\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 44,
+    "reference": "# Volumes created by an older image (before data/runs and data/memory existed"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 50,
+    "reference": "command: [\"sh\", \"-c\", \"chown -R 1000:1000 /app/data/index /app/data/runs /app/data/memory /app/data/portal /app/data/approval /app/data/evaluation\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 52,
+    "reference": "- index:/app/data/index"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 53,
+    "reference": "- runs:/app/data/runs"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 54,
+    "reference": "- memory:/app/data/memory"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 55,
+    "reference": "- portal:/app/data/portal"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 56,
+    "reference": "- approval:/app/data/approval"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 57,
+    "reference": "- evaluation-work:/app/data/evaluation"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 64,
+    "reference": "command: [\"python\", \"-c\", \"from analystdesk.retrieve import get_retriever; get_retriever(); print('Index initialization completed successfully')\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 72,
+    "reference": "command: [\"python\", \"-m\", \"analystdesk.servers.filings_kb\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 80,
+    "reference": "test: [\"CMD\", \"python\", \"-c\", \"import socket; socket.create_connection(('127.0.0.1', 8000), 2)\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 88,
+    "reference": "command: [\"python\", \"-m\", \"analystdesk.servers.edgar_server\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 94,
+    "reference": "- ./data/edgar_cache:/app/data/edgar_cache:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 99,
+    "reference": "python-sandbox:"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 101,
+    "reference": "command: [\"python\", \"-m\", \"analystdesk.servers.sandbox\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 104,
+    "reference": "MCP_ALLOWED_HOSTS: \"python-sandbox:8000,python-sandbox\""
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 115,
+    "reference": "command: [\"python\", \"-m\", \"analystdesk.servers.portal\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 121,
+    "reference": "- portal:/app/data/portal"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 122,
+    "reference": "- approval:/app/data/approval   # verifies with the shared signing key"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 128,
+    "reference": "command: [\"python\", \"app.py\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 131,
+    "reference": "test: [\"CMD\", \"python\", \"-c\", \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:7861/readyz', timeout=3)\"]"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 146,
+    "reference": "MCP_URL_PYTHON_SANDBOX: http://python-sandbox:8000/mcp"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 151,
+    "reference": "- ./data/passages:/app/data/passages:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 152,
+    "reference": "- ./data/edgar_cache:/app/data/edgar_cache:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 155,
+    "reference": "- evaluation-work:/app/data/evaluation"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 156,
+    "reference": "- ./data/evaluation/dev_cases.jsonl:/app/data/evaluation/dev_cases.jsonl:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 157,
+    "reference": "- ./data/evaluation/results:/app/data/evaluation/results"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 158,
+    "reference": "- index:/app/data/index"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 159,
+    "reference": "- runs:/app/data/runs"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 160,
+    "reference": "- memory:/app/data/memory"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 161,
+    "reference": "- portal:/app/data/portal"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 162,
+    "reference": "- approval:/app/data/approval   # shared approval tokens with the portal"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 170,
+    "reference": "python-sandbox: {condition: service_healthy}"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 184,
+    "reference": "- ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 185,
+    "reference": "- ./docker/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 196,
+    "reference": "- ./docker/grafana/provisioning:/etc/grafana/provisioning:ro"
+  },
+  {
+    "path": "jayshree/analyst_desk/compose.yaml",
+    "line": 197,
+    "reference": "- ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 21,
+    "reference": "working-directory: jayshree/analyst_desk"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 27,
+    "reference": "uses: actions/setup-python@v5"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 29,
+    "reference": "python-version: \"3.12\""
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 31,
+    "reference": "cache-dependency-path: jayshree/analyst_desk/requirements.lock"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 35,
+    "reference": "python -m pip install --upgrade pip"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 36,
+    "reference": "python -m pip install --index-url https://download.pytorch.org/whl/cpu \"torch==2.15.0+cpu\""
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 37,
+    "reference": "python -m pip install -r requirements.lock"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 38,
+    "reference": "python -m pip check"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 41,
+    "reference": "run: python -m unittest discover -s tests -v"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 45,
+    "reference": "python scripts/audit_eval_results.py \\"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 46,
+    "reference": "--input data/evaluation/results/eval_dev_merged.json \\"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 47,
+    "reference": "--cases data/evaluation/dev_cases.jsonl \\"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 49,
+    "reference": "--out-json data/evaluation/results/role6_dev_audit.json \\"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 51,
+    "reference": "git diff --exit-code -- docs/role6_development_evidence.md data/evaluation/results/role6_dev_audit.json"
+  },
+  {
+    "path": ".github/workflows/ci.yml",
+    "line": 56,
+    "reference": "docker compose config --quiet"
+  },
+  {
+    "path": ".github/workflows/docker-image.yml",
+    "line": 14,
+    "reference": "- \"jayshree/analyst_desk/**\""
+  },
+  {
+    "path": ".github/workflows/docker-image.yml",
+    "line": 18,
+    "reference": "- \"jayshree/analyst_desk/**\""
+  },
+  {
+    "path": ".github/workflows/docker-image.yml",
+    "line": 65,
+    "reference": "context: jayshree/analyst_desk"
+  },
+  {
+    "path": ".github/workflows/docker-image.yml",
+    "line": 66,
+    "reference": "file: jayshree/analyst_desk/Dockerfile"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 23,
+    "reference": "working-directory: jayshree/analyst_desk"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 29,
+    "reference": "uses: actions/setup-python@v5"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 31,
+    "reference": "python-version: \"3.12\""
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 33,
+    "reference": "cache-dependency-path: jayshree/analyst_desk/requirements.lock"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 37,
+    "reference": "python -m pip install --upgrade pip"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 38,
+    "reference": "python -m pip install --index-url https://download.pytorch.org/whl/cpu \"torch==2.15.0+cpu\""
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 39,
+    "reference": "python -m pip install -r requirements.lock"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 40,
+    "reference": "python -m pip check"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 55,
+    "reference": "python scripts/run_eval.py \\"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 65,
+    "reference": "python scripts/audit_eval_results.py \\"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 66,
+    "reference": "--input \"data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json\" \\"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 67,
+    "reference": "--cases data/evaluation/dev_cases.jsonl \\"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 69,
+    "reference": "--out-json \"data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.json\" \\"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 70,
+    "reference": "--out-md \"data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.md\""
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 78,
+    "reference": "jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}.json"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 79,
+    "reference": "jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.json"
+  },
+  {
+    "path": ".github/workflows/evaluation-gate.yml",
+    "line": 80,
+    "reference": "jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.md"
+  },
+  {
+    "path": "jayshree/analyst_desk/setup.bat",
+    "line": 8,
+    "reference": "echo Install Python from https://www.python.org/downloads/ and try again."
+  },
+  {
+    "path": "jayshree/analyst_desk/setup.bat",
+    "line": 12,
+    "reference": "if not exist \".venv\\Scripts\\python.exe\" ("
+  },
+  {
+    "path": "jayshree/analyst_desk/setup.bat",
+    "line": 17,
+    "reference": "\".venv\\Scripts\\python.exe\" -m pip install --upgrade pip"
+  },
+  {
+    "path": "jayshree/analyst_desk/setup.bat",
+    "line": 20,
+    "reference": "\".venv\\Scripts\\python.exe\" -m pip install -r requirements.txt"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.bat",
+    "line": 71,
+    "reference": "docker compose up -d --wait --wait-timeout 900"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.bat",
+    "line": 125,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.bat",
+    "line": 130,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.bat",
+    "line": 131,
+    "reference": "echo Review service logs with: docker compose logs"
+  },
+  {
+    "path": "jayshree/analyst_desk/stop.bat",
+    "line": 17,
+    "reference": "docker compose down"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 66,
+    "reference": "if ! docker compose up -d --wait --wait-timeout 900; then"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 68,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 69,
+    "reference": "echo \"Review service logs with: docker compose logs\" >&2"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 91,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 96,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 100,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 104,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/start.sh",
+    "line": 108,
+    "reference": "docker compose ps"
+  },
+  {
+    "path": "jayshree/analyst_desk/stop.sh",
+    "line": 16,
+    "reference": "if ! docker compose down; then"
+  }
+]

@@ -1,0 +1,174 @@
+{
+  "documents_checked": 65,
+  "local_file_targets_checked": 567,
+  "missing_targets": [
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "PROBLEM_STATEMENT.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "PROBLEM_STATEMENT.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "FILING_VERSION_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "FILING_VERSION_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PRODUCT_CHECKLIST.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "PROBLEM_STATEMENT.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "PROBLEM_STATEMENT.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "USER_NEEDS_AND_WORKFLOW.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "SUPPORTED_RESEARCH_SCOPE.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "BANK_METRICS_AND_COMPARISON_RULES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "FISCAL_PERIODS_AND_UNITS_RULES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "FILING_VERSION_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "FILING_VERSION_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "EVIDENCE_RISK_CHANGE_AND_UNCERTAINTY_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "ACCEPTANCE_AND_PUBLICATION_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_POLICY.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.md"
+    },
+    {
+      "document": "jayshree/analyst_desk/docs/PROJECT_WORK_LOG.md",
+      "target": "MEMORY_AND_PRIVACY_RULES_AND_EXAMPLES.docx"
+    },
+    {
+      "document": "jayshree/analyst_desk/submission/viva_prep.md",
+      "target": "redteam_results.md"
+    }
+  ],
+  "preexisting_missing_target_count": 41,
+  "new_missing_targets": [],
+  "success_no_new_missing_targets": true,
+  "scope": "Maintained Markdown/new navigation; previous checkpoints/historical public evidence bodies excluded; external URLs/binary links not executed"
+}

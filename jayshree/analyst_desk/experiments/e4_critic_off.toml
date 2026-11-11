@@ -1,8 +1,0 @@
-name = "E4: signature ablation, critic loop off"
-question = "The note is still checked, but never sent back for revision, and C2 has no judge. Compare with E1 (critic on)."
-runner = "eval"
-configs = ["c1", "c2"]
-split = "dev"
-
-[env]
-AGENT_CRITIC = "0"

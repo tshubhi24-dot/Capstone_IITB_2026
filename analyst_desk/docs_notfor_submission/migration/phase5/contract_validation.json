@@ -1,0 +1,6 @@
+{
+  "public_function_signatures_checked": 243,
+  "annotated_schemas_checked": 41,
+  "changed_contracts": [],
+  "basis": "Static Phase 1 interface inventory, mapped through actual file moves"
+}

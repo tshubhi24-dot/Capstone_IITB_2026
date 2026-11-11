@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "file": "data/evaluation/redteam/redteam_attacks_cases.jsonl",
+  "attack_count_from_unchanged_manifest": 32,
+  "data_hash_unchanged": true,
+  "manifest_fields_unchanged_except_filename": true,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "errors": [],
+  "failures": [],
+  "test_ids_and_skips_unchanged": true,
+  "attack_records_executed": false,
+  "paid_api_calls": false
+}

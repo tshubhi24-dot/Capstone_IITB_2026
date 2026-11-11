@@ -1,0 +1,13 @@
+{
+  "python": "Python 3.13.11",
+  "platform": "win32",
+  "dependency_sources": {
+    "requirements.txt": "47a9539b3eb59211b31159370e4912814a16e729356ca1535d8b6e980ebf3d12",
+    "requirements.lock": "b3ce9900b167e93a159beab0b517beac81f6322d9cedc08b5534adf4ad22727f"
+  },
+  "secret_files_present": [
+    "jayshree/analyst_desk/.env"
+  ],
+  "secret_contents_read": false,
+  "network_calls_authorized": false
+}

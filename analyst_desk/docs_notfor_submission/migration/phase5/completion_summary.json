@@ -1,0 +1,80 @@
+{
+  "completed_phases": [
+    3,
+    4,
+    5
+  ],
+  "subphase_gates": [
+    {
+      "checkpoint": "phase3",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 32.143,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase4a",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 32.08,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase4b",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 34.742,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase4c",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 31.78,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase4d",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 31.67,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase4e",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 31.008,
+      "exit_code": 0
+    },
+    {
+      "checkpoint": "phase5",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "seconds": 33.042,
+      "exit_code": 0
+    }
+  ],
+  "unchanged_configuration_experiment_dependency_files": [
+    "config/llm.toml",
+    "requirements.txt",
+    "requirements.lock",
+    "experiments/e1_c0_c1_c2.toml",
+    "experiments/e2_defences_off.toml",
+    "experiments/e2_defences_on.toml",
+    "experiments/e3_after_playbook.toml",
+    "experiments/e3_before_playbook.toml",
+    "experiments/e4_critic_off.toml",
+    "experiments/e4_plain_passages.toml"
+  ],
+  "no_product_features_added": true,
+  "phase6_started": false,
+  "changes_committed_or_pushed": false
+}

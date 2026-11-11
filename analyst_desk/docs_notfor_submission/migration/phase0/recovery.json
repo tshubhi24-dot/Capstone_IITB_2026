@@ -1,0 +1,14 @@
+{
+  "commit": "f813e4e61bfcb712d37756b98e1bbded92230f8e",
+  "branch": "shubhi-deployment-v1",
+  "tracked_source_recovery": "Git objects at recorded commit; do not reset a dirty worktree",
+  "untracked_document_backup": ".migration-local/phase0/working_documents.zip",
+  "backup_sha256": "84c2437aa213566fabe5f1c4723708f4e34c876e4c4b32156ad37266b7c74da2",
+  "excluded": "Credentials, runtime stores and evaluation inputs/results; preserve original locations unchanged",
+  "phase0_modifications": [
+    ".gitignore",
+    "jayshree/analyst_desk/scripts/run_mock_tests.py",
+    "jayshree/analyst_desk/docs/PROJECT_CLEANUP_PLAN.md",
+    "jayshree/analyst_desk/docs/migration/phase0/"
+  ]
+}

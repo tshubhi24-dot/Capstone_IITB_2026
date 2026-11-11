@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 90
     defaults:
       run:
-        working-directory: jayshree/analyst_desk
+        working-directory: analyst_desk
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: jayshree/analyst_desk/requirements.lock
+          cache-dependency-path: analyst_desk/requirements.lock
 
       - name: Install CPU-only PyTorch and project dependencies
         run: |
@@ -40,20 +40,17 @@ jobs:
       - name: Run unit and data-integrity tests
         run: python -m unittest discover -s tests -v
 
-      - name: Audit committed development evaluation evidence
+      - name: Validate archived historical development evidence (read-only)
         run: |
-          python scripts/audit_eval_results.py \
-            --input data/evaluation/results/eval_dev_merged.json \
-            --cases data/evaluation/dev_cases.jsonl \
-            --configs c0 c1 c2 --min-cases 20 \
-            --out-json data/evaluation/results/role6_dev_audit.json \
-            --out-md docs/role6_development_evidence.md
-          git diff --exit-code -- docs/role6_development_evidence.md data/evaluation/results/role6_dev_audit.json
+          python scripts/report.py audit \
+            --input data/evaluation/archive/pre_cleanup_20261111/eval_dev_merged.json \
+            --cases data/evaluation/development/dev_cases.jsonl \
+            --configs c0 c1 c2 --min-cases 20
 
       - name: Validate Docker Compose configuration
         run: |
           cp .env.example .env
-          docker compose config --quiet
+          docker compose --project-directory . -f deployment/compose.yaml config --quiet
 
       - name: Validate and test Prometheus alert rules
         run: |

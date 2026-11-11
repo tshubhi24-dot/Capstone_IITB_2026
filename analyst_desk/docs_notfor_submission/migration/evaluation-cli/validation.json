@@ -1,0 +1,18 @@
+{
+  "successful": true,
+  "run": 547,
+  "passed": 542,
+  "skipped": 5,
+  "previous_test_ids_preserved": true,
+  "new_routing_tests": 6,
+  "public_entrypoints": [
+    "scripts/evaluation/run.py",
+    "scripts/evaluation/report.py"
+  ],
+  "workflow_function_bodies_preserved": true,
+  "all_nine_help_commands_checked_with_network_blocked": true,
+  "archived_development_audit_via_new_cli_exit_code": 0,
+  "old_entrypoints_removed": true,
+  "live_evaluations_run": false,
+  "provider_calls": false
+}

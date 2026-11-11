@@ -1,0 +1,24 @@
+# Keep the build context small and secrets out of images
+.env
+.env.*
+.venv/
+**/__pycache__/
+*.pyc
+.git/
+.vscode/
+*.code-workspace
+# data is mounted from the repo at run time; only the passages are copied in,
+# to bake the search index into the image
+data/*
+!data/passages/
+docs_notfor_submission/
+tests/
+notebooks/
+*.pdf
+notes/
+
+# Local indexes and analyst memory never enter the build context.
+.runtime/
+
+# Team authoring utilities are excluded from submission images.
+not_for_submission/

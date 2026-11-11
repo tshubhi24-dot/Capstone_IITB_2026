@@ -1,0 +1,15 @@
+{
+  "complete": true,
+  "file": "data/evaluation/retrieval_cases.jsonl",
+  "dataset_hash_unchanged": true,
+  "evaluator_reference_updated": true,
+  "archived_runs_unchanged": true,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "failures": [],
+  "errors": [],
+  "test_ids_and_skip_reasons_unchanged": true,
+  "fresh_retrieval_run_executed": false,
+  "paid_api_calls": false
+}

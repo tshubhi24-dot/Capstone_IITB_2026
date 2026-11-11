@@ -1,0 +1,42 @@
+{
+  "path_mapping": {
+    "evaluation/domain_reference/DEVELOPMENT_GOLDEN_CASES.json": "evaluation/development/reference.json",
+    "evaluation/domain_reference/GOLDEN_CONTENT_VERIFICATION.json": "evaluation/development/reference.json",
+    "evaluation/domain_reference/SUPPLEMENTARY_EXAMPLES.json": "evaluation/development/reference.json",
+    "docs_notfor_submission/GOLDEN_ANSWERS_AND_SCORING_RULES.md": "evaluation/development/review.md",
+    "docs_notfor_submission/DEVELOPMENT_CASE_DOMAIN_REVIEW.md": "evaluation/development/review.md",
+    "evaluation/domain_reference/HELDOUT_ROLE5_REVIEW.md": "evaluation/heldout/HELDOUT_ROLE5_REVIEW.md",
+    "evaluation/domain_reference/HELDOUT_ROLE5_V1_MANIFEST.json": "evaluation/heldout/HELDOUT_ROLE5_V1_MANIFEST.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_financial/BAC_ORIGINAL_FILING_CORROBORATION.json": "evaluation/development/evidence/financial/BAC_ORIGINAL_FILING_CORROBORATION.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_financial/financial_review.json": "evaluation/development/evidence/financial/financial_review.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_financial/NUMERIC_COMPARISON_REVIEW.md": "evaluation/development/evidence/financial/NUMERIC_COMPARISON_REVIEW.md",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_financial/source_facts.json": "evaluation/development/evidence/financial/source_facts.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_refusal/REFUSAL_CONTRACTS.json": "evaluation/development/evidence/refusal/REFUSAL_CONTRACTS.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_refusal/REFUSAL_REVIEW.md": "evaluation/development/evidence/refusal/REFUSAL_REVIEW.md",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_jpm_meta/DOMAIN_CONTRACTS.json": "evaluation/development/evidence/risk_jpm_meta/DOMAIN_CONTRACTS.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_jpm_meta/REVIEW_METADATA.json": "evaluation/development/evidence/risk_jpm_meta/REVIEW_METADATA.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_jpm_meta/RISK_JPM_META_REVIEW.md": "evaluation/development/evidence/risk_jpm_meta/RISK_JPM_META_REVIEW.md",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_jpm_meta/SOURCE_PASSAGES.json": "evaluation/development/evidence/risk_jpm_meta/SOURCE_PASSAGES.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_msft_nvda/D14_D15_DOMAIN_REVIEW.md": "evaluation/development/evidence/risk_msft_nvda/D14_D15_DOMAIN_REVIEW.md",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_risk_msft_nvda/D14_D15_REFERENCE_CONTRACTS.json": "evaluation/development/evidence/risk_msft_nvda/D14_D15_REFERENCE_CONTRACTS.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_scoring/SCORER_COUNTEREXAMPLES.json": "evaluation/development/evidence/scoring/SCORER_COUNTEREXAMPLES.json",
+    "evaluation/domain_reference/evidence/development_case_review/evidence_scoring/SCORER_COUNTEREXAMPLES.md": "evaluation/development/evidence/scoring/SCORER_COUNTEREXAMPLES.md",
+    "evaluation/domain_reference/README.md": "evaluation/README.md"
+  },
+  "json_sections": {
+    "DEVELOPMENT_GOLDEN_CASES.json": "golden_cases",
+    "GOLDEN_CONTENT_VERIFICATION.json": "verification",
+    "SUPPLEMENTARY_EXAMPLES.json": "supplementary_examples"
+  },
+  "detailed_evidence_bytes_unchanged": true,
+  "original_json_objects_unchanged": true,
+  "originals_archive": ".migration-local/reference-consolidation/originals.zip",
+  "updated_current_documents": [
+    "analyst_desk/docs_notfor_submission/evaluation_guide.md",
+    "analyst_desk/docs_notfor_submission/PRODUCT_CHECKLIST.md",
+    "analyst_desk/docs_notfor_submission/PRODUCT_DOMAIN_INDEX.md",
+    "analyst_desk/docs_notfor_submission/PROJECT_CONTRIBUTIONS.md",
+    "analyst_desk/docs_notfor_submission/PROJECT_WORK_LOG.md",
+    "analyst_desk/docs_notfor_submission/README.md"
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "archive_id": "pre-cleanup-20261111",
+  "archived_on": "2026-11-11",
+  "files": [
+    {
+      "original_path": "data/evaluation/results/eval_dev_20261102-002051.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_20261102-002051.json",
+      "bytes": 32347,
+      "sha256": "0e7a37db21eaffa9ec2af0501243cdcb26fc8ecab62190eb9f261959a6d46175",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_dev-baseline-c2rest.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_dev-baseline-c2rest.json",
+      "bytes": 11966,
+      "sha256": "f3e77bc6e8494b193839d2f1f07837d3ceecb0b10f0f39be214bcdaf92101cfb",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_dev-baseline.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_dev-baseline.json",
+      "bytes": 19898,
+      "sha256": "b5fcbfee52687a53dc58859368acccfabaa13f507de1d876ca680a9d3238c44c",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e1-dev-final.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e1-dev-final.json",
+      "bytes": 30224,
+      "sha256": "37b259c49ab8e5c91359cd5aed8e534aa9ee0f85753d1c6fbb73270d2a5abe17",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e1-dev-main-c2rest.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e1-dev-main-c2rest.json",
+      "bytes": 4237,
+      "sha256": "fd6308e6f176c9f056692992b79dcc813b9772780cc11ae2ed0457331e7a0692",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e1-dev-main-combined.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e1-dev-main-combined.json",
+      "bytes": 31521,
+      "sha256": "f5c8f19d5abf18ee85243e6c311c3ff3adb6421da9651edd079d8f891059de11",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e1-dev-main.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e1-dev-main.json",
+      "bytes": 31682,
+      "sha256": "84645a01bac86e833b706547bff0a12e1429cf014b01f8c06c2564d868827a1c",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e4-critic-off-dev-main.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e4-critic-off-dev-main.json",
+      "bytes": 23312,
+      "sha256": "291264259150364d351ca589e1293a5c1f74b01a907d59760d27a343de64813e",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e4-critic-off-dev.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e4-critic-off-dev.json",
+      "bytes": 22459,
+      "sha256": "8a7c680b320c328473add0bc4e362aa2abbc0d227973306d06c85fd6335c9d0e",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e4-plain-dev-main.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e4-plain-dev-main.json",
+      "bytes": 23033,
+      "sha256": "48c598b7672fc9f1d441667850250112c9773b349296eca1e5ad65888658b5ef",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_e4-plain-dev.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_e4-plain-dev.json",
+      "bytes": 30571,
+      "sha256": "f289755ac938222c8ee295944ec99020b8f15aa8ee2a364e7ffec50088d9971c",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_fix-check-fy2022.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_fix-check-fy2022.json",
+      "bytes": 3416,
+      "sha256": "ac1b6e1d4fa964de6715c9657ea326cd5507cb3e03a375653220f7dd6b1e4371",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_dev_merged.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_dev_merged.json",
+      "bytes": 31476,
+      "sha256": "d33554395def3749530823ff80bb054117940f9a9d15c0986f3fab2654c41292",
+      "category": "development"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_e1-heldout-run1.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_e1-heldout-run1.json",
+      "bytes": 36355,
+      "sha256": "90a527e62a0a907cd9808857cdfc167b040acd829d44635716b32fd9a8896005",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_e1-heldout-run2.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_e1-heldout-run2.json",
+      "bytes": 27742,
+      "sha256": "7e1d0866a50c08badb18b774a2a5bf2151d5d4a51c1be7b0499e2ee3f1787eba",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_e1-heldout-v2-run1.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_e1-heldout-v2-run1.json",
+      "bytes": 32771,
+      "sha256": "b47d2ffff96ff16d6f47e3f02974380b833d31a2540145759cb14b886a020cf0",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_402_probe_20261110_202212.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_402_probe_20261110_202212.json",
+      "bytes": 929,
+      "sha256": "fec2ab40586704e10f950c5bf650a0cacafd6b826cef277e013088c4a39c5a03",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_v1_local_mistral_hr04_20261110.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_v1_local_mistral_hr04_20261110.json",
+      "bytes": 1312,
+      "sha256": "352d5ebee21fe6def998915fa992072f57d0be8073fbd3158dced6da83d33869",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_v1_retry_hr04_20261110.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_v1_retry_hr04_20261110.json",
+      "bytes": 1370,
+      "sha256": "94702d04e5267890659b0d790323d8ffae29eed5a99b6a46793321ffca0e41e8",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_v1_run1.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_v1_run1.json",
+      "bytes": 60857,
+      "sha256": "5e2bc773373688e41fc69554abd396fcd49844efb8a4ffd7764e85826490488b",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_v1_run2.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_v1_run2.json",
+      "bytes": 61139,
+      "sha256": "bd4e031b390a4e6a842f744fd536357f8ca1c9004f893ec715f78aeb80904880",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/eval_heldout_role5_v1_run3.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/eval_heldout_role5_v1_run3.json",
+      "bytes": 61931,
+      "sha256": "7107aae847a826e1a4c160e439a1adc0a9eb6216022823595a548efb98517a5f",
+      "category": "heldout"
+    },
+    {
+      "original_path": "data/evaluation/results/financebench_check.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/financebench_check.json",
+      "bytes": 3391,
+      "sha256": "37d3bcc04726b82111f3ab4fbd5f7e5df699abcab01e33e5d088c034dcefdc46",
+      "category": "external_check"
+    },
+    {
+      "original_path": "data/evaluation/results/memory_compare_20261025-112601.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/memory_compare_20261025-112601.json",
+      "bytes": 780,
+      "sha256": "92a08c54b66e27ea79fbafb90c967a78fe89f28dec2dc9d835437ca55452e324",
+      "category": "memory_comparison"
+    },
+    {
+      "original_path": "data/evaluation/results/retrieval_20261024-095420.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/retrieval_20261024-095420.json",
+      "bytes": 106166,
+      "sha256": "db66fda92e23e12253195952445a33161268ffe8b6523809bd48723e8d73a28f",
+      "category": "retrieval"
+    },
+    {
+      "original_path": "data/evaluation/results/retrieval_20261024-100431.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/retrieval_20261024-100431.json",
+      "bytes": 127449,
+      "sha256": "374f00f4827bedf3a7d1566d78fbb15a96da20c024b1c13cbd3293ec045cd112",
+      "category": "retrieval"
+    },
+    {
+      "original_path": "data/evaluation/results/retrieval_queries_v1.jsonl",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/retrieval_queries_v1.jsonl",
+      "bytes": 7989,
+      "sha256": "ca9e9c37fb91686591c3c63e1b7f547f55f342ca6674a6ec5210407f3ba42e26",
+      "category": "retrieval"
+    },
+    {
+      "original_path": "data/evaluation/results/role6_dev_audit.json",
+      "archived_path": "data/evaluation/archive/pre_cleanup_20261111/role6_dev_audit.json",
+      "bytes": 3468,
+      "sha256": "cec09a77fe4b9d848b101b471bb4915abe292355ac1c69bbcd457ee1a45bb016",
+      "category": "audit"
+    }
+  ],
+  "file_count": 28,
+  "status": "Historical evidence only; fresh post-cleanup development/red-team/retrieval runs pending",
+  "contents": "Moved byte-for-byte, including incomplete/failed runs and the older retrieval-query snapshot",
+  "internal_references": "Recorded paths inside archived JSON remain historical; use this relocation map",
+  "new_evaluations_executed": false
+}

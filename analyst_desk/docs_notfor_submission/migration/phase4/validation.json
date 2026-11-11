@@ -1,0 +1,49 @@
+{
+  "complete": true,
+  "subphases": [
+    {
+      "checkpoint": "phase4a",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "checkpoint": "phase4b",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "checkpoint": "phase4c",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "checkpoint": "phase4d",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "failures": 0,
+      "errors": 0
+    },
+    {
+      "checkpoint": "phase4e",
+      "run": 538,
+      "passed": 533,
+      "skipped": 5,
+      "failures": 0,
+      "errors": 0
+    }
+  ],
+  "normalized_test_ids_identical_to_phase0": true,
+  "normalized_skips_identical_to_phase0": true,
+  "moves": 72,
+  "no_paid_calls": true
+}

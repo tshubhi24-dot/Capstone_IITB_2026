@@ -1,0 +1,13 @@
+{
+  "inventory_entries": 476,
+  "manifest_entries": 476,
+  "source_config_test_hashes_verified": 83,
+  "recovery_archive_checksum_valid": true,
+  "recovery_archive_integrity_valid": true,
+  "all_removals_unapproved": true,
+  "tracked_changes": [
+    ".gitignore",
+    "jayshree/analyst_desk/docs/plan.md"
+  ],
+  "application_files_moved_or_deleted": false
+}

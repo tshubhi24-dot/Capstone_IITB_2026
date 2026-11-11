@@ -1,0 +1,21 @@
+{
+  "complete": true,
+  "case_counts": {
+    "core": 20,
+    "former_heldout_development": 24,
+    "combined": 44
+  },
+  "case_bytes_and_loading_order_preserved": true,
+  "frozen_core_audit_outcomes_unchanged": true,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "errors": [],
+  "failures": [],
+  "test_ids_and_skips_unchanged": true,
+  "compose_readonly_development_mount_validated": true,
+  "protected_heldout_mount_added": false,
+  "new_missing_local_links": [],
+  "model_evaluation_or_paid_calls": false,
+  "live_workflow_executed": false
+}

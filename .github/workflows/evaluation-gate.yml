@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 90
     defaults:
       run:
-        working-directory: jayshree/analyst_desk
+        working-directory: analyst_desk
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: jayshree/analyst_desk/requirements.lock
+          cache-dependency-path: analyst_desk/requirements.lock
 
       - name: Install CPU-only PyTorch and project dependencies
         run: |
@@ -52,7 +52,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
-          python scripts/run_eval.py \
+          python scripts/run.py eval \
             --configs c1 \
             --split dev \
             --min-cases 20 \
@@ -62,9 +62,9 @@ jobs:
       - name: Independently audit this run's recorded scores
         if: success()
         run: |
-          python scripts/audit_eval_results.py \
+          python scripts/report.py audit \
             --input "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.json" \
-            --cases data/evaluation/dev_cases.jsonl \
+            --cases data/evaluation/development \
             --configs c1 --min-cases 20 \
             --out-json "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.json" \
             --out-md "data/evaluation/results/eval_dev_ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}_audit.md"
@@ -75,8 +75,8 @@ jobs:
         with:
           name: analyst-desk-evaluation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}.json
-            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.json
-            jayshree/analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.md
+            analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}.json
+            analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.json
+            analyst_desk/data/evaluation/results/eval_dev_ci-${{ github.run_id }}-${{ github.run_attempt }}_audit.md
           if-no-files-found: warn
           retention-days: 14

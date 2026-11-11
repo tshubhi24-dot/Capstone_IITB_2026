@@ -1,0 +1,12 @@
+{
+  "archived_file_count": 28,
+  "archive_manifest": "data/evaluation/archive/pre_cleanup_20261111/manifest.json",
+  "active_results": "data/evaluation/results/",
+  "pending_fresh_runs": [
+    "development",
+    "red-team with defences on/off and clean cases",
+    "retrieval table/plain"
+  ],
+  "new_evaluations_executed": false,
+  "CI": "Read-only validation of archived baseline; does not satisfy fresh submission runs"
+}

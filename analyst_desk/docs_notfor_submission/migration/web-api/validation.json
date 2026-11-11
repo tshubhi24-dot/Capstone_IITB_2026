@@ -1,0 +1,14 @@
+{
+  "complete": true,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "errors": [],
+  "failures": [],
+  "test_ids_identical_to_phase6": true,
+  "skips_identical_to_phase6": true,
+  "http_routes_unchanged": 6,
+  "public_signatures_and_schemas_unchanged": true,
+  "old_duplicate_implementation_retained": false,
+  "paid_api_calls": false
+}

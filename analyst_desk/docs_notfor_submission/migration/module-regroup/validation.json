@@ -1,0 +1,16 @@
+{
+  "complete": true,
+  "modules_moved": 5,
+  "legacy_implementation_files_retained": false,
+  "run": 538,
+  "passed": 533,
+  "skipped": 5,
+  "failures": [],
+  "errors": [],
+  "test_ids_and_skips_unchanged": true,
+  "public_signatures_and_schema_fields_unchanged": true,
+  "application_config_data_path_and_hash_unchanged": true,
+  "all_policy_source_paths_valid": true,
+  "new_missing_local_links": [],
+  "paid_api_calls": false
+}
