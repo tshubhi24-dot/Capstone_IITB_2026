@@ -1,0 +1,11 @@
+<section id="change" data-transition="fade" style="background:#14213D;color:#F4F1EA;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
+<p style="font-size:24px;color:#E09F3E;text-transform:uppercase;letter-spacing:3px;font-weight:600">The experiment that changed the design</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#F4F1EA">Held-out cases exposed a replan bug</h2>
+<div style="display:flex;gap:64px;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:140px;font-weight:600;line-height:1;color:#C9D3E3">26–29</p><p style="font-size:28px;color:#C9D3E3">of 40: C2 held-out success, before</p></div>
+<x-shape kind="arrow-right" style="width:160px;height:80px;background:#E09F3E"></x-shape>
+<div style="display:flex;flex-direction:column;gap:8px"><p style="font-family:'Source Serif 4', Georgia, serif;font-size:140px;font-weight:600;line-height:1;color:#E09F3E">34–36</p><p style="font-size:28px;color:#C9D3E3">of 40 after the fix (comparisons 4/10 → 10/10)</p></div>
+</div>
+<p style="font-size:30px;line-height:1.4;color:#C9D3E3;width:1500px">For FY2022-only questions the risk-diff agent searched FY2021, which we don’t cover; the team replanned and stopped. Fix: skip risk-diff without a covered earlier year. The cases we used to find it moved to development; fresh held-out cases tested the fix.</p>
+<aside>This is the brief’s question 4. Shubhi’s independent 40 held-out cases on the old code showed C2 at 65–72 percent with comparisons at 4 of 10; on the fixed code C2 reaches 33–35 of 40 with all 10 comparisons. Our own first held-out set (v1) found the bug; it then became development data, as the brief requires.</aside>
+</section>

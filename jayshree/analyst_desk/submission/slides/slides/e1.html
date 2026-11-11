@@ -1,0 +1,16 @@
+<section id="e1" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">E1: is an agent worth its cost?</h2>
+<table style="font-size:28px;color:#14213D">
+<tr><th style="width:34%">Held-out, 40 cases</th><th style="width:22%">C0 fixed pipeline</th><th style="width:22%">C1 single agent</th><th style="width:22%">C2 team</th></tr>
+<tr><td>Task success (mean)</td><td>31.7/40</td><td>38.7/40</td><td>35.0/40</td></tr>
+<tr><td>Numbers verified</td><td>9%</td><td>76%</td><td>90%</td></tr>
+<tr><td>Cost per case</td><td>$0.0013</td><td>$0.0082</td><td>$0.0169</td></tr>
+<tr><td>Median latency</td><td>8 s</td><td>23 s</td><td>59 s</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4A5568"><b>The single agent wins on these questions:</b> best success at a third of the team’s cost.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#4A5568"><b>The team verifies more of its numbers</b> and is stricter, but its risk-change notes sometimes cite only one year.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#6A7179">Same model (gpt-4.1-mini), tools and budget. Independent 40-case held-out set, 3 runs; ranges: C1 38–39, C2 34–36, C0 31–32.</p>
+<aside>Be honest: on our question mix the team did not beat the single agent, and it costs about 2.7 times as much. Its value shows on long multi-company notes and in its stricter critic. C0 writes free text, so almost none of its numbers can be traced, even when correct.</aside>
+</section>
