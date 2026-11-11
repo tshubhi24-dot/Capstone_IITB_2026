@@ -28,7 +28,7 @@ class ChatChartTests(unittest.TestCase):
         )
 
         self.assertIsNone(notice)
-        self.assertEqual(figure.layout.title.text, "Annual Revenue — EDGAR XBRL verified")
+        self.assertEqual(figure.layout.title.text, "Annual Revenue — EDGAR XBRL")
         self.assertEqual([trace.name for trace in figure.data], ["Visa", "Mastercard"])
         self.assertEqual(list(figure.data[0].x), ["FY2024"])
         self.assertEqual(list(figure.data[0].y), [35000.0])
@@ -54,7 +54,7 @@ class ChatChartTests(unittest.TestCase):
         )
 
         self.assertIsNone(notice)
-        self.assertEqual(figure.layout.title.text, "Quarterly Operating Margin — EDGAR XBRL verified")
+        self.assertEqual(figure.layout.title.text, "Quarterly Operating Margin — EDGAR XBRL")
         self.assertEqual(list(figure.data[0].x), ["FY2024 Q1", "FY2024 Q2"])
         self.assertEqual(list(figure.data[0].y), [20.0, 25.0])
         self.assertEqual(list(figure.data[1].y), [25.0, 25.0])

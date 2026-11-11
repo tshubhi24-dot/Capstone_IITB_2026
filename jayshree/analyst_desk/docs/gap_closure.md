@@ -16,12 +16,12 @@ The team's *Current Implementation Gap Analysis* reviewed the app against the fi
 
 | Group | Implemented | Partly | Scope limit | Evidence | Preserved |
 |---|---|---|---|---|---|
-| Financial rules (38) | 19 | 5 | 6 | 5 | 3 |
-| Evidence and approval rules (17) | 9 | 3 | 2 | 1 | 2 |
-| Memory and scoring rules (22) | 11 | 2 | 5 | 3 | 1 |
+| Financial rules (38) | 16 | 8 | 6 | 5 | 3 |
+| Evidence and approval rules (17) | 8 | 4 | 2 | 1 | 2 |
+| Memory and scoring rules (22) | 8 | 5 | 5 | 3 | 1 |
 | Frontend messages (28) | 17 | 7 | 3 | 0 | 1 |
 
-The counts are per ID, as the analysis assigns them, and overlap in subject.
+The counts above are the earlier snapshot, not recalculated after the later changes below. The per-ID descriptions are authoritative; subjects overlap.
 
 ## Still open, and who supplies it
 
@@ -33,7 +33,7 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 
    The harness for all of these is ready: `run_eval.py`, `run_redteam.py`, `calibrate_judge.py`, `experiments/`.
 2. **The whole team:** run E1 ×3, E2, E3 and E4 on those cases, then write the evaluation report.
-3. **Code, if time allows:** have the judge review uncited narrative lines (AE02), and add a typed per-section coverage record for risk comparisons (AE05).
+3. **Code and evidence:** Live C1/C2 now use conservative line-level claim coverage, and risk handoffs report each requested year pair as missing evidence or excerpt-only. The automated judge and financial association checks still need independent validation; excerpt coverage is not full-section coverage. Strict review can block otherwise harmless uncited labels or generated follow-up text.
 
 ---
 
@@ -47,14 +47,14 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 | F04 | Implemented | For a bank, the plan gate says margins are pre-tax. If operating margin was asked for, it says banks don't report it and that approving uses pre-tax margin instead. The analyst can edit the plan | `graph.plan_assumptions` |
 | F05 | Implemented | The checker rejects a line that sets an operating margin against a pre-tax margin. The Comparability section states the bases. The dashboard chart is captioned "not comparable, not ranked" | `checks.py`, `figures.comparability_notes`, `app.py` |
 | F06 | Evidence | The bank concepts are mapped in code (net revenue, pre-tax income). Verifying the statement label and perimeter for each bank-year is a source review. **Owner:** Role 1/2 | `edgar.py` |
-| F07 | Implemented | A `[calc]` ratio must use one company and one fiscal year. A `[growth]` must compare the same item with an earlier year, and a `[diff]` one company's margins | `checks._mismatch` |
+| F07 | Partly | Ratios require matching company and annual window, supported income and revenue concepts and the company's margin basis. Growth and margin differences require compatible concepts and ordered years. Narrative-to-figure association and filing authority are not fully established | `checks._mismatch`, `checks._margin_inputs` |
 | F08 | Implemented | An annual fact must cover 350–380 days, which rejects quarterly and multi-year tags. A 53-week year is 371 days. All 45 company-years are unchanged | `edgar.get_annual_fact` |
 | F09 | Implemented | The Comparability section states each company's fiscal year-end and any 53-week year. The dashboard shows each period end | `figures.comparability_notes` |
 | F10 | Preserved | Facts stay in raw USD until display | `edgar.py` |
 | F11 | Implemented | A quoted amount must match the passage's scale: $2.2K or a bare $2.2 never matches "$2.2 billion" | `checks._unit_pattern` |
 | F12 | Implemented | Display rounding is half away from zero (20.125% → 20.13%). The checker compares with the same rule | `figures.half_up` |
 | F13 | Implemented | No margin is shown on zero or negative revenue; the checker refuses one | `figures.py`, `checks.py`, `baseline.py` |
-| F14 | Scope limit | Every figure is as originally reported in that year's own 10-K, one fixed basis. A different later value is shown as a warning, never swapped in | `edgar.get_annual_fact` |
+| F14 | Partly | An optional register enforces exact reviewed annual fact decisions and can select an eligible replacement. Without it, the earliest cached value is unverified. Actual issuer evidence and review remain necessary | `source_review.py`, `edgar.get_annual_fact` |
 | F15 | Scope limit | Fixed historical corpus, no as-of cutoffs; stated in the product spec §9 | — |
 | F16 | Implemented | Approval is refused while checks fail, in the graph, the API (409) and the UI. Only a passing note gets a signature, and the portal accepts only a signed note | `graph.review_note`, `api.py`, `portal.py` |
 | F17 | Implemented | A loss renders as `-$1,234.5M`. The checker reads the sign and counts the number, so a dropped sign fails | `figures.money`, `checks.FACT` |
@@ -65,15 +65,15 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 | F22 | Implemented | Facts are USD only (the acceptable limit), and quotes must match their scale. "$" is taken as US dollars, which holds for US 10-Ks | `edgar.py`, `edgar_server.py`, `checks.py` |
 | F23 | Implemented | A different later value is described as "a later 10-K reports … (reason not established)", never as a restatement | `memory.what_changed`, `edgar_server.py`, `baseline.py` |
 | F24 | Scope limit | Passage ids carry company, year, Item and accession; facts carry accession and filing date. There are no checksums | `ingest.py` |
-| F25 | Scope limit | 10-K/A scope is not reviewed; the original filing is used | — |
-| F26 | Scope limit | No non-reliance handling; no covered company-year is known to be affected | — |
-| F27 | Partly | One basis per note (as originally reported), so versions are never mixed in a calculation. Matching commentary to a later presentation is not checked | `edgar.py` |
+| F25 | Partly | Cached 10-K/A versions are exposed and individually reviewable through the register; actual amendment scope and authority require independent evidence | `source_review.py`, `edgar.py` |
+| F26 | Partly | Configured review records exclude affected facts and unreviewed alternatives; absent a register non-reliance remains unverified. No issuer decisions have been supplied | `source_review.py`, `edgar_server.py` |
+| F27 | Partly | Versions are exposed, but matching commentary to the selected presentation is not checked | `edgar.py` |
 | F28 | Preserved | An edit sends the note back to the checks and needs a fresh approval of the exact content | `approval.py` |
-| F29 | Partly | Past-note follow-up works; a deleted note memory is not restored (see M07). No supersession links | `memory.py` |
+| F29 | Partly | Past-note follow-up works; deleted or inactive note memories are filtered. Portal supersession links retain the original audit record | `memory.py`, `portal.py` |
 | F30 | Evidence | The task families are implemented. The risk-diff compares the plan's own years (FY2022 with FY2024 when those are asked for). Demonstrating them is the demo and evaluation runs. **Owner:** team | `team.py` |
 | F31 | Evidence | Item-aware parsing, table chunks and retrieval labels exist. Human risk labels for 10 company-years are still to be collected | `ingest.py`, `eval_retrieval.py` |
 | F32 | Scope limit | Quarterly charts are a labelled dashboard extra, not part of the assessed annual core | `chat_chart.py` |
-| F33 | Partly | Every number is checked by code; every cited claim is judged in C2, and a missing verdict blocks approval. Uncited lines are counted and shown to the analyst but not judged | `checks.py`, `team.make_judge` |
+| F33 | Partly | Numbers are checked by code and cited lines in live C1/C2 go to the judge, including headings and tables. Missing citations/verdicts block approval; independent semantic and financial-association validation remains | `checks.py`, `team.make_judge` |
 | F34 | Evidence | E1–E4 and the evaluation report. **Owner:** team | `run_eval.py`, `experiments/` |
 | F35 | Implemented | Advice requests and wording are refused; the injection screen and output checks are in place; publishing refuses advice that cites nothing (advice guard on the write tool). The injected-buy attack is in the red-team suite (rt01) | `guards.py`, `checks.py`, `servers/guardrails.py` |
 | F36 | Implemented | Each result records its experiment switches, frozen-playbook version, git commit, `llm.toml` version, model ids and reply cap. There is no separate policy hash | `run_eval.py` |
@@ -84,23 +84,23 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 
 | ID | Status | What the app does / what remains | Where |
 |---|---|---|---|
-| AE01 | Implemented | Each figure is checked against its fact, with sign, scale, company and year (F07, F11, F17). An untagged number with no cited passage is an issue | `checks.py` |
-| AE02 | Partly | Every cited claim goes to the judge, in batches of 10. Uncited substantive lines are counted and flagged to the analyst ("read them yourself") but not judged | `team.claim_lines`, `agent_ui._check_display` |
+| AE01 | Partly | Tagged quantities are checked for value, sign and scale, with stronger concept and period checks for margins. Narrative-to-figure association and authoritative source eligibility still need validation | `checks.py` |
+| AE02 | Partly | Live C1/C2 inventory lines including headings, tables and short assertions; uncited lines block approval. Exact structural headings and unchanged code-generated suffixes are exempt. Independent semantic validation and robust financial associations remain open | `team.claim_lines`, `agent_ui._check_display` |
 | AE03 | Implemented | Each claim needs exactly one true/false verdict. A judge outage, an empty or duplicate verdict, or a non-boolean one leaves the review incomplete. That is an issue, so approval is refused | `team.make_judge` |
-| AE04 | Implemented | Risk-diff compares the plan's latest year with the plan's previous year, using Added / Removed / Changed / Unchanged / Insufficient evidence. Code adds a Limitations line when either year's Item 1A was not retrieved. Human labels are evidence (F31) | `team.py`, `graph.limitations`, `llm.toml` |
-| AE05 | Partly | The writer and risk prompts forbid claims about length, word counts, correlations or causes that no passage states, and absence claims from excerpts. Tool errors become Limitations. There is no typed coverage record | `llm.toml`, `graph.limitations` |
+| AE04 | Partly | Risk-diff compares the plan's latest year with the plan's previous year (`risk_years`), using Added / Removed / Changed / Unchanged / Insufficient evidence. C2 handoffs record each requested year pair as missing evidence or excerpt-only, with verified quote passage IDs, and code adds a Limitations line when either year's Item 1A was not retrieved. This is not complete-section coverage or validated significance. Human labels are evidence (F31), supplied by Role 5 | `team.py`, `graph.limitations`, `llm.toml` |
+| AE05 | Partly | The writer and risk prompts forbid claims about length, word counts, correlations or causes that no passage states, and absence claims from excerpts. Tool errors become Limitations, and limitations disclose missing or excerpt-only pairs. Filing metadata and independent evidence validation remain necessary | `llm.toml`, `graph.limitations`, `team.py` |
 | AE06 | Implemented | Dropped scope is shown at the plan gate; injected instructions are refused at input and withheld from tool results. C2 specialists hand over only verbatim quotes and fact ids, so no specialist prose reaches the writer. The watchlist is kept out of tools and notes | `graph.py`, `guards.py`, `servers/quarantine.py` |
 | AE07 | Preserved | At most two automated revisions | `graph.MAX_REVISIONS` |
 | AE08 | Implemented | See F16 | `graph.review_note`, `api.py` |
 | AE09 | Implemented | The note gate accepts only approve, edit or reject, and anything else raises. The API validates the action type | `graph.review_note`, `api.py` |
 | AE10 | Preserved | Exact-content signature; an edit is re-checked and re-approved | `approval.py` |
 | AE11 | Scope limit | Single-analyst demo with typed names; stated in the threat model. Optional Ed25519 approver signatures, checked by the portal, can be switched on by registering an approver key | `threat_model.md`, `servers/signing.py` |
-| AE12 | Partly | The signature binds the exact note and is issued only on a passing check; with approver keys registered, the portal also requires the approver's own signature. Plan, sources and policy are not in the signature | `approval.py`, `servers/signing.py` |
-| AE13 | Implemented | Published only on a receipt with a note id; `ok` without an id is "save outcome unknown" | `graph.publish` |
+| AE12 | Partly | The signature binds the exact note and is issued only on a passing check; with approver keys registered, the portal also requires the approver's own signature. Live C1/C2 additionally sign cited-evidence and checking-policy snapshots and recheck them before approval and publication, and the portal checks snapshot shape and note hash. Plan, sources and policy are not in the approval signature; this is not an atomic cross-service source lock, cached evidence can predate capture, and legacy approvals lack the snapshot binding | `approval.py`, `servers/signing.py`, `review_snapshot.py`, `graph.py`, `portal.py` |
+| AE13 | Implemented | Published only on a receipt with a positive note ID and the approved note hash; malformed or mismatched success is "save outcome unknown" | `graph.publish` |
 | AE14 | Implemented | A lost response is `publish_unconfirmed`, never retried automatically. A duplicate save names the existing note id and time | `graph.publish`, `portal.publish_note` |
 | AE15 | Implemented | A memory update that fails after a confirmed save leaves the note Published, says so and points to the backfill; it never republishes | `graph.publish`, `agent_ui._view` |
-| AE16 | Scope limit | No correction or withdrawal workflow; product spec §9 | — |
-| AE17 | Evidence | Calibration and labelling tooling exists; the 20+ human labels are still to be collected | `calibrate_judge.py` |
+| AE16 | Implemented | Withdrawal and reviewed replacement supersession retain audit history and filter inactive notes; manual retention and single-analyst limits apply | `portal.py`, `memory_policy.md` |
+| AE17 | Evidence | Calibration and labelling tooling exists; Role 5 supplied the labels in `data/evaluation/judge_labels.csv` | `calibrate_judge.py` |
 
 ## Memory and scoring rules
 
@@ -113,10 +113,10 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 | M05 | Implemented | Only a confirmed, approved and passing note is remembered; a memory-sync failure is reported separately (AE15) | `graph.publish` |
 | M06 | Implemented | Memory off removes `get_past_notes` from the run, and evaluation runs are always memory-off | `runtime.research_tools` |
 | M07 | Implemented | Deleting a past-note memory removes it from coverage and records it as deleted. Backfill and a later sync do not restore it | `memory.forget`, `backfill_memory.py` |
-| M08 | Scope limit | A run keeps the memory snapshot it started with; changing settings needs a fresh run (the "Re-run without memory" button) | — |
+| M08 | Partly | Lifecycle changes invalidate memory-on runs and are checked at portal commit. Other memory changes still require starting a fresh run manually | `graph.py`, `portal.py` |
 | M09 | Implemented | Comparisons with a past note are recomputed from verified tags. A same-year difference is "a later presentation", never a restatement | `memory.what_changed` |
 | M10 | Scope limit | No retention timers; memory policy | `memory_policy.md` |
-| M11 | Implemented | The private watchlist is seen only by the planner; it is refused in tool calls and in notes | `guards.py`, `hooks.py`, `checks.py` |
+| M11 | Partly | The stored watchlist is not added to the planner prompt; private names outside the plan are refused in tool calls and notes. Names may still leave through the request, preferences or other context; typed identities are not authenticated | `graph.py`, `guards.py`, `hooks.py`, `checks.py` |
 | M12 | Partly | Bounded lookups. "No previous note" is stated only after a lookup that ran | `graph._changes` |
 | L01 | Evidence | Lessons come only from development runs, as pending, with their source. A genuine accepted lesson and a rejected one with its reason: **Owner:** team | `reflect.py`, `lessons.py` |
 | L02 | Implemented | A separate review is required and the UI demands a reason for a rejection (the reviewer is a typed name, as everywhere in the single-analyst demo) | `lessons.review` |
@@ -125,8 +125,8 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 | G01 | Scope limit | The development set is 20 code-frozen cases, not DG001–DG008 (those are kept as worked examples in `evaluation/domain_reference/`); the held-out set has 24 cases | `dev_cases.jsonl`, `heldout/` |
 | G02 | Implemented | The scorer checks sign and correct rounding at the shown precision. It ties the figure to the right company and year, by its source tag or the company named on its line or table | `evaluation.figure_present` |
 | G03 | Implemented | A case whose critic review is incomplete fails, whatever the figures | `evaluation.score` |
-| G04 | Implemented | Agents never see expected answers; held-out files are read only by the evaluation runner, and the app container mounts the evaluation cases read-only | `evaluation.py`, `compose.yaml` |
-| G05 | Evidence | Expected figures are computed from XBRL by code (`make_dev_cases.py`, `make_heldout_cases.py`), committed before any run | — |
+| G04 | Partly | Application calls receive case IDs and requests, not expected answers; the semantic evaluator sends the reference to its judge provider. The Compose app no longer mounts held-out cases — it gets a working volume plus the development cases read-only — and evaluator inputs and outputs can be stored outside the repository. The CLI still runs application code in the evaluator process, so separate OS accounts and a separately deployed application are needed for actual access isolation. Existing repository cases are exposed | `evaluation.py`, `compose.yaml` |
+| G05 | Evidence | Expected figures are computed from XBRL by code (`make_dev_cases.py`, `make_heldout_cases.py`), committed before any run; independent held-out expectations come from Role 5 | — |
 | G06 | Implemented | The judge sees both passages a label was made on. An unavailable verdict is excluded and counted, not scored as "no", and an undefined kappa is reported as undefined | `calibrate_judge.py` |
 
 ## Frontend messages
@@ -143,9 +143,9 @@ The counts are per ID, as the analysis assigns them, and overlap in subject.
 | F02 | Implemented | Comparability: "…FY2023 had 53 weeks … growth involving FY2023 is not fully like-for-like" |
 | F03 | Scope limit | Calendar alignment is not offered; the plan gate says each company's own fiscal year |
 | F04 | Partly | Checker issues name the reason (unknown fact, wrong company or year, non-positive revenue, growth from a loss) |
-| V01 | Partly | The basis ("as originally reported") is in the tool output and the methodology; it is not a banner on every note |
+| V01 | Partly | Tool output lists cached versions and warns that source eligibility is unverified; authoritative selection is not established |
 | V02 | Partly | A later 10-K's different value is a warning in tool results |
-| E01 | Implemented | Limitations: "No Item 1A risk-factor passage for … was retrieved, so added or removed risks … are not established" |
+| E01 | Implemented | Limitations report each requested year pair as missing paired evidence or excerpt-only; section-wide additions and removals are not established |
 | E02 | Partly | The judge flags unsupported cited claims; the writer may not state causes or correlations without a passage |
 | E03 | Implemented | "Review incomplete: the judge gave no valid verdict for N of M cited claims … Re-check before approval" |
 | A01 | Implemented | "Approval unavailable until these are fixed" with the issues; Approve is disabled |

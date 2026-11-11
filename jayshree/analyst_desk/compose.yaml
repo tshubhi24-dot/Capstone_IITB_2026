@@ -47,13 +47,14 @@ services:
   volume-init:
     <<: *image
     user: root
-    command: ["sh", "-c", "chown -R 1000:1000 /app/data/index /app/data/runs /app/data/memory /app/data/portal /app/data/approval"]
+    command: ["sh", "-c", "chown -R 1000:1000 /app/data/index /app/data/runs /app/data/memory /app/data/portal /app/data/approval /app/data/evaluation"]
     volumes:
       - index:/app/data/index
       - runs:/app/data/runs
       - memory:/app/data/memory
       - portal:/app/data/portal
       - approval:/app/data/approval
+      - evaluation-work:/app/data/evaluation
     network_mode: none
 
   # Builds the Chroma index once, then exits. Everything that reads the index
@@ -88,6 +89,7 @@ services:
     environment:
       <<: *mcp-env
       MCP_ALLOWED_HOSTS: "edgar:8000,edgar"
+      SOURCE_REVIEW_FILE: ${SOURCE_REVIEW_FILE:-}
     volumes:
       - ./data/edgar_cache:/app/data/edgar_cache:ro
 
@@ -135,6 +137,7 @@ services:
     environment:
       APP_HOST: 0.0.0.0
       APP_PORT: "7861"
+      SOURCE_REVIEW_FILE: ${SOURCE_REVIEW_FILE:-}
       PROMETHEUS_URL: http://prometheus:9090
       SANDBOX_MODE: local
       # the agent graphs reach the tools here
@@ -147,9 +150,10 @@ services:
     volumes:
       - ./data/passages:/app/data/passages:ro
       - ./data/edgar_cache:/app/data/edgar_cache:ro
-      # cases and answer keys read-only (the app may run evaluations but never change them);
-      # only the results folder is writable
-      - ./data/evaluation:/app/data/evaluation:ro
+      # held-out cases are not in the container at all: a writable working volume,
+      # plus the development cases read-only; only the results folder is shared back
+      - evaluation-work:/app/data/evaluation
+      - ./data/evaluation/dev_cases.jsonl:/app/data/evaluation/dev_cases.jsonl:ro
       - ./data/evaluation/results:/app/data/evaluation/results
       - index:/app/data/index
       - runs:/app/data/runs
@@ -206,3 +210,4 @@ volumes:
   memory:
   portal:
   approval:
+  evaluation-work:

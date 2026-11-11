@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from analystdesk.memory import remember_published_note, suppressed_notes   # noqa: E402
-from analystdesk.servers.portal import _db_path          # noqa: E402
+from analystdesk.servers.portal import _db_path, inactive_note_ids  # noqa: E402
 
 
 def main() -> None:
@@ -36,7 +36,11 @@ def main() -> None:
     rows = con.execute("SELECT id, title, body, tickers, approver, published_at FROM notes ORDER BY id").fetchall()
     con.close()
     deleted = asyncio.run(suppressed_notes())
+    inactive = inactive_note_ids()
     for note_id, title, body, tickers, approver, published_at in rows:
+        if note_id in inactive:
+            print(f"note #{note_id}: skipped, withdrawn or superseded")
+            continue
         if note_id in deleted:
             print(f"note #{note_id}: skipped, deleted from memory by the analyst")
             continue

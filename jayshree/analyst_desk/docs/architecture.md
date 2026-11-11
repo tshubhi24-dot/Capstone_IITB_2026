@@ -131,7 +131,7 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
 | `plan` | Sub-questions, outline, companies and years. Reads preferences, previous notes and relevant lessons. Coverage is then enforced by code. | Model (structured output) + code |
 | `review_plan` | Interrupt: approve, edit or cancel. Relative or unspecified years require explicit confirmation; shows the proposed covered range ("last three years" → FY2022–FY2024) and records the confirmed range | Person + code |
 | `write` | Draft with figure placeholders. Code renders every figure and adds the "what changed" and Comparability sections (fiscal year-ends, 53-week years, mixed margin bases). | Model + code |
-| `check` | Every number, citation and placeholder; no operating vs pre-tax margin on one line; no advice wording; no private-watchlist company. Failed checks go back to the writer at most twice. C2 adds the judge. | Code (+ judge) |
+| `check` | Numbers, citations, placeholders, mixed-basis lines, advice and private-watchlist names are checked. Live C1 and C2 also require a claim judge; incomplete review blocks approval. Failed checks go back to the writer at most twice. | Code + judge |
 | `review_note` | Interrupt: approve (signs the exact note; refused while checks fail), edit (re-checked) or reject | Person |
 | `publish` | `publish_note` with the approval token. The portal re-hashes the note and verifies the token. | Code |
 
@@ -177,16 +177,15 @@ companyfacts.json
 ### From about 280 entries down to 1 ([edgar.py](../analystdesk/edgar.py))
 
 ```
-fp == "FY" and form == "10-K"     annual report facts only
+fp == "FY" and form in 10-K/10-K-A annual report facts only
 end[:4] == fiscal year             aligned by period END, not EDGAR's fy field
 350 ≤ end − start ≤ 380 days      one year only (10-Ks also tag quarterly and multi-year values;
                                    a 53-week year is 371 days)
-earliest filed                     as originally reported in that year's own 10-K;
-                                   a different later value becomes a warning
+earliest filed                     selected cached presentation; later versions are listed
 ```
 
 - **Why the period end.** EDGAR's `fy` describes the filing, not the period, and is wrong for non-December year-ends. Year-ends differ: Microsoft June, Apple September, Oracle May, NVIDIA late January.
-- **Why the earliest filing.** Later 10-Ks can report a different value for a prior year. For example, BAC's FY2024 revenue went from $101,887M to $105,856M in its FY2025 10-K. The as-reported value matches the 10-K the passages come from, so the citation and the text agree.
+- **Limit of the earliest filing.** Later filings can report different values for a prior year. The earliest matching cached value is not independently verified as authoritative or as matching a cited passage, and non-reliance or amendment scope has not been established.
 - **Revenue concepts.** The earliest-filed fact is taken across all of a company's revenue concepts.
 - **Banks use pre-tax margin.** JPM, GS, BAC, MS and WFC report no `OperatingIncomeLoss`. Their margin is pre-tax income ÷ net revenue. `margin_basis` is fixed per company in [scope.py](../analystdesk/scope.py), and margins on different bases are never compared.
 

@@ -167,6 +167,19 @@ class TestRestatedFacts(TempCacheTestCase):
         self.assertEqual(fact["accn"], "0000789019-23-000001")
         self.assertEqual(fact["restated"]["val"], 215000000000)
         self.assertEqual(fact["restated"]["accn"], "0000789019-24-000007")
+        self.assertEqual(fact["eligibility"], "unverified")
+        self.assertEqual([version["accn"] for version in fact["versions"]],
+                         ["0000789019-23-000001", "0000789019-24-000007"])
+
+    def test_amendment_with_unchanged_value_remains_visible(self):
+        data = copy.deepcopy(FAKE_FACTS)
+        entries = data["facts"]["us-gaap"]["RevenueFromContractWithCustomerExcludingAssessedTax"]["units"]["USD"]
+        entries.append({**entries[0], "form": "10-K/A", "accn": "0000789019-23-000002",
+                        "filed": "2023-08-01"})
+        with patch("analystdesk.edgar.fetch_company_facts", return_value=data):
+            fact = get_annual_fact(MSFT_CIK, "RevenueFromContractWithCustomerExcludingAssessedTax", 2023)
+        self.assertIsNone(fact["restated"])
+        self.assertEqual([version["form"] for version in fact["versions"]], ["10-K", "10-K/A"])
 
 
 class TestGetFinancials(TempCacheTestCase):

@@ -58,7 +58,7 @@ ENV HF_HUB_OFFLINE=1 \
 # Created before the index is built, so the index is written once, as this user
 # (a chown afterwards would copy it into another layer).
 RUN useradd --create-home --uid 1000 desk \
-    && mkdir -p data/index data/runs data/memory data/portal data/approval && chown -R desk data
+    && mkdir -p data/index data/runs data/memory data/portal data/approval data/evaluation && chown -R desk data
 
 COPY analystdesk/ analystdesk/
 COPY config/ config/

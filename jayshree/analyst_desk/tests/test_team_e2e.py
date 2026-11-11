@@ -109,9 +109,9 @@ class _Structured:
                                  outline=["Margins", "Drivers", "Risks"])
         elif name == "Draft":
             parsed = self.schema(
-                title="Microsoft and Alphabet: operating margins FY2024",
+                title="Microsoft and Alphabet: operating margins FY2024 [MSFT_2024_item7_020]",
                 body=("## Margins\nMicrosoft's FY2024 operating margin was {MSFT_2024_margin}; "
-                      "Alphabet's was {GOOGL_2024_margin}.\n\n## Drivers\n"
+                      "Alphabet's was {GOOGL_2024_margin} [MSFT_2024_item7_020].\n\n## Drivers\n"
                       "- Cloud growth drove Microsoft's results in its latest year [MSFT_2024_item7_020].\n"
                       "- Search and cloud drove Alphabet's results in its latest year [GOOGL_2024_item7_012].\n"),
                 tickers=["MSFT", "GOOGL"])
@@ -156,7 +156,7 @@ async def _run(tmp: Path, mode: str = "c2") -> dict:
     from langgraph.types import Command
     from analystdesk.agent.runtime import RESEARCH_TOOLS
     from analystdesk.agent.graph import build_graph
-    from analystdesk.agent.team import build_team_graph
+    from analystdesk.agent.team import build_team_graph, make_judge
     from analystdesk.servers import edgar_server, filings_kb, portal, sandbox
 
     filings_kb.set_retriever(_FakeRetriever())
@@ -171,9 +171,11 @@ async def _run(tmp: Path, mode: str = "c2") -> dict:
             saver = await stack.enter_async_context(AsyncSqliteSaver.from_conn_string(str(tmp / "ck.sqlite")))
             text = lambda pid: PASSAGES.get(pid, (None,) * 4)[3]
             if mode == "c2":
-                graph = build_team_graph(_ScriptedLLM(), research, publish, text, judge_llm=_Judge())
+                graph = build_team_graph(_ScriptedLLM(), research, publish, text,
+                                         judge_llm=_Judge(), require_critic=True)
             else:
-                graph = build_graph(_ScriptedLLM(), research, publish, text)
+                graph = build_graph(_ScriptedLLM(), research, publish, text,
+                                    critic=make_judge(_Judge(), text), require_critic=True)
             graph = graph.compile(checkpointer=saver)
             config = {"configurable": {"thread_id": "e2e"}, "recursion_limit": 150}
             request = "Compare Microsoft's and Alphabet's operating margins in fiscal 2023 and 2024"
@@ -181,9 +183,14 @@ async def _run(tmp: Path, mode: str = "c2") -> dict:
             gates = [(await graph.aget_state(config)).next]
             await graph.ainvoke(Command(resume={"action": "approve"}), config)          # plan gate
             gates.append((await graph.aget_state(config)).next)
+            gate = (await graph.aget_state(config)).tasks[0].interrupts[0].value
             await graph.ainvoke(Command(resume={"action": "approve", "approver": "tester"}), config)  # note gate
             final = await graph.aget_state(config)
-            return {"gates": gates, "values": final.values, "next": final.next}
+            with portal._connect() as con:
+                row = con.execute("SELECT context_json FROM approval_context WHERE note_id = ?",
+                                  (final.values["published"]["note_id"],)).fetchone()
+            return {"gates": gates, "values": final.values, "next": final.next,
+                    "gate_context": gate["review_context"], "stored_context": json.loads(row["context_json"])}
     finally:
         filings_kb.set_retriever(None)
 
@@ -218,7 +225,13 @@ class TeamEndToEndTests(unittest.TestCase):
         tool_events = [t for e in v["trace"] if e["node"] == "handoff" for t in e["tools"]]
         self.assertEqual(len(tool_events), 2 + 3 + 4)
         self.assertTrue(all(t["ok"] for t in tool_events), tool_events)
-        self.assertTrue(all(h["errors"] == [] and h["confidence"] == "high" for h in v["handoffs"]))
+        self.assertTrue(all(h["errors"] == [] for h in v["handoffs"]))
+        for handoff in (h for h in v["handoffs"] if h["agent"] == "risk_diff"):
+            pair, = handoff["risk_coverage"]
+            self.assertEqual((pair["earlier_year"], pair["later_year"], pair["status"]),
+                             (2023, 2024, "excerpt_only"))
+            self.assertTrue(pair["earlier_passages"] and pair["later_passages"])
+            self.assertEqual(handoff["confidence"], "medium")
 
         # per-specialist cost is recorded (change 5)
         self.assertTrue(all(h["model_calls"] > 0 and h["tokens"] > 0 for h in v["handoffs"]))
@@ -233,6 +246,12 @@ class TeamEndToEndTests(unittest.TestCase):
         # the approved note was published through the portal
         self.assertEqual(v["outcome"], "published")
         self.assertTrue(v["published"]["note_id"])
+        self.assertEqual(out["stored_context"], out["gate_context"])
+        self.assertEqual(out["stored_context"]["plan"], v["plan"])
+        self.assertEqual(out["stored_context"]["check"], v["check"])
+        self.assertEqual(out["stored_context"]["evidence_snapshot"], v["review_snapshot"])
+        self.assertTrue(v["review_snapshot"]["facts"])
+        self.assertTrue(v["review_snapshot"]["passages"])
 
         # change 2/2b: each specialist got its share of the same total C1 gets (2 companies -> 36)
         budgets = {(e["agent"], e.get("company")): e["budget"] for e in v["trace"] if e["node"] == "handoff"}
@@ -250,6 +269,8 @@ class TeamEndToEndTests(unittest.TestCase):
         for h in risk:                                  # it asked for 2 searches; the hook refused one
             self.assertEqual(h["tool_calls"], 1)
             self.assertIn("BUDGET_EXCEEDED", h["errors"])
+            self.assertEqual(h["risk_coverage"][0]["status"], "missing_evidence")
+            self.assertEqual(h["confidence"], "low")
         self.assertEqual(v["outcome"], "published")     # the run still finishes
 
 

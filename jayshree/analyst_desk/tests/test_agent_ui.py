@@ -17,12 +17,19 @@ from agent_ui import (
     _lesson_source_label,
     _parse_edited_plan,
     _playbook_button_states,
+    _run_failure_status,
     _view,
     build_agent_panel,
 )
 
 
 class AgentPanelTests(unittest.TestCase):
+    def test_expired_review_gives_specific_restart_guidance(self):
+        from analystdesk.agent.review_snapshot import ReviewStaleError
+        message = _run_failure_status(ReviewStaleError("Evidence changed; start a fresh run."))
+        self.assertIn("start a fresh run", message)
+        self.assertNotIn("sensitive exception", _run_failure_status(RuntimeError("sensitive exception")))
+
     def test_relative_year_plan_gate_requires_visible_confirmation(self):
         plan = {
             "companies": ["MSFT"],

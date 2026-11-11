@@ -8,7 +8,7 @@ store is what the desk remembers across runs. See docs/memory_policy.md.
     ("coverage", analyst)     key=<ticker> {"ticker", "notes", "last_note_id", "last_published"}
     ("notes", <ticker>)       key=note-<id> {"note_id", "title", "published_at", "approver",
                                              "figures": {"<metric>_<year>": {"value", "unit", "text"}}}
-    ("watchlist", analyst)    key=tickers  {"tickers", "updated_at"}   private: only the planner
+    ("watchlist", analyst)    key=tickers  {"tickers", "updated_at"}   local guardrail context
                                            sees it, and the hooks keep it out of every tool call
     ("suppressed", "notes")   key=note-<id> {"note_id", "at"}  past-note memories the analyst
                                            deleted, so a backfill does not restore them
@@ -142,15 +142,31 @@ async def remember_published_note(note_id: int, title: str, body: str, tickers: 
 async def last_note(ticker: str) -> dict | None:
     async with open_store() as s:
         items = await s.asearch(("notes", ticker.upper()), limit=100)
-    if not items:
+    from .servers.portal import inactive_note_ids
+    inactive = inactive_note_ids()
+    usable = [i.value for i in items if i.value["note_id"] not in inactive]
+    if not usable:
         return None
-    return max((i.value for i in items), key=lambda v: (v["published_at"], v["note_id"]))
+    return max(usable, key=lambda v: (v["published_at"], v["note_id"]))
 
 
 async def coverage(analyst: str) -> list[dict]:
     async with open_store() as s:
         items = await s.asearch(("coverage", analyst), limit=100)
-    return sorted((i.value for i in items), key=lambda v: v["ticker"])
+    from .servers.portal import inactive_note_ids
+    inactive = inactive_note_ids()
+    out = []
+    for item in items:
+        value = item.value
+        notes = [note_id for note_id in value.get("notes", []) if note_id not in inactive]
+        if notes:
+            async with open_store() as s:
+                memories = await s.asearch(("notes", value["ticker"].upper()), limit=100)
+            eligible = [entry.value for entry in memories if entry.value["note_id"] in notes]
+            latest = max(eligible, key=lambda v: (v["published_at"], v["note_id"])) if eligible else None
+            out.append({**value, "notes": notes, "last_note_id": max(notes),
+                        "last_published": latest["published_at"] if latest else None})
+    return sorted(out, key=lambda v: v["ticker"])
 
 
 async def all_note_memories() -> list[dict]:
@@ -160,7 +176,10 @@ async def all_note_memories() -> list[dict]:
         for ns in namespaces:
             for i in await s.asearch(ns, limit=100):
                 out.append({"ticker": ns[1], "key": i.key, **i.value})
-    return sorted(out, key=lambda v: (v["published_at"], v["note_id"]), reverse=True)
+    from .servers.portal import inactive_note_ids
+    inactive = inactive_note_ids()
+    return sorted((v for v in out if v["note_id"] not in inactive),
+                  key=lambda v: (v["published_at"], v["note_id"]), reverse=True)
 
 
 async def forget(namespace: tuple[str, ...], key: str) -> str:

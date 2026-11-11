@@ -38,24 +38,24 @@ class TestHelpers(unittest.TestCase):
 # Fake EDGAR response for two companies, two years
 FAKE_MSFT = {
     "revenue": {
-        "val": 211915000000, "end": "2023-06-30",
+        "val": 211915000000, "start": "2022-07-01", "end": "2023-06-30",
         "accn": "0000789019-23-001", "filed": "2023-07-27",
         "fact_id": "RevenueFromContractWithCustomerExcludingAssessedTax/2023/0000789019-23-001",
     },
     "operating_income": {
-        "val": 88523000000, "end": "2023-06-30",
+        "val": 88523000000, "start": "2022-07-01", "end": "2023-06-30",
         "accn": "0000789019-23-001", "filed": "2023-07-27",
         "fact_id": "OperatingIncomeLoss/2023/0000789019-23-001",
     },
 }
 FAKE_GOOGL = {
     "revenue": {
-        "val": 282836000000, "end": "2023-12-31",
+        "val": 282836000000, "start": "2023-01-01", "end": "2023-12-31",
         "accn": "0001652044-24-001", "filed": "2024-01-30",
         "fact_id": "Revenues/2023/0001652044-24-001",
     },
     "operating_income": {
-        "val": 84293000000, "end": "2023-12-31",
+        "val": 84293000000, "start": "2023-01-01", "end": "2023-12-31",
         "accn": "0001652044-24-001", "filed": "2024-01-30",
         "fact_id": "OperatingIncomeLoss/2023/0001652044-24-001",
     },
@@ -126,13 +126,13 @@ class TestRunBaseline(unittest.TestCase):
 # Banks report pre-tax income but no operating income
 FAKE_JPM = {
     "revenue": {
-        "val": 180000000000, "end": "2024-12-31",
+        "val": 180000000000, "start": "2024-01-01", "end": "2024-12-31",
         "accn": "0000019617-25-001", "filed": "2025-02-14",
         "fact_id": "RevenuesNetOfInterestExpense/2024/0000019617-25-001",
     },
     "operating_income": None,
     "pretax_income": {
-        "val": 72000000000, "end": "2024-12-31",
+        "val": 72000000000, "start": "2024-01-01", "end": "2024-12-31",
         "accn": "0000019617-25-001", "filed": "2025-02-14",
         "fact_id": "IncomeLossFromContinuingOperationsBeforeIncomeTaxes"
                    "ExtraordinaryItemsNoncontrollingInterest/2024/0000019617-25-001",
@@ -149,7 +149,7 @@ class TestBankRows(unittest.TestCase):
         self.assertIsNone(row.operating_margin_pct)
         self.assertAlmostEqual(row.headline_margin_pct(), 40.0)
         self.assertEqual(note.verification_pct(), 100.0)
-        self.assertEqual(note.warnings, [])
+        self.assertTrue(any("source eligibility" in warning for warning in note.warnings))
 
 
 if __name__ == "__main__":

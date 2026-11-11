@@ -33,6 +33,21 @@ _ALIASES = {
 }
 _TICKERS = {c.ticker for c in COMPANIES}
 
+_CALENDAR_PERIOD = re.compile(r"\b(?:calendar\s+(?:year|quarter|period|fy)|CY\s*['’]?\d{2,4})\b", re.I)
+_AS_OF = re.compile(r"\b(?:as\s+of|as[- ]at|available\s+(?:on|by|before)|filed\s+(?:by|before|on))\b", re.I)
+_QUARTER = re.compile(r"\b(?:quarterly|quarters?|q[1-4]|[1-4](?:st|nd|rd|th)\s+quarter)\b", re.I)
+
+
+def unsupported_period_reason(question: str, *, annual_only: bool = False) -> str | None:
+    """Reject explicit time semantics which the retrieval path does not implement."""
+    if _CALENDAR_PERIOD.search(question):
+        return "Calendar-period requests are not supported; specify a covered fiscal year instead."
+    if _AS_OF.search(question):
+        return "Filing as-of cutoffs are not supported; this system cannot guarantee a point-in-time answer."
+    if annual_only and _QUARTER.search(question):
+        return "Quarterly requests are not supported by this annual research-note workflow."
+    return None
+
 
 @dataclass(frozen=True)
 class SubQuery:

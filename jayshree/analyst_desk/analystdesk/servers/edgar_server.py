@@ -24,7 +24,7 @@ from typing import Annotated
 from fastmcp import FastMCP
 from pydantic import BaseModel, Field
 
-from .. import edgar
+from .. import edgar, source_review
 from ..scope import COMPANIES
 from .common import COVERED_YEARS, READ_ONLY, ToolResult, fail, serve, structured_errors
 
@@ -49,6 +49,16 @@ class Filing(BaseModel):
     form: str
 
 
+class FactVersion(BaseModel):
+    value_usd: int
+    period_start: str | None = None
+    period_end: str
+    accession: str
+    filed: str | None = None
+    form: str
+    fact_id: str
+
+
 class Fact(BaseModel):
     concept: str = Field(description="XBRL concept, e.g. OperatingIncomeLoss")
     value_usd: int = Field(description="Exact reported value in US dollars")
@@ -57,6 +67,9 @@ class Fact(BaseModel):
     accession: str = Field(description="SEC accession number of the filing that reported it")
     filed: str
     fact_id: str = Field(description="Cite this next to the number: concept/fiscal_year/accession")
+    eligibility: str = Field("unverified", description="Unverified or eligible according to the configured review register")
+    source_review: dict | None = Field(None, description="Reviewer, evidence and decision for the selected fact")
+    versions: list[FactVersion] = Field(default_factory=list, description="Cached annual 10-K and 10-K/A presentations")
     restated_value_usd: int | None = Field(
         None, description="A different value a later 10-K reports for this year, if any (not used in "
                           "notes). It may be a restatement, recast or reclassification; the data does "
@@ -105,6 +118,11 @@ def _fact(raw: dict) -> Fact:
         period_start=raw.get("start"), period_end=raw["end"],
         accession=raw["accn"], filed=raw["filed"], fact_id=raw["fact_id"],
         restated_value_usd=(raw.get("restated") or {}).get("val"),
+        eligibility=raw.get("eligibility", "unverified"),
+        source_review=raw.get("source_review"),
+        versions=[FactVersion(value_usd=v["val"], period_start=v.get("start"), period_end=v["end"],
+                              accession=v["accn"], filed=v.get("filed"), form=v["form"],
+                              fact_id=v["fact_id"]) for v in raw.get("versions", [])],
     )
 
 
@@ -138,8 +156,9 @@ def get_financials(
 ) -> FinancialsResult:
     """Revenue, operating income and pre-tax income for one company and fiscal year.
 
-    Values are as originally reported in that year's own 10-K. A different
-    value in a later 10-K is shown in restated_value_usd and in warnings.
+    By default the earliest matching filing is unverified. If a reviewed
+    source register is configured, only eligible annual facts and versions
+    are returned. The register does not itself verify the review evidence.
     """
     company, err = _ticker_or_error(ticker, FinancialsResult)
     if err:
@@ -152,12 +171,20 @@ def get_financials(
     facts = {k: _fact(v) if v else None for k, v in data.items()}
     if facts["revenue"] is None:
         return fail(FinancialsResult, "NOT_FOUND",
-                    f"No revenue fact for {company.ticker} FY{fiscal_year}")
+                    f"No available revenue fact for {company.ticker} FY{fiscal_year}; "
+                    "the source may be missing or not eligible under the source policy")
     warnings = [
-        f"{name} as reported {f.value_usd:,}; a later 10-K reports {f.restated_value_usd:,} for the same "
-        f"year (reason not established: do not call it a restatement); use the as-reported value"
+        f"{name} selected value {f.value_usd:,}; a later filing reports {f.restated_value_usd:,} for the same "
+        f"year (reason not established: do not call it a restatement)"
         for name, f in facts.items() if f and f.restated_value_usd is not None
     ]
+    if any(f and f.eligibility != "eligible" for f in facts.values()):
+        warnings.append("Source eligibility and non-reliance status have not been independently verified.")
+    else:
+        warnings.append("Eligible facts match the configured register; reviewer identity and evidence are not independently verified.")
+    headline = "pretax_income" if company.margin_basis == "pretax" else "operating_income"
+    if facts[headline] is None:
+        warnings.append(f"{headline.replace('_', ' ')} is unavailable or not eligible under the source policy.")
     return FinancialsResult(
         ticker=company.ticker, company=company.name, fiscal_year=fiscal_year,
         margin_basis=company.margin_basis, warnings=warnings, **facts,
@@ -180,6 +207,7 @@ def get_fact(
         return fail(FactResult, "BAD_INPUT",
                     "fact_id must look like Concept/YYYY/0000000000-00-000000")
     concept, year, accn = m["concept"], m["year"], m["accn"]
+    register = source_review.load_register()
 
     # The accession prefix identifies the filing agent, not the company, so
     # search every covered company for this concept/year/filing.
@@ -188,8 +216,14 @@ def get_fact(
         entries = facts.get("facts", {}).get("us-gaap", {}).get(concept, {}).get("units", {}).get("USD", [])
         for e in entries:
             if (e.get("accn") == accn and e.get("end", "")[:4] == year
-                    and e.get("fp") == "FY" and edgar._duration_days(e) >= 350):
-                raw = {**e, "fact_id": f"{concept}/{year}/{accn}"}
+                    and e.get("fp") == "FY" and e.get("form") in ("10-K", "10-K/A")
+                    and 350 <= edgar._duration_days(e) <= 380):
+                eligibility = source_review.status(register, company.ticker, int(year), concept, e)
+                if register is not None and eligibility != "eligible":
+                    return fail(FactResult, "NOT_FOUND", f"Fact {fact_id} is not an eligible reviewed source.")
+                decision = source_review.decision_for(register, company.ticker, int(year), concept, e)
+                raw = {**e, "fact_id": f"{concept}/{year}/{accn}", "eligibility": eligibility,
+                       "source_review": decision.model_dump(mode="json") if decision else None}
                 return FactResult(ticker=company.ticker, fact=_fact(raw))
     return fail(FactResult, "NOT_FOUND", f"No full-year fact matches {fact_id}")
 

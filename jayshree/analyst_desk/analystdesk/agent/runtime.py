@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
-from ..llm_config import LLM_CONFIG
+from ..llm_config import LLM_CONFIG, max_output_tokens
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 CHECKPOINTS = Path(os.getenv("AGENT_CHECKPOINTS", ROOT / "data" / "runs" / "checkpoints.sqlite"))
@@ -36,7 +36,7 @@ def make_llm(model_role: str = "agent"):
         base_url="https://openrouter.ai/api/v1",
         api_key=os.environ["OPENROUTER_API_KEY"],
         temperature=0,
-        max_tokens=LLM_CONFIG.max_output_tokens,
+        max_tokens=max_output_tokens() or LLM_CONFIG.max_output_tokens,
         timeout=120,
     )
 
@@ -148,13 +148,16 @@ async def _stream(graph, payload, config, on_event) -> dict:
 
 
 def _build(mode: str, llm, research, publish, passage_text_fn, live: bool = False):
+    from .graph import critic_loop_on
+    from .team import make_judge, make_judge_llm
+    judge = make_judge_llm() if live and critic_loop_on() else None
     if mode == "c2":
-        from .graph import critic_loop_on
-        from .team import build_team_graph, make_judge_llm
+        from .team import build_team_graph
         return build_team_graph(llm, research, publish, passage_text_fn,
-                                judge_llm=make_judge_llm() if live and critic_loop_on() else None)
+                                judge_llm=judge, require_critic=live)
     from .graph import build_graph
-    return build_graph(llm, research, publish, passage_text_fn)
+    critic = make_judge(judge, passage_text_fn or (lambda pid: None)) if judge else None
+    return build_graph(llm, research, publish, passage_text_fn, critic=critic, require_critic=live)
 
 
 def research_tools(tools: list, memory_on: bool) -> list:

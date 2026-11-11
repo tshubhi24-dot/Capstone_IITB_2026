@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import string
+import os
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -38,6 +39,20 @@ _PROMPT_FIELDS = {
 
 class LLMConfigError(ValueError):
     """Raised when the committed LLM configuration is missing or invalid."""
+
+
+def max_output_tokens() -> int | None:
+    """Optional per-call output limit; input tokens and total spend are separate."""
+    raw = os.getenv("AGENT_MAX_OUTPUT_TOKENS")
+    if raw is None:
+        return None
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise LLMConfigError("AGENT_MAX_OUTPUT_TOKENS must be a positive integer") from exc
+    if value <= 0:
+        raise LLMConfigError("AGENT_MAX_OUTPUT_TOKENS must be a positive integer")
+    return value
 
 
 @dataclass(frozen=True)

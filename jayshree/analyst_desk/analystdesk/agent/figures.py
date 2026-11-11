@@ -33,7 +33,7 @@ import re
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
-from ..edgar import get_financials
+from ..edgar import compatible_annual_facts, get_financials
 from ..scope import COMPANIES
 
 _BY_TICKER = {c.ticker: c for c in COMPANIES}
@@ -74,7 +74,7 @@ def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
                 figures[f"{t}_{y}_{income_key}"] = {
                     "text": f"{money(inc['val'])} [fact: {inc['fact_id']}]",
                     "label": f"{c.name} FY{y} {income_key.replace('_', ' ')}"}
-            if rev and inc and rev["val"] > 0:
+            if compatible_annual_facts(rev, inc) and rev["val"] > 0:
                 figures[f"{t}_{y}_margin"] = {
                     "text": f"{half_up(inc['val'] / rev['val'] * 100)}% [calc: {inc['fact_id']} / {rev['fact_id']}]",
                     "label": f"{c.name} FY{y} {c.margin_basis} margin"}
@@ -89,7 +89,8 @@ def build_figures(companies: list[str], years: list[int]) -> dict[str, dict]:
                     figures[f"{t}_{y}_income_growth"] = {
                         "text": f"{half_up((inc['val'] / pi['val'] - 1) * 100)}% [growth: {inc['fact_id']} / {pi['fact_id']}]",
                         "label": f"{c.name} FY{y} {income_key.replace('_', ' ')} growth vs FY{y - 1}"}
-                if inc and pi and rev["val"] > 0:   # zero earlier income is a valid starting margin
+                if (compatible_annual_facts(rev, inc)
+                        and compatible_annual_facts(pr, pi) and rev["val"] > 0):
                     change = half_up((inc["val"] / rev["val"] - pi["val"] / pr["val"]) * 100)
                     figures[f"{t}_{y}_margin_change"] = {
                         "text": f"{'+' if change >= 0 else ''}{change} pp [diff: {inc['fact_id']} / {rev['fact_id']} - "
