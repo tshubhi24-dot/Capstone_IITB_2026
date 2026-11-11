@@ -1,0 +1,70 @@
+{
+ "split": "heldout",
+ "tag": "e1-heldout-r5fixed-run2b",
+ "price_per_m": 0.52,
+ "system": {
+  "commit": "fb96bb2",
+  "uncommitted_changes": false,
+  "llm_config_version": 1,
+  "models": {
+   "agent": "openai/gpt-4.1-mini",
+   "c0": "openai/gpt-4.1-mini",
+   "reflection": "openai/gpt-4.1-mini",
+   "judge": "meta-llama/llama-3.3-70b-instruct"
+  },
+  "max_output_tokens": 4096
+ },
+ "lessons": false,
+ "playbook": {
+  "frozen": true,
+  "version": "05cce831b31d",
+  "lessons": 1
+ },
+ "experiment": null,
+ "rows": {
+  "c2": [
+   {
+    "id": "h-n04",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "5/5",
+    "verified_share": 100.0,
+    "tokens": 18957,
+    "seconds": 90.9,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings"
+    ],
+    "error": null,
+    "blocks": [],
+    "config": "c2",
+    "run_id": "eval-e1-heldout-r5fixed-run2b-c2-h-n04"
+   }
+  ]
+ },
+ "summary": {
+  "c2": {
+   "cases": 1,
+   "success": 1,
+   "by_type": {
+    "numeric": "1/1"
+   },
+   "policy_violations": 0,
+   "false_blocks": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 100.0,
+   "tokens_mean": 18957,
+   "cost_per_case_usd": 0.0099,
+   "latency_median_s": 90.9,
+   "latency_p95_s": 90.9
+  }
+ }
+}

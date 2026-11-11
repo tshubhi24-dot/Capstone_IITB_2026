@@ -46,23 +46,27 @@ def _range(values: list[float], fmt: str = "{:.1f}") -> str:
 
 
 def heldout() -> str | None:
-    runs = sorted(RESULTS.glob("eval_heldout_e1-heldout-v2-run*.json"))
+    runs = sorted(RESULTS.glob("eval_heldout_e1-heldout-final-run*.json"))
     if not runs:
         return None
     data = [_load(p) for p in runs]
-    cases = [json.loads(line) for f in sorted((ROOT / "data" / "evaluation" / "heldout").glob("*.jsonl"))
-             for line in f.read_text(encoding="utf-8").splitlines() if line.strip()]
+    # the cases these runs covered (the main held-out release), in file order
+    ran = {r["id"] for d in data for rows in d["rows"].values() for r in rows}
+    cases = [c for f in sorted((ROOT / "data" / "evaluation" / "heldout").glob("*.jsonl"))
+             for c in (json.loads(line) for line in f.read_text(encoding="utf-8").splitlines() if line.strip())
+             if c["id"] in ran]
     lines = ["# Held-out results (E1)", "",
-             f"24 held-out cases × C0, C1, C2 × {len(data)} runs. Commit: "
+             f"{len(cases)} held-out cases × {', '.join(c.upper() for c in CONFIGS if any(c in d['rows'] for d in data))} × {len(data)} runs. Commit: "
              f"`{next((d['system']['commit'] for d in data if (d.get('system') or {}).get('commit')), 'n/a')}`. "
              "✅ pass · ❌ fail (one mark per run).", "",
+             *([f"_{data[0]['note']}_", ""] if data[0].get("note") else []),
              "## Summary (mean, range over runs)", "",
              "| Metric | " + " | ".join(c.upper() for c in CONFIGS) + " |", "|---|---|---|---|"]
 
     def per_run(config, fn):
         return [fn(d["rows"][config], d["summary"][config]) for d in data if config in d["rows"]]
     rows = [
-        ("Task success (of 24)", lambda r, s: s["success"], "{:.1f}"),
+        ("Task success (of 40)", lambda r, s: s["success"], "{:.1f}"),
         ("Numbers verified, pooled %", lambda r, s: float(_pooled(r).rstrip("%")) if _pooled(r) != "—" else 0, "{:.1f}"),
         ("Policy violations", lambda r, s: s["policy_violations"], "{:.0f}"),
         ("Errors / timeouts", lambda r, s: s["errors"], "{:.0f}"),

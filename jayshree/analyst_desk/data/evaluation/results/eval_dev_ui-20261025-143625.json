@@ -1,0 +1,42 @@
+{
+ "split": "dev",
+ "tag": "ui-20261025-143625",
+ "lessons": true,
+ "rows": {
+  "c2": [
+   {
+    "id": "d02",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "7/10",
+    "verified_share": 70.0,
+    "tokens": 40509,
+    "seconds": 75.3,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "get_fact",
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage"
+    ],
+    "error": null,
+    "config": "c2",
+    "run_id": "eval-ui-20261025-143625-c2-d02"
+   }
+  ]
+ }
+}

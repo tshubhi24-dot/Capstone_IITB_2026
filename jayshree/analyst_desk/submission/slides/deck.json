@@ -1,0 +1,18 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-11-11T10:30:00Z"},
+  "lists": "css",
+  "title": "Analyst Desk — Capstone Presentation",
+  "order": ["cover", "problem", "architecture", "walkthrough", "numbers", "orchestration", "e1", "change", "retrieval", "safety", "learning", "operations", "limits"],
+  "sections": {
+    "s1": {"description": "The user, the problem and what we built", "start": "cover"},
+    "s2": {"description": "The two signature challenges: numbers you can trust, and deep-research orchestration", "start": "numbers"},
+    "s3": {"description": "What the experiments showed", "start": "e1"},
+    "s4": {"description": "Running it, its limits and what a pilot needs", "start": "operations"}
+  },
+  "faces": {
+    "source-serif-4": {"family": "Source Serif 4", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&family=IBM+Plex+Sans:wght@400;600&display=swap"},
+    "ibm-plex-sans": {"family": "IBM Plex Sans", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&family=IBM+Plex+Sans:wght@400;600&display=swap"}
+  },
+  "designSystems": []
+}

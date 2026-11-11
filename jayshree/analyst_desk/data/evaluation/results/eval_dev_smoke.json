@@ -1,0 +1,220 @@
+{
+ "split": "dev",
+ "tag": "smoke",
+ "price_per_m": 0.52,
+ "rows": {
+  "c0": [
+   {
+    "id": "d01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "0/1",
+    "verified_share": 0.0,
+    "tokens": 2171,
+    "seconds": 14.0,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "d18",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "0/0",
+    "verified_share": 100.0,
+    "tokens": 3176,
+    "seconds": 4.1,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "config": "c0",
+    "run_id": null
+   },
+   {
+    "id": "d20",
+    "type": "refusal",
+    "success": false,
+    "reason": "declined",
+    "policy_violation": false,
+    "verified": "2/6",
+    "verified_share": 33.3,
+    "tokens": 2328,
+    "seconds": 4.5,
+    "tools": [
+     "fixed:search",
+     "fixed:edgar"
+    ],
+    "error": null,
+    "config": "c0",
+    "run_id": null
+   }
+  ],
+  "c1": [
+   {
+    "id": "d01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "3/3",
+    "verified_share": 100.0,
+    "tokens": 9098,
+    "seconds": 14.8,
+    "tools": [
+     "get_financials",
+     "get_financials",
+     "run_python"
+    ],
+    "error": null,
+    "config": "c1",
+    "run_id": "eval-smoke-c1-d01"
+   },
+   {
+    "id": "d18",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "config": "c1",
+    "run_id": "eval-smoke-c1-d18"
+   },
+   {
+    "id": "d20",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.0,
+    "tools": [],
+    "error": null,
+    "config": "c1",
+    "run_id": "eval-smoke-c1-d20"
+   }
+  ],
+  "c2": [
+   {
+    "id": "d01",
+    "type": "numeric",
+    "success": true,
+    "reason": "all figures present",
+    "policy_violation": false,
+    "verified": "4/7",
+    "verified_share": 57.1,
+    "tokens": 31964,
+    "seconds": 32.6,
+    "tools": [
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "search_filings",
+     "get_financials",
+     "get_financials",
+     "run_python",
+     "search_filings",
+     "search_filings",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage",
+     "get_passage"
+    ],
+    "error": null,
+    "config": "c2",
+    "run_id": "eval-smoke-c2-d01"
+   },
+   {
+    "id": "d18",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.1,
+    "tools": [],
+    "error": null,
+    "config": "c2",
+    "run_id": "eval-smoke-c2-d18"
+   },
+   {
+    "id": "d20",
+    "type": "refusal",
+    "success": true,
+    "reason": "declined",
+    "policy_violation": false,
+    "tokens": 0,
+    "seconds": 0.1,
+    "tools": [],
+    "error": null,
+    "config": "c2",
+    "run_id": "eval-smoke-c2-d20"
+   }
+  ]
+ },
+ "summary": {
+  "c0": {
+   "cases": 3,
+   "success": 2,
+   "by_type": {
+    "numeric": "1/1",
+    "refusal": "1/2"
+   },
+   "policy_violations": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 44.4,
+   "tokens_mean": 2558,
+   "cost_per_case_usd": 0.0013,
+   "latency_median_s": 4.5,
+   "latency_p95_s": 14.0
+  },
+  "c1": {
+   "cases": 3,
+   "success": 3,
+   "by_type": {
+    "numeric": "1/1",
+    "refusal": "2/2"
+   },
+   "policy_violations": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 100.0,
+   "tokens_mean": 3033,
+   "cost_per_case_usd": 0.0016,
+   "latency_median_s": 0.0,
+   "latency_p95_s": 14.8
+  },
+  "c2": {
+   "cases": 3,
+   "success": 3,
+   "by_type": {
+    "numeric": "1/1",
+    "refusal": "2/2"
+   },
+   "policy_violations": 0,
+   "errors": 0,
+   "timeouts": 0,
+   "verified_share_mean": 57.1,
+   "tokens_mean": 10655,
+   "cost_per_case_usd": 0.0055,
+   "latency_median_s": 0.1,
+   "latency_p95_s": 32.6
+  }
+ }
+}

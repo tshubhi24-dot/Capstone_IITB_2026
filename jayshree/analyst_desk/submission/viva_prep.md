@@ -1,6 +1,6 @@
 # Viva prep: the brief's eight questions
 
-Everyone must redraw the architecture from memory ([../docs/architecture.md](../docs/architecture.md) §1) and explain their own part. ⏳ = answer depends on a run in progress.
+Everyone must redraw the architecture from memory ([../docs/architecture.md](../docs/architecture.md) §1) and explain their own part. ⏳ = not yet run.
 
 ## 1. Trace one request through the architecture
 
@@ -40,13 +40,13 @@ One line: **the model proposes; code and people decide.**
 | | C1 single agent | C2 team |
 |---|---|---|
 | Development success | 19/20 | 18/20 |
-| Held-out success (mean of 3 runs) | ⏳ | ⏳ |
-| Numbers verified | 88.7% | 89.6% |
-| Notes passing every check | 13/17 | 7/17 |
-| Cost per case | $0.0080 | $0.0213 (2.7×) |
-| Median latency | 14 s | 44 s (3×) |
+| **Held-out success, 40 cases × 3 runs** | **38.7 (38–39)** | **35.0 (34–36)** |
+| Held-out numbers verified | 75.6% | 90.4% |
+| Held-out risk-change cases | 36/36 | 24/36 |
+| Cost per case (held-out) | $0.0082 | $0.0169 (2×) |
+| Median latency (held-out) | 23 s | 59 s |
 
-Answer: **on our questions the team did not beat the single agent, and it costs 2.7× as much.** Its value is parallel evidence-gathering and a stricter critic, which matter more for longer, multi-company notes. Show [evaluation_report.md](evaluation_report.md) §4.
+Answer: **on our questions the team did not beat the single agent, and it costs about 2× as much.** It does verify more of its numbers (90% vs 76%). Its value is parallel evidence-gathering and a stricter critic, which matter more for longer, multi-company notes. Show [evaluation_report.md](evaluation_report.md) §4.
 
 ## 4. Which experiment changed the design?
 
@@ -62,9 +62,9 @@ Answer: **on our questions the team did not beat the single agent, and it costs 
 
 | Situation | What the system does | Where to show it |
 |---|---|---|
-| Missing evidence | Code adds a Limitations line ("No Item 1A passage for … was retrieved, so added or removed risks are not established") | Note's Limitations section; ⏳ run id |
-| Failed tool | Tool returns a structured error (e.g. EXEC_ERROR, NOT_IN_COVERAGE); the specialist retries, or the plan is revised and shown again | Activity log in the Research tab; Jaeger trace; ⏳ run id |
-| Injected instruction | Input guard refuses typed injections; the injection screen withholds instructions found in a filing ("withheld" in the tool log); output checks reject advice | E2 red-team table ([redteam_results.md](redteam_results.md)) ⏳; demo step 2 |
+| Missing evidence | Code adds a Limitations line ("No Item 1A passage for … was retrieved, so added or removed risks are not established") | Run `eval-e1-heldout-r5fixed-run1-c2-h-n06`: "The risk-diff for JPM step ended with BUDGET_EXCEEDED; its part of the note may be incomplete" |
+| Failed tool | Tool returns a structured error (e.g. EXEC_ERROR, NOT_IN_COVERAGE); the specialist retries, or the plan is revised and shown again | Same run: `get_passage` refused with BUDGET_EXCEEDED by the pre-tool hook; activity log and Jaeger trace |
+| Injected instruction | Input guard refuses typed injections; the injection screen withholds instructions found in a filing ("withheld" in the tool log); output checks reject advice | Run `redteam-e2-defences-on-c2-rt01`: the screen withheld the planted instruction from 3 `search_filings` results; [redteam_results.md](redteam_results.md); demo step 2 |
 
 ## 6. Memory: what, why, how deleted
 
@@ -90,7 +90,7 @@ Memory off removes the past-notes tool from the run. Policy: [../docs/memory_pol
 | | `d54102f1` **rejected**: "Duplicate of 3d7fde3a" |
 | Freeze | Playbook version `05cce831b31d` (1 lesson), a fixed snapshot for the held-out runs |
 | Applied | Only to relevant requests (tag and word match, top 3); the activity log shows "📘 1 playbook lesson(s) applied" |
-| Help on unseen cases? | ⏳ E3: held-out risk-change cases with vs without the playbook. If it can't be run in time, say so: the loop and review are shown; the benefit is not yet measured |
+| Help on unseen cases? | E3 on 40 held-out cases: C1 38.7 → 39/40, risk change 12/12 both: **no measurable change**, because C1 already passes risk change. The C2 arm, where the lesson matters (24/36), was cut short by the API budget. Say so honestly |
 
 Viva point: reflection produced near-duplicates; the human review is what kept the playbook clean.
 
@@ -116,3 +116,5 @@ Viva point: reflection produced near-duplicates; the human review is what kept t
 | 6 (memory) | Jayshree | Amit |
 | 7 (lessons) | Sachin | Jayshree |
 | 8 (pilot) | Amit | Shubhi |
+
+To open a run by id on this machine: `python -m analystdesk.agent show <run_id>`.
