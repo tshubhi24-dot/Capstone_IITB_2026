@@ -14,6 +14,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from . import approval
 from .alerts import ActiveAlert, PrometheusUnavailable, fetch_active_alerts
 from .agent.review_snapshot import ReviewStaleError
 
@@ -39,6 +40,8 @@ class ResearchDecision(BaseModel):
     confirm_years: bool = False
     approver: str = Field(default="analyst", min_length=1, max_length=80)
     reason: str = Field(default="", max_length=1000)
+    # approve a note whose only issue is lines without a passage citation (reason required)
+    override_uncited: bool = False
 
 
 class LifecycleDecision(BaseModel):
@@ -187,7 +190,8 @@ def create_app(
             raise HTTPException(status_code=409, detail="research run is not waiting for approval")
 
         gate = interrupts[0].get("gate")
-        decision = body.model_dump(exclude={"plan", "note", "confirm_years", "approver", "reason"})
+        decision = body.model_dump(exclude={"plan", "note", "confirm_years", "approver", "reason",
+                                            "override_uncited"})
         if gate == "plan":
             if body.action == "reject":
                 raise HTTPException(status_code=422, detail="the plan gate supports approve or edit")
@@ -213,12 +217,18 @@ def create_app(
             elif body.action == "approve":
                 if not body.approver.strip():
                     raise HTTPException(status_code=422, detail="approver must not be blank")
-                if not interrupts[0].get("check", {}).get("ok", False):
-                    raise HTTPException(
-                        status_code=409,
-                        detail="note has unresolved checks; edit and re-check or reject before approval",
-                    )
+                check = interrupts[0].get("check", {})
+                override = ({"uncited": True, "reason": body.reason.strip()}
+                            if body.override_uncited else None)
+                if not approval.review_passed(check, override):
+                    detail = ("the only issue is lines without a passage citation: approve with "
+                              "override_uncited=true and a reason, or edit or reject the note"
+                              if approval.overridable(check) else
+                              "note has unresolved checks; edit and re-check or reject before approval")
+                    raise HTTPException(status_code=409, detail=detail)
                 decision["approver"] = body.approver.strip()
+                if override and check.get("ok") is not True:
+                    decision["override"] = override
             else:
                 decision["reason"] = body.reason or "no reason given"
         else:

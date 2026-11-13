@@ -233,7 +233,17 @@ def claim_lines(body: str) -> tuple[list[tuple[str, list[str]]], int]:
     Only exact structural headings and Markdown separators are exempt. A section
     name cannot establish that its contents were generated or verified by code.
     """
-    cited, uncited = [], 0
+    cited, uncited = _inventory(body)
+    return cited, len(uncited)
+
+
+def uncited_lines(body: str) -> list[str]:
+    """The lines that count as uncited, as the analyst sees them (for the note gate)."""
+    return _inventory(body)[1]
+
+
+def _inventory(body: str) -> tuple[list[tuple[str, list[str]]], list[str]]:
+    cited, uncited = [], []
     for line in body.splitlines():
         s = line.strip()
         if not s or _TABLE_SEPARATOR.fullmatch(s):
@@ -248,7 +258,7 @@ def claim_lines(body: str) -> tuple[list[tuple[str, list[str]]], int]:
         if pids:
             cited.append((text, pids))
         elif any(ch.isalnum() for ch in text.replace(VERIFIED_MARK, "")):
-            uncited += 1
+            uncited.append(s)
     return cited, uncited
 
 
@@ -263,7 +273,8 @@ def make_judge(judge_llm, passage_text):
     async def critic(body: str, trusted_suffix: str = "", fact_evidence: dict | None = None) -> dict:
         if trusted_suffix and body.endswith(trusted_suffix):
             body = body[:-len(trusted_suffix)]
-        lines, uncited = claim_lines(body)
+        lines, uncited_list = _inventory(body)
+        uncited = len(uncited_list)
         items = []
         invalid: dict[int, str] = {}
         for index, (text, pids) in enumerate(lines):
@@ -322,6 +333,7 @@ def make_judge(judge_llm, passage_text):
                           "Add supporting evidence or remove the unsupported claims before approval.")
         out = {"issues": issues, "checked": len(items), "reviewed": len(verdict),
                "supported": sum(v["supported"] for v in verdict.values()), "uncited": uncited,
+               "uncited_lines": [line[:300] for line in uncited_list[:40]],
                "model": LLM_CONFIG.model("judge"), "tokens": tokens}
         if errors:
             out["error"] = errors[0]

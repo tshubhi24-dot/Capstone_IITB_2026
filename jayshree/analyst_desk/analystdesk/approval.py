@@ -38,6 +38,42 @@ class ApprovalError(ValueError):
     """The token is missing, malformed, forged, or for a different note."""
 
 
+# Analyst override (one case only). Lines without a passage citation can be
+# headings, table rows or code-verified figures that the judge cannot check;
+# the analyst may approve them after reading the listed lines, with a reason.
+# Every other issue (an unsourced number, a claim the judge rejected, an
+# incomplete or unavailable review, a changed evidence snapshot) still blocks.
+UNCITED_ISSUE_PREFIX = "Review incomplete: "
+UNCITED_ISSUE_MARK = " substantive line(s) lack a passage citation."
+
+
+def _is_uncited_issue(issue) -> bool:
+    if not isinstance(issue, str) or not issue.startswith(UNCITED_ISSUE_PREFIX):
+        return False
+    count, sep, _ = issue[len(UNCITED_ISSUE_PREFIX):].partition(UNCITED_ISSUE_MARK)
+    return bool(sep) and count.isdigit()
+
+
+def overridable(check) -> bool:
+    """True when the check failed only because some lines cite no passage."""
+    if not isinstance(check, dict) or check.get("ok") is True:
+        return False
+    issues = check.get("issues")
+    return isinstance(issues, list) and bool(issues) and all(_is_uncited_issue(i) for i in issues)
+
+
+def valid_override(override) -> bool:
+    return (isinstance(override, dict) and override.get("uncited") is True
+            and isinstance(override.get("reason"), str) and bool(override["reason"].strip()))
+
+
+def review_passed(check, override=None) -> bool:
+    """The note may be approved: every check passed, or the analyst overrode uncited lines only."""
+    if isinstance(check, dict) and check.get("ok") is True:
+        return True
+    return overridable(check) and valid_override(override)
+
+
 def _key() -> bytes:
     env = os.getenv("APPROVAL_SECRET")
     if env:

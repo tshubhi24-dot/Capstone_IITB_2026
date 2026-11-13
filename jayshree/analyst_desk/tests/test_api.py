@@ -214,6 +214,41 @@ class ApiTests(unittest.TestCase):
         self.assertIn("unresolved checks", response.json()["detail"])
         self.assertEqual(len(self.runner_calls), 0)
 
+    def test_uncited_lines_only_can_be_approved_with_override_and_reason(self):
+        uncited = ("Review incomplete: 4 substantive line(s) lack a passage citation. "
+                   "Add supporting evidence or remove the unsupported claims before approval.")
+        self.saved_runs["uncited"] = {
+            "values": {"draft": {"body": "Headings only"}},
+            "interrupts": [{"gate": "note", "check": {"ok": False, "issues": [uncited]}}],
+        }
+        plain = self.client.post("/api/research/uncited/decision", json={"action": "approve"})
+        self.assertEqual(plain.status_code, 409)
+        self.assertIn("override_uncited", plain.json()["detail"])
+        no_reason = self.client.post("/api/research/uncited/decision",
+                                     json={"action": "approve", "override_uncited": True})
+        self.assertEqual(no_reason.status_code, 409)
+        self.assertEqual(len(self.runner_calls), 0)
+        ok = self.client.post("/api/research/uncited/decision",
+                              json={"action": "approve", "approver": "reviewer", "override_uncited": True,
+                                    "reason": "Lines are headings and code-verified figures"})
+        self.assertEqual(ok.status_code, 200)
+        self._events(ok)
+        resume = self.runner_calls[-1][1]["resume"]
+        self.assertEqual(resume["override"], {"uncited": True,
+                                              "reason": "Lines are headings and code-verified figures"})
+
+    def test_override_does_not_cover_other_issues(self):
+        self.saved_runs["mixed"] = {
+            "values": {"draft": {"body": "x"}},
+            "interrupts": [{"gate": "note", "check": {"ok": False, "issues": [
+                "Review incomplete: 2 substantive line(s) lack a passage citation. Add evidence.",
+                "Number '47%' has no source"]}}],
+        }
+        response = self.client.post("/api/research/mixed/decision",
+                                    json={"action": "approve", "override_uncited": True, "reason": "fine"})
+        self.assertEqual(response.status_code, 409)
+        self.assertIn("unresolved checks", response.json()["detail"])
+
     def test_existing_gradio_ui_is_mounted_at_root(self):
         import gradio as gr
 

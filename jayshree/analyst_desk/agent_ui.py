@@ -22,6 +22,8 @@ import uuid
 
 import gradio as gr
 
+from analystdesk import approval
+
 EXAMPLES = [
     "Compare Microsoft's and Alphabet's operating margins over fiscal 2022-2024 and what drove the change",
     "Compare JPMorgan and Goldman Sachs pre-tax margins in 2023 and 2024 and their main risk factors",
@@ -181,7 +183,10 @@ def _event_line(ev: dict) -> str:
                      f"{claims.get('supported')}/{claims['checked']} claims supported")
         return line + ("" if ev["ok"] else f", {len(ev['issues'])} issue(s) sent back")
     if n == "review_note":
-        return f"👤 **Note {ev['action']}{'d' if ev['action'] != 'edit' else 'ed'}** by the analyst"
+        line = f"👤 **Note {ev['action']}{'d' if ev['action'] != 'edit' else 'ed'}** by the analyst"
+        if ev.get("override"):
+            line += f" · ⚠️ **override** of uncited lines: {ev['override'].get('reason', '')}"
+        return line
     if n == "publish":
         if ev["ok"]:
             return (f"📤 **Published** to the research portal"
@@ -223,16 +228,30 @@ def _check_display(c: dict) -> str:
     elif claims.get("error"):
         head += f"\n**Judge**: {claims['error']}"
     if claims.get("uncited"):
-        head += (f"\n{claims['uncited']} substantive line(s) cite no passage, so the judge could not "
-                 "check them; approval is blocked until they are addressed.")
+        head += (f"\n{claims['uncited']} line(s) cite no passage, so the judge could not check them.")
+        if claims.get("uncited_lines"):
+            head += ("\n\n**Lines without a passage citation** (cite a passage, delete them, "
+                     "or approve with the override below):\n"
+                     + "\n".join(f"- ⚠️ `{_md_inline(line)}`" for line in claims["uncited_lines"]))
+            if claims["uncited"] > len(claims["uncited_lines"]):
+                head += f"\n- … and {claims['uncited'] - len(claims['uncited_lines'])} more"
     if c.get("warnings"):
         head += "\n\n**Source limitations**\n" + "\n".join(f"- {w}" for w in c["warnings"])
-    if c["issues"]:
+    if c["issues"] and approval.overridable(c):
+        head += ("\n\n**Override available:** the only issue is lines without a passage citation. "
+                 "Read the lines above; to approve anyway, tick the override and give a reason "
+                 "(both are signed into the approval and kept by the portal). Or edit or reject the note.")
+    elif c["issues"]:
         head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
                  "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
     else:
         head += "\n\nReady for your review: approving publishes exactly this note."
     return head
+
+
+def _md_inline(text: str) -> str:
+    """A note line shown verbatim inside inline code."""
+    return text.replace("`", "'")[:300]
 
 
 def _past_notes() -> list[list]:
@@ -414,6 +433,9 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
     elif gate and gate["gate"] == "note":
         if gate.get("check", {}).get("ok", False):
             status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
+        elif approval.overridable(gate.get("check")):
+            status = (f"### ⚠️ Some lines cite no passage. Review the listed lines, then approve with the "
+                      f"override (reason required), edit, or reject.\nRun `{run_id}` · {usage}")
         else:
             status = (f"### ⛔ Note failed verification. Edit and re-check it, or reject it. "
                       f"Approval is blocked.\nRun `{run_id}` · {usage}")
@@ -466,7 +488,8 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
             gr.update(value=plan_edit_feedback), original_plan_json,
             gr.update(interactive=False),
             gr.update(interactive=bool(gate and gate.get("gate") == "note"
-                                       and gate.get("check", {}).get("ok", False))),
+                                       and (gate.get("check", {}).get("ok", False)
+                                            or approval.overridable(gate.get("check"))))),
             gr.update(visible=requires_year_confirmation, value=False),
             requires_year_confirmation)
 
@@ -537,6 +560,12 @@ def build_agent_panel(workflow_mode):
                               open=False):
                 note_body = gr.Textbox(lines=18, label="Note body (keep the [fact: …] tags)")
                 edit_note_btn = gr.Button("Save edit and re-check")
+            with gr.Row():
+                override_uncited = gr.Checkbox(
+                    label="Override: I have read the lines without a passage citation and approve them",
+                    value=False, scale=2)
+                override_reason = gr.Textbox(label="Reason for the override (required, kept with the note)",
+                                             scale=3)
             with gr.Row():
                 approve_note_btn = gr.Button("✅ Approve and publish", variant="primary")
                 reject_reason = gr.Textbox(label="Reason for rejecting", scale=2)
@@ -927,8 +956,13 @@ def build_agent_panel(workflow_mode):
             ):
                 yield out
 
-        async def on_approve_note(rid, name):
-            async for out in resume_with(rid, {"action": "approve", "approver": name or "analyst"}):
+        async def on_approve_note(rid, name, override, reason):
+            decision = {"action": "approve", "approver": name or "analyst"}
+            if override:
+                if not (reason or "").strip():
+                    raise gr.Error("Give a reason for the override before approving.")
+                decision["override"] = {"uncited": True, "reason": reason.strip()}
+            async for out in resume_with(rid, decision):
                 yield out
 
         async def on_edit_note(rid, body):
@@ -1044,7 +1078,7 @@ def build_agent_panel(workflow_mode):
                 (edit_plan_btn.click, on_edit_plan,
                  [run_id, plan_json, request, workflow_mode, start_busy, plan_json_baseline,
                   confirm_years_checkbox, year_confirmation_required]),
-                (approve_note_btn.click, on_approve_note, [run_id, approver]),
+                (approve_note_btn.click, on_approve_note, [run_id, approver, override_uncited, override_reason]),
                 (edit_note_btn.click, on_edit_note, [run_id, note_body]),
                 (reject_btn.click, on_reject, [run_id, reject_reason])):
             event = trigger(fn, inputs, start_outputs)

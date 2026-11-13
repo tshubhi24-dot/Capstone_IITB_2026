@@ -636,8 +636,19 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None, require_crit
             raise ValueError("Note decision must be approve, edit, or reject.")
         # Policy: a human approval cannot override known failed number/source
         # checks or unresolved critic findings. Revisions must be re-checked.
-        if not state.get("check", {}).get("ok", False):
+        # One exception: when the only issue is lines that cite no passage, the
+        # analyst may approve after reading them, with a reason; the override is
+        # signed into the approval context and stored by the portal.
+        check = state.get("check", {})
+        override = decision.get("override")
+        if not approval.review_passed(check, override):
+            if approval.overridable(check):
+                raise ValueError("The only issue is lines without a passage citation: tick the override "
+                                 "and give a reason to approve, or edit or reject the note.")
             raise ValueError("Cannot approve note with unresolved verification or critic issues; edit or reject it.")
+        if check.get("ok") is not True:
+            context["override"] = {"uncited": True, "reason": override["reason"].strip()[:1000],
+                                   "approver": decision.get("approver", "analyst")}
         assert_review_unchanged(state)
         d = state["draft"]
         token = approval.sign(d["title"], d["body"], d["tickers"], decision.get("approver", "analyst"),
@@ -648,7 +659,8 @@ def common_nodes(llm, publish_tool, passage_text=None, critic=None, require_crit
         return {"outcome": "approved",
                 "published": {"approval_token": token,
                               "approver_signature": decision.get("approver_signature")},
-                "trace": _event("review_note", action="approve", approver=decision.get("approver", "analyst"))}
+                "trace": _event("review_note", action="approve", approver=decision.get("approver", "analyst"),
+                                override=context.get("override"))}
 
     def after_review(state) -> Literal["check", "publish", "__end__"]:
         if state.get("outcome") == "approved":

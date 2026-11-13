@@ -167,7 +167,7 @@ def change_lifecycle(note_id: int, action: str, reason: str, actor: str,
                 raise LifecycleError("Replacement requires a fresh graph approval and review context")
             context = json.loads(replacement["context_json"])
             if (not isinstance(context, dict) or not isinstance(context.get("check"), dict)
-                    or context["check"].get("ok") is not True):
+                    or not approval.review_passed(context["check"], context.get("override"))):
                 raise LifecycleError("Replacement has no successful review")
         occurred_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
         con.execute("INSERT INTO note_lifecycle (note_id, action, replacement_id, reason, actor, occurred_at, signature) "
@@ -265,7 +265,7 @@ def publish_note(
             if isinstance(context, dict) and context.get("version") == 2:
                 check = context.get("check")
                 snapshot = context.get("evidence_snapshot")
-                if not isinstance(check, dict) or check.get("ok") is not True:
+                if not approval.review_passed(check, context.get("override")):
                     raise approval.ApprovalError("approval review did not pass")
                 if (not isinstance(snapshot, dict) or snapshot.get("version") != 1
                         or snapshot.get("note_sha256") != claims["note_sha256"]
