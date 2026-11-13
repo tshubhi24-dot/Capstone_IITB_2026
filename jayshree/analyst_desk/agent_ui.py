@@ -244,6 +244,12 @@ def _check_display(c: dict) -> str:
     elif c["issues"]:
         head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
                  "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
+        blocking = [i for i in c["issues"] if not approval.overridable({"ok": False, "issues": [i]})]
+        if len(blocking) < len(c["issues"]):
+            head += ("\n\n**Override not available yet:** it covers only lines without a passage citation. "
+                     f"First fix or delete the {len(blocking)} other issue(s) above (open *Edit the note*, "
+                     "remove or correct those sentences, *Save edit and re-check*); then the override "
+                     "becomes available for the remaining uncited lines.")
     else:
         head += "\n\nReady for your review: approving publishes exactly this note."
     return head
@@ -562,7 +568,8 @@ def build_agent_panel(workflow_mode):
                 edit_note_btn = gr.Button("Save edit and re-check")
             with gr.Row():
                 override_uncited = gr.Checkbox(
-                    label="Override: I have read the lines without a passage citation and approve them",
+                    label=("Override (only when the sole issue is lines without a passage citation): "
+                           "I have read those lines and approve them"),
                     value=False, scale=2)
                 override_reason = gr.Textbox(label="Reason for the override (required, kept with the note)",
                                              scale=3)
