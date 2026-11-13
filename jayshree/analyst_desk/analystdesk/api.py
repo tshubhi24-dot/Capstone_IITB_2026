@@ -40,7 +40,8 @@ class ResearchDecision(BaseModel):
     confirm_years: bool = False
     approver: str = Field(default="analyst", min_length=1, max_length=80)
     reason: str = Field(default="", max_length=1000)
-    # approve a note whose only issue is lines without a passage citation (reason required)
+    # approve a note whose only issues are judgement findings (uncited lines, claims the
+    # judge did not accept or gave no verdict on); a reason is required
     override_uncited: bool = False
 
 
@@ -221,7 +222,7 @@ def create_app(
                 override = ({"uncited": True, "reason": body.reason.strip()}
                             if body.override_uncited else None)
                 if not approval.review_passed(check, override):
-                    detail = ("the only issue is lines without a passage citation: approve with "
+                    detail = ("the remaining issues are judgement findings: approve with "
                               "override_uncited=true and a reason, or edit or reject the note"
                               if approval.overridable(check) else
                               "note has unresolved checks; edit and re-check or reject before approval")

@@ -16,12 +16,18 @@ OVERRIDE = {"uncited": True, "reason": "Headings and code-verified figures; read
 
 
 class OverrideRuleTests(unittest.TestCase):
-    def test_only_uncited_lines_can_be_overridden(self):
-        self.assertTrue(approval.overridable({"ok": False, "issues": [UNCITED]}))
+    def test_only_judgement_findings_can_be_overridden(self):
+        judge_rejected = 'Claim not supported by its cited passage (judge): "x" — no support'
+        no_verdict = "Review incomplete: the judge gave no valid verdict for 2 of 4 cited claims."
+        for issues in ([UNCITED], [judge_rejected], [no_verdict], [UNCITED, judge_rejected, no_verdict]):
+            with self.subTest(issues=issues):
+                self.assertTrue(approval.overridable({"ok": False, "issues": issues}))
         for issues in ([UNCITED, "Number '47%' has no source: use a figure placeholder"],
-                       [UNCITED, 'Claim not supported by its cited passage (judge): "x"'],
-                       ["Review incomplete: the judge gave no valid verdict for 2 of 4 cited claims."],
+                       [judge_rejected, "12.3% is wrong: a / b = 12.4%."],
+                       [UNCITED, "Investment-advice wording 'buy' is not allowed in a research note."],
+                       [UNCITED, "The note names NVDA, which is on the analyst's private watchlist"],
                        ["Review incomplete: Evidence or policy changed during review."],
+                       ["Review incomplete: automated claim review is unavailable."],
                        []):
             with self.subTest(issues=issues):
                 self.assertFalse(approval.overridable({"ok": False, "issues": issues}))
@@ -99,20 +105,39 @@ if __name__ == "__main__":
 
 
 class GateDisplayTests(unittest.TestCase):
+    CLAIMS = {"checked": 2, "reviewed": 2, "supported": 1, "uncited": 2,
+              "uncited_lines": ["## Introduction", "This note looks at Apple."],
+              "rejected_lines": ["Growth came from services [AAPL_2024_item7_010]."]}
+
     def _display(self, issues):
         from agent_ui import _check_display
-        return _check_display({"ok": False, "issues": issues, "verified": 3, "total": 3, "verified_share": 100,
-                               "claims": {"checked": 1, "reviewed": 1, "supported": 0, "uncited": 2,
-                                          "uncited_lines": ["# Title", "## Introduction"]}})
+        return _check_display({"ok": False, "issues": issues, "verified": 3, "total": 3,
+                               "verified_share": 100, "claims": self.CLAIMS})
 
-    def test_lists_uncited_lines_and_offers_override_when_they_are_the_only_issue(self):
-        text = self._display([UNCITED])
-        self.assertIn("`# Title`", text)
+    def test_offers_override_for_judgement_findings(self):
+        text = self._display([UNCITED, 'Claim not supported by its cited passage (judge): "x"'])
         self.assertIn("Override available", text)
+        self.assertIn("🟥", text)
+        self.assertIn("🟨", text)
         self.assertNotIn("Approval unavailable", text)
 
-    def test_explains_why_override_is_not_available_yet(self):
-        text = self._display([UNCITED, 'Claim not supported by its cited passage (judge): "x"'])
+    def test_code_failures_block_and_are_named(self):
+        text = self._display([UNCITED, "Number '47%' has no source"])
         self.assertIn("Approval unavailable", text)
-        self.assertIn("Override not available yet", text)
-        self.assertIn("the 1 other issue(s)", text)
+        self.assertIn("⛔ Number '47%' has no source", text)
+        self.assertIn("Once those are fixed", text)
+
+    def test_note_highlights_uncited_and_rejected_lines(self):
+        from agent_ui import _note_display
+        body = ("## Introduction\nThis note looks at Apple.\n"
+                "Growth came from services [AAPL_2024_item7_010].\n| Year | Revenue |\n|---|---|\n"
+                "Revenue was flat [AAPL_2024_item7_011].")
+        claims = {**self.CLAIMS, "uncited_lines": [*self.CLAIMS["uncited_lines"], "| Year | Revenue |"]}
+        text = _note_display(body, {"claims": claims})
+        self.assertIn("## 🟨 <mark", text)
+        self.assertIn("🟨 <mark style=\"background:#ffe08a;color:#14213D\">This note looks at Apple.</mark>", text)
+        self.assertIn("🟥 <mark", text)
+        self.assertIn("| 🟨 Year | Revenue |", text)
+        self.assertIn("Revenue was flat", text)
+        self.assertNotIn("🟥 <mark style=\"background:#f8c4c4;color:#14213D\">Revenue was flat", text)
+        self.assertNotIn("🟨", _note_display(body, None))

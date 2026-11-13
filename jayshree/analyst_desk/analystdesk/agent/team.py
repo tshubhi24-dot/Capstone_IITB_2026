@@ -233,7 +233,7 @@ def claim_lines(body: str) -> tuple[list[tuple[str, list[str]]], int]:
     Only exact structural headings and Markdown separators are exempt. A section
     name cannot establish that its contents were generated or verified by code.
     """
-    cited, uncited = _inventory(body)
+    cited, uncited, _ = _inventory(body)
     return cited, len(uncited)
 
 
@@ -242,8 +242,9 @@ def uncited_lines(body: str) -> list[str]:
     return _inventory(body)[1]
 
 
-def _inventory(body: str) -> tuple[list[tuple[str, list[str]]], list[str]]:
-    cited, uncited = [], []
+def _inventory(body: str) -> tuple[list[tuple[str, list[str]]], list[str], list[str]]:
+    """(cited claims for the judge, uncited raw lines, raw line of each cited claim)."""
+    cited, uncited, cited_raw = [], [], []
     for line in body.splitlines():
         s = line.strip()
         if not s or _TABLE_SEPARATOR.fullmatch(s):
@@ -257,9 +258,10 @@ def _inventory(body: str) -> tuple[list[tuple[str, list[str]]], list[str]]:
             s)).strip(" -*")
         if pids:
             cited.append((text, pids))
+            cited_raw.append(s)
         elif any(ch.isalnum() for ch in text.replace(VERIFIED_MARK, "")):
             uncited.append(s)
-    return cited, uncited
+    return cited, uncited, cited_raw
 
 
 def make_judge(judge_llm, passage_text):
@@ -273,7 +275,7 @@ def make_judge(judge_llm, passage_text):
     async def critic(body: str, trusted_suffix: str = "", fact_evidence: dict | None = None) -> dict:
         if trusted_suffix and body.endswith(trusted_suffix):
             body = body[:-len(trusted_suffix)]
-        lines, uncited_list = _inventory(body)
+        lines, uncited_list, cited_raw = _inventory(body)
         uncited = len(uncited_list)
         items = []
         invalid: dict[int, str] = {}
@@ -334,6 +336,7 @@ def make_judge(judge_llm, passage_text):
         out = {"issues": issues, "checked": len(items), "reviewed": len(verdict),
                "supported": sum(v["supported"] for v in verdict.values()), "uncited": uncited,
                "uncited_lines": [line[:300] for line in uncited_list[:40]],
+               "rejected_lines": [cited_raw[k][:300] for k, v in sorted(verdict.items()) if not v["supported"]],
                "model": LLM_CONFIG.model("judge"), "tokens": tokens}
         if errors:
             out["error"] = errors[0]
