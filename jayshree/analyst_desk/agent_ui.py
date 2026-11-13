@@ -185,7 +185,7 @@ def _event_line(ev: dict) -> str:
     if n == "review_note":
         line = f"👤 **Note {ev['action']}{'d' if ev['action'] != 'edit' else 'ed'}** by the analyst"
         if ev.get("override"):
-            line += f" · ⚠️ **override** of uncited lines: {ev['override'].get('reason', '')}"
+            line += f" · ⚠️ **override** by the analyst: {ev['override'].get('reason', '')}"
         return line
     if n == "publish":
         if ev["ok"]:
@@ -199,9 +199,40 @@ def _event_line(ev: dict) -> str:
 
 
 
-def _note_display(body: str) -> str:
-    """Note with long [fact: ...] / [calc: ...] tags turned into numbered sources."""
+_LINE_PREFIX = re.compile(r"^(\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)?)(.*)$")
+
+
+def _highlight(body: str, check: dict | None) -> tuple[str, bool]:
+    """Mark the lines the analyst must look at: 🟥 claim the judge did not accept, 🟨 no passage cited."""
+    claims = (check or {}).get("claims") or {}
+    red = {line[:300] for line in claims.get("rejected_lines") or []}
+    yellow = {line[:300] for line in claims.get("uncited_lines") or []}
+    if not (red or yellow):
+        return body, False
+    out, marked = [], False
+    for line in body.splitlines():
+        key = line.strip()[:300]
+        if key in red:
+            tag, colour = "🟥", "#f8c4c4"
+        elif key in yellow:
+            tag, colour = "🟨", "#ffe08a"
+        else:
+            out.append(line)
+            continue
+        marked = True
+        if line.lstrip().startswith("|"):
+            out.append(line.replace("|", f"| {tag}", 1))      # keep the table intact
+        else:
+            prefix, text = _LINE_PREFIX.match(line).groups()
+            out.append(f'{prefix}{tag} <mark style="background:{colour};color:#14213D">{text}</mark>')
+    return "\n".join(out), marked
+
+
+def _note_display(body: str, check: dict | None = None) -> str:
+    """Note with long [fact: ...] / [calc: ...] tags turned into numbered sources, and the
+    lines that need the analyst's attention highlighted (from the gate's check)."""
     sources: list[str] = []
+    body, marked = _highlight(body, check)
 
     def repl(m):
         sources.append(f"**{m.group(1)}** `{m.group(2)}`")
@@ -212,6 +243,9 @@ def _note_display(body: str) -> str:
         text += ("\n\n---\n**Sources** (XBRL facts; computed in code: `calc` = A / B, "
                  "`growth` = A / B − 1, `diff` = margin change in percentage points)\n\n")
         text += "\n".join(f"{i}. {s}" for i, s in enumerate(sources, 1))
+    if marked:
+        text = ("> 🟥 **red** = claim the judge did not accept · 🟨 **yellow** = line with no passage "
+                "citation\n\n" + text)
     return text
 
 
@@ -228,36 +262,30 @@ def _check_display(c: dict) -> str:
     elif claims.get("error"):
         head += f"\n**Judge**: {claims['error']}"
     if claims.get("uncited"):
-        head += (f"\n{claims['uncited']} line(s) cite no passage, so the judge could not check them.")
-        if claims.get("uncited_lines"):
-            head += ("\n\n**Lines without a passage citation** (cite a passage, delete them, "
-                     "or approve with the override below):\n"
-                     + "\n".join(f"- ⚠️ `{_md_inline(line)}`" for line in claims["uncited_lines"]))
-            if claims["uncited"] > len(claims["uncited_lines"]):
-                head += f"\n- … and {claims['uncited'] - len(claims['uncited_lines'])} more"
+        head += (f"\n🟨 **{claims['uncited']} line(s) cite no passage**, so the judge could not check them "
+                 "(highlighted in yellow in the note).")
+    if claims.get("rejected_lines"):
+        head += (f"\n🟥 **{len(claims['rejected_lines'])} claim(s) the judge did not accept** "
+                 "(highlighted in red in the note).")
     if c.get("warnings"):
         head += "\n\n**Source limitations**\n" + "\n".join(f"- {w}" for w in c["warnings"])
     if c["issues"] and approval.overridable(c):
-        head += ("\n\n**Override available:** the only issue is lines without a passage citation. "
-                 "Read the lines above; to approve anyway, tick the override and give a reason "
-                 "(both are signed into the approval and kept by the portal). Or edit or reject the note.")
+        head += ("\n\n**Override available:** what remains are judgement findings (🟨 uncited lines, "
+                 "🟥 claims the judge did not accept). Check the highlighted lines; to approve anyway, tick "
+                 "the override and give a reason. You take responsibility: the override, its reason and the "
+                 "findings it covers are signed into the approval and kept with the note. "
+                 "Or edit or reject the note.\n" + "\n".join(f"- {i}" for i in c["issues"]))
     elif c["issues"]:
-        head += ("\n\n**Approval unavailable** until these are fixed: edit the note (it is re-checked) "
-                 "or reject it.\n" + "\n".join(f"- {i}" for i in c["issues"]))
-        blocking = [i for i in c["issues"] if not approval.overridable({"ok": False, "issues": [i]})]
-        if len(blocking) < len(c["issues"]):
-            head += ("\n\n**Override not available yet:** it covers only lines without a passage citation. "
-                     f"First fix or delete the {len(blocking)} other issue(s) above (open *Edit the note*, "
-                     "remove or correct those sentences, *Save edit and re-check*); then the override "
-                     "becomes available for the remaining uncited lines.")
+        blocking = [i for i in c["issues"] if not approval.is_judgement_issue(i)]
+        head += ("\n\n**Approval unavailable:** code found problems an override cannot cover. Edit the "
+                 "note (it is re-checked) or reject it.\n" + "\n".join(f"- ⛔ {i}" for i in blocking))
+        others = [i for i in c["issues"] if approval.is_judgement_issue(i)]
+        if others:
+            head += ("\n\nOnce those are fixed, the override can cover the remaining judgement findings:\n"
+                     + "\n".join(f"- {i}" for i in others))
     else:
         head += "\n\nReady for your review: approving publishes exactly this note."
     return head
-
-
-def _md_inline(text: str) -> str:
-    """A note line shown verbatim inside inline code."""
-    return text.replace("`", "'")[:300]
 
 
 def _past_notes() -> list[list]:
@@ -440,12 +468,12 @@ def _view(run_id: str, result: dict, log: list[str], events: list[dict] | None =
         if gate.get("check", {}).get("ok", False):
             status = f"### ⏸ Waiting for you: approve, edit or reject the note\nRun `{run_id}` · {usage}"
         elif approval.overridable(gate.get("check")):
-            status = (f"### ⚠️ Some lines cite no passage. Review the listed lines, then approve with the "
+            status = (f"### ⚠️ Judgement findings to check (highlighted in the note). Approve with the "
                       f"override (reason required), edit, or reject.\nRun `{run_id}` · {usage}")
         else:
             status = (f"### ⛔ Note failed verification. Edit and re-check it, or reject it. "
                       f"Approval is blocked.\nRun `{run_id}` · {usage}")
-        note_md = f"# {gate['note']['title']}\n\n" + _note_display(gate["note"]["body"])
+        note_md = f"# {gate['note']['title']}\n\n" + _note_display(gate["note"]["body"], gate.get("check"))
         check_md = _check_display(gate["check"])
         if gate.get("review_context"):
             check_md += "\n\n**Plan bound to this review**\n\n```json\n" + json.dumps(
@@ -568,8 +596,8 @@ def build_agent_panel(workflow_mode):
                 edit_note_btn = gr.Button("Save edit and re-check")
             with gr.Row():
                 override_uncited = gr.Checkbox(
-                    label=("Override (only when the sole issue is lines without a passage citation): "
-                           "I have read those lines and approve them"),
+                    label=("Override: I have checked the highlighted lines (uncited, or not accepted by the "
+                           "judge) and take responsibility for publishing them"),
                     value=False, scale=2)
                 override_reason = gr.Textbox(label="Reason for the override (required, kept with the note)",
                                              scale=3)
