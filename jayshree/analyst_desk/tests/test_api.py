@@ -242,7 +242,7 @@ class ApiTests(unittest.TestCase):
             "values": {"draft": {"body": "x"}},
             "interrupts": [{"gate": "note", "check": {"ok": False, "issues": [
                 "Review incomplete: 2 substantive line(s) lack a passage citation. Add evidence.",
-                "Number '47%' has no source"]}}],
+                "12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%."]}}],
         }
         response = self.client.post("/api/research/mixed/decision",
                                     json={"action": "approve", "override_uncited": True, "reason": "fine"})

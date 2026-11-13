@@ -22,7 +22,7 @@ class OverrideRuleTests(unittest.TestCase):
         for issues in ([UNCITED], [judge_rejected], [no_verdict], [UNCITED, judge_rejected, no_verdict]):
             with self.subTest(issues=issues):
                 self.assertTrue(approval.overridable({"ok": False, "issues": issues}))
-        for issues in ([UNCITED, "Number '47%' has no source: use a figure placeholder"],
+        for issues in ([UNCITED, "12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%."],
                        [judge_rejected, "12.3% is wrong: a / b = 12.4%."],
                        [UNCITED, "Investment-advice wording 'buy' is not allowed in a research note."],
                        [UNCITED, "The note names NVDA, which is on the analyst's private watchlist"],
@@ -43,7 +43,7 @@ class OverrideRuleTests(unittest.TestCase):
         self.assertTrue(approval.review_passed({"ok": True, "issues": []}))
 
     def test_override_never_covers_other_issues(self):
-        check = {"ok": False, "issues": [UNCITED, "Number '15.69%' has no source"]}
+        check = {"ok": False, "issues": [UNCITED, "12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%."]}
         self.assertFalse(approval.review_passed(check, OVERRIDE))
 
     def test_uncited_lines_are_listed_for_the_analyst(self):
@@ -93,7 +93,7 @@ class PortalOverrideTests(unittest.TestCase):
 
     def test_portal_refuses_without_override_or_for_other_issues(self):
         for check, override in (({"ok": False, "issues": [UNCITED]}, None),
-                                ({"ok": False, "issues": [UNCITED, "Number '47%' has no source"]}, OVERRIDE)):
+                                ({"ok": False, "issues": [UNCITED, "12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%."]}, OVERRIDE)):
             with self.subTest(check=check, override=override):
                 result, _ = self._publish(check, override)
                 result = result if isinstance(result, dict) else result.model_dump()
@@ -122,9 +122,9 @@ class GateDisplayTests(unittest.TestCase):
         self.assertNotIn("Approval unavailable", text)
 
     def test_code_failures_block_and_are_named(self):
-        text = self._display([UNCITED, "Number '47%' has no source"])
+        text = self._display([UNCITED, "12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%."])
         self.assertIn("Approval unavailable", text)
-        self.assertIn("⛔ Number '47%' has no source", text)
+        self.assertIn("⛔ 12.3% is wrong: OperatingIncomeLoss / Revenues = 12.4%.", text)
         self.assertIn("Once those are fixed", text)
 
     def test_note_highlights_uncited_and_rejected_lines(self):
@@ -141,3 +141,28 @@ class GateDisplayTests(unittest.TestCase):
         self.assertIn("Revenue was flat", text)
         self.assertNotIn("🟥 <mark style=\"background:#f8c4c4;color:#14213D\">Revenue was flat", text)
         self.assertNotIn("🟨", _note_display(body, None))
+
+
+class UntracedNumberTests(unittest.TestCase):
+    NO_SOURCE = ("Number '8.68%' has no source: use a figure placeholder, or quote it from a filing "
+                 "and cite the passage on the same line.")
+    NOT_IN_PASSAGE = "Number '$4.2 billion' does not appear in the passage(s) cited on its line (MSFT_2024_item7_001)."
+
+    def test_untraced_numbers_can_be_overridden_but_wrong_numbers_cannot(self):
+        self.assertEqual(approval.unverified_number(self.NO_SOURCE), "8.68%")
+        self.assertEqual(approval.unverified_number(self.NOT_IN_PASSAGE), "$4.2 billion")
+        self.assertTrue(approval.overridable({"ok": False, "issues": [UNCITED, self.NO_SOURCE, self.NOT_IN_PASSAGE]}))
+        self.assertFalse(approval.overridable({"ok": False, "issues": [self.NO_SOURCE, "8.68% growth is wrong: should be 8.7%."]}))
+        self.assertFalse(approval.overridable({"ok": False, "issues": ["Cited passage MSFT_2024_item7_999 does not exist."]}))
+
+    def test_line_with_untraced_number_is_orange(self):
+        from agent_ui import _check_display, _note_display
+        body = "Revenue rose to $307,394.0M, an 8.68% rise.\nOther line [MSFT_2024_item7_001]."
+        check = {"ok": False, "issues": [self.NO_SOURCE], "verified": 1, "total": 2, "verified_share": 50,
+                 "claims": {}}
+        note = _note_display(body, check)
+        self.assertIn("🟧 <mark", note)
+        self.assertEqual(note.count("🟧 <mark"), 1)
+        shown = _check_display(check)
+        self.assertIn("Override available", shown)
+        self.assertIn("8.68%", shown)

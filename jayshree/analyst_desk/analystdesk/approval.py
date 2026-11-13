@@ -25,6 +25,7 @@ import hashlib
 import hmac
 import json
 import os
+import re
 import secrets
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,11 +41,12 @@ class ApprovalError(ValueError):
 
 # Analyst override, for judgement findings only: lines without a passage
 # citation (headings, table rows, code-verified figures the judge cannot check),
-# claims the judge did not accept, and claims the judge gave no verdict on.
-# The analyst reads the highlighted lines, takes responsibility and gives a
-# reason. Failures that code proves (a number that does not match the filing or
-# has no source, advice wording, a private-watchlist name, an unfinished
-# template, evidence that changed during review) still block.
+# claims the judge did not accept or gave no verdict on, and numbers the writer
+# typed that code could not trace. The analyst reads the highlighted lines, takes
+# responsibility and gives a reason. Failures that code proves (a number that
+# contradicts the filing or a wrong calculation, advice wording, a
+# private-watchlist name, an unfinished template, evidence that changed during
+# review) still block.
 _REVIEW_INCOMPLETE = "Review incomplete: "
 UNCITED_ISSUE_MARK = " substantive line(s) lack a passage citation."
 JUDGE_REJECTED_PREFIX = "Claim not supported by its cited passage (judge): "
@@ -58,10 +60,25 @@ def _is_uncited_issue(issue) -> bool:
     return bool(sep) and count.isdigit()
 
 
+# A number the writer typed itself that code could not trace (no source, or not
+# found in the passage cited on its line). It is unverified, not proven wrong:
+# the analyst may vouch for it. A number that contradicts the filing or a wrong
+# calculation is a different issue and still blocks.
+_UNVERIFIED_NUMBER = re.compile(r"^Number '[^']*' (has no source: |does not appear in the passage\(s\) cited )")
+
+
+def unverified_number(issue) -> str | None:
+    """The number named by an unverified-number issue, else None."""
+    if isinstance(issue, str) and _UNVERIFIED_NUMBER.match(issue):
+        return issue[len("Number '"):issue.index("'", len("Number '"))]
+    return None
+
+
 def is_judgement_issue(issue) -> bool:
     """An issue the analyst may take responsibility for (see above)."""
     return isinstance(issue, str) and (_is_uncited_issue(issue) or issue.startswith(JUDGE_REJECTED_PREFIX)
-                                       or issue.startswith(JUDGE_NO_VERDICT_PREFIX))
+                                       or issue.startswith(JUDGE_NO_VERDICT_PREFIX)
+                                       or unverified_number(issue) is not None)
 
 
 def overridable(check) -> bool:
