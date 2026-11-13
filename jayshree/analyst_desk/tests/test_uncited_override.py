@@ -96,3 +96,23 @@ class PortalOverrideTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GateDisplayTests(unittest.TestCase):
+    def _display(self, issues):
+        from agent_ui import _check_display
+        return _check_display({"ok": False, "issues": issues, "verified": 3, "total": 3, "verified_share": 100,
+                               "claims": {"checked": 1, "reviewed": 1, "supported": 0, "uncited": 2,
+                                          "uncited_lines": ["# Title", "## Introduction"]}})
+
+    def test_lists_uncited_lines_and_offers_override_when_they_are_the_only_issue(self):
+        text = self._display([UNCITED])
+        self.assertIn("`# Title`", text)
+        self.assertIn("Override available", text)
+        self.assertNotIn("Approval unavailable", text)
+
+    def test_explains_why_override_is_not_available_yet(self):
+        text = self._display([UNCITED, 'Claim not supported by its cited passage (judge): "x"'])
+        self.assertIn("Approval unavailable", text)
+        self.assertIn("Override not available yet", text)
+        self.assertIn("the 1 other issue(s)", text)
