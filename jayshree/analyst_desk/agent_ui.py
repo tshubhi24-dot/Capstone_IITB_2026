@@ -203,17 +203,21 @@ _LINE_PREFIX = re.compile(r"^(\s*(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+)?)(.*)$")
 
 
 def _highlight(body: str, check: dict | None) -> tuple[str, bool]:
-    """Mark the lines the analyst must look at: 🟥 claim the judge did not accept, 🟨 no passage cited."""
+    """Mark the lines the analyst must look at: 🟥 claim the judge did not accept, 🟧 a number
+    code could not trace, 🟨 no passage cited."""
     claims = (check or {}).get("claims") or {}
     red = {line[:300] for line in claims.get("rejected_lines") or []}
     yellow = {line[:300] for line in claims.get("uncited_lines") or []}
-    if not (red or yellow):
+    numbers = [n for n in (approval.unverified_number(i) for i in (check or {}).get("issues") or []) if n]
+    if not (red or yellow or numbers):
         return body, False
     out, marked = [], False
     for line in body.splitlines():
         key = line.strip()[:300]
         if key in red:
             tag, colour = "🟥", "#f8c4c4"
+        elif any(n in line for n in numbers):
+            tag, colour = "🟧", "#fcd5a5"
         elif key in yellow:
             tag, colour = "🟨", "#ffe08a"
         else:
@@ -244,8 +248,8 @@ def _note_display(body: str, check: dict | None = None) -> str:
                  "`growth` = A / B − 1, `diff` = margin change in percentage points)\n\n")
         text += "\n".join(f"{i}. {s}" for i, s in enumerate(sources, 1))
     if marked:
-        text = ("> 🟥 **red** = claim the judge did not accept · 🟨 **yellow** = line with no passage "
-                "citation\n\n" + text)
+        text = ("> 🟥 **red** = claim the judge did not accept · 🟧 **orange** = number code could not "
+                "trace to a filing · 🟨 **yellow** = line with no passage citation\n\n" + text)
     return text
 
 
@@ -267,11 +271,16 @@ def _check_display(c: dict) -> str:
     if claims.get("rejected_lines"):
         head += (f"\n🟥 **{len(claims['rejected_lines'])} claim(s) the judge did not accept** "
                  "(highlighted in red in the note).")
+    untraced = [n for n in (approval.unverified_number(i) for i in c.get("issues") or []) if n]
+    if untraced:
+        head += (f"\n🟧 **{len(untraced)} number(s) code could not trace to a filing** "
+                 "(highlighted in orange in the note): " + ", ".join(untraced[:10]))
     if c.get("warnings"):
         head += "\n\n**Source limitations**\n" + "\n".join(f"- {w}" for w in c["warnings"])
     if c["issues"] and approval.overridable(c):
         head += ("\n\n**Override available:** what remains are judgement findings (🟨 uncited lines, "
-                 "🟥 claims the judge did not accept). Check the highlighted lines; to approve anyway, tick "
+                 "🟥 claims the judge did not accept, 🟧 untraced numbers). Check the highlighted lines; "
+                 "to approve anyway, tick "
                  "the override and give a reason. You take responsibility: the override, its reason and the "
                  "findings it covers are signed into the approval and kept with the note. "
                  "Or edit or reject the note.\n" + "\n".join(f"- {i}" for i in c["issues"]))
@@ -596,8 +605,8 @@ def build_agent_panel(workflow_mode):
                 edit_note_btn = gr.Button("Save edit and re-check")
             with gr.Row():
                 override_uncited = gr.Checkbox(
-                    label=("Override: I have checked the highlighted lines (uncited, or not accepted by the "
-                           "judge) and take responsibility for publishing them"),
+                    label=("Override: I have checked the highlighted lines (uncited, not accepted by the judge, "
+                           "or with untraced numbers) and take responsibility for publishing them"),
                     value=False, scale=2)
                 override_reason = gr.Textbox(label="Reason for the override (required, kept with the note)",
                                              scale=3)
