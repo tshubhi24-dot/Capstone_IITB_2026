@@ -1,4 +1,4 @@
-# Role 6 — Evaluation evidence audit
+# Role 5 — Evaluation evidence audit
 
 **Split:** dev  
 **Recorded result:** `data/evaluation/results/eval_dev_merged.json`  

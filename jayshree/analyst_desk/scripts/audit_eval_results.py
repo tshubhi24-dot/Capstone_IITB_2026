@@ -204,7 +204,7 @@ def validate_result(path: Path, gold_path: Path, configs: list[str], min_cases: 
 
 def markdown_report(report: dict) -> str:
     rows = [
-        "# Role 6 — Evaluation evidence audit",
+        "# Role 5 — Evaluation evidence audit",
         "",
         f"**Split:** {report['split']}  ",
         f"**Recorded result:** `{report['results_source']}`  ",
