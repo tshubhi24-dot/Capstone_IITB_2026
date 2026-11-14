@@ -37,11 +37,11 @@ The same server also exposes a FastAPI API with health checks (section 11).
 
 | Area | Built by |
 |---|---|
-| The base system: EDGAR facts, ingestion, retrieval, MCP servers, C0/C1/C2 graphs, checker, memory, playbook, evaluation harness, observability, the app | Jayshree |
 | **Role 1, Domain and product:** problem statement, user workflow, supported scope, financial, filing-version, evidence and acceptance rules, reference answers ([product_spec.md](product_spec.md), 12) | Amit |
 | **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
-| **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
+| **Role 4, Security:** an advice guard on write tools, optional Ed25519 approver signatures, quarantine of C2 hand-offs | Pranoti |
+| **Role 5, Evaluation and operations:** the 40 held-out cases and result audits, versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
 | **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Pushparaj |
 
 Every part is explained below, but expect the deepest questions on your own role.
