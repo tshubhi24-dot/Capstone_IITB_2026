@@ -4,28 +4,18 @@ Who built what. Dated detail: [work_log.md](work_log.md) and [../docs/plan.md](.
 
 ## Team and roles
 
-| Member | Role | Main contributions | AI help |
-|---|---|---|---|
-| **Jayshree Rajan** | Base system; Role 2, knowledge and memory | EDGAR/XBRL facts; 10-K ingestion (table-aware); hybrid retrieval, reranker, query decomposition; MCP servers; C0, C1, C2; code checks and judge; HMAC approval; memory and playbook; evaluation harness and held-out runs; observability; the app; analyst override; submission docs and slides | Claude Code |
-| **Amit** | Role 1, domain and product | Problem statement; user workflow; supported scope; bank, fiscal-year, unit and filing-version rules; evidence, acceptance and memory policies; 20-case answer key; frontend messages; implementation and note reviews; demo script | — |
-| **Sachin Narang** | Role 3, agents | One tool budget for C1 and C2; C2 budget split; per-specialist cost metering; specialist prompt fixes; offline end-to-end tests of C1 and C2 | — |
-| **Pranoti Deshmukh** | Security (Module 4) | Advice guard on write tools; optional Ed25519 approver signatures; quarantine of C2 hand-offs | — |
-| **Shubhi Tiwari** | Deployment and operations | FastAPI service; Docker persistence; CI and evaluation gate; Windows setup; start/stop scripts; versioned LLM config; unified Research tab; run cancel; in-app alerts; fiscal-year confirmation; 40 held-out cases; gap fixes and citation inventory | GitHub Copilot |
-| **Pushparaj** | Role 6, deployment checks | App reaches MCP servers over HTTP in Docker; approval refused while checks fail; CI on the lock file with Prometheus rule checks; evaluation-results audit; `ops_smoke.py` | — |
+| Member | Role | Responsibilities |
+|---|---|---|
+| **Amit** | Role 1, Domain and product | Problem statement, user workflow, supported scope; financial, evidence, acceptance and memory rules; answer key and demo script |
+| **Jayshree Rajan** | Role 2, Knowledge and memory | Ingestion, retrieval and reranking, query decomposition, memory store and policy |
+| **Sachin Narang** | Role 3, Agents | Agent tool budgets, specialist prompts, cost metering, end-to-end agent tests |
+| **Pranoti Deshmukh** | Security | Tool-level guards, approver signatures, quarantine of agent hand-offs |
+| **Shubhi Tiwari** | Deployment and operations | Service and CI, setup and start/stop scripts, versioned configuration, UI workflow, alerts, held-out evaluation cases |
+| **Pushparaj** | Role 6, Deployment checks | Docker networking checks, approval enforcement, CI on locked dependencies, evaluation-results audit, smoke checks |
 
-## By deliverable
+Shared by the team: architecture, evaluation runs and report, slides and demo rehearsal.
 
-| Deliverable | Owner(s) |
-|---|---|
-| Data, retrieval, MCP tools | Jayshree |
-| C0 / C1 / C2 agents | Jayshree; Sachin (budgets, prompts, tests) |
-| Product spec, rules, answer key | Amit |
-| Security and guardrails | Jayshree; Pranoti (Module 4) |
-| Memory and reflexion | Jayshree |
-| Deployment, CI, operations | Shubhi; Pushparaj (Role 6 checks); Jayshree (Compose, image) |
-| Held-out evaluation set | Jayshree (24-case v1); Shubhi (40 cases) |
-| Evaluation runs and report | Jayshree |
-| Slides | Jayshree; team rehearsal |
+AI tools used: Claude Code and GitHub Copilot, as recorded in [../docs/plan.md](../docs/plan.md#contribution-log).
 
 ## Pull requests
 
@@ -46,4 +36,4 @@ Team repository, tshubhi24-dot/Capstone_IITB_2026. "via" = merged by Jayshree af
 | #21, #25 | Shubhi | Held-out cases; contribution log |
 | #22, #23 | Jayshree | Evaluation results, report, viva prep; judge calibration sheet |
 | #26–#29 | Jayshree | Note gate: highlighted lines and analyst override |
-| this PR | Jayshree | Contribution log; Role 6 credited to Pushparaj |
+| #30, #31 | Jayshree | Contribution log; Role 6 credited to Pushparaj |
