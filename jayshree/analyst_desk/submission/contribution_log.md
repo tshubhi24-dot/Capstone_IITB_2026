@@ -9,8 +9,8 @@ Who built what. Dated detail: [work_log.md](work_log.md) and [../docs/plan.md](.
 | **Amit** | Role 1, Domain and product | Problem statement, user workflow, supported scope; financial, evidence, acceptance and memory rules; answer key and demo script |
 | **Jayshree Rajan** | Role 2, Knowledge and memory | Ingestion, retrieval and reranking, query decomposition, memory store and policy |
 | **Sachin Narang** | Role 3, Agents | Agent tool budgets, specialist prompts, cost metering, end-to-end agent tests |
-| **Pranoti Deshmukh** | Security | Tool-level guards, approver signatures, quarantine of agent hand-offs |
-| **Shubhi Tiwari** | Deployment and operations | Service and CI, setup and start/stop scripts, versioned configuration, UI workflow, alerts, held-out evaluation cases |
+| **Pranoti Deshmukh** | Role 4, Security | Tool-level guards, approver signatures, quarantine of agent hand-offs |
+| **Shubhi Tiwari** | Role 5, Evaluation and operations | Held-out evaluation cases and result audits; service and CI, setup and start/stop scripts, versioned configuration, UI workflow, alerts |
 | **Pushparaj** | Role 6, Deployment checks | Docker networking checks, approval enforcement, CI on locked dependencies, evaluation-results audit, smoke checks |
 
 Shared by the team: architecture, evaluation runs and report, slides and demo rehearsal.
