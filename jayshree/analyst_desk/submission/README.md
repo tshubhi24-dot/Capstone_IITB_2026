@@ -1,72 +1,68 @@
-# Submission: Analyst Desk (Capstone Project 5)
+# Submission: Analyst Desk (Capstone Project 5, Group 22)
 
-**Due: 12 November 2026.** The final review covers the presentation, the demo and individual vivas.
+Team: Amit, Jayshree Rajan, Sachin Narang, Pranoti Deshmukh, Pushparag Vaidya, Shubhi Tiwari. Roles: [contribution_log.md](contribution_log.md).
 
-This folder holds everything the brief asks for at submission (brief p.6, "What to submit"), plus the checklist we work from until then. Code and design documents stay where they are; this page links to them.
+Everything the brief asks for at submission (brief p.6). Code and design documents stay where they are; this page links to them.
 
 | File | What it is |
 |---|---|
-| [README.md](README.md) | This checklist: every deliverable and minimum-bar item, with status and owner |
-| [work_log.md](work_log.md) | Dated log of submission work and fixes, kept up to the deadline |
+| [evaluation_report.md](evaluation_report.md) | Evaluation report: retrieval, E1–E4, memory, limits |
+| [heldout_results.md](heldout_results.md) | E1 held-out results, every case |
+| [redteam_results.md](redteam_results.md) | E2 attack results, every attack |
 | [experiment_log.md](experiment_log.md) | Every evaluation run: date, config, cases, result file, what we learned |
-| [evaluation_report.md](evaluation_report.md) | The 4–6 page evaluation report (draft) |
-| [demo_script.md](demo_script.md) | The live demo, step by step, and the plan for the backup recording |
-| [slides_outline.md](slides_outline.md) | Slide-by-slide outline for the presentation |
-| [viva_prep.md](viva_prep.md) | Answers to the brief's eight viva questions, with evidence to show |
-| [ci_failure.md](ci_failure.md) | The failed CI run the brief asks for, with its explanation |
+| [contribution_log.md](contribution_log.md) | Roles, members and pull requests |
+| [work_log.md](work_log.md) | Dated log of work and fixes |
+| [demo_script.md](demo_script.md) | The live demo, step by step |
+| [demo/](demo/) | Demo-only Compose file that plants the injected "buy" article |
+| [slides.pptx](slides.pptx) | Presentation (13 slides, speaker notes); source in [slides/](slides/) |
+| [ci_failure.md](ci_failure.md) | The failed CI run, with its explanation |
+| `Group 22 - Analyst Desk Demo.mp4` | Backup demo recording (submission folder only) |
 
-Status key: ✅ done · 🟡 partly done · ⬜ not started · 🔴 blocked on someone else.
+Status key: ✅ done · 🟡 partly done · ⬜ not done.
 
 ## 1. What to submit (brief p.6)
 
-| Deliverable | Where | Status | Owner |
-|---|---|---|---|
-| Repository with a README that starts everything with one command | [../README.md](../README.md) (`docker compose up`) | ✅ | Shubhi, Jayshree |
-| Our own architecture diagram and numbered walkthrough | [../docs/architecture.md](../docs/architecture.md) §1 and §4 | 🟡 Recheck the diagram matches the final code; export a picture for the slides | Jayshree |
-| Threat model page | [../docs/threat_model.md](../docs/threat_model.md) | ✅ | Jayshree |
-| Memory policy page | [../docs/memory_policy.md](../docs/memory_policy.md) | ✅ | Jayshree |
-| Evaluation report (4–6 pages) | [evaluation_report.md](evaluation_report.md) | 🟡 Development results in; held-out E1, E2, E3 and judge sections to fill | Team |
-| Experiment log | [experiment_log.md](experiment_log.md) | 🟡 Development and smoke runs logged; E1–E4 to add | Team |
-| Contribution log | [contribution_log.md](contribution_log.md) (dated detail: [../docs/plan.md](../docs/plan.md#contribution-log)) | ✅ | Everyone |
-| Slides | Deck (13 slides, speaker notes): https://claude.ai/artifact/Kw2KfS1Ab3H4wjiujQKfSb · source in [slides/](slides/) (`deck.json` + one HTML file per slide; edit these, don't start a new deck) · PowerPoint: [slides.pptx](slides.pptx) | ✅ Final numbers; team to rehearse | Jayshree; team to rehearse |
-| Backup demo recording | [demo_script.md](demo_script.md) | ⬜ | Role 1 (owns the demo script) |
-| No API keys, private data or material we can't redistribute | `.env` is gitignored; data is public SEC filings | ✅ Recheck before the final push | Everyone |
+| Deliverable | Where | Status |
+|---|---|---|
+| Repository with a README that starts everything with one command | [../README.md](../README.md) (`docker compose up`) | ✅ |
+| Architecture diagram and numbered walkthrough | [../docs/architecture.md](../docs/architecture.md) §1 and §4 | ✅ |
+| Threat model page | [../docs/threat_model.md](../docs/threat_model.md) | ✅ |
+| Memory policy page | [../docs/memory_policy.md](../docs/memory_policy.md) | ✅ |
+| Evaluation report | [evaluation_report.md](evaluation_report.md) | ✅ Judge calibration not done (§9) |
+| Experiment log | [experiment_log.md](experiment_log.md) | ✅ |
+| Contribution log | [contribution_log.md](contribution_log.md) | ✅ |
+| Slides | [slides.pptx](slides.pptx) | ✅ |
+| Backup demo recording | `Group 22 - Analyst Desk Demo.mp4` | ✅ |
+| No API keys, private data or material we can't redistribute | `.env` is git-ignored; data is public SEC filings | ✅ |
 
 ## 2. Minimum bar (brief p.3)
 
 | Lecture | Evidence the brief asks for | Where | Status |
 |---|---|---|---|
-| L4–L6 Retrieval | Recall@5 on 30+ labelled queries, before and after one change | [../docs/retrieval_eval.md](../docs/retrieval_eval.md): 36 queries; 0.389 → 0.903 with rerank, decomposition and rewrite | ✅ |
-| L7 MCP | A tool list with schemas and one test per tool | [../docs/tools.md](../docs/tools.md), `tests/test_tools.py` | ✅ |
-| L8 Orchestration | A graph diagram and a live demonstration of resume | architecture §3; resume shown in the demo (Load run) | 🟡 Rehearse the resume step |
-| L9 Memory | A one-page memory policy and a memory-on vs memory-off comparison | memory policy; `results/memory_compare_20261025-112601.json` | ✅ |
-| L10 Planning | A trace showing a replan | `tests/test_graph.py` replan test; live trace to capture | 🟡 Capture one live replan trace for the slides |
-| L11 Multi-agent | A comparison of the single agent and the team | [../docs/evaluation.md](../docs/evaluation.md) (development set); held-out E1 ×3 to run | 🟡 |
-| L12 Improvement | Held-out results before and after the playbook; the playbook; one rejected lesson with its reason | Reflexion loop built; playbook review in the app | 🔴 Needs lessons reviewed (one rejected) and held-out cases |
-| L13 Evaluation | An evaluation report, judge agreement and a dashboard | Grafana dashboard ✅; report draft 🟡; judge agreement needs 20+ human labels | 🔴 Judge labels to collect |
-| L14 Human control | A live demonstration of an edit invalidating an earlier approval | In the app; part of the demo | 🟡 Rehearse |
-| L15 Security | Attack success with defences off and on, and the false-block rate | Harness `scripts/run_redteam.py` ready | 🔴 Needs 30+ attacks |
-| L16 Deployment | Installation on a clean machine; one failed CI run with an explanation | [ci_failure.md](ci_failure.md) ✅; clean-machine install ⬜ | 🟡 |
+| L4–L6 Retrieval | Recall@5 on 30+ labelled queries, before and after one change | [../docs/retrieval_eval.md](../docs/retrieval_eval.md): 36 queries; 0.472 → 0.903 with decomposition and rewrite | ✅ |
+| L7 MCP | Tool list with schemas, one test per tool | [../docs/tools.md](../docs/tools.md), `tests/test_tools.py` | ✅ |
+| L8 Orchestration | Graph diagram; resume | [architecture](../docs/architecture.md) §3; Load run ([demo_script](demo_script.md) §4) | ✅ |
+| L9 Memory | Memory policy; memory on vs off | [memory policy](../docs/memory_policy.md); [report](evaluation_report.md) §8 | ✅ |
+| L10 Planning | A replan | Replan path in both graphs (`tests/test_graph.py`); real replans in held-out v1 runs ([experiment_log](experiment_log.md) run 18, [report](evaluation_report.md) §4); [demo_script](demo_script.md) §5 | ✅ |
+| L11 Multi-agent | Single agent vs team | [report](evaluation_report.md) §4: 40 held-out cases × 3 runs | ✅ |
+| L12 Improvement | Before and after the playbook; one rejected lesson | [report](evaluation_report.md) §6: 1 lesson approved, 2 rejected with reasons; C1 arm done | 🟡 C2 arm incomplete (budget) |
+| L13 Evaluation | Report, judge agreement, dashboard | [report](evaluation_report.md); Grafana dashboard | 🟡 Judge agreement: sheet ready, not labelled |
+| L14 Human control | An edit invalidates an earlier approval | HMAC approval of the exact note ([architecture](../docs/architecture.md) §7); `tests/test_tools.py` `test_edit_after_approval_invalidates_it`; analyst override recorded with a reason | ✅ |
+| L15 Security | Attacks with defences off and on; false-block rate | [report](evaluation_report.md) §5: 32 attacks, 10 → 3 through, 0/17 false blocks | ✅ |
+| L16 Deployment | Clean-machine install; one failed CI run explained | Teammates install from the published, pinned image with `start.bat` / `start.sh` ([../README.md](../README.md)); [ci_failure.md](ci_failure.md) | 🟡 No separate clean-machine record |
 
 ## 3. Analyst Desk specifics (brief p.15–16)
 
 | Item | Status |
 |---|---|
-| 10–15 companies, two sectors, three years; Item-aware parsing, tables kept | ✅ 15 companies (tech and banks), FY2022–FY2024 |
+| 10–15 companies, two sectors, three years; Item-aware parsing; tables kept | ✅ 15 companies (tech and banks), FY2022–FY2024 |
 | Tools: filings-kb, edgar, python-sandbox, research-portal | ✅ |
-| Signature A: every number linked to an XBRL fact or cited cell, checked by code; like-for-like | ✅ ([../docs/gap_closure.md](../docs/gap_closure.md)) |
-| Signature B: parallel fan-out, critic loop, token budget; compared with a single agent | ✅ Built; held-out comparison to run |
-| Security tests: injected "buy" article, watchlist in a search query, sandbox reaching the network | 🟡 Defences built and unit-tested; attack runs to do |
-| 60 research questions, including risk changes labelled by hand for 10 company-years | 🟡 20 development + 24 held-out cases; the 10 hand labels to do |
-| FinanceBench open sample as an external retrieval check | ✅ `scripts/eval_financebench.py`: 2 of 4 findable in-coverage questions in the top 5 (report §2) |
+| Signature A: every number linked to an XBRL fact or cited cell, checked by code; like-for-like | ✅ |
+| Signature B: parallel fan-out, critic loop, token budget; compared with a single agent | ✅ [report](evaluation_report.md) §4 |
+| Security tests: injected "buy" article, watchlist in a search query, sandbox reaching the network | ✅ [redteam_results.md](redteam_results.md) |
+| 60 research questions | ✅ 44 development + 40 independent held-out + 24 generated held-out |
+| Risk changes labelled by hand for 10 company-years | ⬜ |
+| FinanceBench open sample as an external retrieval check | ✅ 2 of 4 findable in-coverage questions in the top 5 ([report](evaluation_report.md) §3) |
 | Dashboard: verified share, critic rejections, tokens and cost per note, EDGAR cache hits, latency; alert below 98% verified | ✅ |
-| E4 ablation: critic loop on and off; table-aware vs plain chunks | 🟡 Configs ready (`experiments/e4_*`); runs to do |
-| Demo: (1) margin comparison with linked facts (2) critic fixing a planted wrong number while the injected "buy" stays out (3) "What changed since our last note?" | 🟡 [demo_script.md](demo_script.md) |
-
-## 4. Critical path to 12 November
-
-1. **9 Nov:** merge PR #14 (gap fixes). Approve one real lesson and reject one, with a reason.
-2. **10 Nov:** held-out cases and attacks ready. Freeze the playbook. Run E1 ×3, E2, E3 and E4 (about $5–10 of OpenRouter credit). Do the clean-machine install.
-3. **11 Nov:** finish the evaluation report and experiment log, build the slides, record the backup demo.
-4. **12 Nov:** final read-through, check nothing secret is committed, submit.
-
+| E4 ablation: critic loop on and off; table-aware vs plain chunks | ✅ [report](evaluation_report.md) §7 (development set) |
+| Demo: margin comparison; critic fixing a planted wrong number while the injected "buy" stays out; "What changed since our last note?" | ✅ [demo_script.md](demo_script.md), recording |

@@ -1,6 +1,6 @@
 # Evaluation guide (for the team)
 
-How Analyst Desk is tested, how to run the evaluation, and how to read the results. The current numbers are in [evaluation.md](evaluation.md). The reasoning behind the design is in [viva_notes.md](viva_notes.md), section 10.
+How Analyst Desk is tested, how to run the evaluation, and how to read the results. The current numbers are in [evaluation.md](evaluation.md).
 
 ---
 

@@ -166,7 +166,7 @@ For FY2022-only questions the risk-diff agent searched FY2021 (not covered); the
 | Development results were tuned on | Only held-out results measure generalisation |
 | 44 development + 64 held-out cases | Small samples: differences of one or two cases are noise; E2 and E3 ran once |
 | Fixed corpus: 15 companies, FY2022–FY2024, as originally reported | No live "latest" period, no calendar alignment |
-| Uncited note lines are flagged, not judged | The analyst must read them |
+| Uncited note lines are flagged, not judged | Highlighted for the analyst, who may approve them with a recorded override and reason; proven errors still block. Added after the evaluation runs, which stop before approval, so results are unaffected |
 | Typed names, no sign-in | Single-analyst prototype; no correction or withdrawal of published notes |
 | Cost is an estimate | Blended $0.52 per million tokens, not per-model billing |
 

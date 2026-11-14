@@ -1,6 +1,6 @@
 # Analyst Desk: architecture
 
-How the system is put together: its components, how one request flows through them, and how it is deployed and observed. The reasons behind each choice are in [viva_notes.md](viva_notes.md). Each component is tagged with the course lecture that covers it.
+How the system is put together: its components, how one request flows through them, and how it is deployed and observed. Each component is tagged with the course lecture that covers it.
 
 ---
 
@@ -156,7 +156,7 @@ input_guard ─► plan ─► [plan gate] ─► fan-out in parallel (LangGraph
    - Every cited passage must exist, and no placeholder may remain.
    - The judge checks each cited claim against its passage.
    Issues go back to the writer, at most twice. Anything left is shown at the gate.
-7. **Note gate:** the analyst approves, which signs the exact note, or edits (re-checked, re-signed) or rejects.
+7. **Note gate:** the analyst approves, which signs the exact note, or edits (re-checked, re-signed) or rejects. Lines to check are highlighted in the note: uncited (yellow), not accepted by the judge (red), numbers code could not trace (orange). If only these judgement findings remain, the analyst may approve with an **override** and a reason; the override is signed into the approval and re-checked by the portal. Failures code proves (a wrong number or calculation, advice wording, a watchlist name, an unfinished template, changed evidence) always block.
 8. **Publish:** the portal verifies the signature and stores the note. Memory records the coverage and the note's verified figures for the next "what changed" comparison.
 
 ---
@@ -252,7 +252,8 @@ The writer has no tools: it drafts only from the hand-offs.
 - **Approval** ([approval.py](../analystdesk/approval.py)):
   - the note gate signs SHA-256(title + body + tickers) with an HMAC key the agents never see;
   - `publish_note` recomputes the hash and verifies the signature;
-  - an edit after approval, or an agent trying to approve itself, is refused at the server.
+  - an edit after approval, or an agent trying to approve itself, is refused at the server;
+  - an analyst override (judgement findings only, reason required) is part of the signed approval; the graph, the API and the portal apply the same rule (`review_passed`).
 - **Sandbox:**
   - **in the process:** an import allow-list for user code, plus audit hooks that block network, subprocesses, native libraries and file writes, plus a time limit;
   - **in Docker** (the real boundary): `--network none`, a read-only root filesystem, the `nobody` user, all capabilities dropped, and memory, CPU and process limits;

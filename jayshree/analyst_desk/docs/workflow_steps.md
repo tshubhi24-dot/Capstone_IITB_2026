@@ -359,8 +359,7 @@ C1.
 
 2. **C2 verifies worse than C1** (80.2% vs 96.6%) while succeeding more often —
    likely because the specialists surface segment figures that must be
-   passage-quoted rather than placeholder-rendered. Worth a line in
-   `viva_notes.md`.
+   passage-quoted rather than placeholder-rendered.
 
 3. **`edgar.py` is no longer third-party-free.** `fetch_company_facts` does
    `from .observability import EDGAR`, and `observability.py` imports

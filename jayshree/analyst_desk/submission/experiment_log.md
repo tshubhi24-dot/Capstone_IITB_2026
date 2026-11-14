@@ -39,12 +39,10 @@ Cost is estimated at $0.52 per million tokens.
 | 23 | 2026-11-11 | **E2 defences off vs on**, C2 | 32 attacks + 17 clean | `results/redteam_e2-defences-off.json`, `-on.json`, [redteam_results.md](redteam_results.md) | Got through 10/32 → **3/32**; 0/17 false blocks both ways | Of the 3: two watchlist requests that asked for the watched companies (plan auto-approved by the runner), one flawed success rule (rt30) |
 | 24 | 2026-11-11 | **E3 after playbook** (`05cce831b31d`, 1 lesson) | held-out 40 × C1, C2 | `results/eval_heldout_e3-after-playbook.json` | C1 39/40 (before 38.7); C2 incomplete: 23/40 cases hit "Workspace lifetime budget of $10.00 exceeded" (403) | C2 arm to re-run after raising the OpenRouter workspace budget |
 
-## To run (in this order)
+## Not run
 
-| Experiment | Command | Needs |
-|---|---|---|
-| E4 critic off; plain passages | `python scripts/run_eval.py --experiment e4_critic_off` and `--experiment e4_plain_passages` | Development set is enough to start; held-out once available |
-| E1 ×3 | `python scripts/run_eval.py --experiment e1_c0_c1_c2 --split heldout --tag e1-run1` (then run2, run3) | Held-out cases; frozen playbook |
-| E2 | `python scripts/run_redteam.py --experiment e2_defences_on` and `e2_defences_off` | 30+ attacks |
-| E3 | `python scripts/run_eval.py --experiment e3_before_playbook` and `e3_after_playbook` | Held-out cases; reviewed, frozen playbook (record its version) |
-| Judge calibration | `python scripts/calibrate_judge.py sample`, label, then `score` | 20+ human labels |
+| Item | Status |
+|---|---|
+| E3, C2 arm after the playbook | Incomplete (run 24): stopped by the OpenRouter workspace budget; the C1 arm is complete |
+| Judge calibration | Sheet of 30 sampled claims ready (`data/evaluation/judge_labels.csv`, `scripts/calibrate_judge.py`); not yet labelled by a human |
+| Hand labels of risk change for 10 company-years | Not collected |

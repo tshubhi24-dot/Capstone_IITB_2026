@@ -74,7 +74,7 @@ All three use the same model, the same tools and the same tool-call budget. The 
 ### Human in control
 
 - **Plan gate:** approve, edit (as JSON) or cancel the research plan before any tool runs. Relative or unspecified fiscal years must be explicitly confirmed or edited and confirmed before research starts.
-- **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval.
+- **Note gate:** approve, edit or reject the exact note. An edit is re-checked and needs a fresh approval. Lines to check are highlighted; if only judgement findings remain (uncited lines, claims the judge did not accept, untraced numbers), the analyst can approve with an override and a reason, recorded in the signed approval. Proven errors always block.
 - **Signed approval:** the gate signs the exact note with an HMAC key. The publishing server verifies the signature, so a skipped or forged approval is refused at the server.
 - **Stop and resume:** every run is checkpointed in SQLite. Any run can be reopened from the run list, even after a restart.
 
@@ -170,7 +170,7 @@ Every tool call ──► hooks (permission · budget · rate limit · trace) �
 Memory + playbook (LangGraph store) · checkpoints (SQLite) · traces · metrics · alerts
 ```
 
-Full description: [docs/architecture.md](docs/architecture.md). The reasoning behind each design choice: [docs/viva_notes.md](docs/viva_notes.md).
+Full description: [docs/architecture.md](docs/architecture.md).
 
 ---
 
@@ -447,17 +447,16 @@ Built locally on first use and not in git: the Chroma index (`data/index/`), run
 |---|---|
 | [docs/product_spec.md](docs/product_spec.md) | The problem, user, scope and domain rules, and where the app differs from them |
 | [docs/architecture.md](docs/architecture.md) | Components, data flow, agent graphs, deployment |
-| [docs/viva_notes.md](docs/viva_notes.md) | Why each part is built the way it is, with likely questions and evidence |
 | [docs/tools.md](docs/tools.md) | The eight MCP tools and their schemas |
 | [docs/threat_model.md](docs/threat_model.md) | What is protected, the threats, the defences and what is not defended |
-| [submission/](submission/README.md) | Submission checklist, evaluation report, experiment and work logs, demo script, slides outline |
+| [submission/](submission/README.md) | Submission index, evaluation report, experiment, work and contribution logs, demo script, slides |
 | [docs/gap_closure.md](docs/gap_closure.md) | Status of every item in the team's implementation gap analysis |
 | [docs/security_summary.md](docs/security_summary.md) | MCP tool security layer by layer, the gaps still open, and the three fixes made against them |
 | [docs/memory_policy.md](docs/memory_policy.md) | What memory keeps, who reads it, privacy, how to correct or delete it |
 | [docs/evaluation_guide.md](docs/evaluation_guide.md) | How evaluation works, how to read the results, and the reference answers |
 | [docs/evaluation.md](docs/evaluation.md) | Current evaluation results |
 | [docs/retrieval_eval.md](docs/retrieval_eval.md) | Retrieval Recall@5 results |
-| [docs/plan.md](docs/plan.md) | Team build plan and contribution log |
+| [docs/plan.md](docs/plan.md) | Team build plan and dated contribution log |
 
 ---
 

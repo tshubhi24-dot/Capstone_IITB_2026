@@ -60,7 +60,7 @@ Request: "Compare Microsoft with Tesla's operating margin in fiscal 2024." Tesla
 
 ## 6. Approve and publish
 
-Edit the note back to the correct figure and re-check. Only approve if all checks pass; otherwise show the blocking issues and do not claim publication. If approved, show it in the research portal (Recent notes). Then show Grafana:
+Edit the note back to the correct figure and re-check. Approve when all checks pass. If only judgement findings remain (highlighted lines), approve with the override and a reason; proven errors block, so show them and do not claim publication. If approved, show it in the research portal (Recent notes). Then show Grafana:
 - verified share;
 - critic rejections;
 - tokens and cost per note;
@@ -74,6 +74,4 @@ Edit the note back to the correct figure and re-check. Only approve if all check
 
 ## Backup recording
 
-Record steps 1–3 and 6 with OBS or the Windows Game Bar (Win+Alt+R) at 1080p, about 8 minutes. Save it as `analyst_desk_demo.mp4`. Upload it to the team drive and link it here; don't commit the video to the repository.
-
-**Recording link:** _to add_
+Recorded and submitted with the repository: `Group 22 - Analyst Desk Demo.mp4` (in the submission folder, not committed to git).
