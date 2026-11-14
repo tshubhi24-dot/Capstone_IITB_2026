@@ -443,6 +443,8 @@ config.py                 # all prompts + model IDs in one versioned file
 
 ## Contribution log
 
+> Summary by member and pull request: [submission/contribution_log.md](../submission/contribution_log.md).
+
 > Record who built what from day one. The viva requires each person to explain their own part
 > and redraw the full architecture from memory.
 
