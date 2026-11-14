@@ -37,3 +37,4 @@ Team repository, tshubhi24-dot/Capstone_IITB_2026. "via" = merged by Jayshree af
 | #22, #23 | Jayshree | Evaluation results, report, viva prep; judge calibration sheet |
 | #26–#29 | Jayshree | Note gate: highlighted lines and analyst override |
 | #30–#35 | Jayshree | Contribution log, role assignments, final submission documents |
+| #36 | Jayshree | R1 specification documents (Amit's final baseline) restored |
