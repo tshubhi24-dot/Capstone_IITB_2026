@@ -37,12 +37,12 @@ The same server also exposes a FastAPI API with health checks (section 11).
 
 | Area | Built by |
 |---|---|
-| **Role 1, Domain and product:** problem statement, user workflow, supported scope, financial, filing-version, evidence and acceptance rules, reference answers ([product_spec.md](product_spec.md), 12) | Amit |
-| **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
-| **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
-| **Role 4, Security:** an advice guard on write tools, optional Ed25519 approver signatures, quarantine of C2 hand-offs | Pranoti |
-| **Role 5, Evaluation and operations:** the 40 held-out cases and result audits, versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
-| **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Pushparaj |
+| **R1, Domain and Product:** problem statement, user workflow, supported scope, financial, filing-version, evidence and acceptance rules, reference answers ([product_spec.md](product_spec.md), 12) | Amit |
+| **R2, Knowledge and Memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
+| **R3, Agents and Orchestration:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
+| **R4, Tools, Control and Security:** an advice guard on write tools, optional Ed25519 approver signatures, quarantine of C2 hand-offs | Pranoti |
+| **R5, Evaluation and Red-Team:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Pushparaj |
+| **R6, Deployment and Operations:** the 40 held-out cases and result audits, versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
 
 Every part is explained below, but expect the deepest questions on your own role.
 
@@ -929,7 +929,7 @@ The model, prompts, tools and budget never change between arms, so a difference 
   - With defences off, gpt-4.1-mini ignored it anyway.
   - So the model resists some attacks by itself, and E2 has to measure that rather than assume it.
 
-**Role 6 additions (Pushparaj):**
+**R5 additions (Pushparaj):**
 - In Docker, the app calls the four MCP servers over HTTP. This was verified live: all four containers received calls, and a C1 note was published through the HTTP portal.
 - `ops_smoke.py` checks the running stack.
 - CI installs the locked dependencies and checks the Prometheus rules with `promtool`.
