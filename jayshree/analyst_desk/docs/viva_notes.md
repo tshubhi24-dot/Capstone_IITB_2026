@@ -728,7 +728,7 @@ The Research tab in **C2 · Team** mode has a **👥 Team board** with one row p
 - **Development cases:** [data/evaluation/dev_cases.jsonl](../data/evaluation/dev_cases.jsonl), 20 cases:
   - 8 numeric, 5 comparison, 4 risk-change, and 3 refusals (an uncovered company, an uncovered year, an investment-advice request).
   - Expected figures were **computed from XBRL by code and frozen in the file before any agent ran** ([scripts/make_dev_cases.py](../scripts/make_dev_cases.py)).
-- **Held-out cases:** [data/evaluation/heldout/](../data/evaluation/heldout/README.md) is empty on purpose. The brief says the person who tunes the agent must not write them, so **a teammate (Role 5)** writes 40+. No agent tool can read that folder.
+- **Held-out cases:** [data/evaluation/heldout/](../data/evaluation/heldout/README.md) holds 40 cases written by Shubhi, who does not tune the agents. The brief says the person who tunes the agent must not write them. No agent tool can read that folder.
 - **Scoring is code first** ([analystdesk/evaluation.py](../analystdesk/evaluation.py)):
   - **numeric / comparison:** every expected figure appears in the output with the same unit and sign, correctly rounded at the precision shown, and attached to the right company and year (its source tag resolves to that company, or the company is named on its line or table). So C0's free text and the agents' code-rendered figures are judged alike, and the right digits on the wrong company fail.
   - **Any agent case** fails if the critic's review did not complete.

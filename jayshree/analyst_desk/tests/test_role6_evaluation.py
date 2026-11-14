@@ -1,4 +1,4 @@
-"""Role 6 offline evaluation accounting and integrity regressions."""
+"""Role 5 offline evaluation accounting and integrity regressions."""
 
 import copy
 import json

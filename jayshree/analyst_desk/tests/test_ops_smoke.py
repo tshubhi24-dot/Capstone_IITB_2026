@@ -1,4 +1,4 @@
-"""Tests for the Role 6 operations smoke checker and MCP routing."""
+"""Tests for the operations smoke checker (R6 area, built with R5) and MCP routing."""
 
 import asyncio
 import unittest
