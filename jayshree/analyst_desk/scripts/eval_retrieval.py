@@ -148,8 +148,7 @@ def write_report(results: dict, queries: list[dict]) -> None:
         )
     lines += [
         "",
-        "Interpretation, label rules and the first-run (v1) results: "
-        "see [viva_notes.md](viva_notes.md), section 3.8.",
+        "Interpretation: see the [evaluation report](../submission/evaluation_report.md), section 3.",
     ]
     REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

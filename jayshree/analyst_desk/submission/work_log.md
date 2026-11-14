@@ -4,6 +4,8 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 
 | Date | Who | What | Where |
 |---|---|---|---|
+| 2026-11-14 | Jayshree | Final submission refresh: contribution log with the official roles (R1–R6); submission index, experiment log, demo script and design docs updated to the final state; Pushparag's name corrected | PRs #30–#35 |
+| 2026-11-13 | Jayshree | Note gate: lines to check highlighted (uncited yellow, judge-rejected red, untraced numbers orange); analyst override with a reason for judgement findings only, signed into the approval and re-checked by the API and portal; proven errors still block. 550 tests pass | PRs #26–#29 |
 | 2026-11-11 | Jayshree | **Final evaluation done.** Held-out E1 (independent 40 cases × 3): C1 38.7, C2 35.0, C0 31.7 of 40. E2: attacks through 10/32 → 3/32, 0 false blocks. E3: C1 unchanged (39/40); C2 arm cut short by the OpenRouter workspace budget ($10 lifetime cap, separate from the key's limit). Per-case tables generated from the result files; report, viva prep and slides filled | `submission/` |
 | 2026-11-11 | Jayshree | Main presentation drafted (13 slides) as a Slides deck, to download as PowerPoint | deck link in `submission/README.md` |
 | 2026-11-11 | Jayshree | Notes restyled for analysts (key takeaways, figures table, drivers, risks to watch) plus a Basis line and missing-figure Limitations; on branch `jayshree/analyst-style-notes`, waiting for a live test (blocked by the workspace budget) | branch |
@@ -27,7 +29,7 @@ Dated record of the work towards submission on 12 November: what was fixed, chec
 | 2026-11-09 | Jayshree | Found and fixed a race: two parallel first searches both built the search index and one failed (seen in the live smoke run) | PR #14, `retrieve.py` |
 | 2026-11-09 | Jayshree | Live evaluation gate in CI made on-demand only, so it doesn't spend OpenRouter credit or fail without a key | PR #12 (merged) |
 | 2026-11-09 | Jayshree | Capstone gaps: guardrails, private watchlist, experiment configs, red-team harness, like-for-like checks, memory off removes the past-notes tool | PR #11 (merged) |
-| 2026-11-09 | Pushparaj (R5) | HTTP MCP in Docker, approval refused while checks fail, CI on the lock file with Prometheus rule checks, evaluation-results audit, `ops_smoke.py` | PR #10 (merged) |
+| 2026-11-09 | Pushparag (R5) | HTTP MCP in Docker, approval refused while checks fail, CI on the lock file with Prometheus rule checks, evaluation-results audit, `ops_smoke.py` | PR #10 (merged) |
 | 2026-11-09 | Amit (R1), Jayshree | R1 specifications folded into the product spec, memory policy and evaluation guide | PR #9 (merged) |
 
 ## Open issues found during submission prep

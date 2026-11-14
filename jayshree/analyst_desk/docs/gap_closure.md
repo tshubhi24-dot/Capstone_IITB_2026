@@ -77,7 +77,7 @@ The counts above are the earlier snapshot, not recalculated after the later chan
 | F34 | Evidence | E1–E4 and the evaluation report. **Owner:** team | `run_eval.py`, `experiments/` |
 | F35 | Implemented | Advice requests and wording are refused; the injection screen and output checks are in place; publishing refuses advice that cites nothing (advice guard on the write tool). The injected-buy attack is in the red-team suite (rt01) | `guards.py`, `checks.py`, `servers/guardrails.py` |
 | F36 | Implemented | Each result records its experiment switches, frozen-playbook version, git commit, `llm.toml` version, model ids and reply cap. There is no separate policy hash | `run_eval.py` |
-| F37 | Evidence | Role ownership is in the viva notes; the held-out and attack sets are committed before any run | `viva_notes.md`, `data/evaluation/` |
+| F37 | Evidence | Role ownership is in the contribution log; the held-out and attack sets are committed before any run | `submission/contribution_log.md`, `data/evaluation/` |
 | F38 | Implemented | A margin change from zero income is kept: 0.00% → 5.00% is +5.00 pp | `figures.build_figures` |
 
 ## Evidence and approval rules
