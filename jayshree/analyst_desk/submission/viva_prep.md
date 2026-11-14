@@ -112,7 +112,7 @@ Viva point: reflection produced near-duplicates; the human review is what kept t
 |---|---|---|
 | 1, 2 (architecture, model vs code) | Everyone | — |
 | 3, 4 (experiments) | Jayshree | Sachin |
-| 5 (traces) | Pranoti (security), Nidhi (ops) | Jayshree |
+| 5 (traces) | Pranoti (security), Pushparaj (ops) | Jayshree |
 | 6 (memory) | Jayshree | Amit |
 | 7 (lessons) | Sachin | Jayshree |
 | 8 (pilot) | Amit | Shubhi |

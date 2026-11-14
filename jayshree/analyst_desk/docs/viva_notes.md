@@ -42,7 +42,7 @@ The same server also exposes a FastAPI API with health checks (section 11).
 | **Role 2, Knowledge and memory:** ingestion, hybrid retrieval and reranking, query decomposition, the memory store and policy, placeholder safety (9.8) | **Jayshree** |
 | **Role 3, Agents:** one tool budget for C1 and C2, the specialist budget split, specialist prompt fixes, offline end-to-end tests of C1 and C2 (9.7) | Sachin |
 | **Deployment and operations:** versioned LLM config, FastAPI service, CI and the evaluation gate, `setup.bat`, the unified Research tab, plan cancel, C0 follow-ups and charts, memory delete confirmation, lesson de-duplication, alert-rule tests, the in-app alerts panel (11) | Shubhi |
-| **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Nidhi |
+| **Role 6, Deployment checks:** the app reaches the MCP servers over HTTP in Docker, approval refused while checks fail, CI on the locked dependencies with Prometheus rule checks, the evaluation-results audit, `ops_smoke.py`, the three-run held-out report (13) | Pushparaj |
 
 Every part is explained below, but expect the deepest questions on your own role.
 
@@ -929,7 +929,7 @@ The model, prompts, tools and budget never change between arms, so a difference 
   - With defences off, gpt-4.1-mini ignored it anyway.
   - So the model resists some attacks by itself, and E2 has to measure that rather than assume it.
 
-**Role 6 additions (Nidhi):**
+**Role 6 additions (Pushparaj):**
 - In Docker, the app calls the four MCP servers over HTTP. This was verified live: all four containers received calls, and a C1 note was published through the HTTP portal.
 - `ops_smoke.py` checks the running stack.
 - CI installs the locked dependencies and checks the Prometheus rules with `promtool`.

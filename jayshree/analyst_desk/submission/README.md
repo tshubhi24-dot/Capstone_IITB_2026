@@ -27,7 +27,7 @@ Status key: ✅ done · 🟡 partly done · ⬜ not started · 🔴 blocked on s
 | Memory policy page | [../docs/memory_policy.md](../docs/memory_policy.md) | ✅ | Jayshree |
 | Evaluation report (4–6 pages) | [evaluation_report.md](evaluation_report.md) | 🟡 Development results in; held-out E1, E2, E3 and judge sections to fill | Team |
 | Experiment log | [experiment_log.md](experiment_log.md) | 🟡 Development and smoke runs logged; E1–E4 to add | Team |
-| Contribution log | [../docs/plan.md](../docs/plan.md#contribution-log) | 🟡 Each teammate checks their rows are complete | Everyone |
+| Contribution log | [contribution_log.md](contribution_log.md) (dated detail: [../docs/plan.md](../docs/plan.md#contribution-log)) | ✅ | Everyone |
 | Slides | Deck (13 slides, speaker notes): https://claude.ai/artifact/Kw2KfS1Ab3H4wjiujQKfSb · source in [slides/](slides/) (`deck.json` + one HTML file per slide; edit these, don't start a new deck) · PowerPoint: [slides.pptx](slides.pptx) | ✅ Final numbers; team to rehearse | Jayshree; team to rehearse |
 | Backup demo recording | [demo_script.md](demo_script.md) | ⬜ | Role 1 (owns the demo script) |
 | No API keys, private data or material we can't redistribute | `.env` is gitignored; data is public SEC filings | ✅ Recheck before the final push | Everyone |
